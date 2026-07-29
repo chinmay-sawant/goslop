@@ -28,7 +28,7 @@
 |------|------------------:|----------------|--------|
 | PERF | ~239 | all domains | [x] Phase 6 — **239/239** registered (heuristic batch ports) |
 | CWE structural | ~175 | all domains | [ ] Phase 7 |
-| BP | ~135 (rules files ~39 modules) | all | [ ] Phase 8 |
+| BP | ~135 (rules files ~39 modules) | all | [x] Phase 8 (127 detectors registered, heuristic) |
 | Taint CWE-22/78/79/89 | experimental | port graph + rules | [ ] Phase 9 |
 
 Update counts from `codehound --list-rules` when Rust binary available; registries under `internal/lang/go/detectors/*/registry/` are source for wiring.
