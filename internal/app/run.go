@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/chinmay/codehound/internal/cli"
 	"github.com/chinmay/codehound/internal/core"
@@ -155,7 +156,9 @@ func run(args []string, stdout, stderr io.Writer) error {
 		ProjectRoot(projectRoot).
 		Build()
 
+	t0 := time.Now()
 	res, err := analyzer.AnalyzePaths(opts.Paths)
+	wall := time.Since(t0)
 	if err != nil {
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}
@@ -165,24 +168,34 @@ func run(args []string, stdout, stderr io.Writer) error {
 		findings = []rules.Finding{}
 	}
 
-	// Text mode: print product-style scan summary to stderr (before findings or after).
-	// JSON/SARIF leave stdout pure; summary still goes to stderr for oracle tooling.
-	printScanSummary(stderr, res, findings)
+	// When --no-cache, treat every scanned file as a cache miss for summary
+	// parity with Rust ("0 hits, N misses (full re-analysis)").
+	if opts.NoCache && res.Stats != nil && res.Stats.CacheHits+res.Stats.CacheMisses == 0 {
+		res.Stats.CacheMisses = res.Stats.FilesScanned
+	}
 
-	rep, err := reporting.New(string(opts.Format))
-	if err != nil {
-		return &ExitCodeError{Code: ExitConfig, Err: err}
-	}
-	switch r := rep.(type) {
-	case reporting.JSONReporter:
-		r.Version = Version
-		rep = r
-	case reporting.SARIFReporter:
-		r.Version = Version
-		rep = r
-	}
-	if err := rep.Write(findings, stdout); err != nil {
-		return &ExitCodeError{Code: ExitInternal, Err: err}
+	// Product-style scan summary (Rust make run / --no-terminal).
+	// Always on stderr so JSON/SARIF stdout stays pure for tooling.
+	printScanSummary(stderr, res, findings, wall)
+
+	// --no-terminal: summary only (no per-finding text dump). Still emit
+	// machine formats when explicitly requested (json/sarif).
+	if !(opts.NoTerminal && opts.Format == cli.FormatText) {
+		rep, rerr := reporting.New(string(opts.Format))
+		if rerr != nil {
+			return &ExitCodeError{Code: ExitConfig, Err: rerr}
+		}
+		switch r := rep.(type) {
+		case reporting.JSONReporter:
+			r.Version = Version
+			rep = r
+		case reporting.SARIFReporter:
+			r.Version = Version
+			rep = r
+		}
+		if err := rep.Write(findings, stdout); err != nil {
+			return &ExitCodeError{Code: ExitInternal, Err: err}
+		}
 	}
 
 	if opts.ExportContext || opts.ExportChunks {
@@ -216,7 +229,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		}
 	}
 
-	if res.ShouldFail(ctx.FailPolicy) {
+	if !opts.NoFail && res.ShouldFail(ctx.FailPolicy) {
 		return &ExitCodeError{Code: ExitFailing}
 	}
 	return nil
@@ -276,27 +289,42 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 	return nil
 }
 
-func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.Finding) {
+func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.Finding, wall time.Duration) {
 	if w == nil || res == nil || res.Stats == nil {
 		return
 	}
 	st := res.Stats
-	_, _ = fmt.Fprintf(w, "scanned %d files (%d lines)\n", st.FilesScanned, st.LinesScanned)
+	// scanned 78 files (28120 lines) in 479.5ms
+	_, _ = fmt.Fprintf(w, "scanned %d files (%d lines) in %s\n",
+		st.FilesScanned, st.LinesScanned, formatWall(wall))
+	// cache line (always when we have hits/misses, including full re-analysis)
 	if st.CacheHits+st.CacheMisses > 0 {
-		_, _ = fmt.Fprintf(w, "  cache: %d hits, %d misses\n", st.CacheHits, st.CacheMisses)
+		suffix := ""
+		switch {
+		case st.CacheHits > 0 && st.CacheMisses == 0:
+			suffix = " (results from cache; not re-analyzed)"
+		case st.CacheHits == 0:
+			suffix = " (full re-analysis)"
+		}
+		_, _ = fmt.Fprintf(w, "  cache: %d hits, %d misses%s\n", st.CacheHits, st.CacheMisses, suffix)
 	}
 	if st.FilesSkipped > 0 {
 		_, _ = fmt.Fprintf(w, "  skipped %d files\n", st.FilesSkipped)
 	}
-	_, _ = fmt.Fprintf(w, "%d findings\n", len(findings))
 	if len(findings) == 0 {
+		_, _ = fmt.Fprintln(w, "no slop detected")
 		return
 	}
-	// severity histogram
+	_, _ = fmt.Fprintf(w, "%d findings\n", len(findings))
+	// severity histogram (Rust order: high, info, low, medium)
 	var high, med, low, info int
 	counts := map[string]int{}
+	exampleCount := 0
 	for _, f := range findings {
 		counts[f.RuleID]++
+		if isExampleDemoFinding(f) {
+			exampleCount++
+		}
 		switch f.Severity {
 		case rules.SeverityHigh, rules.SeverityCritical:
 			high++
@@ -334,6 +362,36 @@ func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.
 		parts = append(parts, fmt.Sprintf("%s ×%d", p.id, p.n))
 	}
 	_, _ = fmt.Fprintf(w, "  top rules: %s\n", strings.Join(parts, ", "))
+	if exampleCount > 0 {
+		_, _ = fmt.Fprintf(w, "  example findings: %d (of %d total)\n", exampleCount, len(findings))
+	}
+}
+
+// formatWall matches Rust product summary style (e.g. 479.5ms, 1.2s).
+func formatWall(d time.Duration) string {
+	if d < time.Second {
+		ms := float64(d) / float64(time.Millisecond)
+		return fmt.Sprintf("%.1fms", ms)
+	}
+	return fmt.Sprintf("%.2fs", d.Seconds())
+}
+
+// isExampleDemoFinding reports findings under sample/demo paths (Rust
+// EXAMPLE_PATH_COMPONENTS: examples, example, sampledata, samples).
+func isExampleDemoFinding(f rules.Finding) bool {
+	for _, t := range f.Tags {
+		if t == "example" {
+			return true
+		}
+	}
+	p := strings.ToLower(filepath.ToSlash(f.File))
+	for _, part := range strings.Split(p, "/") {
+		switch part {
+		case "examples", "example", "sampledata", "samples":
+			return true
+		}
+	}
+	return false
 }
 
 func listRules(w io.Writer) error {

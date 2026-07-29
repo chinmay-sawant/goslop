@@ -4,7 +4,9 @@ export CGO_ENABLED ?= 1
 
 # Default scan path for product-style runs (Rust makefile parity).
 SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
-RUN_ARGS ?=
+# Rust: make run RUN_ARGS="--export-context --export-chunks --no-cache"
+# Defaults match product oracle export surface; override with RUN_ARGS=... as needed.
+RUN_ARGS ?= --export-context --export-chunks --no-cache
 
 build:
 	go build -o bin/codehound ./cmd/codehound
@@ -32,8 +34,11 @@ version: build
 	./bin/codehound --version
 
 help:
-	@echo "Targets: build test integration vet fmt lint ci version"
+	@echo "Targets: build test integration vet fmt lint lint-all ci version run oracle"
 	@echo "CGO_ENABLED=$(CGO_ENABLED) (required for tree-sitter)"
+	@echo "run: product summary scan (profile all, --no-fail --no-terminal + RUN_ARGS)"
+	@echo "  SCAN_PATH=$(SCAN_PATH)"
+	@echo "  RUN_ARGS=$(RUN_ARGS)"
 
 
 # Comprehensive lint with all practical linters enabled. Keep in sync with the
@@ -41,10 +46,15 @@ help:
 # issues that the default lint target does not cover.
 lint-all:
 	golangci-lint run -c .golangci.yml ./...
-# Product-style scan (Rust: make run RUN_ARGS=...).
-# Example: make run RUN_ARGS="--export-context --export-chunks --no-cache"
+
+# Product-style scan (Rust makefile: --no-fail --no-terminal --profile all + RUN_ARGS).
+# Default RUN_ARGS exports context/chunks and disables cache (oracle surface).
+#   make run
+#   make run RUN_ARGS="--export-context --export-chunks --no-cache"
+#   make run SCAN_PATH=./some/project
 run: build
-	./bin/codehound --profile all --no-cache $(RUN_ARGS) $(SCAN_PATH)
+	@mkdir -p scripts/findings/functions scripts/chunks
+	./bin/codehound --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
 
 # §12.4 export/scan oracle gate on SCAN_PATH (default: gopdfsuit).
 # Hard oracle (Rust 2026-07-29): 915 findings; 10/197/312/396 sev; top BP-1×181…

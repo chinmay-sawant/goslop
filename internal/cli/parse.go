@@ -64,6 +64,8 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.StringVar(&opts.ContextDir, "context-dir", "", "export-context output directory")
 	fs.StringVar(&opts.ChunksDir, "chunks-dir", "", "export-chunks output directory")
 	fs.IntVar(&opts.ChunkSize, "chunk-size", 0, "findings per chunk file (default 25)")
+	fs.BoolVar(&opts.NoTerminal, "no-terminal", false, "print product scan summary only (skip per-finding text dump)")
+	fs.BoolVar(&opts.NoFail, "no-fail", false, "always exit 0 even when findings match the fail policy")
 	fs.StringVar(&opts.ExplainRule, "explain", "", "print catalogue metadata for a rule id and exit")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
