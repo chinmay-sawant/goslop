@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Phase 6 PERF catalogue **239/239 registered** (heuristic ports + fixtures); Phase 7 still seed-only
+> **Status:** Phase 6 PERF catalogue **239/239 registered** (heuristic ports + fixtures); Phase 7 still seed-only; Phase 12 **partial** (CI + harness scaffolding; §12.4 blocked)
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -300,18 +300,23 @@ go build -o bin/codehound ./cmd/codehound
 
 ## Phase 12: Parity gates & delivery
 
+> **Partial delivery (2026-07-29):** CI + integration harness scaffolding + contract/schema smoke tests + README.  
+> **§12.4 remains open** until Phases 7–11 integrate (export/cache/BP/taint surface). Issue #8 is *Relates to*, not closed by scaffolding alone.
+
 ### 12.1 Test suites
-- [ ] Materialized fixture integration suite (Go)
-- [ ] Profile / CLI contract tests
-- [ ] JSON / SARIF snapshot or schema tests
+- [x] Materialized fixture integration suite (Go) — **seed only**: `tests/integration` harness + CWE-78/89 + PERF-6 cases (`go test ./tests/integration/...`)
+- [x] Profile / CLI contract tests — `internal/cli/contract_test.go`, `internal/core/profile_contract_test.go` (+ existing `parse_test` / `run_test`)
+- [x] JSON / SARIF snapshot or schema tests — `internal/reporting/json_test.go` + `sarif_test.go` (shape + required fields smoke)
 - [ ] Perf smoke budget (generous initially; tighten later)
 - [ ] Optional: compare finding sets Rust vs Go on `gopdfsuit` or fixed corpus
+- [ ] Expand integration suite beyond seed (full fixture matrix as CI gate)
 
 ### 12.2 Delivery
-- [ ] Multi-arch build notes (or GoReleaser config)
-- [ ] CI workflow: `go test ./...`, `go vet`, build
-- [ ] Version / `--version` matches release process
-- [ ] Update root README: install, usage, status of port
+- [x] Multi-arch build notes (or GoReleaser config) — `.goreleaser.stub.yml` + README CGO multi-arch notes (not wired to release CI)
+- [x] CI workflow: `go test ./...`, `go vet`, build — `.github/workflows/ci.yml` (CGO + `build-essential`)
+- [~] Version / `--version` matches release process — `internal/app.Version = "0.1.0-dev"`; release tagging process TBD
+- [x] Update root README: install, usage, status of port — root `README.md` (2026-07-29)
+- [x] Makefile targets: `build`, `test`, `integration`, `vet`, `fmt`, `lint`, `ci`, `version`
 
 ### 12.3 Final closure
 - [ ] All Phase 6–9 registry rows implemented or explicitly `[~]` with issue link
@@ -418,6 +423,7 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | 2026-07-29 | Integrate | `go test ./...` PASS; smoke scan fires CWE-78 (exit 1) |
 | 2026-07-29 | Phase 6a | PERF infra (`GoPerfFacts`, `GoPerfScan`); loop_allocations 1–8; PERF-32/50/116/230; plugin tsparse |
 | 2026-07-29 | Phase 6b | 5 parallel batches → **239/239** PERF rules registered; `go test ./...` PASS |
+| 2026-07-29 | Phase 12a | CI workflow + integration seed harness + contract/schema tests + README; §12.4 still blocked |
 
 ---
 
@@ -427,4 +433,5 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 2. **Phase 7** — remaining CWE structural domains (beyond injection seed).
 3. **Phase 8** — bad-practice modules.
 4. **Phase 9** — full taint graph (upgrade seed CWE-78/89 toward Rust oracle).
-5. **Phase 10–12** — cache/baseline/ignore, pack fidelity, fixture suite, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).
+5. **Phase 10–11** — cache/baseline/ignore, pack fidelity.
+6. **Phase 12 remainder** — expand fixture matrix, perf budget, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).
