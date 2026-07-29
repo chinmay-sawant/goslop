@@ -1,14 +1,18 @@
 package engine
 
 import (
-	"fmt"
+	"errors"
 	"path/filepath"
 	"runtime"
 	"sort"
+	"sync/atomic"
 
 	"golang.org/x/sync/errgroup"
 
 	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/codehound/internal/engine/baseline"
+	"github.com/chinmay/codehound/internal/engine/cache"
+	"github.com/chinmay/codehound/internal/engine/ignore"
 	"github.com/chinmay/codehound/internal/rules"
 )
 
@@ -18,14 +22,21 @@ type Analyzer struct {
 	ctx      *core.ScanContext
 	workers  int
 	walkOpts *WalkOptions
+	cache    *cache.Store
+	baseline *baseline.Baseline
+	// projectRoot is used for cache-relative paths (first scan root).
+	projectRoot string
 }
 
 // AnalyzerBuilder configures an Analyzer.
 type AnalyzerBuilder struct {
-	registry *Registry
-	ctx      *core.ScanContext
-	workers  int
-	walkOpts *WalkOptions
+	registry    *Registry
+	ctx         *core.ScanContext
+	workers     int
+	walkOpts    *WalkOptions
+	cache       *cache.Store
+	baseline    *baseline.Baseline
+	projectRoot string
 }
 
 // NewAnalyzerBuilder starts a fluent builder.
@@ -57,6 +68,24 @@ func (b *AnalyzerBuilder) WalkOptions(opts WalkOptions) *AnalyzerBuilder {
 	return b
 }
 
+// Cache sets the incremental analysis cache (nil disables).
+func (b *AnalyzerBuilder) Cache(store *cache.Store) *AnalyzerBuilder {
+	b.cache = store
+	return b
+}
+
+// Baseline sets the baseline filter (nil disables).
+func (b *AnalyzerBuilder) Baseline(bl *baseline.Baseline) *AnalyzerBuilder {
+	b.baseline = bl
+	return b
+}
+
+// ProjectRoot sets the root used for cache-relative paths.
+func (b *AnalyzerBuilder) ProjectRoot(root string) *AnalyzerBuilder {
+	b.projectRoot = root
+	return b
+}
+
 // Build constructs the Analyzer.
 func (b *AnalyzerBuilder) Build() *Analyzer {
 	ctx := b.ctx
@@ -71,10 +100,13 @@ func (b *AnalyzerBuilder) Build() *Analyzer {
 		workers = runtime.GOMAXPROCS(0)
 	}
 	return &Analyzer{
-		registry: b.registry,
-		ctx:      ctx,
-		workers:  workers,
-		walkOpts: b.walkOpts,
+		registry:    b.registry,
+		ctx:         ctx,
+		workers:     workers,
+		walkOpts:    b.walkOpts,
+		cache:       b.cache,
+		baseline:    b.baseline,
+		projectRoot: b.projectRoot,
 	}
 }
 
@@ -88,13 +120,27 @@ func (a *Analyzer) ScanContext() *core.ScanContext {
 	return a.ctx
 }
 
+// SetCache attaches or replaces the incremental cache.
+func (a *Analyzer) SetCache(store *cache.Store) {
+	if a != nil {
+		a.cache = store
+	}
+}
+
+// SetBaseline attaches or replaces the baseline filter.
+func (a *Analyzer) SetBaseline(bl *baseline.Baseline) {
+	if a != nil {
+		a.baseline = bl
+	}
+}
+
 // AnalyzePaths walks paths, runs matching detectors in parallel, finalizes, and returns results.
 func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 	if a == nil {
-		return nil, fmt.Errorf("nil analyzer")
+		return nil, errors.New("nil analyzer")
 	}
 	if a.registry == nil {
-		return nil, fmt.Errorf("analyzer has no registry")
+		return nil, errors.New("analyzer has no registry")
 	}
 	if len(paths) == 0 {
 		paths = []string{"."}
@@ -131,6 +177,24 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 		return nil, err
 	}
 
+	// Project root for relative cache keys: first directory root or cwd.
+	projectRoot := a.projectRoot
+	if projectRoot == "" {
+		if len(roots) > 0 {
+			projectRoot = roots[0]
+		} else {
+			projectRoot = "."
+		}
+	}
+
+	store := a.cache
+	if ctx.NoCache {
+		store = nil
+	}
+	if store != nil {
+		store.EnsureRuleConfigHash(ctx.RuleConfigFingerprint())
+	}
+
 	stats := &ScanStats{
 		DetectorsLoaded: a.registry.DetectorCount(),
 	}
@@ -139,10 +203,20 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 	g := new(errgroup.Group)
 	g.SetLimit(a.workers)
 
+	var cacheHits, cacheMisses atomic.Int64
+	var suppressedTotal atomic.Int64
+
+	scannedFiles := make(map[string]struct{}, len(entries))
+	for _, e := range entries {
+		rel := relPath(projectRoot, e.Path)
+		scannedFiles[cache.NormalizePath(rel)] = struct{}{}
+	}
+
 	for i, entry := range entries {
 		i, entry := i, entry
 		g.Go(func() error {
-			results[i] = a.scanOne(ctx, entry)
+			fr := a.scanOne(ctx, entry, projectRoot, store, &cacheHits, &cacheMisses, &suppressedTotal)
+			results[i] = fr
 			return nil
 		})
 	}
@@ -159,7 +233,8 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 
 	for _, fr := range results {
 		if fr.err != nil {
-			if se, ok := fr.err.(*ScanError); ok {
+			var se *ScanError
+			if errors.As(fr.err, &se) {
 				scanErrors = append(scanErrors, *se)
 			} else {
 				scanErrors = append(scanErrors, ScanError{
@@ -188,6 +263,12 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 
 	findings = filterFindings(ctx, findings)
 
+	// Baseline filter (after finalize + only/skip).
+	baselinedCount := 0
+	if a.baseline != nil && !ctx.NoBaseline {
+		findings, baselinedCount = a.baseline.Filter(findings, ctx.ShowBaselined)
+	}
+
 	sort.SliceStable(findings, func(i, j int) bool {
 		if findings[i].File != findings[j].File {
 			return findings[i].File < findings[j].File
@@ -201,13 +282,26 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 		return findings[i].RuleID < findings[j].RuleID
 	})
 
+	// Cache prune + flush.
+	if store != nil {
+		_, _ = store.Prune(scannedFiles)
+		_ = store.Flush()
+	}
+
+	suppressed := int(suppressedTotal.Load())
 	stats.FindingsTotal = len(findings)
+	stats.FindingsSuppressed = suppressed
+	stats.FindingsBaselined = baselinedCount
+	stats.CacheHits = int(cacheHits.Load())
+	stats.CacheMisses = int(cacheMisses.Load())
 
 	return &AnalysisResult{
-		Findings:    findings,
-		Errors:      scanErrors,
-		Stats:       stats,
-		SourceCache: sourceCache,
+		Findings:        findings,
+		Errors:          scanErrors,
+		Stats:           stats,
+		SourceCache:     sourceCache,
+		SuppressedCount: suppressed,
+		BaselinedCount:  baselinedCount,
 	}, nil
 }
 
@@ -219,7 +313,14 @@ type fileResult struct {
 	path     string
 }
 
-func (a *Analyzer) scanOne(ctx *core.ScanContext, entry ScanEntry) fileResult {
+func (a *Analyzer) scanOne(
+	ctx *core.ScanContext,
+	entry ScanEntry,
+	projectRoot string,
+	store *cache.Store,
+	hits, misses *atomic.Int64,
+	suppressedTotal *atomic.Int64,
+) fileResult {
 	source, err := ReadUTF8(entry.Path)
 	if err != nil {
 		return fileResult{err: err, path: entry.Path}
@@ -228,6 +329,24 @@ func (a *Analyzer) scanOne(ctx *core.ScanContext, entry ScanEntry) fileResult {
 	display := entry.Path
 	if rel, rerr := filepath.Rel(".", entry.Path); rerr == nil && !filepath.IsAbs(rel) {
 		display = rel
+	}
+	cacheRel := cache.NormalizePath(relPath(projectRoot, entry.Path))
+	contentHash := cache.ContentHash(source)
+
+	// Warm cache hit: skip parse + detect.
+	if store != nil && store.ShouldCacheBytes(int64(len(source))) {
+		if kind, entryData := store.Lookup(cacheRel, contentHash); kind == cache.LookupHit && entryData != nil {
+			hits.Add(1)
+			findings := append([]rules.Finding(nil), entryData.Findings...)
+			// Re-apply display path? findings already have paths from prior run.
+			return fileResult{
+				findings: findings,
+				bytes:    int64(len(source)),
+				source:   source,
+				path:     display,
+			}
+		}
+		misses.Add(1)
 	}
 
 	unit, perr := a.buildUnit(entry, display, source)
@@ -247,6 +366,17 @@ func (a *Analyzer) scanOne(ctx *core.ScanContext, entry ScanEntry) fileResult {
 		}
 		det.Run(ctx, unit, &out)
 		det.AccumulateState(ctx, unit)
+	}
+
+	// Inline / file ignore suppressions.
+	var suppressed int
+	out, suppressed = ignore.Apply(source, out, ignore.ApplyOptions{ShowIgnored: ctx.ShowIgnored})
+	if suppressed > 0 {
+		suppressedTotal.Add(int64(suppressed))
+	}
+
+	if store != nil && store.ShouldCacheBytes(int64(len(source))) {
+		_ = store.Put(cacheRel, contentHash, out, suppressed)
 	}
 
 	return fileResult{
@@ -328,6 +458,8 @@ func distinctRoots(paths []string) []string {
 		}
 		root := abs
 		if filepath.Ext(abs) != "" {
+			// May be a file; only use Dir when it is not a directory.
+			// Heuristic: if extension present, prefer parent (works for .go).
 			root = filepath.Dir(abs)
 		}
 		if _, ok := seen[root]; ok {
@@ -340,4 +472,15 @@ func distinctRoots(paths []string) []string {
 		return []string{"."}
 	}
 	return roots
+}
+
+func relPath(root, path string) string {
+	if root == "" {
+		root = "."
+	}
+	rel, err := filepath.Rel(root, path)
+	if err != nil {
+		return path
+	}
+	return rel
 }

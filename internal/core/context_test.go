@@ -70,19 +70,19 @@ func TestScanProfile(t *testing.T) {
 		t.Fatal("taint/bp")
 	}
 	patterns := ProfileRecommended.OnlyPatterns()
-	hasCWE22, hasPERF101 := false, false
+	hasCWE22, hasPERF1 := false, false
 	for _, id := range patterns {
 		if id == "CWE-22" {
 			hasCWE22 = true
 		}
-		if id == "PERF-101" {
-			hasPERF101 = true
+		if id == "PERF-1" {
+			hasPERF1 = true
 		}
 		if rules.PackFromRuleID(id).IsBadPractice() {
 			t.Fatalf("BP in recommended: %s", id)
 		}
 	}
-	if !hasCWE22 || !hasPERF101 {
+	if !hasCWE22 || !hasPERF1 {
 		t.Fatal("missing core ids")
 	}
 	ctx := NewScanContext(ProfileRecommended, nil, nil)

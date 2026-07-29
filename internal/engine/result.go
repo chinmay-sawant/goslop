@@ -55,12 +55,16 @@ func (e ScanError) Error() string {
 
 // ScanStats holds optional operational counters for a scan.
 type ScanStats struct {
-	FilesScanned    int
-	FilesSkipped    int
-	FilesErrored    int
-	BytesScanned    int64
-	FindingsTotal   int
-	DetectorsLoaded int
+	FilesScanned       int
+	FilesSkipped       int
+	FilesErrored       int
+	BytesScanned       int64
+	FindingsTotal      int
+	FindingsSuppressed int
+	FindingsBaselined  int
+	CacheHits          int
+	CacheMisses        int
+	DetectorsLoaded    int
 }
 
 // AnalysisResult holds findings and per-file errors from a scan run.
@@ -72,6 +76,10 @@ type AnalysisResult struct {
 	Stats *ScanStats
 	// SourceCache maps display path → source when ScanContext.RetainSources is set.
 	SourceCache map[string]string
+	// SuppressedCount is findings removed/tagged by codehound-ignore directives.
+	SuppressedCount int
+	// BaselinedCount is findings filtered by the baseline store.
+	BaselinedCount int
 }
 
 // ShouldFail reports whether any finding matches the fail policy.

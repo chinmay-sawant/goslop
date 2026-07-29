@@ -42,6 +42,8 @@ func (p RulePack) CategoryStr() string {
 		return "performance"
 	case PackSecurity:
 		return "security"
+	case PackGeneral:
+		return "general"
 	default:
 		return "general"
 	}
@@ -62,6 +64,8 @@ func (p RulePack) OnlyGlob() string {
 		return "PERF-*"
 	case PackSecurity:
 		return "CWE-*"
+	case PackGeneral:
+		return ""
 	default:
 		return ""
 	}

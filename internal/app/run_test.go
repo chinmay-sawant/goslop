@@ -72,16 +72,16 @@ func TestRunInit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.Chdir(dir); err != nil {
-		t.Fatal(err)
+	if chdirErr := os.Chdir(dir); chdirErr != nil {
+		t.Fatal(chdirErr)
 	}
 	t.Cleanup(func() { _ = os.Chdir(wd) })
 
-	if err := run([]string{"init"}, ioDiscard{}, ioDiscard{}); err != nil {
-		t.Fatal(err)
+	if initErr := run([]string{"init"}, ioDiscard{}, ioDiscard{}); initErr != nil {
+		t.Fatal(initErr)
 	}
-	if _, err := os.Stat(filepath.Join(dir, "codehound.toml")); err != nil {
-		t.Fatal(err)
+	if _, statErr := os.Stat(filepath.Join(dir, "codehound.toml")); statErr != nil {
+		t.Fatal(statErr)
 	}
 	// Second init should fail (already exists).
 	err = run([]string{"init"}, ioDiscard{}, ioDiscard{})

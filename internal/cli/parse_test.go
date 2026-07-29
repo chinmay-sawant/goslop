@@ -34,6 +34,11 @@ func TestParseFlagsDoubleAndSingleDash(t *testing.T) {
 		"--list-rules",
 		"--include-tests",
 		"--no-cache",
+		"--cache-dir", "/tmp/ch-cache",
+		"--rebuild-cache",
+		"--prune-cache",
+		"--no-baseline",
+		"--show-ignored",
 		"./cmd", "pkg/",
 	})
 	if err != nil {
@@ -47,6 +52,12 @@ func TestParseFlagsDoubleAndSingleDash(t *testing.T) {
 	}
 	if !opts.ListRules || !opts.IncludeTests || !opts.NoCache {
 		t.Fatalf("bools: list=%v tests=%v nocache=%v", opts.ListRules, opts.IncludeTests, opts.NoCache)
+	}
+	if opts.CacheDir != "/tmp/ch-cache" || !opts.RebuildCache || !opts.PruneCache {
+		t.Fatalf("cache flags: dir=%q rebuild=%v prune=%v", opts.CacheDir, opts.RebuildCache, opts.PruneCache)
+	}
+	if !opts.NoBaseline || !opts.ShowIgnored {
+		t.Fatalf("baseline/ignore flags: nobase=%v showign=%v", opts.NoBaseline, opts.ShowIgnored)
 	}
 	wantOnly := []string{"CWE-22", "CWE-89"}
 	if !stringSlicesEqual(opts.Only, wantOnly) {
@@ -68,6 +79,35 @@ func TestParseVersion(t *testing.T) {
 	}
 	if !opts.Version {
 		t.Fatal("expected Version")
+	}
+}
+
+func TestParseTaintFlags(t *testing.T) {
+	opts, err := Parse([]string{
+		"--taint",
+		"--taint-depth", "3",
+		"--taint-show-paths",
+		".",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !opts.Taint {
+		t.Fatal("expected Taint")
+	}
+	if opts.TaintDepth != 3 {
+		t.Fatalf("depth: %d", opts.TaintDepth)
+	}
+	if !opts.TaintShowPaths {
+		t.Fatal("expected TaintShowPaths")
+	}
+
+	opts2, err := Parse([]string{"--no-taint", "."})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !opts2.NoTaint {
+		t.Fatal("expected NoTaint")
 	}
 }
 

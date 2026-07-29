@@ -1,6 +1,7 @@
 package fixture
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -65,7 +66,7 @@ func MaterializeTree(fixturesRoot, outRoot string) error {
 // Returns a cleaned relative path suitable for joining under the materialize root.
 func SanitizeFilename(filename string) (string, error) {
 	if filename == "" {
-		return "", fmt.Errorf("fixture filename must not be empty")
+		return "", errors.New("fixture filename must not be empty")
 	}
 	// Normalize to slash form for component checks, but preserve OS path on return.
 	if filepath.IsAbs(filename) {
@@ -100,13 +101,13 @@ func writeFixtureAt(root string, fixture TextFixture) (string, error) {
 	}
 
 	langDir := filepath.Join(root, fixture.Language.String())
-	if err := os.MkdirAll(langDir, 0o755); err != nil {
-		return "", fmt.Errorf("creating fixture directory %s: %w", langDir, err)
+	if mkdirErr := os.MkdirAll(langDir, 0o755); mkdirErr != nil {
+		return "", fmt.Errorf("creating fixture directory %s: %w", langDir, mkdirErr)
 	}
 
 	outPath := filepath.Join(langDir, filename)
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
-		return "", fmt.Errorf("creating fixture directory %s: %w", filepath.Dir(outPath), err)
+	if mkdirErr := os.MkdirAll(filepath.Dir(outPath), 0o755); mkdirErr != nil {
+		return "", fmt.Errorf("creating fixture directory %s: %w", filepath.Dir(outPath), mkdirErr)
 	}
 
 	// Defense in depth: resolved parent must stay under langDir.
@@ -124,12 +125,12 @@ func writeFixtureAt(root string, fixture TextFixture) (string, error) {
 		return "", fmt.Errorf("fixture path escapes materialize root: %s", outPath)
 	}
 
-	if err := os.WriteFile(outPath, []byte(fixture.Source), 0o644); err != nil {
-		return "", fmt.Errorf("writing materialized fixture %s: %w", outPath, err)
+	if writeErr := os.WriteFile(outPath, []byte(fixture.Source), 0o644); writeErr != nil {
+		return "", fmt.Errorf("writing materialized fixture %s: %w", outPath, writeErr)
 	}
 	abs, err := filepath.Abs(outPath)
 	if err != nil {
-		return outPath, nil
+		return "", fmt.Errorf("resolving materialized fixture path %s: %w", outPath, err)
 	}
 	return abs, nil
 }

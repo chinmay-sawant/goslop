@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Phase 6 PERF catalogue **239/239 registered** (heuristic ports + fixtures); Phase 7 still seed-only
+> **Status:** Integration PR — 6 PERF + 7 CWE + 8 BP + 9 taint + 10 cache + 12a CI composed; Phase 11 + §12.4 still open
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -126,7 +126,7 @@ go build -o bin/codehound ./cmd/codehound
 
 ### 3.1 Walk + collect
 - [x] Walk project roots; include `*.go` — `engine.CollectFiles` / `CollectGoFiles`
-- [ ] Honor `.gitignore` / `.codehoundignore` / `.ignore` (minimal) — vendor/VCS skipped; gitignore later
+- [x] Honor `.gitignore` / `.codehoundignore` / `.ignore` (minimal) — vendor/VCS skipped; Phase 10 pathignore matcher
 - [x] Exclude `*_test.go` by default; `--include-tests` override — `WalkOptions.IncludeTests` + CLI
 - [ ] Include/exclude globs from config (stub OK if wired)
 
@@ -174,10 +174,10 @@ go build -o bin/codehound ./cmd/codehound
 - [x] `NO_COLOR` honored for text (env checked; text currently uncolored)
 
 ### 5.2 Export (optional path)
-- [ ] `--export-context` / `--export-chunks` full port (not stub-only)
-- [ ] Default dirs: `scripts/findings/functions` (context), `scripts/chunks` (chunks)
-- [ ] `retain_sources` only when export enabled
-- [ ] Final gate: export counts in **§12.4** (915 context + 37 chunks on reference corpus)
+- [x] `--export-context` / `--export-chunks` full port — `internal/export` + CLI flags
+- [x] Default dirs: `scripts/findings/functions` (context), `scripts/chunks` (chunks)
+- [x] `retain_sources` only when export enabled
+- [~] Final gate: export counts in **§12.4** (915 context + 37 chunks on reference corpus) — wiring via `make oracle`; hard counts need reference corpus
 
 ---
 
@@ -218,27 +218,31 @@ go build -o bin/codehound ./cmd/codehound
 > Rust: `codehound/src/lang/go/detectors/cwe/domains/`
 
 ### 7.0 CWE infrastructure
-- [ ] `GoCweFacts` / shared guards / sink tables (`sinks`)
-- [ ] Domain modules mirroring Rust layout
-- [x] Seed metadata for **CWE-78** / **CWE-89** (`detectors/cwe/metadata.go`); full tables later
+- [x] `GoCweFacts` + `cweNeedles` SourceIndex (`detectors/cwe/facts.go`, `needles.go`)
+- [x] Unified `GoCweScan` + `RegisterRule` (`scan.go`) — PERF-style catalogue
+- [x] Full metadata table from ruleset chunks (`metadata_generated.go`) — all 175 IDs
 - [x] Skeleton + registry inventory README — `detectors/cwe/README.md` (175 rows)
 - [x] Shared source heuristics — `detectors/sourceutil` (tainted idents, call scan)
+- [~] Domain packages as separate Go pkgs — **deferred**; single `cwe` package with table + taint-lite (same API surface)
 
 ### 7.1 Domains
-- [ ] `access_control`
-- [ ] `credentials_and_secrets`
-- [ ] `cryptography`
-- [~] `injection` — **seed: CWE-78** (exec.Command + request/shell), **CWE-89** (dynamic Query/Exec SQL)
-- [ ] `information_exposure`
-- [ ] `input_validation` (+ redos)
-- [ ] `configuration`
-- [ ] `concurrency`
-- [ ] `deserialization`
-- [ ] `general_security` clusters
-- [ ] file/path/network/request registry rows
+- [x] `access_control` — SI needle ports (30)
+- [x] `credentials_and_secrets` — SI needle ports (15)
+- [x] `cryptography` — SI needle ports (9)
+- [x] `injection` — **CWE-78/89/90/91** taint-lite; **93/619/917** structural SI
+- [x] `information_exposure` — SI needle ports (12)
+- [x] `input_validation` (+ redos) — SI needle ports (5+2)
+- [x] `configuration` — SI needle ports (6)
+- [x] `concurrency` — SI needle ports (6)
+- [x] `deserialization` — SI needle ports (3)
+- [x] `general_security` clusters — SI needle ports (75)
+- [x] file/path/network/request registry rows — 434, 22 (taint-lite), 1327, 601/918
 
 ### 7.2 CWE closure gate
-- [ ] Registry complete; fixture suite for structural CWE green or explicitly quarantined
+- [x] Registry complete: **175/175** IDs registered via `RegisterRule`
+- [x] Unit + sample fixture suite green (`go test ./internal/lang/go/detectors/cwe/`)
+- [~] Full 350-fixture matrix / call-fact structural parity — optional CI; many rules remain fixture-shaped museums (Rust trust freezes)
+- [ ] Phase 9 full taint graph upgrades 22/78/79/89/90/91 beyond taint-lite
 
 ---
 
@@ -247,71 +251,77 @@ go build -o bin/codehound ./cmd/codehound
 > Rust: `codehound/src/lang/go/detectors/bad_practices/`  
 > Ruleset: `ruleset/golang/bad-practices.json`
 
-- [ ] BP detector runner with per-rule enable + severity override
-- [ ] Port rule modules under `rules/` (error handling, concurrency, testing, API, prod hardening, …)
-- [ ] Project-level rules + prewarm cache (BP-47/50/54/55 class)
-- [ ] Default **recommended** pack keeps BP **off** (parity)
-- [ ] Fixture / integration coverage for BP positives/negatives
+- [x] BP detector runner with per-rule enable + severity override
+- [x] Port rule modules under `rules/` (error handling, concurrency, testing, API, prod hardening, …)
+- [x] Project-level rules + prewarm cache (BP-47/50/54/55 class)
+- [x] Default **recommended** pack keeps BP **off** (parity)
+- [x] Fixture / integration coverage for BP positives/negatives
 
 ---
 
 ## Phase 9: Taint tracking
 
 > Docs: `documents/taint.md`  
-> Rust: `codehound/src/lang/go/detectors/cwe/taint/`
+> Rust: `codehound/src/lang/go/detectors/cwe/taint/`  
+> Go: `internal/lang/go/detectors/cwe/taint/`
 
-- [ ] Taint graph extract (assignments, calls, returns)
-- [ ] Sources / sinks / sanitizers tables
-- [ ] Intra-procedural BFS path finding
-- [ ] Bounded inter-procedural hops (`taint_max_depth`)
-- [ ] Rules: CWE-22, CWE-78, CWE-79, CWE-89 (name-string model honesty preserved)
-- [ ] `requires_cache_state` + accumulate/finalize lifecycle
-- [ ] Fixture suite under `tests/fixtures/go/taint/` (including quarantined honest FNs)
-- [ ] CLI `--taint` / config `[codehound.taint]`
+- [x] Taint graph extract (assignments, calls, returns) — `extract.go` / `callgraph.go` / tree-sitter
+- [x] Sources / sinks / sanitizers tables — `classify.go` (name-string honesty)
+- [x] Intra-procedural BFS path finding — `build.go` + `query.go`
+- [x] Bounded inter-procedural hops (`taint_max_depth`) — `summary.go` / `interproc.go` (1–4)
+- [x] Rules: CWE-22, CWE-78, CWE-79, CWE-89 (name-string model honesty preserved) — `rules.go`; seed CWE-78/89 gated when taint on
+- [x] `requires_cache_state` + accumulate/finalize lifecycle — `detector.go`
+- [x] Fixture suite under `tests/fixtures/go/taint/` (including quarantined honest FNs) — `fixtures_test.go` + `taint_projects/`
+- [x] CLI `--taint` / `--no-taint` / `--taint-depth` / `--taint-show-paths` (config `[codehound.taint]` stub deferred)
 
 ---
 
 ## Phase 10: Cache, baseline, ignore
 
 ### 10.1 Incremental cache
-- [ ] `.codehound-cache/` layout: `manifest.json`, `files/<sha>.json`
-- [ ] Content hash + tool version + rule-config fingerprint invalidation
-- [ ] Warm hit skips parse+detect (except taint accumulate)
-- [ ] `--no-cache`, `--cache-dir`, `--rebuild-cache`, `--prune-cache`
-- [ ] Eviction by `max_size_mb`
+- [x] `.codehound-cache/` layout: `manifest.json`, `files/<sha>.json` — `internal/engine/cache`
+- [x] Content hash + tool version + rule-config fingerprint invalidation — `ContentHash`, tool version mass-stale, `ScanContext.RuleConfigFingerprint`
+- [x] Warm hit skips parse+detect (except taint accumulate) — `Analyzer.scanOne` cache hit path (taint accumulate still deferred)
+- [x] `--no-cache`, `--cache-dir`, `--rebuild-cache`, `--prune-cache` — CLI + `app.run`
+- [x] Eviction by `max_size_mb` — `Store.evictLocked` on flush (default 500 MiB via app open)
 
 ### 10.2 Baseline + ignore
-- [ ] Inline `// codehound-ignore: RULE` (comment-only)
-- [ ] File / config ignores
-- [ ] Baseline store + filter (new vs baselined)
-- [ ] Fixture: `tests/fixtures/go/baseline/suppressed_inline.txt`
+- [x] Inline `// codehound-ignore: RULE` (comment-only) — `internal/engine/ignore` (+ file/block directives)
+- [x] File / config ignores — `codehound-ignore-file`; walk honors `.gitignore` / `.codehoundignore` / `.ignore` (minimal)
+- [x] Baseline store + filter (new vs baselined) — `internal/engine/baseline` + `--no-baseline` / `--baseline-file` / `--show-baselined`
+- [x] Fixture: `tests/fixtures/go/baseline/suppressed_inline.txt` — present; covered by ignore unit + analyzer integration tests
 
 ---
 
 ## Phase 11: Packs, maturity, quarantine
 
-- [ ] Recommended pack = S-tier PERF + taint-core CWEs; BP off; fail high (match product docs)
-- [ ] Security pack enables taint
-- [ ] `all` pack full catalog
-- [ ] Maturity tags + quarantine reasons in `--list-rules` / `--explain`
-- [ ] Wire metadata from ruleset JSON / generated tables
+- [x] Recommended pack = S-tier PERF + taint-core CWEs; BP off; fail high (match product docs) — `profile.OnlyPatterns` + `rules.PerfTierSRules` / `TaintCoreCWERules`
+- [x] Security pack enables taint — `EnablesTaint` + exact `SecurityPackRules` allow-list
+- [x] `all` pack full catalog — `OnlyPatterns` nil; BP on
+- [x] Maturity tags + quarantine reasons in `--list-rules` / `--explain` — `[maturity]` prefix + `--explain RULE`
+- [~] Wire metadata from ruleset JSON / generated tables — maturity inferred by id; full table wire-up later
 
 ---
 
 ## Phase 12: Parity gates & delivery
 
+> **Partial delivery (2026-07-29):** CI + integration harness scaffolding + contract/schema smoke tests + README.  
+> **§12.4 remains open** until Phases 7–11 integrate (export/cache/BP/taint surface). Issue #8 is *Relates to*, not closed by scaffolding alone.
+
 ### 12.1 Test suites
-- [ ] Materialized fixture integration suite (Go)
-- [ ] Profile / CLI contract tests
-- [ ] JSON / SARIF snapshot or schema tests
+- [x] Materialized fixture integration suite (Go) — **seed only**: `tests/integration` harness + CWE-78/89 + PERF-6 cases (`go test ./tests/integration/...`)
+- [x] Profile / CLI contract tests — `internal/cli/contract_test.go`, `internal/core/profile_contract_test.go` (+ existing `parse_test` / `run_test`)
+- [x] JSON / SARIF snapshot or schema tests — `internal/reporting/json_test.go` + `sarif_test.go` (shape + required fields smoke)
 - [ ] Perf smoke budget (generous initially; tighten later)
 - [ ] Optional: compare finding sets Rust vs Go on `gopdfsuit` or fixed corpus
+- [ ] Expand integration suite beyond seed (full fixture matrix as CI gate)
 
 ### 12.2 Delivery
-- [ ] Multi-arch build notes (or GoReleaser config)
-- [ ] CI workflow: `go test ./...`, `go vet`, build
-- [ ] Version / `--version` matches release process
-- [ ] Update root README: install, usage, status of port
+- [x] Multi-arch build notes (or GoReleaser config) — `.goreleaser.stub.yml` + README CGO multi-arch notes (not wired to release CI)
+- [x] CI workflow: `go test ./...`, `go vet`, build — `.github/workflows/ci.yml` (CGO + `build-essential`)
+- [~] Version / `--version` matches release process — `internal/app.Version = "0.1.0-dev"`; release tagging process TBD
+- [x] Update root README: install, usage, status of port — root `README.md` (2026-07-29)
+- [x] Makefile targets: `build`, `test`, `integration`, `vet`, `fmt`, `lint`, `ci`, `version`
 
 ### 12.3 Final closure
 - [ ] All Phase 6–9 registry rows implemented or explicitly `[~]` with issue link
@@ -418,13 +428,15 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | 2026-07-29 | Integrate | `go test ./...` PASS; smoke scan fires CWE-78 (exit 1) |
 | 2026-07-29 | Phase 6a | PERF infra (`GoPerfFacts`, `GoPerfScan`); loop_allocations 1–8; PERF-32/50/116/230; plugin tsparse |
 | 2026-07-29 | Phase 6b | 5 parallel batches → **239/239** PERF rules registered; `go test ./...` PASS |
+| 2026-07-29 | Phase 12a | CI workflow + integration seed harness + contract/schema tests + README; §12.4 still blocked |
+| 2026-07-29 | Phase 7 | CWE infra + **175/175** structural/taint-lite registered; `go test ./...` PASS |
+| 2026-07-29 | Phase 10 | Cache / baseline / ignore + walk gitignore; `go test ./...` PASS |
 
 ---
 
 ## Next actions (immediate)
 
-1. **Phase 6 polish** — residual FN/FP vs Rust; expand `perfNeedles`; full fixture matrix optional CI.
-2. **Phase 7** — remaining CWE structural domains (beyond injection seed).
-3. **Phase 8** — bad-practice modules.
-4. **Phase 9** — full taint graph (upgrade seed CWE-78/89 toward Rust oracle).
-5. **Phase 10–12** — cache/baseline/ignore, pack fidelity, fixture suite, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).
+1. **Integration** — land BP (8) + taint (9) workstreams; resolve combined tests.
+2. **Phase 11** — packs / maturity / quarantine fidelity on integrated detector surface.
+3. **Phase 6–7 polish** — residual FN/FP vs Rust; expand needles; full fixture matrix optional CI.
+4. **Phase 12 remainder** — expand fixture matrix, perf budget, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).

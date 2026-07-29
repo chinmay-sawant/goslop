@@ -17,6 +17,7 @@
 package tsparse
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -75,16 +76,16 @@ type Parser struct {
 
 var languageOnce sync.Once
 var goLanguage *sitter.Language
-var languageErr error
+var errLanguage error
 
 func loadLanguage() (*sitter.Language, error) {
 	languageOnce.Do(func() {
 		goLanguage = sitter.NewLanguage(tree_sitter_go.Language())
 		if goLanguage == nil {
-			languageErr = fmt.Errorf("tree-sitter-go: Language() returned nil")
+			errLanguage = errors.New("tree-sitter-go: Language() returned nil")
 		}
 	})
-	return goLanguage, languageErr
+	return goLanguage, errLanguage
 }
 
 // NewParser creates a parser configured for the Go grammar.
@@ -115,11 +116,11 @@ func (p *Parser) Close() {
 // call Tree.Close when finished. The Parser may be reused after Parse.
 func (p *Parser) Parse(source []byte) (*Tree, error) {
 	if p == nil || p.p == nil {
-		return nil, fmt.Errorf("tsparse: nil parser")
+		return nil, errors.New("tsparse: nil parser")
 	}
 	tree := p.p.Parse(source, nil)
 	if tree == nil {
-		return nil, fmt.Errorf("tree-sitter returned nil tree")
+		return nil, errors.New("tree-sitter returned nil tree")
 	}
 	return &Tree{
 		inner:      tree,

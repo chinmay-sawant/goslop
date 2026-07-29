@@ -25,8 +25,42 @@ type Options struct {
 	ListRules bool
 	// IncludeTests includes *_test.* files (excluded by default).
 	IncludeTests bool
-	// NoCache disables the incremental cache (stored for later wiring).
+	// NoCache disables the incremental analysis cache.
 	NoCache bool
+	// CacheDir overrides the default .codehound-cache directory.
+	CacheDir string
+	// RebuildCache purges the cache directory before the scan.
+	RebuildCache bool
+	// PruneCache prunes stale cache entries for the given paths and exits.
+	PruneCache bool
+	// NoBaseline disables baseline loading/filtering.
+	NoBaseline bool
+	// BaselineFile is an explicit baseline path (default: discover).
+	BaselineFile string
+	// ShowIgnored keeps findings suppressed by codehound-ignore directives.
+	ShowIgnored bool
+	// ShowBaselined keeps findings present in the baseline.
+	ShowBaselined bool
+	// Taint enables experimental taint tracking (overrides profile default when set).
+	Taint bool
+	// NoTaint disables taint even for security profile.
+	NoTaint bool
+	// TaintDepth is inter-procedural hop budget (1–4; 0 = use profile default).
+	TaintDepth int
+	// TaintShowPaths attaches hop evidence to findings.
+	TaintShowPaths bool
+	// ExportContext writes per-finding context files.
+	ExportContext bool
+	// ExportChunks writes chunked finding files.
+	ExportChunks bool
+	// ContextDir overrides scripts/findings/functions.
+	ContextDir string
+	// ChunksDir overrides scripts/chunks.
+	ChunksDir string
+	// ChunkSize is findings per chunk file (default 25).
+	ChunkSize int
+	// ExplainRule prints catalogue details for one rule id and exits.
+	ExplainRule string
 	// Version requests version printing.
 	Version bool
 	// Command is a top-level subcommand when set ("init").

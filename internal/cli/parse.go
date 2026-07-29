@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const cmdInit = "init"
+
 // Parse parses args (typically os.Args[1:]) into Options.
 // Supports both -flag and --flag forms via the stdlib flag package.
 func Parse(args []string) (*Options, error) {
@@ -21,8 +23,8 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	}
 
 	// Subcommand: init (must be the first token).
-	if len(args) > 0 && args[0] == "init" {
-		opts.Command = "init"
+	if len(args) > 0 && args[0] == cmdInit {
+		opts.Command = cmdInit
 		return opts, nil
 	}
 
@@ -46,13 +48,30 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.ListRules, "list-rules", false, "list registered rules and exit")
 	fs.BoolVar(&opts.IncludeTests, "include-tests", false, "include test files (*_test.*) in analysis")
 	fs.BoolVar(&opts.NoCache, "no-cache", false, "disable the incremental analysis cache")
+	fs.StringVar(&opts.CacheDir, "cache-dir", "", "incremental cache directory (default .codehound-cache)")
+	fs.BoolVar(&opts.RebuildCache, "rebuild-cache", false, "purge the cache directory before scanning")
+	fs.BoolVar(&opts.PruneCache, "prune-cache", false, "prune stale cache entries for PATHS and exit")
+	fs.BoolVar(&opts.NoBaseline, "no-baseline", false, "ignore any existing .codehound-baseline.json")
+	fs.StringVar(&opts.BaselineFile, "baseline-file", "", "path to baseline file (default: discover)")
+	fs.BoolVar(&opts.ShowIgnored, "show-ignored", false, "report findings suppressed by codehound-ignore")
+	fs.BoolVar(&opts.ShowBaselined, "show-baselined", false, "report findings present in the baseline")
+	fs.BoolVar(&opts.Taint, "taint", false, "enable experimental taint tracking (CWE-22/78/79/89)")
+	fs.BoolVar(&opts.NoTaint, "no-taint", false, "disable taint tracking even under security profile")
+	fs.IntVar(&opts.TaintDepth, "taint-depth", 0, "inter-procedural taint depth 1–4 (0 = profile default)")
+	fs.BoolVar(&opts.TaintShowPaths, "taint-show-paths", false, "attach taint hop evidence to findings")
+	fs.BoolVar(&opts.ExportContext, "export-context", false, "write per-finding context files (default scripts/findings/functions)")
+	fs.BoolVar(&opts.ExportChunks, "export-chunks", false, "write chunked finding files (default scripts/chunks)")
+	fs.StringVar(&opts.ContextDir, "context-dir", "", "export-context output directory")
+	fs.StringVar(&opts.ChunksDir, "chunks-dir", "", "export-chunks output directory")
+	fs.IntVar(&opts.ChunkSize, "chunk-size", 0, "findings per chunk file (default 25)")
+	fs.StringVar(&opts.ExplainRule, "explain", "", "print catalogue metadata for a rule id and exit")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {
 		out := fs.Output()
-		fmt.Fprintf(out, "Usage: codehound [flags] [PATH...]\n")
-		fmt.Fprintf(out, "       codehound init\n\n")
-		fmt.Fprintf(out, "Flags:\n")
+		_, _ = fmt.Fprintf(out, "Usage: codehound [flags] [PATH...]\n")
+		_, _ = fmt.Fprintf(out, "       codehound init\n\n")
+		_, _ = fmt.Fprintf(out, "Flags:\n")
 		fs.PrintDefaults()
 	}
 

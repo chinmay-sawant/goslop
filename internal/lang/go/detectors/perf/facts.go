@@ -12,10 +12,10 @@ import (
 
 // CallFact is one call_expression site extracted for PERF rules.
 type CallFact struct {
-	Callee         string
-	Arguments      []string
-	StartByte      int
-	EnclosingLoop  *int // start byte of nearest for_statement, if any
+	Callee        string
+	Arguments     []string
+	StartByte     int
+	EnclosingLoop *int // start byte of nearest for_statement, if any
 }
 
 // AssignmentFact is one assignment / short-var declaration.

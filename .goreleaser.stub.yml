@@ -1,0 +1,47 @@
+# GoReleaser stub — not wired into CI yet.
+# When multi-arch releases are ready, rename to .goreleaser.yml and add a release job.
+#
+# Notes for Phase 12 delivery:
+# - tree-sitter requires CGO; cross-compiling needs a C cross-toolchain or
+#   native runners per GOOS/GOARCH.
+# - Prefer building on linux/amd64 and linux/arm64 runners with CGO_ENABLED=1
+#   rather than pure Go cross-compile until a CGO matrix is validated.
+#
+# Example (future):
+# version: 2
+# project_name: codehound
+# builds:
+#   - id: codehound
+#     main: ./cmd/codehound
+#     binary: codehound
+#     env:
+#       - CGO_ENABLED=1
+#     goos: [linux, darwin]
+#     goarch: [amd64, arm64]
+#     ignore:
+#       - goos: darwin
+#         goarch: arm64  # enable once CGO cross-compile is proven
+# archives:
+#   - formats: [tar.gz]
+#     name_template: >-
+#       {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+# checksum:
+#   name_template: checksums.txt
+# release:
+#   draft: true
+#
+# Multi-arch local build notes (no GoReleaser required):
+#   CGO_ENABLED=1 go build -o bin/codehound ./cmd/codehound
+#   # Cross with zig or a sysroot is out of scope for this stub.
+version: 2
+project_name: codehound
+builds:
+  - id: codehound
+    main: ./cmd/codehound
+    binary: codehound
+    env:
+      - CGO_ENABLED=1
+    goos:
+      - linux
+    goarch:
+      - amd64
