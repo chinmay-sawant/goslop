@@ -145,58 +145,39 @@ func detectPERF112(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF113: select with a single case and no default
+// detectPERF113: select with a single case and no default.
+// Rust parity: scan for "select {", take text until the first '}', count
+// substring "case " / presence of "default:". Nested braces in case bodies
+// intentionally truncate the window (matches tree-sitter-free Rust heuristic).
 func detectPERF113(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
-	if !strings.Contains(src, "select") {
+	if !strings.Contains(src, "select {") {
 		return
 	}
 	file := unitFile(unit)
-	// crude scan of select blocks
-	for i := 0; i < len(src); {
-		idx := strings.Index(src[i:], "select")
-		if idx < 0 {
-			break
-		}
-		pos := i + idx
-		// word boundary
-		if pos > 0 && (b3isIdentByte(src[pos-1]) || src[pos-1] == '.') {
-			i = pos + 6
-			continue
-		}
-		rest := src[pos+6:]
-		// skip whitespace
-		rest = strings.TrimLeft(rest, " \t\n\r")
-		if !strings.HasPrefix(rest, "{") {
-			i = pos + 6
-			continue
-		}
-		block, ok := b3extractBraceBlock(src, pos+6+strings.Index(src[pos+6:], "{"))
-		if !ok {
-			i = pos + 6
-			continue
-		}
-		// count case / default at top level of select body
-		body := block[1 : len(block)-1]
-		cases := 0
-		hasDefault := false
-		for _, ln := range strings.Split(body, "\n") {
-			t := strings.TrimSpace(ln)
-			if strings.HasPrefix(t, "case ") || strings.HasPrefix(t, "case\t") {
-				cases++
-			}
-			if t == "default:" || strings.HasPrefix(t, "default:") {
-				hasDefault = true
-			}
-		}
-		if cases == 1 && !hasDefault {
-			lineN, col := unit.LineCol(pos)
-			rules.PushFinding(&MetaPERF113, file, lineN, col,
-				"single-case select adds overhead; use a direct channel op", out)
+	searchFrom := 0
+	for {
+		rel := strings.Index(src[searchFrom:], "select {")
+		if rel < 0 {
 			return
 		}
-		i = pos + 6
+		start := searchFrom + rel
+		endRel := strings.Index(src[start:], "}")
+		end := len(src)
+		if endRel >= 0 {
+			end = start + endRel
+		}
+		block := src[start:end]
+		if strings.Count(block, "case ") == 1 && !strings.Contains(block, "default:") {
+			lineN, col := unit.LineCol(start)
+			rules.PushFinding(&MetaPERF113, file, lineN, col,
+				"single-case select should be a direct channel send or receive", out)
+		}
+		searchFrom = end + 1
+		if searchFrom >= len(src) {
+			return
+		}
 	}
 }
 
@@ -440,6 +421,7 @@ func b3detectConsecutiveAppendsFacts(unit *core.ParsedUnit, facts *GoPerfFacts, 
 		}
 	}
 	if len(appends) < min {
+		// No call-fact coverage — last-resort line scan (fixtures / broken AST).
 		b3detectConsecutiveAppendsLines(unit, out, min, meta, msg)
 		return
 	}
@@ -452,19 +434,15 @@ func b3detectConsecutiveAppendsFacts(unit *core.ParsedUnit, facts *GoPerfFacts, 
 		}
 	}
 	src := unit.Source
-	// Prefer pairs/triples that are close together (same block), matching Rust
-	// intervening-read window of ~64 bytes between calls.
-	const maxGap = 96 // bytes between first and last of the run
+	// Rust parity (strings_bytes.rs / maps_and_slices.rs): first same-target
+	// window of min appends with no intervening_read between consecutive pairs.
+	// No maxGap — intermediate window starts at prev.start+64 (empty when close).
 	for i := 0; i+min-1 < len(appends); i++ {
 		target := ""
 		if len(appends[i].Arguments) > 0 {
 			target = strings.TrimSpace(appends[i].Arguments[0])
 		}
 		if target == "" {
-			continue
-		}
-		last := appends[i+min-1]
-		if last.StartByte-appends[i].StartByte > maxGap {
 			continue
 		}
 		ok := true
@@ -494,17 +472,18 @@ func b3detectConsecutiveAppendsFacts(unit *core.ParsedUnit, facts *GoPerfFacts, 
 		rules.PushFinding(meta, file, lineN, col, msg, out)
 		return
 	}
-	// No close call-fact run — line-based consecutive only (stricter).
-	b3detectConsecutiveAppendsLines(unit, out, min, meta, msg)
+	// Call facts present but no matching run — do not line-fallback (avoids
+	// signature.go-style FPs vs Rust when intervening_read already filtered).
 }
 
 func b3interveningRead(window, target string) bool {
 	if window == "" {
 		return false
 	}
-	markers := []string{"(" + target + ")", "len(", "range ", "copy("}
+	// Exact Rust marker set from intervening_read in strings_bytes.rs.
+	markers := []string{"(", target, ")", "len(", "range ", "copy("}
 	for _, m := range markers {
-		if strings.Contains(window, m) {
+		if m != "" && strings.Contains(window, m) {
 			return true
 		}
 	}
@@ -1255,46 +1234,40 @@ func detectPERF141(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 		"URL.Query() called repeatedly; cache the result", out)
 }
 
-// detectPERF142: io.ReadAll(r.Body) / json decoder without MaxBytesReader
+// detectPERF142: io.ReadAll(r.Body) without MaxBytesReader (Rust handler-gated).
 func detectPERF142(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	src := unit.Source
-	if !strings.Contains(src, "r.Body") && !strings.Contains(src, "req.Body") {
+	// Rust: file_has_handler || http.ResponseWriter (ResponseWriter ⊂ handler).
+	if !FileHasHandler(src) && !strings.Contains(src, "http.ResponseWriter") {
 		return
 	}
 	if strings.Contains(src, "MaxBytesReader") {
 		return
 	}
 	file := unitFile(unit)
-	for _, call := range facts.Calls {
-		switch call.Callee {
-		case "io.ReadAll", "ioutil.ReadAll", "json.NewDecoder":
-		default:
-			// also method ReadAll on body
-			continue
-		}
-		// check args involve Body
-		joined := strings.Join(call.Arguments, ",")
-		if strings.Contains(joined, ".Body") || strings.Contains(unit.Source[call.StartByte:b3min(len(unit.Source), call.StartByte+40)], "Body") {
-			lineN, col := unit.LineCol(call.StartByte)
-			rules.PushFinding(&MetaPERF142, file, lineN, col,
-				"reading request body without http.MaxBytesReader", out)
-			return
+	// Exact body-read pairs from Rust detect_perf_142.
+	bodyReads := [][2]string{
+		{"io.ReadAll(", "r.Body"},
+		{"io.ReadAll(", "c.Request.Body"},
+		{"io.ReadAll(", "req.Body"},
+		{"io.ReadAll(", "ctx.Request.Body"},
+		{"ioutil.ReadAll(", "r.Body"},
+		{"ioutil.ReadAll(", "c.Request.Body"},
+	}
+	var pos int = -1
+	for _, pair := range bodyReads {
+		if strings.Contains(src, pair[0]) && strings.Contains(src, pair[1]) {
+			pos = strings.Index(src, pair[0])
+			break
 		}
 	}
-	// text: io.ReadAll(r.Body)
-	if strings.Contains(src, "ReadAll(r.Body)") || strings.Contains(src, "ReadAll(req.Body)") ||
-		strings.Contains(src, "NewDecoder(r.Body)") {
-		idx := strings.Index(src, "ReadAll(r.Body)")
-		if idx < 0 {
-			idx = strings.Index(src, "NewDecoder(r.Body)")
-		}
-		if idx < 0 {
-			idx = strings.Index(src, "r.Body")
-		}
-		lineN, col := unit.LineCol(idx)
-		rules.PushFinding(&MetaPERF142, file, lineN, col,
-			"reading request body without http.MaxBytesReader", out)
+	if pos < 0 {
+		_ = facts
+		return
 	}
+	lineN, col := unit.LineCol(pos)
+	rules.PushFinding(&MetaPERF142, file, lineN, col,
+		"request body is read without http.MaxBytesReader; cap the body size to prevent OOM", out)
 }
 
 func b3min(a, b int) int {
@@ -1503,10 +1476,11 @@ func detectPERF150(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 }
 
 // detectPERF151: non-inlinable handler (Rust: loop+switch OR >50 func lines, + closure).
+// Gate with FileHasHandler (not bare *http.Request) so CLI tools stay silent.
 func detectPERF151(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
-	if !b3hasHandlerSig(src) {
+	if !FileHasHandler(src) {
 		return
 	}
 	hasLoop := strings.Contains(src, "for ")

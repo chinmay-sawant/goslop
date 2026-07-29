@@ -195,26 +195,12 @@ func detectCWE79(unit *core.ParsedUnit, _ *GoCweFacts, out *[]rules.Finding) {
 	for _, n := range needles {
 		if i := strings.Index(src, n); i >= 0 {
 			if n == "w.Write([]byte(" || n == "fmt.Fprintf(w," {
-				winStart := i - 300
-				if winStart < 0 {
-					winStart = 0
-				}
-				winEnd := i + 80
-				if winEnd > len(src) {
-					winEnd = len(src)
-				}
-				win := src[winStart:winEnd]
-				if !sourceutil.HasRequestSource(win) {
-					hit := false
-					for name := range tainted {
-						if sourceutil.ContainsIdent(win, name) {
-							hit = true
-							break
-						}
-					}
-					if !hit {
-						continue
-					}
+				// Require request-derived data in the *call arguments*, not a
+				// loose pre-window (which FPs on rate-limit middleware that
+				// writes constant JSON with non-request fields near `r`).
+				args := cwe79SinkArgs(src, i, n)
+				if !cwe79ArgsLookTainted(args, tainted) {
+					continue
 				}
 			}
 			line, col := unit.LineCol(i)
@@ -229,6 +215,76 @@ func detectCWE79(unit *core.ParsedUnit, _ *GoCweFacts, out *[]rules.Finding) {
 			return
 		}
 	}
+}
+
+// cwe79SinkArgs returns the interior argument text of the sink call starting at i.
+func cwe79SinkArgs(src string, i int, needle string) string {
+	open := i + len(needle) - 1 // needle ends with '('
+	if open < 0 || open >= len(src) || src[open] != '(' {
+		// fall back: find '(' after needle start
+		j := strings.IndexByte(src[i:], '(')
+		if j < 0 {
+			return ""
+		}
+		open = i + j
+	}
+	depth := 0
+	inStr := byte(0)
+	escape := false
+	for k := open; k < len(src); k++ {
+		c := src[k]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if inStr == '"' || inStr == '\'' {
+				if c == '\\' {
+					escape = true
+					continue
+				}
+				if c == inStr {
+					inStr = 0
+				}
+				continue
+			}
+			if inStr == '`' && c == '`' {
+				inStr = 0
+			}
+			continue
+		}
+		switch c {
+		case '"', '`', '\'':
+			inStr = c
+		case '(':
+			depth++
+		case ')':
+			depth--
+			if depth == 0 {
+				return src[open+1 : k]
+			}
+		}
+	}
+	return ""
+}
+
+func cwe79ArgsLookTainted(args string, tainted map[string]struct{}) bool {
+	if args == "" {
+		return false
+	}
+	if sourceutil.HasRequestSource(args) {
+		return true
+	}
+	for name := range tainted {
+		if len(name) < 2 {
+			// Skip single-letter noise; also rejects parse glitches.
+			continue
+		}
+		if sourceutil.ContainsIdent(args, name) {
+			return true
+		}
+	}
+	return false
 }
 
 // --- CWE-89 SQL injection (seed logic) ---

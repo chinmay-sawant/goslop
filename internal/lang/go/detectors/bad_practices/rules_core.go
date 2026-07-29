@@ -1,6 +1,8 @@
 package badpractices
 
 import (
+	goast "go/ast"
+	"go/token"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/core"
@@ -156,13 +158,31 @@ func detectBP8(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-// BP-9: select without default/timeout escape.
-func detectBP9(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+// BP-9: select without default/timeout/context escape (Rust parity).
+// Escape only on direct communication cases: default, time.After/NewTimer,
+// ctx.Done()/context.Done(), or bare <-stop/<-done. Nested selects and
+// arbitrary .Done() receivers (e.g. localCtx.Done) do not suppress the parent.
+func detectBP9(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-9")
-	if !strings.Contains(unit.Source, "select {") {
+	if unit == nil || !strings.Contains(unit.Source, "select") {
 		return
 	}
-	// Flag select with single case and no default/timeout — heuristic.
+	msg := "select can block indefinitely without default, timeout, or context cancellation"
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		goast.Inspect(tree.File, func(n goast.Node) bool {
+			sel, ok := n.(*goast.SelectStmt)
+			if !ok || sel.Body == nil {
+				return true
+			}
+			if !selectStmtHasEscape(tree, sel) {
+				pushAt(unit, meta, tree.Offset(sel.Pos()), msg, out)
+			}
+			return true
+		})
+		return
+	}
+	// Text fallback: brace-matched select blocks; no nested-select suppression.
 	src := unit.Source
 	start := 0
 	for {
@@ -171,30 +191,80 @@ func detectBP9(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 			break
 		}
 		abs := start + idx
-		// extract block
 		end := abs + len("select {")
 		depth := 1
 		for end < len(src) && depth > 0 {
-			if src[end] == '{' {
+			switch src[end] {
+			case '{':
 				depth++
-			} else if src[end] == '}' {
+			case '}':
 				depth--
 			}
 			end++
 		}
 		block := src[abs:end]
-		if !strings.Contains(block, "default:") &&
-			!strings.Contains(block, "time.After") &&
-			!strings.Contains(block, "ctx.Done()") &&
-			!strings.Contains(block, ".Done()") {
-			// only flag if looks blocking with one case
-			caseCount := strings.Count(block, "case ")
-			if caseCount == 1 {
-				pushAt(unit, meta, abs, "blocking select lacks a timeout or default escape path", out)
-			}
+		if !selectBlockHasEscape(block) {
+			pushAt(unit, meta, abs, msg, out)
 		}
 		start = end
 	}
+}
+
+func selectStmtHasEscape(tree interface {
+	NodeText(n goast.Node) string
+}, sel *goast.SelectStmt) bool {
+	for _, stmt := range sel.Body.List {
+		cc, ok := stmt.(*goast.CommClause)
+		if !ok {
+			continue
+		}
+		if cc.Comm == nil {
+			return true // default
+		}
+		if selectCommHasEscape(tree.NodeText(cc.Comm)) {
+			return true
+		}
+	}
+	return false
+}
+
+func selectCommHasEscape(comm string) bool {
+	// Mirror Rust select_has_escape token set on the communication expression only.
+	for _, tok := range []string{
+		"time.After(",
+		"time.NewTimer(",
+		"ctx.Done()",
+		"context.Done()",
+		"<-stop",
+		"<-done",
+		"<-ctx.Done()",
+	} {
+		if strings.Contains(comm, tok) {
+			return true
+		}
+	}
+	return false
+}
+
+func selectBlockHasEscape(block string) bool {
+	if strings.Contains(block, "default:") {
+		return true
+	}
+	// Approximate case-communication lines only (text after "case " until ':').
+	for _, line := range strings.Split(block, "\n") {
+		t := strings.TrimSpace(line)
+		if !strings.HasPrefix(t, "case ") {
+			continue
+		}
+		comm := strings.TrimPrefix(t, "case ")
+		if i := strings.Index(comm, ":"); i >= 0 {
+			comm = comm[:i]
+		}
+		if selectCommHasEscape(comm) {
+			return true
+		}
+	}
+	return false
 }
 
 // BP-10: time.After inside loop.
@@ -510,7 +580,11 @@ func detectBP82(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP83(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+// BP-83: time.Sleep used as synchronization without a coordination primitive.
+// Rust only flags sync-shaped function names (wait/ready/sync/…) or go-launched
+// closures, excludes backoff/retry-shaped bodies, and requires no visible
+// channel/lock/atomic boundary in the same function.
+func detectBP83(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-83")
 	if isTestFile(unit) {
 		return
@@ -518,11 +592,137 @@ func detectBP83(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !strings.Contains(unit.Source, "time.Sleep(") {
 		return
 	}
+	msg := "time.Sleep is being used as synchronization without a visible coordination primitive"
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		goast.Inspect(tree.File, func(n goast.Node) bool {
+			call, ok := n.(*goast.CallExpr)
+			if !ok {
+				return true
+			}
+			if tree.NodeText(call.Fun) != "time.Sleep" {
+				return true
+			}
+			off := tree.Offset(call.Pos())
+			name, text, goLaunched, ok := enclosingFuncTextBP83(facts, off)
+			if !ok {
+				return true
+			}
+			if !funcNameIsSyncShape(name) && !goLaunched {
+				return true
+			}
+			if containsVisibleSyncBP83(text) || isBackoffOrRetryBP83(text) {
+				return true
+			}
+			pushAt(unit, meta, off, msg, out)
+			return true
+		})
+		return
+	}
+	// Text fallback: only sleep inside functions whose names look sync-shaped.
 	for _, line := range codeLines(unit.Source) {
-		if strings.Contains(line.text, "time.Sleep(") {
-			pushAt(unit, meta, line.byte, "time.Sleep used for synchronization; prefer channels, waitgroups, or condition variables", out)
+		if !strings.Contains(line.text, "time.Sleep(") {
+			continue
+		}
+		name, ok := enclosingFuncName(unit.Source, line.byte)
+		if !ok || !funcNameIsSyncShape(name) {
+			continue
+		}
+		pushAt(unit, meta, line.byte, msg, out)
+	}
+}
+
+// enclosingFuncTextBP83 finds the function/method/literal enclosing offset and returns
+// (func name or "", full func source, go-launched?, ok).
+func enclosingFuncTextBP83(facts *bpFacts, offset int) (name, text string, goLaunched, ok bool) {
+	if facts == nil || facts.tree == nil || facts.tree.File == nil {
+		return "", "", false, false
+	}
+	tree := facts.tree
+	var best goast.Node
+	var bestName string
+	bestSpan := int(^uint(0) >> 1)
+	goast.Inspect(tree.File, func(n goast.Node) bool {
+		if n == nil {
+			return true
+		}
+		start := tree.Offset(n.Pos())
+		end := tree.Offset(n.End())
+		if offset < start || offset >= end {
+			return true
+		}
+		span := end - start
+		switch x := n.(type) {
+		case *goast.FuncDecl:
+			if span <= bestSpan {
+				best = x
+				bestSpan = span
+				if x.Name != nil {
+					bestName = x.Name.Name
+				} else {
+					bestName = ""
+				}
+			}
+		case *goast.FuncLit:
+			if span < bestSpan {
+				best = x
+				bestSpan = span
+				bestName = ""
+			}
+		}
+		return true
+	})
+	if best == nil {
+		return "", "", false, false
+	}
+	text = tree.NodeText(best)
+	if _, isLit := best.(*goast.FuncLit); isLit {
+		pos := tree.Offset(best.Pos())
+		for _, g := range facts.goNodes {
+			if pos >= g.start && pos < g.end {
+				goLaunched = true
+				break
+			}
 		}
 	}
+	return bestName, text, goLaunched, true
+}
+
+func funcNameIsSyncShape(name string) bool {
+	lower := strings.ToLower(name)
+	for _, needle := range []string{
+		"wait", "ready", "sync", "until", "drain", "flush", "shutdown", "startup",
+		"start", "stop", "signal", "notify", "done",
+	} {
+		if strings.Contains(lower, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsVisibleSyncBP83(text string) bool {
+	for _, needle := range []string{
+		"<-", "select", ".Wait(", ".Lock(", ".Unlock(", "sync.", "atomic.", "Cond", "Once", "close(",
+	} {
+		if strings.Contains(text, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+func isBackoffOrRetryBP83(text string) bool {
+	lower := strings.ToLower(text)
+	for _, needle := range []string{
+		"backoff", "retry", "throttle", "rate_limit", "ratelimit", "jitter",
+		"cooldown", "debounce", "poll", "periodic", "interval", "timeout", "delay",
+	} {
+		if strings.Contains(lower, needle) {
+			return true
+		}
+	}
+	return false
 }
 
 func detectBP84(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -589,19 +789,195 @@ func detectBP89(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP90(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+// detectBP90: infinite `for {` with a channel receive and no local select/break/return.
+// Mirrors Rust detect_bp_90_channel_receive_loop_without_exit (package-level funcs only;
+// nested func literals are not walked, matching Rust inspect_functions).
+func detectBP90(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-90")
-	// for range ch without ok or default exit
-	if strings.Contains(unit.Source, "for range ") || strings.Contains(unit.Source, "for {") {
-		if strings.Contains(unit.Source, "<-") && !strings.Contains(unit.Source, ", ok :=") && !strings.Contains(unit.Source, ", ok:=") {
-			// weak signal
-			if strings.Contains(unit.Source, "for {") && strings.Contains(unit.Source, "<-ch") {
-				if pos := strings.Index(unit.Source, "for {"); pos >= 0 {
-					pushAt(unit, meta, pos, "channel receive loop without a clear exit condition", out)
+	msg := "infinite loop receives from a channel without a visible local exit"
+
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		for _, decl := range facts.tree.File.Decls {
+			fd, ok := decl.(*goast.FuncDecl)
+			if !ok || fd.Body == nil {
+				continue
+			}
+			goast.Inspect(fd.Body, func(n goast.Node) bool {
+				if n == nil {
+					return true
 				}
+				// Rust walk_scope stops at nested functions/func literals.
+				if _, isLit := n.(*goast.FuncLit); isLit {
+					return false
+				}
+				fs, ok := n.(*goast.ForStmt)
+				if !ok {
+					return true
+				}
+				// Infinite loop: for { ... } — no init/cond/post.
+				if fs.Init != nil || fs.Cond != nil || fs.Post != nil {
+					return true
+				}
+				text := facts.tree.NodeText(fs)
+				trimmed := strings.TrimLeft(text, " \t\r\n")
+				if !strings.HasPrefix(trimmed, "for {") && !strings.HasPrefix(trimmed, "for{") {
+					return true
+				}
+				// Visible local escape (substring checks, Rust parity).
+				if strings.Contains(text, "select") ||
+					strings.Contains(text, "break") ||
+					strings.Contains(text, "return") {
+					return true
+				}
+				if !forContainsChannelReceive(fs) {
+					return true
+				}
+				pushAt(unit, meta, facts.tree.Offset(fs.Pos()), msg, out)
+				return true
+			})
+		}
+		return
+	}
+
+	// Text fallback: per-`for {` block with brace matching.
+	detectBP90Text(unit, meta, msg, out)
+}
+
+func forContainsChannelReceive(n goast.Node) bool {
+	found := false
+	goast.Inspect(n, func(c goast.Node) bool {
+		if found || c == nil {
+			return false
+		}
+		// Nested funcs are outside local scope for the outer for (Rust walk_scope).
+		if _, isLit := c.(*goast.FuncLit); isLit {
+			return false
+		}
+		if ue, ok := c.(*goast.UnaryExpr); ok && ue.Op == token.ARROW {
+			found = true
+			return false
+		}
+		return true
+	})
+	return found
+}
+
+func detectBP90Text(unit *core.ParsedUnit, meta *rules.RuleMetadata, msg string, out *[]rules.Finding) {
+	src := unit.Source
+	// Find `for {` / `for{` occurrences and take the statement via brace match.
+	for i := 0; i < len(src); {
+		// cheap scan for "for"
+		idx := strings.Index(src[i:], "for")
+		if idx < 0 {
+			return
+		}
+		pos := i + idx
+		// word boundary
+		if pos > 0 {
+			prev := src[pos-1]
+			if (prev >= 'a' && prev <= 'z') || (prev >= 'A' && prev <= 'Z') || (prev >= '0' && prev <= '9') || prev == '_' {
+				i = pos + 3
+				continue
+			}
+		}
+		rest := strings.TrimLeft(src[pos+3:], " \t")
+		if !strings.HasPrefix(rest, "{") {
+			i = pos + 3
+			continue
+		}
+		// locate opening brace after "for"
+		brace := pos + 3
+		for brace < len(src) && src[brace] != '{' {
+			brace++
+		}
+		if brace >= len(src) {
+			return
+		}
+		end := matchBrace(src, brace)
+		if end < 0 {
+			i = brace + 1
+			continue
+		}
+		text := src[pos : end+1]
+		if strings.Contains(text, "select") ||
+			strings.Contains(text, "break") ||
+			strings.Contains(text, "return") {
+			i = end + 1
+			continue
+		}
+		// bare receive: <- somewhere that looks like a receive (not send ch<-)
+		if textContainsBareReceive(text) {
+			pushAt(unit, meta, pos, msg, out)
+		}
+		i = end + 1
+	}
+}
+
+func matchBrace(src string, open int) int {
+	if open >= len(src) || src[open] != '{' {
+		return -1
+	}
+	depth := 0
+	inStr := byte(0)
+	escape := false
+	for i := open; i < len(src); i++ {
+		c := src[i]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if inStr == '"' || inStr == '\'' {
+				if c == '\\' {
+					escape = true
+					continue
+				}
+				if c == inStr {
+					inStr = 0
+				}
+				continue
+			}
+			if inStr == '`' && c == '`' {
+				inStr = 0
+			}
+			continue
+		}
+		switch c {
+		case '"', '\'', '`':
+			inStr = c
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return i
 			}
 		}
 	}
+	return -1
+}
+
+func textContainsBareReceive(text string) bool {
+	// Look for "<-" not preceded by an identifier character (send is name<-).
+	for i := 0; i+1 < len(text); i++ {
+		if text[i] != '<' || text[i+1] != '-' {
+			continue
+		}
+		// skip if this is a send: ident immediately before
+		j := i - 1
+		for j >= 0 && (text[j] == ' ' || text[j] == '\t') {
+			j--
+		}
+		if j >= 0 {
+			c := text[j]
+			if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || c == ')' {
+				// likely send or cast; still could be receive in paren — treat as send-ish skip
+				continue
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func detectBP92(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
