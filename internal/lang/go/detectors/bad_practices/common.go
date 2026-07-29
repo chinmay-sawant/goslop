@@ -35,13 +35,37 @@ func isMaterializedFixture(unit *core.ParsedUnit) bool {
 		return false
 	}
 	for _, p := range []string{unit.DisplayPath, unit.Path} {
+		if p == "" {
+			continue
+		}
 		if strings.Contains(p, "target/codehound-fixtures/") ||
 			strings.Contains(p, `target\codehound-fixtures\`) ||
-			strings.Contains(p, "codehound-fixtures") {
+			strings.Contains(p, "codehound-fixtures") ||
+			strings.Contains(p, "goslop-fixture-") {
+			return true
+		}
+		// Rust is_flat_materialized_fixture: parent dir is language root "go"
+		// under a temp materialize tree (fixture matrix harness).
+		if isFlatMaterializedFixturePath(p) {
 			return true
 		}
 	}
 	return false
+}
+
+// isFlatMaterializedFixturePath matches Rust: materialized under .../go/<file>.go
+// in a temp dir (not a real multi-package project tree).
+func isFlatMaterializedFixturePath(p string) bool {
+	parent := filepath.Base(filepath.Dir(p))
+	if parent != "go" && parent != "python" {
+		return false
+	}
+	// Temp roots used by go test / os.MkdirTemp
+	if strings.Contains(p, "/tmp/") || strings.Contains(p, "/var/folders/") ||
+		strings.Contains(p, `\Temp\`) || strings.Contains(p, `\AppData\Local\Temp\`) {
+		return true
+	}
+	return strings.Contains(p, "goslop-fixture-")
 }
 
 func pushAt(unit *core.ParsedUnit, meta *rules.RuleMetadata, byteOffset int, message string, out *[]rules.Finding) {

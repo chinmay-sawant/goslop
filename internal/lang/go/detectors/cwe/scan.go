@@ -153,6 +153,9 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 			return false
 		}
 		if filepath.IsAbs(p) {
+			if isTempMaterializePath(p) {
+				return false
+			}
 			return true
 		}
 		if strings.Contains(p, "/") || strings.Contains(p, `\`) {
@@ -160,6 +163,16 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 		}
 	}
 	return false
+}
+
+func isTempMaterializePath(p string) bool {
+	if strings.Contains(p, "/tmp/") || strings.Contains(p, "/var/folders/") {
+		return true
+	}
+	if strings.Contains(p, `\Temp\`) || strings.Contains(p, `\AppData\Local\Temp\`) {
+		return true
+	}
+	return strings.Contains(p, "goslop-fixture-")
 }
 
 func isTaintCoreRule(id string) bool {
