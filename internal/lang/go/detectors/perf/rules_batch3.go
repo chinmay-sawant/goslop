@@ -454,7 +454,7 @@ func b3detectConsecutiveAppendsFacts(unit *core.ParsedUnit, facts *GoPerfFacts, 
 	src := unit.Source
 	// Prefer pairs/triples that are close together (same block), matching Rust
 	// intervening-read window of ~64 bytes between calls.
-	const maxGap = 120 // bytes between first and last of the run
+	const maxGap = 96 // bytes between first and last of the run
 	for i := 0; i+min-1 < len(appends); i++ {
 		target := ""
 		if len(appends[i].Arguments) > 0 {
