@@ -11,6 +11,8 @@ package goparse
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	goast "go/ast"
 	"go/parser"
 	"go/token"
@@ -31,7 +33,7 @@ type Tree struct {
 func (t *Tree) Close() {}
 
 // LineCol returns 1-indexed (line, column) for a byte offset into Source.
-func (t *Tree) LineCol(byteOffset int) (line, col int) {
+func (t *Tree) LineCol(byteOffset int) (int, int) {
 	return ast.LineColWithStarts(t.LineStarts, byteOffset)
 }
 
@@ -68,23 +70,34 @@ func Parse(source []byte) (*Tree, error) {
 	// ParseFile needs a name; use a stable placeholder.
 	file, err := parser.ParseFile(fset, "file.go", source, parser.SkipObjectResolution)
 	if file == nil {
-		return nil, err
+		if err != nil {
+			return nil, fmt.Errorf("goparse: %w", err)
+		}
+		return nil, errors.New("goparse: empty parse result")
 	}
 	tf := fset.File(file.Pos())
-	return &Tree{
+	tree := &Tree{
 		File:       file,
 		Fset:       fset,
 		Source:     source,
 		LineStarts: ast.ComputeLineStartsBytes(source),
 		tf:         tf,
-	}, err // may be non-nil with partial AST
+	}
+	// May return a partial AST with a non-nil error (syntax recovery).
+	if err != nil {
+		return tree, fmt.Errorf("goparse: %w", err)
+	}
+	return tree, nil
 }
 
 // ParseExpr parses an expression (tests / helpers).
 func ParseExpr(source []byte) (goast.Expr, *token.FileSet, error) {
 	fset := token.NewFileSet()
 	expr, err := parser.ParseExprFrom(fset, "expr.go", source, 0)
-	return expr, fset, err
+	if err != nil {
+		return expr, fset, fmt.Errorf("goparse expr: %w", err)
+	}
+	return expr, fset, nil
 }
 
 // Slice returns source[start:end] clamped to bounds.

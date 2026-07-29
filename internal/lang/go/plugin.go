@@ -58,11 +58,12 @@ func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
 // On parse failure, falls back to a source-only unit so text-level detectors still run.
 func (p *Plugin) ParseSource(path, source string) (*core.ParsedUnit, error) {
 	tree, parseErr := goparse.Parse([]byte(source))
+	// Intentionally ignore parseErr for the fallback path: text-level detectors
+	// still need a unit when the AST is missing. Partial ASTs are still attached.
 	if tree == nil || tree.File == nil {
-		_ = parseErr
-		return core.NewParsedUnit(core.LangGo, path, source), nil //nolint:nilerr
+		return core.NewParsedUnit(core.LangGo, path, source), nil
 	}
-	// Attach tree even if parseErr is non-nil (partial AST from AllErrors-like recovery).
+	_ = parseErr
 	return core.NewParsedUnitWithTree(core.LangGo, path, source, tree), nil
 }
 

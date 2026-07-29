@@ -21,10 +21,10 @@ var bpNeedles = []string{
 
 // bpFacts is the fused fact bag for BP detectors.
 type bpFacts struct {
-	Source    string
-	Index     ast.SourceIndex
-	tree      *goparse.Tree
-	ownedTree bool
+	Source      string
+	Index       ast.SourceIndex
+	tree        *goparse.Tree
+	ownedTree   bool
 	assignNodes []nodeSpan
 	callNodes   []callSpan
 	deferNodes  []nodeSpan

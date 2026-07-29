@@ -15,9 +15,9 @@ type ProjectContext struct {
 //  2. Implement LanguagePlugin in internal/lang/<lang>/ (mirror lang/go):
 //     - ID() / Extensions() — file selection via engine.Registry
 //     - Detectors() — rule catalogue for that language
-//     - ParseSource(path, source) — pure-Go parser preferred (stdlib or pure-Go
-//       library). Attach any AST as ParsedUnit.Tree (opaque any). Do not pull
-//       tree-sitter or other CGO deps into the default build.
+//     - ParseSource(path, source) — pure-Go parser preferred (stdlib or
+//     pure-Go library). Attach any AST as ParsedUnit.Tree (opaque any).
+//     Do not pull tree-sitter or other CGO deps into the default build.
 //     - PrepareProject / ExtractDeps — optional project prep and import edges
 //  3. Register the plugin next to golang.Register in engine.DefaultRegistry
 //     (or behind a build tag / feature flag if experimental).
