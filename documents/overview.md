@@ -1,0 +1,228 @@
+# CodeHound product overview
+
+CodeHound is a **pure-Go** static analyzer for Go codebases. It reimplements the Rust CodeHound product with `go/parser` + `go/ast` (no CGO, no tree-sitter).
+
+## What it does
+
+| Capability | Description |
+|------------|-------------|
+| **PERF rules** | Hot-path heuristics (loops, allocations, HTTP timeouts, framework footguns). **239** registered. |
+| **CWE structural** | Catalogue of structural security heuristics. **175** registered. |
+| **Taint (experimental)** | Inter-procedural graph for **CWE-22 / 78 / 79 / 89** (path traversal, command injection, XSS, SQLi). |
+| **Bad practices (BP)** | Style / hygiene / project-level rules (`BP-*`). On for `style` and `all` profiles. |
+| **Profiles (packs)** | `recommended`, `perf`, `security`, `style`, `all` — curated rule surfaces and defaults. |
+| **Reporters** | `text` (default), `json`, `sarif` (SARIF 2.1.0). Summary always on **stderr**. |
+| **Exports** | Per-finding context (`scripts/findings/functions`) and batched chunks (`scripts/chunks`) for agent work. |
+| **Cache** | Incremental per-file cache under `.codehound-cache/`. |
+| **Baseline** | Suppress known findings via `.codehound-baseline.json`. |
+| **Ignore** | Inline `// codehound-ignore` directives and path ignores. |
+
+## Status (shipped)
+
+Phases **0–12** landed. High-level status:
+
+| Area | Status |
+|------|--------|
+| Engine / CLI / text · JSON · SARIF | ✅ |
+| PERF detectors | ✅ 239/239 |
+| CWE structural | ✅ 175/175 |
+| Bad practices | ✅ catalogue + project-level rules |
+| Taint graph | ✅ CWE-22/78/79/89 |
+| Cache / baseline / ignore | ✅ |
+| Packs | ✅ recommended / perf / security / style / all |
+| §12.4 product oracle (`gopdfsuit`) | ✅ 915 findings; exports 915 context + 37 chunks |
+
+Details: root [`README.md`](../README.md) and [`plans/port-phasewise-checklist.md`](../plans/port-phasewise-checklist.md).
+
+## Architecture (product view)
+
+```text
+CLI flags + codehound.toml + profile
+        │
+        ▼
+  ScanContext (only/skip, fail policy, taint, BP, cache, baseline)
+        │
+        ▼
+  Analyzer (walk → parse → detectors → finalize)
+        │
+        ▼
+  ignore directives → baseline filter
+        │
+        ├── stderr: scan summary
+        ├── stdout: text | json | sarif findings
+        └── optional disk export: functions + chunks
+```
+
+| Layer | Path |
+|-------|------|
+| CLI entry | `cmd/codehound` |
+| App orchestration | `internal/app` |
+| Core (profiles, fail, plugins) | `internal/core` |
+| Engine (walk, cache, baseline, ignore) | `internal/engine` |
+| Detectors | `internal/lang/go/detectors` |
+| Reporting | `internal/reporting` |
+| Export | `internal/export` |
+| Rule metadata | `ruleset/golang/` |
+
+## Profiles (packs)
+
+Default: **`--profile recommended`**.
+
+| Profile | Aliases | Contents | Taint | BP | Default fail |
+|---------|---------|----------|-------|----|--------------|
+| `recommended` | `ci`, `default` | S-tier PERF + taint-core CWE IDs | off | off | **high** |
+| `perf` | `performance` | S + A tier PERF | off | off | **high** |
+| `security` | `sec` | Security CWE pack | **on** (depth 4) | off | **high** |
+| `style` | `bp`, `bad-practices` | `BP-*` (skips BP-21/28/30 by default) | off | **on** | **none** |
+| `all` | `full` | Full catalogue | off | **on** | **medium** |
+
+Exact allow-lists and rationale: [go-recommended-pack.md](./go-recommended-pack.md).  
+Full flag list: [cli-reference.md](./cli-reference.md).
+
+### Recommended pack (summary)
+
+**PERF S-tier:** `PERF-1`, `PERF-7`, `PERF-50`, `PERF-58`, `PERF-71`, `PERF-101`, `PERF-103`, `PERF-116`, `PERF-189`, `PERF-190`
+
+**Taint-core CWE allow-list (taint engine off until enabled):**  
+`CWE-22`, `CWE-78`, `CWE-79`, `CWE-89`, `CWE-90`, `CWE-91`
+
+Under default fail **high**, S-tier PERF is typically **medium** (visible, does not fail CI). High/critical CWE findings **do** fail.
+
+## Detector families
+
+### PERF (`PERF-*`)
+
+- **239** rules across loop allocations, HTTP, frameworks (Gin, etc.), parsing, data access.
+- Metadata chunks: `ruleset/golang/chunks/perf-*.json`
+- Human notes (partial): [perf-rules.md](./perf-rules.md)
+- List live: `./bin/codehound --list-rules` and filter for `PERF-`
+
+### CWE (`CWE-*`)
+
+- **175** structural rules.
+- Taint-lite same-file heuristics for injection-class CWEs when full taint is off.
+- Full taint graph: enable with `--taint` or `--profile security`. See [taint.md](./taint.md).
+
+### Bad practices (`BP-*`)
+
+- Style, error handling, testing, HTTP/server, go.mod hygiene, resources.
+- Enabled only for **`style`** and **`all`** (unless overridden in config).
+- Style profile skips noisy rules `BP-21`, `BP-28`, `BP-30` by default; re-enable with `--only BP-28`.
+
+### Taint
+
+```sh
+# Explicit
+./bin/codehound --taint --taint-depth 3 --taint-show-paths .
+
+# Security profile turns taint on (default depth 4)
+./bin/codehound --profile security .
+
+# Force off even under security
+./bin/codehound --profile security --no-taint .
+```
+
+Honesty bar and source/sink model: [taint.md](./taint.md).
+
+## Suppressions
+
+### Inline ignore directives
+
+Comment-only (not inside strings):
+
+```go
+// codehound-ignore: CWE-78
+exec.Command("sh", "-c", cmd)
+
+// codehound-ignore: PERF-101, PERF-190
+srv := &http.Server{Addr: ":8080"}
+
+// codehound-ignore-file
+package generated
+
+// codehound-ignore-start: BP-1
+// … noisy region …
+// codehound-ignore-end
+```
+
+- Default: suppressed findings are **dropped**.
+- `--show-ignored`: keep them (severity forced to **info**, marked suppressed).
+
+### Path ignores
+
+Walk respects `.gitignore`, `.codehoundignore`, `.ignore`, plus config `include` / `exclude` globs. Test files (`*_test.*`) are excluded by default (`--include-tests` to include).
+
+## Baseline
+
+File: **`.codehound-baseline.json`** (discovered upward from cwd unless `--baseline-file` / config path).
+
+| Flag | Effect |
+|------|--------|
+| (default) | Drop findings that match baseline fingerprints |
+| `--no-baseline` | Ignore baseline entirely |
+| `--baseline-file PATH` | Explicit baseline path |
+| `--show-baselined` | Keep baselined findings as info / suppressed |
+
+Match priority: fingerprint (`codehound:2:{rule}:{file}:{msgHash16}`), else file/line/column.
+
+> **Note:** The Go CLI **loads and filters** baselines; a dedicated “save baseline” subcommand is not exposed yet. You can author the JSON from prior JSON findings / scripts. See brownfield notes in [go-recommended-pack.md](./go-recommended-pack.md).
+
+## Incremental cache
+
+| Item | Default |
+|------|---------|
+| Directory | `.codehound-cache/` |
+| Enabled | yes |
+| Disable | `--no-cache` or config `cache.enabled = false` |
+| Rebuild | `--rebuild-cache` |
+| Prune | `--prune-cache` (then exit) |
+
+Cache keys on content hash + tool/rule-config fingerprint. Pipeline details: [architecture-performance.md](./architecture-performance.md).
+
+## Exit codes
+
+| Code | Meaning |
+|------|---------|
+| **0** | Clean, or meta-command success, or `--no-fail` |
+| **1** | Findings violate the active fail policy |
+| **2** | Usage / config / unknown profile or rule |
+| **3** | Internal (engine, I/O, cache hard failure) |
+
+## Configuration
+
+```sh
+./bin/codehound init   # writes ./codehound.toml
+```
+
+Template: [`templates/codehound.toml`](../templates/codehound.toml).  
+Schema: [`codehound.schema.json`](../codehound.schema.json).  
+Merge rules: [cli-reference.md](./cli-reference.md#config-file-and-cli-merge).
+
+## Outputs at a glance
+
+| Output | How | Docs |
+|--------|-----|------|
+| Terminal findings | default `--format text` | [reporting-formats.md](./reporting-formats.md) |
+| JSON envelope | `--format json` | [reporting-formats.md](./reporting-formats.md) |
+| SARIF 2.1.0 | `--format sarif` | [reporting-formats.md](./reporting-formats.md#sarif-210) |
+| Per-finding refs | `--export-context` → `scripts/findings/functions/N.txt` | [export-context-and-chunks.md](./export-context-and-chunks.md) |
+| Batches for agents | `--export-chunks` → `scripts/chunks/Chunk_A_B.txt` | [export-context-and-chunks.md](./export-context-and-chunks.md) |
+| Product run | `make run` | [make-run.md](./make-run.md) |
+
+## Typical workflows
+
+```sh
+# 1) CI gate (high-signal)
+./bin/codehound --profile recommended --format sarif . > codehound.sarif
+
+# 2) Full triage + agent batches
+./bin/codehound --profile all --no-fail --export-context --export-chunks --no-cache .
+# then open scripts/chunks/Chunk_1_25.txt for a batch,
+# or scripts/findings/functions/42.txt for one finding
+
+# 3) Security-focused with taint
+./bin/codehound --profile security --taint-show-paths ./cmd
+
+# 4) Makefile product scan (summary + exports)
+make run SCAN_PATH=./your/go/project
+```

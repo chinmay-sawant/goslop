@@ -12,7 +12,7 @@ A small, high-signal CI gate: **PERF footguns** teams actually fix, plus
 Bad practices (`BP-*`) are **off**. Fail policy defaults to **strict**
 (high / critical only) unless you set `--warnings-as-errors` / `--no-fail`.
 
-Full CLI: [cli.md](./cli.md). Rule navigation: [rule-catalog.md](./rule-catalog.md).
+Full CLI: [cli-reference.md](./cli-reference.md). Product overview: [overview.md](./overview.md).
 
 ---
 
