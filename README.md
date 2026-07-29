@@ -9,19 +9,21 @@ This repository ports the Rust product at `../codehound` while keeping:
 
 ## Status
 
-**Active port.** Phases **0–6** landed (MVP engine/CLI + full **239/239** PERF catalogue). Phases **7–12** are in parallel workstreams; **§12.4 product oracle is not complete**.
+**Phases 0–12 landed.** Product surface, full detector catalogues, packs, CI, and the **§12.4** hard ship gate on `gopdfsuit` are locked on `main` (PR #16).
 
 | Area | Status |
 |------|--------|
 | Engine / CLI / reporters (text, JSON, SARIF) | ✅ MVP |
-| PERF detectors | ✅ 239/239 registered (heuristic) |
-| CWE structural | 🌱 seed CWE-78 / CWE-89 only |
-| Bad practices (BP) | ⏳ Phase 8 |
-| Taint graph | ⏳ Phase 9 |
-| Cache / baseline / ignore | ⏳ Phase 10 |
-| Packs / maturity | ⏳ Phase 11 |
-| CI + integration harness scaffolding | ✅ Phase 12 partial (this repo) |
-| §12.4 export/scan oracle (915 findings) | ❌ blocked on 7–11 |
+| PERF detectors | ✅ **239/239** registered (heuristic) |
+| CWE structural | ✅ **175/175** registered (+ taint-lite seeds) |
+| Bad practices (BP) | ✅ Phase 8 catalogue + project-level rules |
+| Taint graph | ✅ Phase 9 taint-core (CWE-22/78/79/89) |
+| Cache / baseline / ignore | ✅ Phase 10 |
+| Packs / maturity | ✅ Phase 11 (recommended / security / style / all) |
+| CI + integration harness | ✅ Phase 12 |
+| §12.4 export/scan oracle (`gopdfsuit`) | ✅ **915** findings; severity **10h/197i/312l/396m**; top-five exact; export **915+37**; Go wall **sub-500ms** |
+
+Residual (severity-neutral / soft): partial per-site rule swaps (e.g. PERF-119↔128); skipped-file absolute may differ from Rust **383**; pure-FP museums suppressed on real project scans only. Details: [`plans/port-phasewise-checklist.md`](./plans/port-phasewise-checklist.md) §12.4.
 
 Canonical ledger:
 
@@ -57,7 +59,10 @@ Optional future multi-arch releases: see [`.goreleaser.stub.yml`](./.goreleaser.
 
 # Profiles: recommended | perf | security | style | all
 ./bin/codehound --profile all --format json .
-./bin/codehound --profile security --only CWE-78,CWE-89 ./path
+./bin/codehound --profile security ./path
+
+# Export context + chunks (default dirs: scripts/findings/functions, scripts/chunks)
+./bin/codehound --profile all --export-context --export-chunks --no-cache .
 
 # Machine formats
 ./bin/codehound --format json .
@@ -65,10 +70,14 @@ Optional future multi-arch releases: see [`.goreleaser.stub.yml`](./.goreleaser.
 
 # Rule surface
 ./bin/codehound --list-rules
+./bin/codehound --explain PERF-6
 ./bin/codehound --version
 
 # Write a starter config
 ./bin/codehound init
+
+# §12.4 product oracle (SCAN_PATH defaults to gopdfsuit in Makefile)
+make oracle
 ```
 
 Exit codes: `0` clean, `1` findings at fail policy, `2` usage/config, `3` internal.
@@ -79,12 +88,14 @@ Exit codes: `0` clean, `1` findings at fail policy, `2` usage/config, `3` intern
 make test          # go test ./...
 make integration   # seed fixture harness under tests/integration
 make lint          # go vet + gofmt check
+make lint-all      # golangci-lint when configured
 make ci            # lint + test + build (local CI parity)
+make oracle        # gopdfsuit-scale §12.4 hard metrics (915 / sev / top-five)
 ```
 
 GitHub Actions: [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs `go vet`, `go test ./...`, and `go build` with CGO + `build-essential`.
 
-Integration harness scaffolding: `tests/integration` materializes a small fixture seed (CWE-78/89, PERF-6) and asserts fire/silent behavior. Full fixture matrix and **§12.4** Rust oracle remain deferred.
+Integration harness: `tests/integration` materializes a small fixture seed and asserts fire/silent behavior. Full fixture matrix is optional polish; **§12.4** hard counts are locked on the `gopdfsuit` corpus via `make oracle`.
 
 ## Layout
 
@@ -93,7 +104,7 @@ Integration harness scaffolding: `tests/integration` materializes a small fixtur
 | `cmd/codehound` | CLI entry |
 | `internal/` | Core, engine, lang/go detectors, reporting |
 | `tests/fixtures` | Oracle fixtures (copied from Rust) |
-| `tests/integration` | Materialized fixture harness (Phase 12 scaffolding) |
+| `tests/integration` | Materialized fixture harness |
 | `ruleset/` | Rule metadata JSON (copied) |
 | `plans/` | Phase-wise port ledger |
 | `.github/workflows/` | CI |
