@@ -129,7 +129,7 @@ go build -o bin/codehound ./cmd/codehound
 - [x] Walk project roots; include `*.go` — `engine.CollectFiles` / `CollectGoFiles`
 - [x] Honor `.gitignore` / `.codehoundignore` / `.ignore` (minimal) — vendor/VCS skipped; Phase 10 pathignore matcher
 - [x] Exclude `*_test.go` by default; `--include-tests` override — `WalkOptions.IncludeTests` + CLI
-- [ ] Include/exclude globs from config (stub OK if wired)
+- [x] Include/exclude globs from config — `WalkOptions.Include/Exclude` + `codehound.toml`
 
 ### 3.2 Registry + analyzer
 - [x] `Registry` holds language plugins + detectors — `engine.NewRegistry` / `DefaultRegistry`
@@ -156,8 +156,8 @@ go build -o bin/codehound ./cmd/codehound
 - [x] Exit codes: 0 clean, 1 findings-at-fail-policy (`ExitCodeError`), 2 usage/error, 3 internal
 
 ### 4.2 Config
-- [ ] Load `codehound.toml` / nested tables (schema-compatible subset)
-- [ ] Merge CLI over config (only/skip additive; fail_on rules documented)
+- [x] Load `codehound.toml` / nested tables (schema-compatible subset) — `internal/config`
+- [x] Merge CLI over config (only/skip additive; fail_on / cache / taint / include-exclude) — `config.LoadAndMerge` + `--config`
 - [x] `codehound init` writes `templates/codehound.toml` (embedded)
 
 ### 4.3 Rule listing
@@ -359,7 +359,7 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | Files scanned | **78** | [x] **78** |
 | Lines scanned | **28120** | [~] **28042** (line-count off-by ~78; soft) |
 | Cache | **0 hits, 78 misses** (`--no-cache` / full re-analysis) | [x] `--no-cache` path |
-| Files skipped | **383** | [~] **551** on same host (counter wired; higher because Go counts all non-accepted regular files incl. non-`.go` / `_test.go` / ignore — soft, not CI-hard) |
+| Files skipped | **383** | [x] **383** (Rust `ignore` standard_filters parity: hidden + gitignored omitted from walk; only filter rejects count as skipped) |
 | **Total findings** | **915** | [x] **915** |
 | Severity breakdown | **10 high, 197 info, 312 low, 396 medium** | [x] **10 / 197 / 312 / 396** |
 | Top rules (order + counts) | **BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44** | [x] **exact match** |
@@ -442,6 +442,9 @@ make oracle
 ## Next actions (immediate)
 
 1. ~~**§12.4 hard metrics**~~ — locked on PR #16 (915 / severity / top-five / export).
-2. **Optional polish** — site-for-site residual swaps (PERF-119/128, BP-52/70); rewrite pure-FP museums instead of real-scan suppress; full fixture matrix optional CI.
-3. **Soft walk parity** — document or align absolute skipped-file count (Rust 383) if product summary must match exactly.
-4. **Perf budget** — promote wall-time soft target to CI budget only if agreed (Go already sub-500ms).
+2. ~~**Soft walk parity**~~ — skipped-file count **383** matches Rust (hidden + gitignore walk parity).
+3. ~~**Config load / include-exclude**~~ — `codehound.toml` + CLI merge + path globs landed.
+4. **Optional polish** — site-for-site residual swaps (PERF-119/128, BP-52/70); rewrite pure-FP museums instead of real-scan suppress; full fixture matrix optional CI.
+5. **Shared needle tables / ruleset JSON metadata** — still partial (`[~]`); wire full tables when needed.
+6. **Perf budget** — promote wall-time soft target to CI budget only if agreed (Go already sub-400ms pure-Go).
+7. **Release** — version tagging beyond `0.1.0-dev`; GoReleaser multi-arch.

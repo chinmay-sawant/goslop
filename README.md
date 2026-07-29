@@ -21,8 +21,9 @@ This repository ports the Rust product at `../codehound` while keeping:
 | Cache / baseline / ignore | ✅ Phase 10 |
 | Packs / maturity | ✅ Phase 11 (recommended / security / style / all) |
 | CI + integration harness | ✅ Phase 12 |
-| §12.4 export/scan oracle (`gopdfsuit`) | ✅ **915** findings; severity **10h/197i/312l/396m**; top-five exact; export **915+37**; pure-Go wall **&lt;400ms** (~170–220ms scan) |
+| §12.4 export/scan oracle (`gopdfsuit`) | ✅ **915** findings; severity **10h/197i/312l/396m**; top-five exact; export **915+37**; skipped **383**; pure-Go wall **&lt;400ms** |
 | Parse path | ✅ **Pure Go** (`go/parser` + `go/ast`); **no CGO** / no tree-sitter; `LanguagePlugin` seam for a second language |
+| Config | ✅ `codehound.toml` discover/load + CLI merge (`only`/`skip` additive, include/exclude, cache, taint, …) |
 
 Residual (severity-neutral / soft): partial per-site rule swaps (e.g. PERF-119↔128); skipped-file absolute may differ from Rust **383**; pure-FP museums suppressed on real project scans only. Details: [`plans/port-phasewise-checklist.md`](./plans/port-phasewise-checklist.md) §12.4.
 
