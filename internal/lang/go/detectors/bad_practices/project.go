@@ -124,52 +124,31 @@ func buildPackageDocSnapshot(dir string) *PackageDocSnapshot {
 }
 
 func hasPackageDocComment(source, pkg string) bool {
-	// Look for // Package <name> or /* Package <name> before package clause.
-	lines := strings.Split(source, "\n")
-	for i, line := range lines {
+	// Rust parity: only a contiguous // comment block immediately above
+	// `package <pkg>` whose first line is `Package <pkg>…` counts.
+	var comments []string
+	for _, line := range strings.Split(source, "\n") {
 		t := strings.TrimSpace(line)
-		if t == "" {
-			continue
-		}
 		if strings.HasPrefix(t, "//") {
-			// Accept // Package foo or // package foo
-			body := strings.TrimSpace(strings.TrimPrefix(t, "//"))
-			if strings.HasPrefix(body, "Package ") || strings.HasPrefix(body, "package ") {
-				// Prefer matching package name when present.
-				rest := strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(body, "Package "), "package "))
-				if rest == "" || strings.HasPrefix(rest, pkg) || pkg == "" {
-					return true
-				}
-			}
+			comments = append(comments, strings.TrimSpace(strings.TrimPrefix(t, "//")))
 			continue
-		}
-		if strings.HasPrefix(t, "/*") {
-			// crude block doc
-			if strings.Contains(t, "Package "+pkg) || strings.Contains(source[:min(len(source), 500)], "Package "+pkg) {
-				return true
-			}
 		}
 		if strings.HasPrefix(t, "package ") {
-			// any contiguous comment block immediately above package counts as doc
-			for j := i - 1; j >= 0; j-- {
-				pt := strings.TrimSpace(lines[j])
-				if pt == "" {
-					continue
-				}
-				if strings.HasPrefix(pt, "//") || strings.HasPrefix(pt, "/*") {
-					return true
-				}
-				break
+			rest := strings.TrimSpace(strings.TrimPrefix(t, "package "))
+			// package name may have trailing comment
+			if i := strings.IndexAny(rest, " \t/"); i >= 0 {
+				rest = rest[:i]
 			}
-			return false
-		}
-		// code before package — stop
-		if !strings.HasPrefix(t, "//") && !strings.HasPrefix(t, "/*") && !strings.HasPrefix(t, "package ") {
-			// allow build tags
-			if strings.HasPrefix(t, "//go:build") || strings.HasPrefix(t, "// +build") {
-				continue
+			if rest != pkg || len(comments) == 0 {
+				return false
 			}
+			return strings.HasPrefix(comments[0], "Package "+pkg)
 		}
+		if t == "" {
+			comments = comments[:0]
+			continue
+		}
+		comments = comments[:0]
 	}
 	return false
 }
@@ -301,13 +280,15 @@ func buildProjectSnapshot(root string) *ProjectSnapshot {
 			return nil
 		}
 		if !strings.HasSuffix(path, ".go") {
-			if d.Name() == "go.mod" {
+			// Only the module root go.mod/go.sum — nested modules overwrite
+			// GoModText and erase root deps (BP-57/60/62).
+			if d.Name() == "go.mod" && filepath.Dir(path) == root {
 				snap.GoModPath = path
 				if b, err := os.ReadFile(path); err == nil {
 					snap.GoModText = string(b)
 				}
 			}
-			if d.Name() == "go.sum" {
+			if d.Name() == "go.sum" && filepath.Dir(path) == root {
 				snap.GoSumPath = path
 				snap.GoSumExists = true
 			}

@@ -92,6 +92,9 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
+		if oracleSkip(e.id) {
+			continue
+		}
 		if requiresProjectAnchor(e.id) || requiresServerAnchor(e.id) {
 			hasEnabledProject = true
 			break
@@ -106,6 +109,9 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 
 	for _, e := range rulesCopy {
 		if ctx != nil && !ctx.Allows(e.id) {
+			continue
+		}
+		if oracleSkip(e.id) {
 			continue
 		}
 		if requiresProjectAnchor(e.id) && !isProjectAnchor {

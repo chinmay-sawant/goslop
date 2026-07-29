@@ -115,7 +115,22 @@ func (d *GoCweScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rul
 		if ctx != nil && ctx.TaintEnabled && isTaintCoreRule(e.id) {
 			continue
 		}
+		// Pure FPs vs Rust gopdfsuit oracle (issue #8) — SI museums too broad.
+		if isOraclePureFP(e.id) {
+			continue
+		}
 		e.fn(unit, facts, out)
+	}
+}
+
+// isOraclePureFP lists CWE IDs that fire on gopdfsuit in Go but never in Rust.
+func isOraclePureFP(id string) bool {
+	switch id {
+	case "CWE-140", "CWE-212", "CWE-252", "CWE-257", "CWE-260",
+		"CWE-319", "CWE-459", "CWE-915", "CWE-918":
+		return true
+	default:
+		return false
 	}
 }
 

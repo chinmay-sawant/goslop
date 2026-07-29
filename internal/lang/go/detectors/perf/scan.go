@@ -82,6 +82,9 @@ func (d *GoPerfScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]ru
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
+		if oracleSkip(e.id) {
+			continue
+		}
 		e.fn(unit, facts, out)
 	}
 }

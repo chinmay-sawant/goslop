@@ -114,33 +114,34 @@ var reIife = regexp.MustCompile(`func\s*\(\s*\)\s*\{[^}]*\}\s*\(\s*\)`)
 var reLargeArray = regexp.MustCompile(`var\s+\w+\s+\[\d{3,}\]`)
 var reArrayDecl = regexp.MustCompile(`\[\d{4,}\]`)
 
-// detectPERF112: strings.ToLower/ToUpper both sides of == / !=
+// detectPERF112: strings.ToLower/ToUpper used in a comparison (Rust: EqualFold).
 func detectPERF112(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
-	_ = facts
-	src := unit.Source
-	if !strings.Contains(src, "strings.ToLower") && !strings.Contains(src, "strings.ToUpper") {
-		return
-	}
+	// Rust: each ToLower/ToUpper call with ==/!= in a nearby window fires.
 	file := unitFile(unit)
-	// scan for ToLower/ToUpper == ToLower/ToUpper patterns on a line
-	for i := 0; i < len(src); {
-		idx := strings.Index(src[i:], "strings.To")
-		if idx < 0 {
-			break
+	emitted := 0
+	for _, call := range facts.Calls {
+		if call.Callee != "strings.ToLower" && call.Callee != "strings.ToUpper" {
+			continue
 		}
-		pos := i + idx
-		line := b3lineWindow(src, pos)
-		hasFold := (strings.Contains(line, "strings.ToLower") || strings.Contains(line, "strings.ToUpper")) &&
-			(strings.Contains(line, "==") || strings.Contains(line, "!="))
-		// both sides
-		nLower := strings.Count(line, "strings.ToLower") + strings.Count(line, "strings.ToUpper")
-		if hasFold && nLower >= 2 {
-			lineN, col := unit.LineCol(pos)
-			rules.PushFinding(&MetaPERF112, file, lineN, col,
-				"case-insensitive compare via ToLower/ToUpper; prefer strings.EqualFold", out)
+		start := call.StartByte - 8
+		if start < 0 {
+			start = 0
+		}
+		end := call.StartByte + 96
+		if end > len(unit.Source) {
+			end = len(unit.Source)
+		}
+		window := unit.Source[start:end]
+		if !strings.Contains(window, "==") && !strings.Contains(window, "!=") {
+			continue
+		}
+		lineN, col := unit.LineCol(call.StartByte)
+		rules.PushFinding(&MetaPERF112, file, lineN, col,
+			"case conversion before comparison allocates; use strings.EqualFold", out)
+		emitted++
+		if emitted >= 12 {
 			return
 		}
-		i = pos + 1
 	}
 }
 
@@ -223,56 +224,138 @@ func b3extractBraceBlock(src string, open int) (string, bool) {
 }
 
 // detectPERF114: manual for-range copy instead of copy()
+// Rust parity: for i, v := range src { dst[i] = v } (both bindings non-blank).
 func detectPERF114(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
-	if !strings.Contains(src, "range") || !strings.Contains(src, "for ") {
+	if !strings.Contains(src, "range") || !strings.Contains(src, "] =") && !strings.Contains(src, "]=") {
 		return
 	}
 	file := unitFile(unit)
-	// line-based: for i, v := range X { Y[i] = v } (no conversion call on RHS)
 	lines := strings.Split(src, "\n")
 	for li, ln := range lines {
 		t := strings.TrimSpace(ln)
 		if !strings.HasPrefix(t, "for ") || !strings.Contains(t, "range") {
 			continue
 		}
-		// for i, v := range src  OR  for i := range src with body dst[i]=src[i]
-		hasVal := strings.Contains(t, ",")
-		for j := li + 1; j < len(lines) && j < li+4; j++ {
+		// Require two-binding range: for idx, val := range …
+		head := t
+		rangeIdx := strings.Index(head, "range")
+		if rangeIdx < 0 {
+			continue
+		}
+		bindings := strings.TrimSpace(head[len("for "):rangeIdx])
+		if i := strings.Index(bindings, ":="); i >= 0 {
+			bindings = strings.TrimSpace(bindings[:i])
+		}
+		if i := strings.Index(bindings, "="); i >= 0 {
+			bindings = strings.TrimSpace(bindings[:i])
+		}
+		parts := strings.Split(bindings, ",")
+		if len(parts) != 2 {
+			continue
+		}
+		idx := strings.TrimSpace(parts[0])
+		val := strings.TrimSpace(parts[1])
+		if idx == "" || idx == "_" || val == "" || val == "_" {
+			continue
+		}
+		if !b3isSimpleIdent(idx) || !b3isSimpleIdent(val) {
+			continue
+		}
+		// Collect single-statement body until closing brace.
+		var bodyLines []string
+		for j := li + 1; j < len(lines) && j < li+8; j++ {
 			body := strings.TrimSpace(lines[j])
-			if body == "}" {
+			if body == "}" || strings.HasPrefix(body, "}") {
 				break
 			}
-			if !(strings.Contains(body, "[") && (strings.Contains(body, "] =") || strings.Contains(body, "]="))) {
+			if body == "" || strings.HasPrefix(body, "//") {
 				continue
 			}
-			eq := strings.Index(body, "] =")
-			if eq < 0 {
-				eq = strings.Index(body, "]=")
-			}
-			if eq < 0 {
+			bodyLines = append(bodyLines, body)
+		}
+		if len(bodyLines) != 1 {
+			continue
+		}
+		body := bodyLines[0]
+		// dst[idx] = val  (pure copy)
+		eq := strings.Index(body, "=")
+		if eq < 0 {
+			continue
+		}
+		lhs := strings.TrimSpace(body[:eq])
+		rhs := strings.TrimSpace(body[eq+1:])
+		if rhs != val && !strings.HasPrefix(rhs, val+" ") {
+			// allow simple ident RHS only
+			if !b3isSimpleIdent(rhs) {
 				continue
 			}
-			rhs := body[eq:]
-			// reject conversion / function call on RHS (except pure index)
-			if strings.Contains(rhs, "(") {
-				continue
+		}
+		open := strings.Index(lhs, "[")
+		close := strings.LastIndex(lhs, "]")
+		if open < 0 || close <= open {
+			continue
+		}
+		dst := strings.TrimSpace(lhs[:open])
+		indexExpr := strings.TrimSpace(lhs[open+1 : close])
+		if !b3isSimpleIdent(dst) || indexExpr != idx {
+			continue
+		}
+		if rhs != val {
+			continue
+		}
+		// Suppress interface-slice destinations.
+		if destinationIsInterfaceSlice(src, dst) {
+			continue
+		}
+		off := 0
+		for k := 0; k < li; k++ {
+			off += len(lines[k]) + 1
+		}
+		lineN, col := unit.LineCol(off)
+		rules.PushFinding(&MetaPERF114, file, lineN, col,
+			"manual for-range copy should be the copy() builtin (3-10x faster, handles overlap)", out)
+	}
+}
+
+func b3isSimpleIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i, r := range s {
+		if i == 0 {
+			if r != '_' && (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') {
+				return false
 			}
-			// require simple assignment form
-			if !hasVal && !strings.Contains(rhs, "[") {
-				continue
-			}
-			off := 0
-			for k := 0; k < li; k++ {
-				off += len(lines[k]) + 1
-			}
-			lineN, col := unit.LineCol(off)
-			rules.PushFinding(&MetaPERF114, file, lineN, col,
-				"manual for-range copy; use the copy() builtin", out)
-			return
+			continue
+		}
+		if r != '_' && (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
+			return false
 		}
 	}
+	return true
+}
+
+func destinationIsInterfaceSlice(src, dst string) bool {
+	markers := []string{
+		dst + " := make([]interface{}",
+		dst + " = make([]interface{}",
+		dst + " := make([]any,",
+		dst + " = make([]any,",
+		"var " + dst + " []interface{}",
+		"var " + dst + " []any",
+		dst + " := []interface{}",
+		dst + " = []interface{}",
+		dst + " := []any{",
+		dst + " = []any{",
+	}
+	for _, m := range markers {
+		if strings.Contains(src, m) {
+			return true
+		}
+	}
+	return false
 }
 
 // detectPERF115: strings.Compare == 0 / != 0
@@ -336,20 +419,99 @@ func detectPERF118(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF119: 2+ consecutive appends to same slice
+// detectPERF119: 2+ consecutive appends to same slice (Rust call-fact parity).
 func detectPERF119(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
-	b3detectConsecutiveAppends(unit, facts, out, 2, &MetaPERF119,
-		"multiple sequential appends; merge into one variadic append")
+	b3detectConsecutiveAppendsFacts(unit, facts, out, 2, &MetaPERF119,
+		"consecutive append calls to the same slice can be merged into one variadic append")
 }
 
 // detectPERF128: 3+ consecutive appends
 func detectPERF128(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
-	b3detectConsecutiveAppends(unit, facts, out, 3, &MetaPERF128,
-		"3+ sequential appends; merge into one variadic append")
+	b3detectConsecutiveAppendsFacts(unit, facts, out, 3, &MetaPERF128,
+		"three or more independent append calls can be combined into one variadic append")
 }
 
-func b3detectConsecutiveAppends(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding, min int, meta *rules.RuleMetadata, msg string) {
-	_ = facts
+func b3detectConsecutiveAppendsFacts(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding, min int, meta *rules.RuleMetadata, msg string) {
+	file := unitFile(unit)
+	var appends []CallFact
+	for _, c := range facts.Calls {
+		if c.Callee == "append" {
+			appends = append(appends, c)
+		}
+	}
+	if len(appends) < min {
+		b3detectConsecutiveAppendsLines(unit, out, min, meta, msg)
+		return
+	}
+	// sort by start
+	for i := 0; i < len(appends); i++ {
+		for j := i + 1; j < len(appends); j++ {
+			if appends[j].StartByte < appends[i].StartByte {
+				appends[i], appends[j] = appends[j], appends[i]
+			}
+		}
+	}
+	src := unit.Source
+	// Prefer pairs/triples that are close together (same block), matching Rust
+	// intervening-read window of ~64 bytes between calls.
+	const maxGap = 120 // bytes between first and last of the run
+	for i := 0; i+min-1 < len(appends); i++ {
+		target := ""
+		if len(appends[i].Arguments) > 0 {
+			target = strings.TrimSpace(appends[i].Arguments[0])
+		}
+		if target == "" {
+			continue
+		}
+		last := appends[i+min-1]
+		if last.StartByte-appends[i].StartByte > maxGap {
+			continue
+		}
+		ok := true
+		for k := 1; k < min; k++ {
+			a := appends[i+k]
+			if len(a.Arguments) == 0 || strings.TrimSpace(a.Arguments[0]) != target {
+				ok = false
+				break
+			}
+			prev := appends[i+k-1]
+			winStart := prev.StartByte + 64
+			if winStart > a.StartByte {
+				winStart = a.StartByte
+			}
+			if winStart < a.StartByte {
+				win := src[winStart:a.StartByte]
+				if b3interveningRead(win, target) {
+					ok = false
+					break
+				}
+			}
+		}
+		if !ok {
+			continue
+		}
+		lineN, col := unit.LineCol(appends[i].StartByte)
+		rules.PushFinding(meta, file, lineN, col, msg, out)
+		return
+	}
+	// No close call-fact run — line-based consecutive only (stricter).
+	b3detectConsecutiveAppendsLines(unit, out, min, meta, msg)
+}
+
+func b3interveningRead(window, target string) bool {
+	if window == "" {
+		return false
+	}
+	markers := []string{"(" + target + ")", "len(", "range ", "copy("}
+	for _, m := range markers {
+		if strings.Contains(window, m) {
+			return true
+		}
+	}
+	return false
+}
+
+func b3detectConsecutiveAppendsLines(unit *core.ParsedUnit, out *[]rules.Finding, min int, meta *rules.RuleMetadata, msg string) {
 	src := unit.Source
 	if !strings.Contains(src, "append(") {
 		return
@@ -361,12 +523,9 @@ func b3detectConsecutiveAppends(unit *core.ParsedUnit, facts *GoPerfFacts, out *
 	file := unitFile(unit)
 	for li, ln := range lines {
 		t := strings.TrimSpace(ln)
-		// match: name = append(name, ...)
 		if strings.Contains(t, "= append(") {
 			lhs := strings.TrimSpace(strings.Split(t, "=")[0])
 			lhs = strings.TrimSuffix(lhs, ":")
-			// single-value append heuristic: not multi-arg with commas after first
-			// still count multi-arg as one append statement
 			if runVar == lhs {
 				runCount++
 			} else {
@@ -375,7 +534,6 @@ func b3detectConsecutiveAppends(unit *core.ParsedUnit, facts *GoPerfFacts, out *
 				runStartLine = li
 			}
 			if runCount >= min {
-				// byte offset of run start
 				off := 0
 				for k := 0; k < runStartLine; k++ {
 					off += len(lines[k]) + 1
@@ -389,7 +547,6 @@ func b3detectConsecutiveAppends(unit *core.ParsedUnit, facts *GoPerfFacts, out *
 		if t == "" || strings.HasPrefix(t, "//") {
 			continue
 		}
-		// intervening non-append resets
 		runVar = ""
 		runCount = 0
 	}
@@ -441,49 +598,61 @@ func detectPERF121(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF122: HasPrefix + slice with len
+// detectPERF122: HasPrefix + slice with len (Rust: window -64..+256, needle ":]")
 func detectPERF122(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	file := unitFile(unit)
+	src := unit.Source
 	for _, call := range facts.Calls {
-		if call.Callee != "strings.HasPrefix" && call.Callee != "bytes.HasPrefix" {
+		if call.Callee != "strings.HasPrefix" {
 			continue
 		}
-		win := b3windowAround(unit.Source, call.StartByte, 0, 320)
-		if strings.Contains(win, "len(") && strings.Contains(win, "]:") {
+		start := call.StartByte
+		if start > 64 {
+			start -= 64
+		} else {
+			start = 0
+		}
+		end := call.StartByte + 256
+		if end > len(src) {
+			end = len(src)
+		}
+		win := src[start:end]
+		if strings.Contains(win, "len(") && strings.Contains(win, ":]") {
 			lineN, col := unit.LineCol(call.StartByte)
 			rules.PushFinding(&MetaPERF122, file, lineN, col,
-				"HasPrefix + slice; prefer TrimPrefix", out)
-			return
+				"strings.HasPrefix + slice should be strings.TrimPrefix", out)
 		}
 	}
 }
 
-// detectPERF123: make([]T, 0) or make(map[K]V, 0)
+// detectPERF123: make(T, 0) or make(T, 0, 0) — multi-fire; allow make(T, 0, cap>0).
 func detectPERF123(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
-	_ = facts
-	src := unit.Source
-	if !strings.Contains(src, "make(") {
+	file := unitFile(unit)
+	// Prefer call facts when make is recorded.
+	for _, call := range facts.Calls {
+		if call.Callee != "make" {
+			continue
+		}
+		args := call.Arguments
+		if len(args) < 2 {
+			continue
+		}
+		if strings.TrimSpace(args[1]) != "0" {
+			continue
+		}
+		// Allow make(T, 0, cap) where cap != 0.
+		if len(args) == 3 && strings.TrimSpace(args[2]) != "0" {
+			continue
+		}
+		lineN, col := unit.LineCol(call.StartByte)
+		rules.PushFinding(&MetaPERF123, file, lineN, col,
+			"make with explicit zero length/capacity is redundant; omit the zero argument", out)
+	}
+	// Text fallback if facts omit make.
+	if len(facts.Calls) > 0 {
 		return
 	}
-	file := unitFile(unit)
-	// make([]T, 0) or make([]T, 0, n) or make(map[K]V, 0)
-	if loc := reMakeZero.FindStringIndex(src); loc != nil {
-		// make([]T, 0, cap) is actually useful for capacity — detection notes say flag make(T,0) and make(T,0,N)
-		// But make([]T, 0, n) is a common capacity hint and often intentional.
-		// Fixture is make([]int, 0) — flag that.
-		snippet := src[loc[0]:loc[1]]
-		// flag make(T, 0) and make(T, 0) only when no capacity, OR make(map, 0)
-		if strings.Contains(snippet, "map[") || strings.HasSuffix(strings.TrimSpace(snippet), ", 0)") || strings.Contains(snippet, ", 0)") {
-			// if make([]T, 0, N) — still per notes, but skip capacity form to reduce FP noise except pure , 0)
-			if strings.Count(snippet, ",") == 1 {
-				lineN, col := unit.LineCol(loc[0])
-				rules.PushFinding(&MetaPERF123, file, lineN, col,
-					"redundant zero argument to make", out)
-				return
-			}
-		}
-	}
-	// also catch make([]int, 0) with flexible spacing
+	src := unit.Source
 	idx := strings.Index(src, "make(")
 	for idx >= 0 {
 		end := idx + 5
@@ -498,13 +667,16 @@ func detectPERF123(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 			end++
 		}
 		call := src[idx:end]
-		// one comma and ends with , 0)
-		if strings.Count(call, ",") == 1 && (strings.HasSuffix(call, ", 0)") || strings.HasSuffix(call, ",0)")) {
-			if strings.Contains(call, "[]") || strings.Contains(call, "map[") {
+		// make(T, 0) or make(T, 0, 0)
+		inner := strings.TrimSuffix(strings.TrimPrefix(call, "make("), ")")
+		parts := splitTopLevelArgs(inner)
+		if len(parts) >= 2 && strings.TrimSpace(parts[1]) == "0" {
+			if len(parts) == 3 && strings.TrimSpace(parts[2]) != "0" {
+				// capacity form — skip
+			} else {
 				lineN, col := unit.LineCol(idx)
 				rules.PushFinding(&MetaPERF123, file, lineN, col,
-					"redundant zero argument to make", out)
-				return
+					"make with explicit zero length/capacity is redundant; omit the zero argument", out)
 			}
 		}
 		next := strings.Index(src[idx+1:], "make(")
@@ -513,6 +685,29 @@ func detectPERF123(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 		}
 		idx = idx + 1 + next
 	}
+}
+
+func splitTopLevelArgs(s string) []string {
+	var parts []string
+	depth := 0
+	start := 0
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '(', '[', '{':
+			depth++
+		case ')', ']', '}':
+			if depth > 0 {
+				depth--
+			}
+		case ',':
+			if depth == 0 {
+				parts = append(parts, strings.TrimSpace(s[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	parts = append(parts, strings.TrimSpace(s[start:]))
+	return parts
 }
 
 // detectPERF124 / 147: strings.Replace(..., -1)
@@ -715,54 +910,113 @@ func b3identUsed(body, name string) bool {
 	return false
 }
 
-// detectPERF130: immediately-invoked func literal func(){ ... }()
+// detectPERF130: immediately-invoked func literal whose body is a single call.
 func detectPERF130(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
-	if !strings.Contains(src, "func()") && !strings.Contains(src, "func ()") {
+	if !strings.Contains(src, "func()") {
 		return
 	}
 	file := unitFile(unit)
-	// look for function literals that are immediately invoked and not assigned
-	// Use FunctionLiteralRanges + following ()
-	for _, fl := range facts.FunctionLiteralRanges {
-		end := fl[1]
-		if end >= len(src) {
-			continue
-		}
-		// after literal, optional whitespace then (
-		rest := strings.TrimLeft(src[end:], " \t\n\r")
-		if !strings.HasPrefix(rest, "(") {
-			continue
-		}
-		// skip if this is go func or defer func
-		before := b3windowAround(src, fl[0], 16, 0)
-		if strings.Contains(before, "go ") || strings.Contains(before, "defer ") {
-			continue
-		}
-		// skip if assigned: = func
-		if strings.Contains(before, "=") {
-			continue
-		}
-		// body should be simple (single statement-ish)
-		block := src[fl[0]:fl[1]]
-		// count statements roughly by semicolons/newlines inside
-		lineN, col := unit.LineCol(fl[0])
-		rules.PushFinding(&MetaPERF130, file, lineN, col,
-			"unnecessary immediately-invoked function wrapper", out)
-		_ = block
-		return
-	}
-	// text fallback
-	if loc := reIife.FindStringIndex(src); loc != nil {
-		before := b3windowAround(src, loc[0], 16, 0)
-		if strings.Contains(before, "go ") || strings.Contains(before, "defer ") || strings.Contains(before, "=") {
+	searchFrom := 0
+	for {
+		rel := strings.Index(src[searchFrom:], "func()")
+		if rel < 0 {
 			return
 		}
-		lineN, col := unit.LineCol(loc[0])
+		start := searchFrom + rel
+		// Reject go/for/arg-list positions (Rust prev-char check).
+		if start > 0 {
+			prev := ' '
+			for i := start - 1; i >= 0; i-- {
+				c := rune(src[i])
+				if c == ' ' || c == '\t' || c == '\n' || c == '\r' {
+					continue
+				}
+				prev = c
+				break
+			}
+			if prev == 'o' || prev == 'f' || prev == ',' || prev == '(' {
+				searchFrom = start + len("func()")
+				continue
+			}
+		}
+		windowEnd := start + 96
+		if windowEnd > len(src) {
+			windowEnd = len(src)
+		}
+		window := src[start:windowEnd]
+		closeIdx := strings.Index(window, "}")
+		if closeIdx < 0 {
+			searchFrom = start + len("func()")
+			continue
+		}
+		afterClose := strings.TrimLeft(window[closeIdx+1:], " \t\n\r")
+		if !strings.HasPrefix(afterClose, "(") {
+			searchFrom = start + len("func()")
+			continue
+		}
+		bodyStart := strings.Index(window, "{")
+		if bodyStart < 0 || bodyStart >= closeIdx {
+			searchFrom = start + len("func()")
+			continue
+		}
+		body := strings.TrimSpace(window[bodyStart+1 : closeIdx])
+		// Single call expression: Foo(...) or pkg.Foo(...) optionally with trailing newline.
+		if !b3isSingleCallExpression(body) {
+			searchFrom = start + len("func()")
+			continue
+		}
+		lineN, col := unit.LineCol(start)
 		rules.PushFinding(&MetaPERF130, file, lineN, col,
-			"unnecessary immediately-invoked function wrapper", out)
+			"unnecessary func() { f(args) }() wrapper; inline the call", out)
+		return
 	}
+}
+
+func b3isSingleCallExpression(body string) bool {
+	body = strings.TrimSpace(body)
+	if body == "" {
+		return false
+	}
+	// Rust rejects `;` and control-flow keywords; multi-line without `;` is OK.
+	if strings.Contains(body, ";") {
+		return false
+	}
+	if strings.Contains(body, "if ") || strings.Contains(body, "for ") ||
+		strings.Contains(body, "switch ") || strings.Contains(body, "select ") ||
+		strings.Contains(body, "var ") || strings.Contains(body, "return ") {
+		return false
+	}
+	open := strings.Index(body, "(")
+	if open <= 0 {
+		return false
+	}
+	// Prefix before first `(` must be a bare ident or method chain — no spaces
+	// (rejects `_ = f.Close()` assignments).
+	prefix := strings.TrimSpace(body[:open])
+	if prefix == "" {
+		return false
+	}
+	depth := 0
+	lastWasDot := false
+	for _, c := range prefix {
+		switch {
+		case c == '(':
+			depth++
+		case c == ')':
+			depth--
+		case c == '.' && depth == 0:
+			lastWasDot = true
+		case (c == ' ' || c == '\t') && depth == 0:
+			return false
+		}
+	}
+	if depth != 0 || strings.HasSuffix(prefix, ".") {
+		return false
+	}
+	_ = lastWasDot
+	return true
 }
 
 // detectPERF131: mu.Lock(); counter++; mu.Unlock()
@@ -1138,44 +1392,67 @@ func detectPERF146(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF148: unbuffered channel send without guaranteed receiver
+// detectPERF148: unbuffered channel with send but no receive (exact Rust heuristic).
 func detectPERF148(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
-	if !strings.Contains(src, "make(chan") {
+	if !strings.Contains(src, "make(chan ") {
 		return
 	}
-	// unbuffered: make(chan T) without capacity arg
-	if !regexp.MustCompile(`make\s*\(\s*chan\s+[^,)]+\s*\)`).MatchString(src) {
+	if !strings.Contains(src, " <- ") {
 		return
 	}
-	if !strings.Contains(src, "<-") {
+	// Rust only treats these as receives (not `<-sem` / `:= <-` generically).
+	hasReceive := strings.Contains(src, "<-ch") ||
+		strings.Contains(src, "<- ch") ||
+		strings.Contains(src, "for v := range ch") ||
+		strings.Contains(src, "for range ch")
+	if hasReceive {
 		return
 	}
 	file := unitFile(unit)
-	sendOnly := false
-	for _, ln := range strings.Split(src, "\n") {
-		t := strings.TrimSpace(ln)
-		if !strings.Contains(t, "<-") {
-			continue
-		}
-		// receive forms: <-ch, x := <-ch, case <-ch
-		if strings.HasPrefix(t, "<-") || strings.Contains(t, ":= <-") ||
-			strings.Contains(t, ", <-") || strings.Contains(t, "case <-") {
+	searchFrom := 0
+	for {
+		rel := strings.Index(src[searchFrom:], "make(chan ")
+		if rel < 0 {
 			return
 		}
-		// send form: ch <- value
-		if regexp.MustCompile(`\w+\s*<-\s*`).MatchString(t) {
-			sendOnly = true
+		start := searchFrom + rel
+		stmtEndRel := strings.IndexAny(src[start:], "\n;")
+		stmtEnd := len(src)
+		if stmtEndRel >= 0 {
+			stmtEnd = start + stmtEndRel
+		}
+		makeStmt := src[start:stmtEnd]
+		isUnbuffered := true
+		if strings.Contains(makeStmt, ", ") {
+			// Capacity after last ", " — only digit runs count; variable caps
+			// are treated as unbuffered (Rust parity).
+			p := strings.LastIndex(makeStmt, ", ")
+			after := makeStmt[p+2:]
+			capStr := ""
+			for _, r := range after {
+				if r >= '0' && r <= '9' {
+					capStr += string(r)
+				} else {
+					break
+				}
+			}
+			if capStr != "0" && capStr != "" {
+				isUnbuffered = false
+			}
+		}
+		if isUnbuffered {
+			lineN, col := unit.LineCol(start)
+			rules.PushFinding(&MetaPERF148, file, lineN, col,
+				"unbuffered channel created with no receive in this function; the sender may block forever if the receiver exits early", out)
+			return
+		}
+		searchFrom = stmtEnd
+		if searchFrom >= len(src) {
+			return
 		}
 	}
-	if !sendOnly {
-		return
-	}
-	idx := strings.Index(src, "<-")
-	lineN, col := unit.LineCol(idx)
-	rules.PushFinding(&MetaPERF148, file, lineN, col,
-		"send on unbuffered channel without guaranteed receiver", out)
 }
 
 // detectPERF149: conn.Read/Write without deadline
@@ -1225,30 +1502,41 @@ func detectPERF150(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF151: complex handler (switch+for+go)
+// detectPERF151: non-inlinable handler (Rust: loop+switch OR >50 func lines, + closure).
 func detectPERF151(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
 	if !b3hasHandlerSig(src) {
 		return
 	}
-	file := unitFile(unit)
-	// count complexity tokens in functions with Handler in name or handler sig
-	// simple: function with switch + for + go
-	if strings.Contains(src, "switch ") && strings.Contains(src, "for ") && strings.Contains(src, "go ") {
-		idx := strings.Index(src, "func ")
-		lineN, col := unit.LineCol(idx)
-		rules.PushFinding(&MetaPERF151, file, lineN, col,
-			"hot-path handler likely exceeds inlining budget", out)
+	hasLoop := strings.Contains(src, "for ")
+	hasSwitch := strings.Contains(src, "switch ")
+	hasClosure := strings.Contains(src, "func(") || strings.Contains(src, "go ")
+	// Count lines from first func until a blank line (Rust heuristic).
+	funcLines := 0
+	seenFunc := false
+	for _, line := range strings.Split(src, "\n") {
+		if !seenFunc {
+			if strings.Contains(line, "func ") {
+				seenFunc = true
+			} else {
+				continue
+			}
+		}
+		if strings.TrimSpace(line) == "" {
+			break
+		}
+		funcLines++
+	}
+	complex := (hasLoop && hasSwitch) || funcLines > 50
+	if !(complex && hasClosure) {
 		return
 	}
-	// long function: >40 lines
-	if strings.Count(src, "\n") > 45 && b3hasHandlerSig(src) {
-		idx := strings.Index(src, "func ")
-		lineN, col := unit.LineCol(idx)
-		rules.PushFinding(&MetaPERF151, file, lineN, col,
-			"hot-path function is complex/long; may not inline", out)
-	}
+	file := unitFile(unit)
+	idx := strings.Index(src, "func ")
+	lineN, col := unit.LineCol(idx)
+	rules.PushFinding(&MetaPERF151, file, lineN, col,
+		"non-inlinable handler function: too complex for the Go compiler to inline; reduce body size or split into smaller functions", out)
 }
 
 // detectPERF152: for k,v := range src { dst.Set(k,v) }

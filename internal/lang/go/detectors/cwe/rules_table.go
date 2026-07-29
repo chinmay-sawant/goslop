@@ -1010,11 +1010,13 @@ var cweNeedleRules = []cweNeedleRule{
 	{
 		id: "CWE-497",
 		groups: []needleGroup{
-			{"\"goos\":     runtime.GOOS,"},
+			{"os.Environ()"},
+			{"os.Hostname()"},
+			{"runtime.NumCPU()"},
 		},
 		forbid: []string{"\"status\": \"ok\""},
-		span:   "\"goos\":     runtime.GOOS,",
-		msg:    "sensitive system information may be exposed to callers",
+		span:   "runtime.NumCPU()",
+		msg:    "the diagnostics endpoint exposes host environment details to callers",
 		meta:   &MetaCWE497,
 	},
 	{

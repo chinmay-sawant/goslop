@@ -1118,25 +1118,76 @@ func detectPERF105(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 
 func detectPERF106(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	src := unit.Source
-	if !strings.Contains(src, "sync.Map") {
-		return
-	}
-	writes, reads := 0, 0
-	for _, call := range facts.Calls {
-		m := b2MethodName(call.Callee)
-		switch m {
-		case "Store", "Swap", "LoadAndDelete", "Delete", "CompareAndSwap", "CompareAndDelete":
-			writes++
-		case "Load", "LoadOrStore", "Range":
-			reads++
+	// Path 1: write-heavy sync.Map usage in file.
+	if strings.Contains(src, "sync.Map") {
+		writes, reads := 0, 0
+		for _, call := range facts.Calls {
+			m := b2MethodName(call.Callee)
+			switch m {
+			case "Store", "Swap", "LoadAndDelete", "Delete", "CompareAndSwap", "CompareAndDelete":
+				writes++
+			case "Load", "LoadOrStore", "Range":
+				reads++
+			}
+		}
+		if reads > 0 && writes > reads {
+			pos := strings.Index(src, "sync.Map")
+			b2Emit(unit, &MetaPERF106, pos,
+				"sync.Map is write-heavy; use a plain map guarded by a sync.Mutex instead", out)
+			return
 		}
 	}
-	if reads > 0 && writes > reads {
-		pos := strings.Index(src, "sync.Map")
-		b2Emit(unit, &MetaPERF106, pos,
-			"sync.Map is write-heavy; use a plain map guarded by sync.Mutex instead", out)
+	// Path 2: package-level cache without eviction bounds (Rust parity).
+	lines := strings.Split(src, "\n")
+	depth := 0
+	byteOff := 0
+	for _, line := range lines {
+		t := strings.TrimSpace(line)
+		if depth == 0 && strings.HasPrefix(t, "var ") {
+			rest := strings.TrimSpace(strings.TrimPrefix(t, "var "))
+			if !strings.HasPrefix(rest, "(") {
+				name := ""
+				for i, r := range rest {
+					if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || r == '_' || (i > 0 && r >= '0' && r <= '9') {
+						name += string(r)
+						continue
+					}
+					break
+				}
+				isCache := strings.Contains(t, "sync.Map") ||
+					(strings.Contains(strings.ToLower(name), "cache") &&
+						(strings.Contains(t, "sync.Map") || strings.Contains(t, "map[")))
+				if name != "" && isCache {
+					lower := strings.ToLower(src)
+					hasEvict := strings.Contains(src, "len("+name+")") ||
+						strings.Contains(src, "delete("+name+",") ||
+						strings.Contains(lower, name+".delete(") ||
+						strings.Contains(lower, name+".loadanddelete(") ||
+						strings.Contains(src, "clear("+name+")")
+					if !hasEvict {
+						hasRead := strings.Contains(src, name+".Load")
+						hasWrite := strings.Contains(src, name+".Store")
+						if !strings.Contains(t, "sync.Map") {
+							hasRead = strings.Contains(src, name+"[")
+							hasWrite = strings.Contains(src, name+"[")
+						}
+						if hasRead && hasWrite {
+							b2Emit(unit, &MetaPERF106, byteOff,
+								"package-level cache without eviction bounds; it will grow unbounded under concurrent load", out)
+							return
+						}
+					}
+				}
+			}
+		}
+		depth += strings.Count(line, "{") - strings.Count(line, "}")
+		if depth < 0 {
+			depth = 0
+		}
+		byteOff += len(line) + 1
 	}
 }
+
 
 func detectPERF107(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	for _, call := range facts.Calls {

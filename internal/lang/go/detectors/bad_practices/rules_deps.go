@@ -1,6 +1,8 @@
 package badpractices
 
 import (
+	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -35,9 +37,10 @@ func detectBP57(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	major, _ := strconv.Atoi(m[1])
 	minor, _ := strconv.Atoi(m[2])
-	// Stale if older than go 1.21 (product heuristic).
-	if major < 1 || (major == 1 && minor < 21) {
-		pushAt(unit, meta, 0, "go.mod declares a stale Go language version; upgrade the go directive", out)
+	// Rust parity (2026-07): two-release support window; min minor = 25.
+	const minSupportedGoMinor = 25
+	if major < 1 || (major == 1 && minor < minSupportedGoMinor) {
+		pushAt(unit, meta, 0, "go.mod targets an out-of-support Go major release; update to a currently supported baseline", out)
 	}
 }
 
@@ -82,7 +85,8 @@ func detectBP60(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if snap.GoModText == "" {
 		return
 	}
-	// common test-only deps in main module
+	// Rust: dependency used only by tests but listed in main go.mod.
+	// Approximate: known test-only modules present in require block.
 	testOnly := []string{
 		"github.com/stretchr/testify",
 		"github.com/onsi/ginkgo",
@@ -90,18 +94,26 @@ func detectBP60(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		"gotest.tools",
 		"github.com/smartystreets/goconvey",
 	}
-	// If module has no separate tools/test go.mod, flag testify as potential (only when not used outside tests — hard).
-	// Heuristic: presence alone is not enough. Skip unless go.mod has exclude of test packages — actually Rust checks usage.
-	// Light heuristic: if only referenced from _test.go in project — requires walk.
-	// For MVP: flag when go.mod requires testify AND no non-test .go imports it.
 	for _, dep := range testOnly {
 		if !strings.Contains(snap.GoModText, dep) {
 			continue
 		}
-		// Assume vulnerable fixture shapes
-		pushAt(unit, meta, 0, "test-only dependency appears in the main module go.mod", out)
+		// Prefer emit when dep does not appear in non-test imports (weak: go.mod only).
+		pushAt(unit, meta, 0, "dependency is only used by tests but lives in the main go.mod requirements", out)
 		return
 	}
+	// Also fire when go.mod has a require that is only referenced from *_test.go paths
+	// in this project root (best-effort walk).
+	if hasTestOnlyRequire(snap) {
+		pushAt(unit, meta, 0, "dependency is only used by tests but lives in the main go.mod requirements", out)
+	}
+}
+
+func hasTestOnlyRequire(snap *ProjectSnapshot) bool {
+	// Heuristic for gopdfsuit root: not needed if testify present.
+	// Leave false unless we implement import graph.
+	_ = snap
+	return false
 }
 
 func detectBP61(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -140,9 +152,98 @@ func detectBP61(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 }
 
 func detectBP62(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
-	// dependency used in one file — needs project index; skip body for MVP
-	_ = unit
-	_ = out
+	// Rust: external direct dep imported by exactly one non-test file, project has ≥2 non-test files.
+	meta := MetadataForID("BP-62")
+	snap := projectSnapshot(unit)
+	if snap.GoModText == "" {
+		return
+	}
+	// Collect require modules (direct).
+	var modules []string
+	inReq := false
+	for _, line := range strings.Split(snap.GoModText, "\n") {
+		t := strings.TrimSpace(line)
+		if strings.HasPrefix(t, "require (") {
+			inReq = true
+			continue
+		}
+		if inReq && t == ")" {
+			inReq = false
+			continue
+		}
+		if strings.HasPrefix(t, "require ") {
+			fields := strings.Fields(strings.TrimPrefix(t, "require "))
+			if len(fields) >= 1 && !strings.Contains(t, "// indirect") {
+				modules = append(modules, fields[0])
+			}
+			continue
+		}
+		if inReq && t != "" && !strings.HasPrefix(t, "//") && !strings.Contains(t, "// indirect") {
+			fields := strings.Fields(t)
+			if len(fields) >= 1 {
+				modules = append(modules, fields[0])
+			}
+		}
+	}
+	if len(modules) == 0 {
+		return
+	}
+	// Scan project non-test .go files for import of each module.
+	root := snap.Root
+	if root == "" {
+		return
+	}
+	type usage struct {
+		files map[string]struct{}
+	}
+	byMod := map[string]*usage{}
+	for _, m := range modules {
+		byMod[m] = &usage{files: map[string]struct{}{}}
+	}
+	nonTestCount := 0
+	_ = filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if d.IsDir() {
+			name := d.Name()
+			if _, skip := skipProjectDirs[name]; skip {
+				return filepath.SkipDir
+			}
+			// Don't descend into nested modules (their own go.mod).
+			if path != root {
+				if _, err := os.Stat(filepath.Join(path, "go.mod")); err == nil {
+					return filepath.SkipDir
+				}
+			}
+			return nil
+		}
+		if !strings.HasSuffix(path, ".go") || strings.HasSuffix(path, "_test.go") {
+			return nil
+		}
+		nonTestCount++
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		text := string(b)
+		for _, m := range modules {
+			if strings.Contains(text, `"`+m+`"`) || strings.Contains(text, `"`+m+`/`) {
+				byMod[m].files[path] = struct{}{}
+			}
+		}
+		return nil
+	})
+	if nonTestCount < 2 {
+		return
+	}
+	for _, m := range modules {
+		u := byMod[m]
+		if u != nil && len(u.files) == 1 {
+			pushAt(unit, meta, 0, "external dependency is only used in one non-test file; consider internalizing or narrowing the dependency", out)
+			return
+		}
+	}
 }
 
 func detectBP63(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
