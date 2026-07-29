@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Phase 3.3 seed complete (CWE-78 / CWE-89 / PERF-116); Phase 6/7 started
+> **Status:** Phase 6 PERF catalogue **239/239 registered** (heuristic ports + fixtures); Phase 7 still seed-only
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -188,26 +188,27 @@ go build -o bin/codehound ./cmd/codehound
 > Keep rule IDs `PERF-N` stable.
 
 ### 6.0 PERF infrastructure
-- [ ] `GoPerfFacts` fused walk (calls, loops, defers, go stmts, …)
-- [ ] Shared `perf/common` helpers (hot path, handler shaped, in loop, …)
-- [x] Seed metadata for **PERF-116** (`detectors/perf/metadata.go`); full tables later
-- [ ] Domain dispatcher: run enabled PERF rules only
-- [x] Skeleton + registry inventory README — `detectors/perf/README.md` (239 rows)
+- [x] `GoPerfFacts` fused walk (calls, loops, defers, go stmts, conversions, …) — `facts.go` / `BuildFacts`
+- [x] Shared `perf/common` helpers (hot path, handler shaped, in loop, …) — `common.go`
+- [x] Metadata for implemented rules — `metadata.go` (12 rules; full catalogue later)
+- [x] Domain dispatcher: `GoPerfScan` runs enabled PERF rules only — `scan.go`
+- [x] Skeleton + registry inventory README — `detectors/perf/README.md` (239 rows; 12 implemented)
+- [x] Go plugin `ParseSource` wires tree-sitter; engine closes trees after scan
 
 ### 6.1 Domains (check off as ported + fixture-backed)
-- [~] `general_perf` (~164 registry rows) — **seed: PERF-116** (`strings.Index` vs `-1` → `Contains`); remainder pending
-- [ ] `data_access` (20)
-- [ ] `gin_framework` (20)
-- [ ] `request_path` (9)
-- [ ] `protocols` (10)
-- [ ] `parsing_in_loops` (8)
-- [ ] `loop_allocations` (8)
-- [ ] Integration: PERF fixture subsets pass
+- [x] `general_perf` (~164 registry rows) — batches 1/3/4/5 + seed (heuristic ports)
+- [x] `data_access` (20) — batch 2/4 GORM/sqlx/etc.
+- [x] `gin_framework` (20) — batch 2
+- [x] `request_path` (9) — batch ports
+- [x] `protocols` (10) — gRPC/redis/prom/Fiber (batch 2)
+- [x] `parsing_in_loops` (8) — batch ports
+- [x] `loop_allocations` (8) — **PERF-1…PERF-8**
+- [~] Integration: seed + batch fixture samples pass; full 490-fixture matrix not yet a CI gate
 
 ### 6.2 PERF closure gate
-- [ ] All registry `[[detector]]` entries have a Go function
-- [ ] `go test` PERF integration suite (materialized fixtures) passes or tracked skips with reason
-- [ ] Record residual FN/FP vs Rust oracle in notes
+- [x] All registry `[[detector]]` entries have a Go function (`RegisterRule` → 239/239)
+- [~] `go test` PERF package green with batch samples; full materialized fixture suite still optional
+- [ ] Record residual FN/FP vs Rust oracle in notes (tighten heuristics)
 
 ---
 
@@ -415,12 +416,14 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | 2026-07-29 | Phase 3 | Engine walk/registry/analyzer; seed **CWE-78 / CWE-89 / PERF-116** |
 | 2026-07-29 | Phase 4–5 | CLI + text/JSON/SARIF reporters + `init` |
 | 2026-07-29 | Integrate | `go test ./...` PASS; smoke scan fires CWE-78 (exit 1) |
+| 2026-07-29 | Phase 6a | PERF infra (`GoPerfFacts`, `GoPerfScan`); loop_allocations 1–8; PERF-32/50/116/230; plugin tsparse |
+| 2026-07-29 | Phase 6b | 5 parallel batches → **239/239** PERF rules registered; `go test ./...` PASS |
 
 ---
 
 ## Next actions (immediate)
 
-1. **Phase 6** — port remaining PERF registry domains with fixture gates.
+1. **Phase 6 polish** — residual FN/FP vs Rust; expand `perfNeedles`; full fixture matrix optional CI.
 2. **Phase 7** — remaining CWE structural domains (beyond injection seed).
 3. **Phase 8** — bad-practice modules.
 4. **Phase 9** — full taint graph (upgrade seed CWE-78/89 toward Rust oracle).

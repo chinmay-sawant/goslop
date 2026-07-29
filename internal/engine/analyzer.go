@@ -234,6 +234,7 @@ func (a *Analyzer) scanOne(ctx *core.ScanContext, entry ScanEntry) fileResult {
 	if perr != nil {
 		return fileResult{err: perr, path: display, bytes: int64(len(source))}
 	}
+	defer closeUnitTree(unit)
 
 	var out []rules.Finding
 	for _, idx := range a.registry.DetectorIndices(entry.Language) {
@@ -254,6 +255,17 @@ func (a *Analyzer) scanOne(ctx *core.ScanContext, entry ScanEntry) fileResult {
 		source:   source,
 		path:     display,
 	}
+}
+
+// closeUnitTree frees an attached tree-sitter tree if the unit owns one.
+func closeUnitTree(unit *core.ParsedUnit) {
+	if unit == nil || unit.Tree == nil {
+		return
+	}
+	if c, ok := unit.Tree.(interface{ Close() }); ok {
+		c.Close()
+	}
+	unit.Tree = nil
 }
 
 func (a *Analyzer) buildUnit(entry ScanEntry, display, source string) (*core.ParsedUnit, error) {

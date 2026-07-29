@@ -12,6 +12,7 @@ package golang
 import (
 	"github.com/chinmay/codehound/internal/core"
 	"github.com/chinmay/codehound/internal/lang/go/detectors"
+	"github.com/chinmay/codehound/internal/lang/go/tsparse"
 )
 
 // Plugin is the Go language plugin.
@@ -49,6 +50,16 @@ func (p *Plugin) Extensions() []string { return []string{"go"} }
 
 // Detectors implements core.LanguagePlugin.
 func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
+
+// ParseSource parses Go source with tree-sitter and attaches the CST to the unit.
+// On parse failure, falls back to a source-only unit so text-level detectors still run.
+func (p *Plugin) ParseSource(path, source string) (*core.ParsedUnit, error) {
+	tree, err := tsparse.Parse([]byte(source))
+	if err != nil {
+		return core.NewParsedUnit(core.LangGo, path, source), nil
+	}
+	return core.NewParsedUnitWithTree(core.LangGo, path, source, tree), nil
+}
 
 // FunctionNodeKinds returns tree-sitter function-like node types.
 func (p *Plugin) FunctionNodeKinds() []string {

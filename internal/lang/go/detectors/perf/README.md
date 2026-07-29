@@ -2,25 +2,54 @@
 
 Performance heuristics for Go hot paths and stdlib misuse.
 
-## Seed (implemented)
+## Architecture
 
-| Rule ID | Domain | Notes |
-|---------|--------|-------|
-| `PERF-116` | general_perf / strings | `strings.Index(s, sub) != -1` → prefer `strings.Contains` |
+- **`GoPerfScan`** (`scan.go`) — single `core.Detector`; builds facts once, dispatches enabled rules
+- **`RegisterRule`** (`register.go`) — `init()`-based registration so domain batches can land independently
+- **`BuildFacts`** (`facts.go`) — tree-sitter fused walk: calls, assignments, conversions, defer/go/for, var kinds
+- **`common.go`** — hot-path / handler-shaped / loop helpers
 
-## Registry inventory (remaining)
+## Coverage
 
-Source TOMLs under `registry/`:
+| Source | Rules |
+|--------|------:|
+| Registry TOMLs | **239** |
+| Registered in Go | **239** (100%) |
 
-| Registry file | Rows | Status |
-|---------------|-----:|--------|
-| `registry.general_perf.toml` | 164 | seed: PERF-116 |
-| `registry.data_access.toml` | 20 | pending |
-| `registry.gin_framework.toml` | 20 | pending |
-| `registry.request_path.toml` | 9 | pending |
-| `registry.protocols.toml` | 10 | pending |
-| `registry.parsing_in_loops.toml` | 8 | pending |
-| `registry.loop_allocations.toml` | 8 | pending |
-| **Total** | **239** | |
+### Seed (Phase 6a)
 
-Port Rust domains under `codehound/src/lang/go/detectors/perf/domains/` into sibling packages; keep `PERF-N` ids stable.
+`PERF-1`…`8`, `PERF-32`, `PERF-50`, `PERF-116`, `PERF-230` — `rules_loop.go` / `rules_hot.go` / `seed_register.go`
+
+### Batch ports (Phase 6b)
+
+| Batch | File prefix | Rule range (approx) | Count |
+|------:|-------------|---------------------|------:|
+| 1 | `*_batch1.go` | PERF-9…60 (ex 32, 50) | 50 |
+| 2 | `*_batch2.go` | PERF-61…111 | 50 |
+| 3 | `*_batch3.go` | PERF-112…163 (ex 116) | 50 |
+| 4 | `*_batch4.go` | PERF-164…214 | 50 |
+| 5 | `*_batch5.go` | PERF-215…242 (ex 230) | 27 |
+
+## Registry domains
+
+| Registry file | Status |
+|---------------|--------|
+| `registry.loop_allocations.toml` | done |
+| `registry.general_perf.toml` | done (heuristic ports) |
+| `registry.data_access.toml` | done |
+| `registry.gin_framework.toml` | done |
+| `registry.request_path.toml` | done |
+| `registry.protocols.toml` | done |
+| `registry.parsing_in_loops.toml` | done |
+
+## Quality note
+
+Batch ports are **behavioral heuristics** aligned with Rust detectors and fixtures, not a mechanical transpile. Some rules use source-token guards where shared `perfNeedles` is incomplete (shared `facts.go` intentionally frozen during parallel landings). Tighten against the Rust oracle in follow-ups; full §12.4 gate still requires BP + packs + export.
+
+## Proof
+
+```bash
+go test ./internal/lang/go/detectors/perf/ ./...
+go build -o bin/codehound ./cmd/codehound
+./bin/codehound --list-rules | wc -l   # expect 239 PERF + CWE seeds
+```

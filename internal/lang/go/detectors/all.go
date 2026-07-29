@@ -7,11 +7,11 @@ import (
 	"github.com/chinmay/codehound/internal/lang/go/detectors/perf"
 )
 
-// All returns the seed detector set registered with the Go language plugin.
+// All returns the detector set registered with the Go language plugin.
 func All() []core.Detector {
 	return []core.Detector{
 		cwe.NewCWE78(),
 		cwe.NewCWE89(),
-		perf.NewPERF116(),
+		perf.NewGoPerfScan(),
 	}
 }

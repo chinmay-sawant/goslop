@@ -20,7 +20,10 @@ func TestGoPluginRegistration(t *testing.T) {
 		t.Fatalf("extensions = %v", exts)
 	}
 	ids := reg.RuleIDs()
-	want := map[string]bool{"CWE-78": false, "CWE-89": false, "PERF-116": false}
+	want := map[string]bool{
+		"CWE-78": false, "CWE-89": false,
+		"PERF-116": false, "PERF-6": false, "PERF-32": false,
+	}
 	for _, id := range ids {
 		if _, ok := want[id]; ok {
 			want[id] = true
