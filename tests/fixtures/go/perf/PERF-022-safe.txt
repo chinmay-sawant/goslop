@@ -1,0 +1,37 @@
+# PERF-022 negative: banner read once at startup
+lang: go
+file: PERF-022-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	banner    []byte
+	bannerErr error
+	loadOnce  sync.Once
+)
+
+func loadBanner() ([]byte, error) {
+	loadOnce.Do(func() {
+		banner, bannerErr = os.ReadFile("/etc/banner.txt")
+	})
+	return banner, bannerErr
+}
+
+func Banner(c *gin.Context) {
+	b, err := loadBanner()
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Data(http.StatusOK, "text/plain", b)
+	_ = time.Second
+}

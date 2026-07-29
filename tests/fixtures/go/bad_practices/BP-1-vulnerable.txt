@@ -1,0 +1,19 @@
+# BP-1 positive: discarded error return
+lang: go
+file: BP-1-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func WriteFile(path string, data []byte) {
+	_ = os.WriteFile(path, data, 0644)
+}
+
+func MultiDiscard(path string) {
+	// second blank is typically the error return
+	_, _ = os.ReadFile(path)
+	data, _ := os.ReadFile(path)
+	_ = data
+}

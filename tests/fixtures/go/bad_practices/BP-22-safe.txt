@@ -1,0 +1,17 @@
+# BP-22 negative: TestMain exits with m.Run
+lang: go
+file: BP-22-safe_test.go
+variant: stdlib
+---
+package sample
+
+import (
+	"os"
+	"testing"
+)
+
+func TestMain(m *testing.M) {
+	os.Exit(m.Run())
+}
+
+func TestOne(t *testing.T) {}

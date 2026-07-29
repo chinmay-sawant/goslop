@@ -1,0 +1,11 @@
+# BP-88 positive variant: receive from a zero-value local channel
+lang: go
+file: BP-88-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func receive() int {
+	var ready chan int
+	return <-ready
+}

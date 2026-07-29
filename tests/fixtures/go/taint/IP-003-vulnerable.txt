@@ -1,0 +1,20 @@
+# IP-003: Return propagation (depth 2) — vulnerable
+lang: go
+file: IP-003-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    x := getInput()
+    os.Open(x)
+}
+
+func getInput() string {
+    return r.URL.Query().Get("input")
+}

@@ -1,0 +1,30 @@
+# CWE-1240 vulnerable: homegrown XOR cipher
+lang: go
+file: CWE-1240-vulnerable.go
+---
+package sample
+
+// CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation.
+// Vulnerable: custom XOR stream cipher protects session tokens.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func xorCipher(key byte, data []byte) []byte {
+	out := make([]byte, len(data))
+	for i, b := range data {
+		out[i] = b ^ key
+	}
+	return out
+}
+
+func SealSessionToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.PostForm("token")
+		sealed := xorCipher(0x5A, []byte(token))
+		c.JSON(http.StatusOK, gin.H{"sealed": string(sealed)})
+	}
+}

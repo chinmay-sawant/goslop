@@ -1,0 +1,12 @@
+# PERF-146 positive: fmt.Sprintf with single %s
+lang: go
+file: PERF-146-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Label(name string) string {
+	return fmt.Sprintf("%s", name)
+}

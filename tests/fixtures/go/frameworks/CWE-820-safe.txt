@@ -1,0 +1,25 @@
+# CWE-820: Missing Synchronization (mitigated)
+lang: go
+file: CWE-820-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var visitMu sync.Mutex
+var visitCounts = map[string]int{}
+
+// Safe: mutex protects concurrent updates to the shared counter map.
+func TrackVisit(c *gin.Context) {
+	key := c.ClientIP()
+	visitMu.Lock()
+	visitCounts[key] = visitCounts[key] + 1
+	count := visitCounts[key]
+	visitMu.Unlock()
+	c.JSON(http.StatusOK, gin.H{"visits": count})
+}

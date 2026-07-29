@@ -1,0 +1,30 @@
+# CWE-178 positive: inconsistent case handling for resource lookup (pure stdlib)
+lang: go
+file: CWE-178-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+var permittedVolumes = map[string]bool{
+	"archive": true,
+	"shared":  true,
+}
+
+// CWE-178 Improper Handling of Case Sensitivity
+// Vulnerable line: compares lowered input against mixed-case map keys.
+func AccessVolume(w http.ResponseWriter, r *http.Request) {
+	volume := strings.ToLower(r.PathValue("volume"))
+	if !permittedVolumes[volume] {
+		http.Error(w, "denied", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"volume": volume})
+}

@@ -1,0 +1,21 @@
+# PERF-022 positive: os.ReadFile inside a handler
+lang: go
+file: PERF-022-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Banner(c *gin.Context) {
+	b, err := os.ReadFile("/etc/banner.txt")
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Data(http.StatusOK, "text/plain", b)
+}

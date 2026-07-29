@@ -1,0 +1,18 @@
+# PERF-029 negative: fan-out via a bounded worker pool using a semaphore
+lang: go
+file: PERF-029-safe.go
+---
+package sample
+
+import "fmt"
+
+func FanOut(items []int) {
+	sem := make(chan struct{}, 8)
+	for _, v := range items {
+		sem <- struct{}{}
+		go func(x int) {
+			fmt.Println(x)
+			<-sem
+		}(v)
+	}
+}

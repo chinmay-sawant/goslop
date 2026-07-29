@@ -1,0 +1,20 @@
+# PERF-017 positive: strings.Join inside loop on request path
+lang: go
+file: PERF-017-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Handle(c *gin.Context) {
+	var lines []string
+	for _, v := range c.Request.Header.Values("X-Forwarded-For") {
+		lines = append(lines, strings.Join(strings.Split(v, ","), ";"))
+	}
+	c.JSON(http.StatusOK, gin.H{"forwarded": lines})
+}

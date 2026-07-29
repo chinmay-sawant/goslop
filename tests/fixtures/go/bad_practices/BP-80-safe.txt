@@ -1,0 +1,12 @@
+# BP-80 negative: production code propagates its caller's context
+lang: go
+file: BP-80-safe.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+func load(ctx context.Context) context.Context {
+	return ctx
+}

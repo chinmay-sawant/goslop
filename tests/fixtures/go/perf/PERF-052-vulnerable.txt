@@ -1,0 +1,18 @@
+# PERF-052 positive: runtime.GC() called outside tests
+lang: go
+file: PERF-052-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"runtime"
+
+	"github.com/gin-gonic/gin"
+)
+
+func FlushMemory(c *gin.Context) {
+	runtime.GC()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

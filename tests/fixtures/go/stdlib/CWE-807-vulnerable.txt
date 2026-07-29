@@ -1,0 +1,26 @@
+# CWE-807: Reliance on Untrusted Inputs in a Security Decision (pure stdlib)
+lang: go
+file: CWE-807-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+var blockedIPs = map[string]struct{}{"203.0.113.50": {}}
+
+// Vulnerable: IP block decision trusts a client-controlled X-Forwarded-For header.
+func GateSensitiveAction(w http.ResponseWriter, r *http.Request) {
+	clientIP := r.Header.Get("X-Forwarded-For")
+	if idx := strings.Index(clientIP, ","); idx >= 0 {
+		clientIP = strings.TrimSpace(clientIP[:idx])
+	}
+	if _, blocked := blockedIPs[clientIP]; blocked {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

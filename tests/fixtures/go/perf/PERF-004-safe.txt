@@ -1,0 +1,15 @@
+# PERF-004 negative: map allocated with capacity hint outside loop
+lang: go
+file: PERF-004-safe.go
+---
+package sample
+
+func GroupByKey(items []string) []map[string]int {
+	out := make([]map[string]int, 0, len(items))
+	for _, item := range items {
+		counts := make(map[string]int, 1)
+		counts[item] = 1
+		out = append(out, counts)
+	}
+	return out
+}

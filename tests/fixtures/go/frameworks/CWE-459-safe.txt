@@ -1,0 +1,31 @@
+# CWE-459: sensitive temp export is deleted after streaming completes.
+lang: go
+file: CWE-459-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func ExportLedger(c *gin.Context, db *sqlx.DB) {
+	f, err := os.CreateTemp("", "ledger-*.csv")
+	if err != nil {
+		c.String(http.StatusInternalServerError, "export failed")
+		return
+	}
+	defer os.Remove(f.Name())
+	defer f.Close()
+	rows, _ := db.Queryx("SELECT account, balance FROM ledger")
+	for rows.Next() {
+		var account string
+		var balance float64
+		_ = rows.Scan(&account, &balance)
+		_, _ = f.WriteString(account + "\n")
+	}
+	c.File(f.Name())
+}

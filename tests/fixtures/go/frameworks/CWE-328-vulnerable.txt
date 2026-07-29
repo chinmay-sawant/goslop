@@ -1,0 +1,26 @@
+# CWE-328 vulnerable — Use of Weak Hash
+lang: go
+file: CWE-328-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/md5"
+	"encoding/hex"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func StorePasswordDigest(c *GinCtx, db *SqlxDB) error {
+	password := c.Request.PostFormValue("password")
+	sum := md5.Sum([]byte(password))
+	digest := hex.EncodeToString(sum[:])
+	return db.Exec("INSERT INTO accounts (email, pass_hash) VALUES (?, ?)", c.Request.PostFormValue("email"), digest)
+}

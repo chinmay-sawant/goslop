@@ -1,0 +1,16 @@
+# BP-9 negative: select has context cancellation
+lang: go
+file: BP-9-safe.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+// Wait exits when either the channel or the context is done.
+func Wait(ctx context.Context, ch <-chan struct{}) {
+	select {
+	case <-ch:
+	case <-ctx.Done():
+	}
+}

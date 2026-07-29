@@ -1,0 +1,28 @@
+# CWE-290 — Authentication Bypass by Spoofing (safe) (pure stdlib)
+lang: go
+file: CWE-290-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+var serverSessions = map[string]string{"sess-1": "alice"}
+
+// Safe: identity comes only from validated session cookie set by auth middleware.
+func IdentityHandler(w http.ResponseWriter, r *http.Request) {
+	sid, err := r.Cookie("session_id")
+	if err != nil || sid.Value == "" {
+		http.Error(w, "anonymous", http.StatusUnauthorized)
+		return
+	}
+	user, ok := serverSessions[sid.Value]
+	if !ok {
+		http.Error(w, "invalid session", http.StatusUnauthorized)
+		return
+	}
+	_ = json.NewEncoder(w).Encode(map[string]string{"user": user})
+}

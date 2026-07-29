@@ -1,0 +1,27 @@
+# CWE-186 positive: overly restrictive validation regex (pure stdlib)
+lang: go
+file: CWE-186-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"regexp"
+)
+
+var peerHostPattern = regexp.MustCompile(`^[a-z]+$`)
+
+// CWE-186 Overly Restrictive Regular Expression
+// Vulnerable line: rejects numeric host labels so bad values slip later.
+func CheckPeerHost(w http.ResponseWriter, r *http.Request) {
+	peer := r.URL.Query().Get("peer")
+	if !peerHostPattern.MatchString(peer) {
+		http.Error(w, "invalid", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"peer": peer})
+}

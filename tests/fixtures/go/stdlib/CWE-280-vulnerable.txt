@@ -1,0 +1,27 @@
+# CWE-280 — Improper Handling of Insufficient Permissions or Privileges (vulnerable) (pure stdlib)
+lang: go
+file: CWE-280-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"sync"
+)
+
+var tenantStore sync.Map
+
+// Vulnerable: open failure falls through to admin-only delete path.
+func DeleteTenant(w http.ResponseWriter, r *http.Request) {
+	path := "/secure/tenants/" + r.URL.Query().Get("id")
+	f, err := os.Open(path)
+	if err != nil {
+		tenantStore.Delete(r.URL.Query().Get("id"))
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	f.Close()
+	http.Error(w, "forbidden", http.StatusForbidden)
+}

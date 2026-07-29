@@ -1,0 +1,30 @@
+# CWE-250 negative: restrictive file permissions for owner only (pure stdlib)
+lang: go
+file: CWE-250-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"os"
+)
+
+// CWE-250 Execution with Unnecessary Privileges (mitigated)
+func WriteRuntimeState(w http.ResponseWriter, r *http.Request) {
+	path := "/etc/app/state.json"
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "body", http.StatusBadRequest)
+		return
+	}
+	if err := os.WriteFile(path, body, 0o600); err != nil {
+		http.Error(w, "write", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "saved"})
+}

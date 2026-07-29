@@ -1,0 +1,17 @@
+# BP-97 positive variant: gzip output is measured before Close
+lang: go
+file: BP-97-variant-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"compress/gzip"
+)
+
+func encode() int {
+	buf := &bytes.Buffer{}
+	writer := gzip.NewWriter(buf)
+	writer.Write([]byte("payload"))
+	return buf.Len()
+}

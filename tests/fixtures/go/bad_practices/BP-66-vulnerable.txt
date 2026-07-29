@@ -1,0 +1,21 @@
+# BP-66 positive: a sentinel wrapped with %w is compared with ==.
+lang: go
+file: BP-66-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrMissing = errors.New("missing")
+
+func lookup() error {
+	err := fmt.Errorf("lookup: %w", ErrMissing)
+	if err == ErrMissing {
+		return nil
+	}
+	return err
+}

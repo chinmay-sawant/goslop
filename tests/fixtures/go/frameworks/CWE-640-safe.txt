@@ -1,0 +1,48 @@
+# CWE-640: Weak Password Recovery Mechanism for Forgotten Password (mitigated)
+lang: go
+file: CWE-640-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type User struct {
+	ID       uint
+	Email    string
+	Password string
+}
+
+type ResetToken struct {
+	Email     string
+	Token     string
+	ExpiresAt time.Time
+}
+
+// Safe: requires a single-use, time-limited reset token before changing the password.
+func ForgotPassword(c *gin.Context, db *gorm.DB) {
+	var body struct {
+		Email       string `json:"email"`
+		Token       string `json:"token"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	var tok ResetToken
+	if err := db.Where("email = ? AND token = ? AND expires_at > ?", body.Email, body.Token, time.Now()).First(&tok).Error; err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	hash, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+	db.Model(&User{}).Where("email = ?", body.Email).Update("password", string(hash))
+	db.Delete(&tok)
+	c.Status(http.StatusOK)
+}

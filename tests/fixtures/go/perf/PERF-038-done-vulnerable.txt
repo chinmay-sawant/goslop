@@ -1,0 +1,19 @@
+# PERF-038-done positive: unbuffered work channel still fires (done-signal narrow is orthogonal)
+lang: go
+file: PERF-038-done-vulnerable.go
+---
+package sample
+
+import "fmt"
+
+func Pipeline(input []int) {
+	ch := make(chan int)
+	go func() {
+		for v := range ch {
+			fmt.Println(v)
+		}
+	}()
+	for _, v := range input {
+		ch <- v
+	}
+}

@@ -1,0 +1,16 @@
+# BP-101 positive: the body write implicitly commits 200 before the later status.
+lang: go
+file: BP-101-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func serve(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "created")
+	w.WriteHeader(http.StatusCreated)
+}

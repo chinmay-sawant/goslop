@@ -1,0 +1,10 @@
+# PERF-123 positive: make with explicit zero length
+lang: go
+file: PERF-123-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func MakeSlice() []int {
+	return make([]int, 0)
+}

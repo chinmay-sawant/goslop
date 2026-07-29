@@ -1,0 +1,18 @@
+# BP-136 positive: schema migration runs in a net/http request handler.
+lang: go
+file: BP-136-vulnerable.go
+variant: gorm-net-http
+---
+package sample
+
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func createUser(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	_ = db.AutoMigrate(&User{})
+}

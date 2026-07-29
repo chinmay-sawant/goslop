@@ -1,0 +1,26 @@
+# BP-76 negative variant: independently ranged maps do not share an output path.
+lang: go
+file: BP-76-variant-safe.go
+variant: separate-output
+---
+package sample
+
+import (
+	"sort"
+	"strings"
+)
+
+func names() string {
+	items := map[string]int{"b": 2, "a": 1}
+	keys := make([]string, 0, len(items))
+	for key := range items {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return strings.Join(keys, ",")
+}
+
+func unrelated() string {
+	values := []string{"x", "y"}
+	return strings.Join(values, ",")
+}

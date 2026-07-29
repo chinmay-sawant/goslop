@@ -1,0 +1,23 @@
+# CWE-335 vulnerable — Incorrect Usage of Seeds in PRNG
+lang: go
+file: CWE-335-vulnerable.go
+---
+package sample
+
+import (
+	"math/rand"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func AssignSeatLottery(c *GinCtx) string {
+	seed := time.Now().Unix()
+	rand.Seed(seed)
+	ticket := strconv.Itoa(rand.Intn(50))
+	return ticket
+}

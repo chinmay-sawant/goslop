@@ -1,0 +1,17 @@
+# PERF-226 positive: make+copy of compress buffer Len/Bytes (P0.2 shape)
+lang: go
+file: PERF-226-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func CompressAndOwn(page []byte) []byte {
+	var compressedBuf bytes.Buffer
+	compressedBuf.Write(page)
+	// Own-then-copy after production — classic post-compress waste.
+	cp := make([]byte, compressedBuf.Len())
+	copy(cp, compressedBuf.Bytes())
+	return cp
+}

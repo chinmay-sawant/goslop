@@ -1,0 +1,26 @@
+# CWE-140 negative: encoding/csv handles delimiters (pure stdlib)
+lang: go
+file: CWE-140-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/csv"
+	"net/http"
+)
+
+// CWE-140 Improper Neutralization of Delimiters (mitigated)
+func BuildMemberCSV(w http.ResponseWriter, r *http.Request) {
+	display := r.URL.Query().Get("display")
+	dept := r.URL.Query().Get("dept")
+	var buf bytes.Buffer
+	writer := csv.NewWriter(&buf)
+	_ = writer.Write([]string{"display", "dept", "status"})
+	_ = writer.Write([]string{display, dept, "active"})
+	writer.Flush()
+	w.Header().Set("Content-Type", "text/csv")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(buf.Bytes())
+}

@@ -1,0 +1,25 @@
+# PERF-224 positive: recursive tree walk on request path
+lang: go
+file: PERF-224-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+type Node struct {
+	Children []*Node
+}
+
+func assignIDs(node *Node) {
+	for _, child := range node.Children {
+		assignIDs(child)
+	}
+}
+
+func HandleTree(w http.ResponseWriter, r *http.Request, root *Node) {
+	flatNodes := []*Node{root}
+	_ = flatNodes
+	assignIDs(root)
+	w.WriteHeader(http.StatusOK)
+}

@@ -1,0 +1,29 @@
+# CWE-283 — Unverified Ownership (safe)
+lang: go
+file: CWE-283-safe.go
+---
+package sample
+
+import (
+	"os"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: ensures the file is owned by the authenticated uid before deletion.
+func DeleteUserFile(c *gin.Context) {
+	path := c.Query("path")
+	info, err := os.Stat(path)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "missing"})
+		return
+	}
+	stat := info.Sys().(*syscall.Stat_t)
+	if int(stat.Uid) != c.GetInt("uid") {
+		c.JSON(403, gin.H{"error": "not owner"})
+		return
+	}
+	_ = os.Remove(path)
+	c.JSON(200, gin.H{"removed": path})
+}

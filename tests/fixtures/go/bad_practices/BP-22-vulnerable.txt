@@ -1,0 +1,14 @@
+# BP-22 positive: TestMain does not call os.Exit
+lang: go
+file: BP-22-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestMain(m *testing.M) {
+	m.Run()
+}
+
+func TestOne(t *testing.T) {}

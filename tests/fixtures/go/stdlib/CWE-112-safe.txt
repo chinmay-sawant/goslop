@@ -1,0 +1,40 @@
+# CWE-112 negative: required fields validated before use (pure stdlib)
+lang: go
+file: CWE-112-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"io"
+	"net/http"
+	"regexp"
+)
+
+var skuPattern = regexp.MustCompile(`^[A-Z0-9-]{6,24}$`)
+
+// CWE-112 Missing XML Validation (mitigated)
+func HandleManifest(w http.ResponseWriter, r *http.Request) {
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "body", http.StatusBadRequest)
+		return
+	}
+	var manifest struct {
+		SKU   string  `xml:"sku"`
+		Price float64 `xml:"price"`
+	}
+	if err := xml.Unmarshal(payload, &manifest); err != nil {
+		http.Error(w, "xml", http.StatusBadRequest)
+		return
+	}
+	if !skuPattern.MatchString(manifest.SKU) || manifest.Price <= 0 {
+		http.Error(w, "schema", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]any{"sku": manifest.SKU, "price": manifest.Price})
+}

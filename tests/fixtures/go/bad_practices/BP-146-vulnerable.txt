@@ -1,0 +1,12 @@
+# BP-146 positive: a structured logger receives a password value.
+lang: go
+file: BP-146-vulnerable.go
+variant: slog-sensitive-field
+---
+package main
+
+import "log/slog"
+
+func recordLogin(password string) {
+	slog.Info("login", "password", password)
+}

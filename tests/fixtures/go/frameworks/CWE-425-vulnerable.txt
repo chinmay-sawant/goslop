@@ -1,0 +1,24 @@
+# CWE-425: restricted admin export reachable without authorization.
+lang: go
+file: CWE-425-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func MountAdminExports(r *gin.Engine, db *sqlx.DB) {
+	r.GET("/internal/admin/export.csv", func(c *gin.Context) {
+		rows, err := db.Queryx("SELECT email, ssn FROM customers")
+		if err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		defer rows.Close()
+		c.JSON(http.StatusOK, rows)
+	})
+}

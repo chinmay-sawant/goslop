@@ -1,0 +1,40 @@
+# CWE-307 — Improper Restriction of Excessive Authentication Attempts (safe)
+lang: go
+file: CWE-307-safe.go
+---
+package sample
+
+import (
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type User struct {
+	Email string
+	Hash  string
+}
+
+var loginAttempts sync.Map
+
+// Safe: blocks client after five failures inside a sliding minute window.
+func PasswordLogin(c *gin.Context, db *gorm.DB) {
+	key := c.ClientIP()
+	if n, _ := loginAttempts.LoadOrStore(key, 0); n.(int) >= 5 {
+		c.JSON(429, gin.H{"error": "rate limited"})
+		return
+	}
+	email := c.PostForm("email")
+	var u User
+	if db.Where("email = ?", email).First(&u).Error != nil {
+		cur, _ := loginAttempts.Load(key)
+		loginAttempts.Store(key, cur.(int)+1)
+		time.Sleep(200 * time.Millisecond)
+		c.JSON(401, gin.H{"error": "bad creds"})
+		return
+	}
+	loginAttempts.Delete(key)
+	c.JSON(200, gin.H{"token": "issued"})
+}

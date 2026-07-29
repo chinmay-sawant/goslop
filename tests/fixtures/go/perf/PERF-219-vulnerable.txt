@@ -1,0 +1,14 @@
+# PERF-219 positive: oversized buffer returned to pool
+lang: go
+file: PERF-219-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var pool sync.Pool
+
+func Recycle(buf []byte) {
+	pool.Put(buf)
+}

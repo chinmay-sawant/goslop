@@ -1,0 +1,12 @@
+# BP-94 positive: a goroutine writes a map index without synchronization
+lang: go
+file: BP-94-vulnerable.go
+---
+package sample
+
+func update() {
+	cache := make(map[string]int)
+	go func() {
+		cache["ready"] = 1
+	}()
+}

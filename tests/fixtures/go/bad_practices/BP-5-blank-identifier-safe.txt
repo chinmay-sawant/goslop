@@ -1,0 +1,20 @@
+# BP-5 negative: assigning Close error to a named variable preserves it
+lang: go
+file: BP-5-blank-identifier-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+type closer struct{}
+
+func (closer) Close() error { return nil }
+
+// CloseAndInspect preserves a Close error for its caller.
+func CloseAndInspect(c closer) error {
+	if err := c.Close(); err != nil {
+		return fmt.Errorf("close: %w", err)
+	}
+	return nil
+}

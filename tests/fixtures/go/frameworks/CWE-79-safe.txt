@@ -1,0 +1,20 @@
+# CWE-79 negative: escaped user data in HTML
+lang: go
+file: CWE-79-safe.go
+---
+package sample
+
+import (
+	"fmt"
+	"html"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-79 Improper Neutralization of Input During Web Page Generation (mitigated)
+func GreetVisitor(c *gin.Context) {
+	name := c.Query("name")
+	page := fmt.Sprintf("<html><body><h1>Hello %s</h1></body></html>", html.EscapeString(name))
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(page))
+}

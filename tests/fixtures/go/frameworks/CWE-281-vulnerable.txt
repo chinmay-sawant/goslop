@@ -1,0 +1,24 @@
+# CWE-281 — Improper Preservation of Permissions (vulnerable)
+lang: go
+file: CWE-281-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: copy recreates file with default permissive mode.
+func BackupConfig(c *gin.Context) {
+	src := "/etc/app/config.toml"
+	dst := "/backups/config.toml"
+	in, _ := os.Open(src)
+	out, _ := os.Create(dst)
+	_, _ = io.Copy(out, in)
+	in.Close()
+	out.Close()
+	c.JSON(200, gin.H{"backup": dst})
+}

@@ -1,0 +1,30 @@
+# CWE-639: Authorization Bypass Through User-Controlled Key
+lang: go
+file: CWE-639-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+type Invoice struct {
+	ID     int     `db:"id"`
+	UserID int     `db:"user_id"`
+	Amount float64 `db:"amount"`
+}
+
+// Vulnerable: record key comes from the client without tying it to the session owner.
+func GetInvoice(c *gin.Context, db *sqlx.DB) {
+	invoiceID := c.Param("invoice_id")
+	var inv Invoice
+	err := db.Get(&inv, "SELECT id, user_id, amount FROM invoices WHERE id = $1", invoiceID)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, inv)
+}

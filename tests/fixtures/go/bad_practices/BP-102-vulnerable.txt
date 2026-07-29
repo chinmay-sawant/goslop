@@ -1,0 +1,18 @@
+# BP-102 positive: the net/http error path returns without an error response.
+lang: go
+file: BP-102-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func serve(w http.ResponseWriter, r *http.Request) {
+	payload, err := loadPayload(r)
+	if err != nil {
+		return
+	}
+	w.Write(payload)
+}
+
+func loadPayload(*http.Request) ([]byte, error) { return []byte("ok"), nil }

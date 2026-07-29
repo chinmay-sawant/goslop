@@ -1,0 +1,19 @@
+# PERF-94 positive: io.ReadAll on Fiber RequestBodyStream
+lang: go
+file: PERF-094-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"github.com/gofiber/fiber/v2"
+)
+
+func Ingest(c *fiber.Ctx) error {
+	body, err := io.ReadAll(c.RequestBodyStream())
+	if err != nil {
+		return c.Status(400).SendString("bad request")
+	}
+	_ = body
+	return c.SendString("ok")
+}

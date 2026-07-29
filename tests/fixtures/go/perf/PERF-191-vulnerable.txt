@@ -1,0 +1,19 @@
+# PERF-191 positive: []*SmallStruct with a small struct
+lang: go
+file: PERF-191-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type Point struct {
+	X int
+	Y int
+}
+
+func makePoints(n int) []*Point {
+	out := make([]*Point, n)
+	for i := 0; i < n; i++ {
+		out[i] = &Point{X: i, Y: i}
+	}
+	return out
+}

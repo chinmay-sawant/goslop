@@ -1,0 +1,14 @@
+# PERF-190 positive: http.Client missing Timeout
+lang: go
+file: PERF-190-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Client() *http.Client {
+	return &http.Client{
+		Transport: http.DefaultTransport,
+	}
+}

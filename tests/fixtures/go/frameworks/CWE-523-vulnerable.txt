@@ -1,0 +1,23 @@
+# CWE-523: login credentials accepted on cleartext HTTP listener.
+lang: go
+file: CWE-523-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func StartLoginService(db *sqlx.DB) *http.Server {
+	r := gin.New()
+	r.POST("/login", func(c *gin.Context) {
+		user := c.PostForm("username")
+		pass := c.PostForm("password")
+		_ = db.QueryRowx("SELECT id FROM users WHERE email = ? AND password = ?", user, pass)
+		c.String(http.StatusOK, "welcome")
+	})
+	return &http.Server{Addr: ":8080", Handler: r}
+}

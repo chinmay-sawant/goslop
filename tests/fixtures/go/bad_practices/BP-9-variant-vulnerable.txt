@@ -1,0 +1,16 @@
+# BP-9 positive variant: nested select escape does not cover outer select
+lang: go
+file: BP-9-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Wait(ch <-chan struct{}) {
+	select {
+	case <-ch:
+		_ = "ctx.Done()"
+		select {
+		default:
+		}
+	}
+}

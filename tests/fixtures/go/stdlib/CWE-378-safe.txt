@@ -1,0 +1,36 @@
+# CWE-378 safe: Creation of Temporary File With Insecure Permissions (mitigated, pure stdlib)
+lang: go
+file: CWE-378-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+func SaveUploadBuffer(w http.ResponseWriter, r *http.Request) error {
+	job := r.URL.Query().Get("job")
+	chunk := r.FormValue("chunk")
+	if job == "" || chunk == "" {
+		http.Error(w, "job and chunk required", http.StatusBadRequest)
+		return http.ErrMissingFile
+	}
+	f, err := os.CreateTemp("", "upload-*.bin")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	defer f.Close()
+	if err := os.Chmod(f.Name(), 0600); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	if _, err := f.Write([]byte(chunk)); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

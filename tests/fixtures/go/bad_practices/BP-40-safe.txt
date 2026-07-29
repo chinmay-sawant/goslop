@@ -1,0 +1,12 @@
+# BP-40 negative: const block shares a domain prefix
+lang: go
+file: BP-40-safe.go
+variant: stdlib
+---
+package sample
+
+const (
+	StatusPending = "pending"
+	StatusReady   = "ready"
+	StatusFailed  = "failed"
+)

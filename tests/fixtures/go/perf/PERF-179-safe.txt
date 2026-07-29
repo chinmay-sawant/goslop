@@ -1,0 +1,14 @@
+# PERF-179 negative: a single strings.Replacer handles the substitution
+lang: go
+file: PERF-179-safe.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+var fooReplacer = strings.NewReplacer("foo", "bar")
+
+func Cleanup(s string) string {
+	return fooReplacer.Replace(s)
+}

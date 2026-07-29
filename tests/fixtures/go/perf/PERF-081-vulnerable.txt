@@ -1,0 +1,18 @@
+# PERF-81 positive: sqlx IN (?) expands an unbounded slice
+lang: go
+file: PERF-081-vulnerable.go
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct {
+	ID    int64  `db:"id"`
+	Email string `db:"email"`
+}
+
+func FindByIDs(db *sqlx.DB, ids []int64) ([]User, error) {
+	var users []User
+	err := db.Select(&users, "SELECT id, email FROM users WHERE id IN (?)", ids)
+	return users, err
+}

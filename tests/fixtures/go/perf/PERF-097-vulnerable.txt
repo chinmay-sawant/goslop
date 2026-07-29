@@ -1,0 +1,22 @@
+# PERF-97 positive: proto.Marshal inside a loop
+lang: go
+file: PERF-097-vulnerable.go
+---
+package sample
+
+import (
+	"google.golang.org/protobuf/proto"
+)
+
+type Msg struct {
+	Text string
+}
+
+func MarshalAll(msgs []*Msg) [][]byte {
+	out := make([][]byte, 0, len(msgs))
+	for _, m := range msgs {
+		data, _ := proto.Marshal(m)
+		out = append(out, data)
+	}
+	return out
+}

@@ -1,0 +1,12 @@
+# PERF-147 negative: strings.ReplaceAll
+lang: go
+file: PERF-147-safe.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func Normalize(s string) string {
+	return strings.ReplaceAll(s, "-", "_")
+}

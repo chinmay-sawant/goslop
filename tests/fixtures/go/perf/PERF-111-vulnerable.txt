@@ -1,0 +1,15 @@
+# PERF-111 positive: range over []rune(s)
+lang: go
+file: PERF-111-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func CountRunes(s string) int {
+	count := 0
+	for _, r := range []rune(s) {
+		_ = r
+		count++
+	}
+	return count
+}

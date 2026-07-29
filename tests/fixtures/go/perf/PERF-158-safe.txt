@@ -1,0 +1,16 @@
+# PERF-158 negative: slices.Sort for a basic-type slice
+lang: go
+file: PERF-158-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"slices"
+)
+
+func Sort(xs []int) {
+	slices.Sort(xs)
+	fmt.Println(xs)
+}

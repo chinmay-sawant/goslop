@@ -1,0 +1,33 @@
+# PERF-063 negative: validator engine is cached at startup
+lang: go
+file: PERF-063-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"gopkg.in/go-playground/validator.v10"
+)
+
+var (
+	engine     *validator.Validate
+	engineOnce sync.Once
+)
+
+func cachedEngine() *validator.Validate {
+	engineOnce.Do(func() {
+		engine = binding.Validator.Engine().(*validator.Validate)
+	})
+	return engine
+}
+
+func ValidateCached(c *gin.Context) {
+	eng := cachedEngine()
+	_ = eng
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

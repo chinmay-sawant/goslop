@@ -1,0 +1,18 @@
+# BP-5 positive: Close error ignored
+lang: go
+file: BP-5-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func Save(path string, data []byte) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write(data)
+	return err
+}

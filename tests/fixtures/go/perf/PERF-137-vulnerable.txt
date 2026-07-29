@@ -1,0 +1,41 @@
+# PERF-137 positive: runtime.Caller in a hot path
+lang: go
+file: PERF-137-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"runtime"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_, file, line, ok := runtime.Caller(0)
+	if ok {
+		w.Header().Set("X-Source", file+":"+itoa(line))
+	}
+	_ = r
+}
+
+func itoa(n int) string {
+	if n == 0 {
+		return "0"
+	}
+	neg := n < 0
+	if neg {
+		n = -n
+	}
+	buf := make([]byte, 0, 20)
+	for n > 0 {
+		buf = append(buf, byte('0'+n%10))
+		n /= 10
+	}
+	if neg {
+		buf = append(buf, '-')
+	}
+	for i, j := 0, len(buf)-1; i < j; i, j = i+1, j-1 {
+		buf[i], buf[j] = buf[j], buf[i]
+	}
+	return string(buf)
+}

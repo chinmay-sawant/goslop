@@ -1,0 +1,28 @@
+# CWE-649: Reliance on Obfuscation without Integrity Checking
+lang: go
+file: CWE-649-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/base64"
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: role is base64-encoded in a cookie and trusted without integrity verification.
+func AdminDashboard(c *gin.Context) {
+	raw, err := c.Cookie("profile")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	decoded, _ := base64.StdEncoding.DecodeString(raw)
+	if strings.Contains(string(decoded), "role=admin") {
+		c.JSON(http.StatusOK, gin.H{"panel": "admin"})
+		return
+	}
+	c.AbortWithStatus(http.StatusForbidden)
+}

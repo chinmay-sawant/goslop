@@ -1,0 +1,49 @@
+# CWE-918 safe: allowlisted outbound fetch
+lang: go
+file: CWE-918-safe.go
+---
+package sample
+
+// CWE-918 mitigated: only approved CDN hosts may be fetched.
+
+import (
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+var allowedHosts = map[string]struct{}{
+	"cdn.example.com": {},
+	"assets.example.com": {},
+}
+
+func ProxyPreviewSafe() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		target := c.Query("url")
+		parsed, err := url.Parse(target)
+		if err != nil || parsed.Scheme != "https" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid url"})
+			return
+		}
+		host := strings.ToLower(parsed.Hostname())
+		if _, ok := allowedHosts[host]; !ok {
+			c.JSON(http.StatusForbidden, gin.H{"error": "host not allowed"})
+			return
+		}
+		resp, err := http.Get(parsed.String())
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+			return
+		}
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.Data(resp.StatusCode, "application/octet-stream", body)
+	}
+}

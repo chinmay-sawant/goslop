@@ -1,0 +1,47 @@
+# CWE-645: Overly Restrictive Account Lockout Mechanism (mitigated, pure stdlib)
+lang: go
+file: CWE-645-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"sync"
+	"time"
+)
+
+var lockoutMu sync.Mutex
+var failedAttempts = map[string]int{}
+var lockedUntil = map[string]time.Time{}
+
+// Safe: allows several failures and applies a temporary lockout window.
+func Login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	user := r.FormValue("username")
+	pass := r.FormValue("password")
+	lockoutMu.Lock()
+	if until, ok := lockedUntil[user]; ok && time.Now().Before(until) {
+		lockoutMu.Unlock()
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	lockoutMu.Unlock()
+	var stored string
+	err := db.QueryRow("SELECT password FROM accounts WHERE username = $1", user).Scan(&stored)
+	if err != nil || stored != pass {
+		lockoutMu.Lock()
+		failedAttempts[user]++
+		if failedAttempts[user] >= 5 {
+			lockedUntil[user] = time.Now().Add(15 * time.Minute)
+			failedAttempts[user] = 0
+		}
+		lockoutMu.Unlock()
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	lockoutMu.Lock()
+	failedAttempts[user] = 0
+	lockoutMu.Unlock()
+	w.WriteHeader(http.StatusOK)
+}

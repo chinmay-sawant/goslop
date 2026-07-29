@@ -1,0 +1,15 @@
+# PERF-036 positive: go func() captures a loop variable by reference
+lang: go
+file: PERF-036-vulnerable.go
+---
+package sample
+
+import "fmt"
+
+func FanOut(items []int) {
+	for _, v := range items {
+		go func() {
+			fmt.Println(v)
+		}()
+	}
+}

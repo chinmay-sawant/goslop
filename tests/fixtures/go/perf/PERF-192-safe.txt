@@ -1,0 +1,20 @@
+# PERF-192 negative: make(map) with len(src) hint before population
+lang: go
+file: PERF-192-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Index(names []string) map[string]int {
+	idx := make(map[string]int, len(names))
+	for _, n := range names {
+		idx[n] = len(n)
+	}
+	return idx
+}
+
+func _() {
+	fmt.Println(Index([]string{"a", "b"}))
+}

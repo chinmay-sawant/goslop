@@ -1,0 +1,30 @@
+# PERF-96 positive: gRPC client allocates a new proto message inside the Recv loop
+lang: go
+file: PERF-096-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+)
+
+type ItemRequest struct {
+	Name string
+}
+
+type ItemStream interface {
+	RecvMsg(m *ItemRequest) error
+}
+
+func Drain(stream ItemStream) error {
+	for {
+		msg := &ItemRequest{}
+		if err := stream.RecvMsg(msg); err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		_ = msg
+	}
+}

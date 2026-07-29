@@ -1,0 +1,31 @@
+# CWE registry — domain: configuration
+
+[[detector]]
+cwe = 15
+domain = "configuration"
+function = "detect_cwe_15"
+
+[[detector]]
+cwe = 260
+domain = "configuration"
+function = "detect_cwe_260"
+
+[[detector]]
+cwe = 455
+domain = "configuration"
+function = "detect_cwe_455"
+
+[[detector]]
+cwe = 472
+domain = "configuration"
+function = "detect_cwe_472"
+
+[[detector]]
+cwe = 1051
+domain = "configuration"
+function = "detect_cwe_1051"
+
+[[detector]]
+cwe = 1067
+domain = "configuration"
+function = "detect_cwe_1067"

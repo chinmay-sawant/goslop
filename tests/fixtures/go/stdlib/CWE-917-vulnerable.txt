@@ -1,0 +1,36 @@
+# CWE-917 positive: user-controlled template expression (pure stdlib)
+lang: go
+file: CWE-917-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-917: Expression Language Injection via text/template built from request input.
+// Vulnerable: filter query parameter is concatenated into the template source.
+
+import (
+	"bytes"
+	"net/http"
+	"text/template"
+)
+
+func RenderReportPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title := r.URL.Query().Get("title")
+		expr := r.URL.Query().Get("filter")
+		src := "{{.Title}} where " + expr
+		tmpl, err := template.New("report").Parse(src)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		var buf bytes.Buffer
+		data := map[string]string{"Title": title}
+		if err := tmpl.Execute(&buf, data); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write(buf.Bytes())
+	}
+}

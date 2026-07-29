@@ -1,0 +1,44 @@
+# CWE-613: Insufficient Session Expiration (mitigated)
+lang: go
+file: CWE-613-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+var revokedSessions = map[string]struct{}{}
+
+// Safe: short-lived cookie and server-side revocation on logout.
+func LoginHandler(c *gin.Context) {
+	sid := c.PostForm("session_id")
+	c.SetCookie("sid", sid, 900, "/", "", true, true)
+	c.Status(http.StatusOK)
+}
+
+func LogoutHandler(c *gin.Context) {
+	sid, _ := c.Cookie("sid")
+	if sid != "" {
+		revokedSessions[sid] = struct{}{}
+	}
+	c.SetCookie("sid", "", -1, "/", "", true, true)
+	c.Status(http.StatusOK)
+}
+
+func ProtectedHandler(c *gin.Context) {
+	sid, err := c.Cookie("sid")
+	if err != nil || sid == "" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	if _, revoked := revokedSessions[sid]; revoked {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	_ = time.Now()
+	c.JSON(http.StatusOK, gin.H{"data": "secret"})
+}

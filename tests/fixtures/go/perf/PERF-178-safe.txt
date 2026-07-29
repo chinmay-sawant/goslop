@@ -1,0 +1,14 @@
+# PERF-178 negative: single time.Format call
+lang: go
+file: PERF-178-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+const layout = "2006-01-02 15:04:05"
+
+func OneFormat(t time.Time) string {
+	return t.Format(layout)
+}

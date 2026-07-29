@@ -1,0 +1,31 @@
+# CWE-179 negative: decode before validating final form
+lang: go
+file: CWE-179-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"net/url"
+	"regexp"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+var safeToken = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+
+// CWE-179 Incorrect Behavior Order: Early Validation (mitigated)
+func LoadToken(c *gin.Context) {
+	raw := c.Query("token")
+	decoded, err := url.QueryUnescape(raw)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid"})
+		return
+	}
+	if !safeToken.MatchString(decoded) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"token": strings.ToLower(decoded)})
+}

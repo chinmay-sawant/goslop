@@ -1,0 +1,26 @@
+# CWE-841: Improper Enforcement of Behavioral Workflow (pure stdlib)
+lang: go
+file: CWE-841-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+var accountPasswords = map[string]string{}
+var accountMFAPassed = map[string]bool{}
+
+// Vulnerable: password reset proceeds without confirming MFA step completed.
+func ResetAccount(w http.ResponseWriter, r *http.Request) {
+	email := r.FormValue("email")
+	newPass := r.FormValue("new_password")
+	if email == "" || newPass == "" {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	_ = accountMFAPassed[email]
+	accountPasswords[email] = newPass
+	w.WriteHeader(http.StatusOK)
+}

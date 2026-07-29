@@ -1,0 +1,10 @@
+# BP-84 positive variant: percentage-shaped return uses integer division
+lang: go
+file: BP-84-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func utilizationPct(used, capacity int) int {
+	return used / capacity * 100
+}

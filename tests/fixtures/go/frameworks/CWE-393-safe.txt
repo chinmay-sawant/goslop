@@ -1,0 +1,37 @@
+# CWE-393 safe — Return of Wrong Status Code (mitigated)
+lang: go
+file: CWE-393-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type GinCtx struct {
+	Writer  http.ResponseWriter
+	Request *http.Request
+}
+
+type SqlxDB struct {
+	DB *sql.DB
+}
+
+func (db *SqlxDB) QueryRow(query string, args ...interface{}) *sql.Row {
+	return db.DB.QueryRow(query, args...)
+}
+
+func GetBalance(c *GinCtx, db *SqlxDB) {
+	var balance float64
+	err := db.QueryRow("SELECT balance FROM accounts WHERE id = ?", c.Request.URL.Query().Get("id")).Scan(&balance)
+	if err != nil {
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		_, _ = c.Writer.Write([]byte(`{"error":"lookup failed"}`))
+		return
+	}
+	c.Writer.WriteHeader(http.StatusOK)
+	payload, _ := json.Marshal(map[string]float64{"balance": balance})
+	_, _ = c.Writer.Write(payload)
+}

@@ -1,0 +1,18 @@
+# PERF-031 positive: defer used inside a hot request handler
+lang: go
+file: PERF-031-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Track(c *gin.Context) {
+	defer trackLatency("Track")
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func trackLatency(name string) { _ = name }

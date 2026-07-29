@@ -1,0 +1,19 @@
+# PERF-019 negative: range by index to avoid copying the struct
+lang: go
+file: PERF-019-safe.go
+---
+package sample
+
+type Record struct {
+	ID   int64
+	Blob [256]byte
+	Meta [1024]byte
+}
+
+func processRecords(records []Record) {
+	for i := range records {
+		_ = processRecord(records[i])
+	}
+}
+
+func processRecord(r Record) int64 { return r.ID }

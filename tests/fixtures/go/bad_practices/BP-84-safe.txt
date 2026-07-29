@@ -1,0 +1,20 @@
+# BP-84 negative: floating-point conversion happens before division
+lang: go
+file: BP-84-safe.go
+variant: stdlib
+---
+package sample
+
+func completionPercent(completed, total int) float64 {
+	percent := float64(completed) / float64(total) * 100
+	return percent
+}
+
+func completedRatio(completed, total int) int {
+	ratio := completed / total
+	return ratio
+}
+
+func scale(value int) int {
+	return value * 100
+}

@@ -1,0 +1,28 @@
+# CWE-1067 negative: prefix search on indexed column (pure stdlib)
+lang: go
+file: CWE-1067-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1067 mitigated: prefix match on indexed slug column avoids sequential scan.
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func SearchArticlesPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		prefix := r.URL.Query().Get("prefix")
+		pattern := prefix + "%"
+		rows, err := db.Query("SELECT id, slug FROM articles WHERE slug LIKE $1", pattern)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"results":[]}`))
+	}
+}

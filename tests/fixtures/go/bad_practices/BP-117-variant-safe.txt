@@ -1,0 +1,23 @@
+# BP-117 negative variant: a non-Echo context with Bind is ignored.
+lang: go
+file: BP-117-variant-safe.go
+variant: non-echo
+---
+package sample
+
+import "fmt"
+
+type Context struct{}
+
+// Bind is a test-only method with a framework-like name.
+func (Context) Bind(any) error { return nil }
+
+func remove(ctx Context) error {
+	var request struct {
+		ID string
+	}
+	if err := ctx.Bind(&request); err != nil {
+		return fmt.Errorf("bind request: %w", err)
+	}
+	return nil
+}

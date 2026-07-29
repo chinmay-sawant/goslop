@@ -1,0 +1,25 @@
+# PERF-95 positive: many app.Use calls in a Fiber app
+lang: go
+file: PERF-095-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+func Build(app *fiber.App) {
+	app.Use(loggerMW)
+	app.Use(recoverMW)
+	app.Use(corsMW)
+	app.Use(authMW)
+	app.Get("/foo", fooHandler)
+}
+
+func loggerMW(c *fiber.Ctx) error  { return c.Next() }
+func recoverMW(c *fiber.Ctx) error { return c.Next() }
+func corsMW(c *fiber.Ctx) error    { return c.Next() }
+func authMW(c *fiber.Ctx) error    { return c.Next() }
+func fooHandler(c *fiber.Ctx) error {
+	return c.SendString("foo")
+}

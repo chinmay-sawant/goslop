@@ -1,0 +1,33 @@
+# CWE-268 — Privilege Chaining (vulnerable) (pure stdlib)
+lang: go
+file: CWE-268-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+var userRecords = map[string]string{"alice": "hash", "bob": "hash2"}
+
+// Vulnerable: read plus export scopes together leak the full credential table.
+func ExportDirectory(w http.ResponseWriter, r *http.Request) {
+	scopes := strings.Split(r.Header.Get("X-Scopes"), ",")
+	hasRead, hasExport := false, false
+	for _, s := range scopes {
+		switch strings.TrimSpace(s) {
+		case "read":
+			hasRead = true
+		case "export":
+			hasExport = true
+		}
+	}
+	if hasRead && hasExport {
+		_ = json.NewEncoder(w).Encode(userRecords)
+		return
+	}
+	http.Error(w, "forbidden", http.StatusForbidden)
+}

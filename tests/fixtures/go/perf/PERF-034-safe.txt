@@ -1,0 +1,13 @@
+# PERF-034 negative: slice is preallocated with len(m) before ranging
+lang: go
+file: PERF-034-safe.go
+---
+package sample
+
+func CollectKeys(m map[string]int) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}

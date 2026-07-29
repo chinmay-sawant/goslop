@@ -1,0 +1,19 @@
+# PERF-86 positive: c.JSON allocates an encoder per response
+lang: go
+file: PERF-086-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+type User struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func GetUser(c echo.Context) error {
+	u := User{ID: 1, Name: "x"}
+	return c.JSON(200, u)
+}

@@ -1,0 +1,20 @@
+# PERF-038-done negative: unbuffered chan struct{} is the standard done/stop signal
+lang: go
+file: PERF-038-done-safe.go
+---
+package sample
+
+type store struct {
+	done chan struct{}
+}
+
+func NewStore() *store {
+	s := &store{
+		done: make(chan struct{}),
+	}
+	return s
+}
+
+func (s *store) Close() {
+	close(s.done)
+}

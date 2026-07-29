@@ -1,0 +1,24 @@
+# CWE-89 vulnerable: string-concat Query still fires (prepare same-var suite pair)
+lang: go
+file: CWE-89-prepare-same-var-vulnerable.go
+variant: taint-prepare
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// LookupUser builds SQL via string concatenation — must still fire CWE-89.
+func LookupUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	query := "SELECT id, name FROM users WHERE name = '" + name + "'"
+	rows, err := db.Query(query)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+	_ = rows
+}

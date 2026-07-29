@@ -1,0 +1,12 @@
+# BP-32 positive: error type is a string alias
+lang: go
+file: BP-32-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type messageError string
+
+func (e messageError) Error() string {
+	return string(e)
+}

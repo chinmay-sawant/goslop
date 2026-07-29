@@ -1,0 +1,22 @@
+# CWE-565: privileged delete trusts unverified role cookie value.
+lang: go
+file: CWE-565-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func DeleteTenant(c *gin.Context, db *gorm.DB) {
+	role, _ := c.Cookie("role")
+	if role != "admin" {
+		c.String(http.StatusForbidden, "forbidden")
+		return
+	}
+	db.Exec("DELETE FROM tenants WHERE id = ?", c.Param("id"))
+	c.Status(http.StatusOK)
+}

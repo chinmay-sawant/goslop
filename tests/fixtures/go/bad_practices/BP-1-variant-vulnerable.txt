@@ -1,0 +1,13 @@
+# BP-1 positive variant: discarded error from a different stdlib call
+lang: go
+file: BP-1-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func Inspect(path string) {
+	info, _ := os.Stat(path)
+	_ = info
+}

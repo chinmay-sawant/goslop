@@ -1,0 +1,35 @@
+# CWE-917 safe: fixed template, parameterized data
+lang: go
+file: CWE-917-safe.go
+---
+package sample
+
+// CWE-917 mitigated: template structure is fixed; user values are data fields only.
+
+import (
+	"bytes"
+	"html"
+	"net/http"
+	"text/template"
+
+	"github.com/gin-gonic/gin"
+)
+
+const reportTemplate = `{{.Title}} filtered by {{.Filter}}`
+
+func RenderReportSafe() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		title := c.Query("title")
+		filter := c.Query("filter")
+		safeTitle := html.EscapeString(title)
+		safeFilter := html.EscapeString(filter)
+		tmpl := template.Must(template.New("report").Parse(reportTemplate))
+		var buf bytes.Buffer
+		data := map[string]string{"Title": safeTitle, "Filter": safeFilter}
+		if err := tmpl.Execute(&buf, data); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.String(http.StatusOK, buf.String())
+	}
+}

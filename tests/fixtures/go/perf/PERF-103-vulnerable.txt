@@ -1,0 +1,12 @@
+# PERF-103 positive: HTTP response body not closed
+lang: go
+file: PERF-103-vulnerable.go
+---
+package sample
+
+import "net/http"
+
+func Fetch() {
+    resp, _ := http.Get("http://example.com")
+    _ = resp
+}

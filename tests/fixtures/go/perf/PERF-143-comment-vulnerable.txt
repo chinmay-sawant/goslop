@@ -1,0 +1,21 @@
+# PERF-143-comment positive: real HandleFunc without TimeoutHandler still fires
+lang: go
+file: PERF-143-comment-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+)
+
+func slowHandler(w http.ResponseWriter, r *http.Request) {
+	for _, c := range []byte("data") {
+		_ = c
+	}
+	w.WriteHeader(200)
+}
+
+func Init() {
+	http.HandleFunc("/slow", slowHandler)
+}

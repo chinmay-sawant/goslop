@@ -1,0 +1,25 @@
+# CWE-335 safe: Incorrect Usage of Seeds in Pseudo-Random Number Generator (PRNG) (mitigated, pure stdlib)
+lang: go
+file: CWE-335-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/binary"
+	"net/http"
+	"strconv"
+)
+
+func AssignQueueTicket(w http.ResponseWriter, r *http.Request) error {
+	var n uint32
+	if err := binary.Read(rand.Reader, binary.BigEndian, &n); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	ticket := strconv.FormatUint(uint64(n%10000), 10)
+	w.Header().Set("X-Ticket", ticket)
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

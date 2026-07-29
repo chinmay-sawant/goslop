@@ -1,0 +1,21 @@
+# PERF-024 negative: hasher hoisted, reset per iteration
+lang: go
+file: PERF-024-safe.go
+---
+package sample
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+)
+
+func HashAll(values [][]byte) []string {
+	h := sha256.New()
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		h.Reset()
+		h.Write(v)
+		out = append(out, hex.EncodeToString(h.Sum(nil)))
+	}
+	return out
+}

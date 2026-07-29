@@ -1,0 +1,16 @@
+# IP-008: Closure capture — safe (constant)
+lang: go
+file: IP-008-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func caller() {
+    x := "/safe/path"
+    fn := func() {
+        os.Open(x)
+    }
+    fn()
+}

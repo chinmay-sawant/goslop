@@ -1,0 +1,16 @@
+# BP-104 positive variant: Handle repeats a literal path pattern.
+lang: go
+file: BP-104-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func routes() {
+	mux := http.NewServeMux()
+	mux.Handle("/health", http.HandlerFunc(health))
+	mux.Handle("/health", http.HandlerFunc(health))
+}
+
+func health(http.ResponseWriter, *http.Request) {}

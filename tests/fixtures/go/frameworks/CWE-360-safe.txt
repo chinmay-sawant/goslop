@@ -1,0 +1,28 @@
+# CWE-360 safe — Trust of System Event Data (mitigated)
+lang: go
+file: CWE-360-safe.go
+---
+package sample
+
+import (
+	"net"
+	"net/http"
+	"strings"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Exec(query string, args ...interface{}) error { return nil }
+
+func BanClientIP(c *GinCtx, db *GormDB) error {
+	host, _, err := net.SplitHostPort(c.Request.RemoteAddr)
+	if err != nil {
+		return err
+	}
+	clientIP := strings.Trim(host, "[]")
+	return db.Exec("INSERT INTO ip_bans (ip) VALUES (?)", clientIP)
+}

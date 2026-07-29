@@ -1,0 +1,35 @@
+# CWE-262 — Not Using Password Aging (safe)
+lang: go
+file: CWE-262-safe.go
+---
+package sample
+
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+type credRow struct {
+	User      string    `db:"user"`
+	Hash      string    `db:"hash"`
+	ChangedAt time.Time `db:"changed_at"`
+}
+
+const maxPasswordAge = 90 * 24 * time.Hour
+
+// Safe: rejects credentials older than the configured rotation window.
+func LoginWithAging(c *gin.Context, db *sqlx.DB) {
+	user := c.PostForm("user")
+	var row credRow
+	if err := db.Get(&row, "SELECT user, hash, changed_at FROM creds WHERE user = ?", user); err != nil {
+		c.JSON(401, gin.H{"error": "auth"})
+		return
+	}
+	if time.Since(row.ChangedAt) > maxPasswordAge {
+		c.JSON(403, gin.H{"error": "password_expired"})
+		return
+	}
+	c.JSON(200, gin.H{"session": user})
+}

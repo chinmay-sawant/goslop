@@ -1,0 +1,25 @@
+# CWE-280 — Improper Handling of Insufficient Permissions or Privileges (vulnerable)
+lang: go
+file: CWE-280-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Vulnerable: open failure falls through to admin-only delete path.
+func DeleteTenant(c *gin.Context, db *gorm.DB) {
+	path := "/secure/tenants/" + c.Param("id")
+	f, err := os.Open(path)
+	if err != nil {
+		db.Exec("DELETE FROM tenants WHERE id = ?", c.Param("id"))
+		c.JSON(200, gin.H{"deleted": true})
+		return
+	}
+	f.Close()
+	c.JSON(403, gin.H{"error": "forbidden"})
+}

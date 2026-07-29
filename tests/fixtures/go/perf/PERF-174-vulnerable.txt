@@ -1,0 +1,14 @@
+# PERF-174 positive: close() on a channel that the same function also receives from
+lang: go
+file: PERF-174-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Pipe() (int, bool) {
+	ch := make(chan int, 1)
+	ch <- 1
+	close(ch)
+	v, ok := <-ch
+	return v, ok
+}

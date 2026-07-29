@@ -1,0 +1,22 @@
+# CWE-455 negative: fatal exit when security TLS load fails (pure stdlib)
+lang: go
+file: CWE-455-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"log"
+	"net/http"
+)
+
+func StartHTTPServer() error {
+	cert, err := tls.LoadX509KeyPair("/etc/hsm/tls.crt", "/etc/hsm/tls.key")
+	if err != nil {
+		log.Fatalf("hsm tls required at startup: %v", err)
+	}
+	_ = cert
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+	return http.ListenAndServeTLS(":8443", "/etc/hsm/tls.crt", "/etc/hsm/tls.key", nil)
+}

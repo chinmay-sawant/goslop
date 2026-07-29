@@ -1,0 +1,19 @@
+# PERF-008 positive: time.Parse inside loop
+lang: go
+file: PERF-008-vulnerable.go
+---
+package sample
+
+import (
+	"strings"
+	"time"
+)
+
+func ParseTimestamps(input string) []time.Time {
+	out := make([]time.Time, 0)
+	for _, line := range strings.Split(input, "\n") {
+		t, _ := time.Parse("2006-01-02", line)
+		out = append(out, t)
+	}
+	return out
+}

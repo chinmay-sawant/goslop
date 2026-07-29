@@ -1,0 +1,33 @@
+# CWE-319 — Cleartext Transmission of Sensitive Information (safe) (pure stdlib)
+lang: go
+file: CWE-319-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"encoding/json"
+	"net/http"
+)
+
+type cardPayload struct {
+	Number string `json:"number"`
+	CVV    string `json:"cvv"`
+}
+
+// Safe: terminates TLS before accepting cardholder data.
+func StartPaymentsAPI() error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/pay", func(w http.ResponseWriter, r *http.Request) {
+		var p cardPayload
+		_ = json.NewDecoder(r.Body).Decode(&p)
+		w.WriteHeader(http.StatusOK)
+	})
+	srv := &http.Server{
+		Addr:      ":8443",
+		Handler:   mux,
+		TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+	}
+	return srv.ListenAndServeTLS("/etc/certs/server.crt", "/etc/certs/server.key")
+}

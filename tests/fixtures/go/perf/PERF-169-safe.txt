@@ -1,0 +1,18 @@
+# PERF-169 negative: a single atomic.Value.Store call
+lang: go
+file: PERF-169-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync/atomic"
+
+type Config struct {
+	Limit int
+}
+
+var cfg atomic.Value
+
+func UpdateLimit(v int) {
+	cfg.Store(Config{Limit: v})
+}

@@ -1,0 +1,30 @@
+# CWE-940 positive: no origin verification on OAuth callback (pure stdlib)
+lang: go
+file: CWE-940-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-940: Improper Verification of Source of a Communication Channel.
+// Vulnerable: OAuth callback trusts any redirect without state/origin checks.
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func OAuthCallbackPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		code := r.URL.Query().Get("code")
+		userID := r.URL.Query().Get("user_id")
+		_, err := db.Exec(
+			"INSERT INTO oauth_tokens (user_id, code) VALUES ($1, $2)",
+			userID, code,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
+	}
+}

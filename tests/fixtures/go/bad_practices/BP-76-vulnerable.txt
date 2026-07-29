@@ -1,0 +1,17 @@
+# BP-76 positive: map iteration is joined without sorting the collected keys.
+lang: go
+file: BP-76-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func names() string {
+	items := map[string]int{"b": 2, "a": 1}
+	keys := make([]string, 0, len(items))
+	for key := range items {
+		keys = append(keys, key)
+	}
+	return strings.Join(keys, ",")
+}

@@ -1,0 +1,23 @@
+# PERF-160 negative: sql.Open at package scope with connection pool settings
+lang: go
+file: PERF-160-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+var db, _ = sql.Open("postgres", "host=localhost")
+
+func init() {
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * 60 * 1000)
+}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = db
+}

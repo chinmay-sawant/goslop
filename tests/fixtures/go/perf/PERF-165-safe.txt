@@ -1,0 +1,46 @@
+# PERF-165 negative: implement sql.Scanner on the custom type
+lang: go
+file: PERF-165-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"database/sql/driver"
+	"errors"
+	"strconv"
+)
+
+type MyID int64
+
+func (m *MyID) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case int64:
+		*m = MyID(s)
+		return nil
+	case string:
+		n, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return err
+		}
+		*m = MyID(n)
+		return nil
+	default:
+		return errors.New("unsupported scan type")
+	}
+}
+
+func LoadID(rows *sql.Rows) (MyID, error) {
+	var id MyID
+	if err := rows.Scan(&id); err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
+var _ driver.Valuer = (*MyID)(nil)
+
+func (m MyID) Value() (driver.Value, error) {
+	return int64(m), nil
+}

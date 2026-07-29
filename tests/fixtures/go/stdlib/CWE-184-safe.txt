@@ -1,0 +1,26 @@
+# CWE-184 negative: allowlist of permitted filter tokens (pure stdlib)
+lang: go
+file: CWE-184-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"regexp"
+)
+
+var allowedClause = regexp.MustCompile(`^[a-z0-9_]{1,32}$`)
+
+// CWE-184 Incomplete List of Disallowed Inputs (mitigated)
+func FilterStatement(w http.ResponseWriter, r *http.Request) {
+	clause := r.FormValue("clause")
+	if !allowedClause.MatchString(clause) {
+		http.Error(w, "blocked", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"accepted": clause})
+}

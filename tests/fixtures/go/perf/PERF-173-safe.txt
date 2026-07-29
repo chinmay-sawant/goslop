@@ -1,0 +1,18 @@
+# PERF-173 negative: time.NewTicker with a paired Stop
+lang: go
+file: PERF-173-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func Watch() {
+	tk := time.NewTicker(time.Second)
+	defer tk.Stop()
+	for range tk.C {
+		_ = doWork()
+	}
+}
+
+func doWork() error { return nil }

@@ -1,0 +1,10 @@
+# BP-83 negative: synchronization uses a channel receive instead of a sleep.
+lang: go
+file: BP-83-safe.go
+variant: stdlib
+---
+package sample
+
+func waitForWorker(done <-chan struct{}) {
+	<-done
+}

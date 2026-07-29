@@ -1,0 +1,13 @@
+# BP-80 positive variant: context.TODO is used inside a production helper
+lang: go
+file: BP-80-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+func NewRequestContext() context.Context {
+	ctx := context.TODO()
+	return ctx
+}

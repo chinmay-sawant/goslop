@@ -1,0 +1,18 @@
+# PERF-064 positive: go func() uses *gin.Context without c.Copy()
+lang: go
+file: PERF-064-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func AsyncHandler(c *gin.Context) {
+	go func() {
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	}()
+	_ = http.StatusOK
+}

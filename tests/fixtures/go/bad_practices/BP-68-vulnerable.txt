@@ -1,0 +1,13 @@
+# BP-68 positive: errors.Join is called as a statement, so its combined error is lost.
+lang: go
+file: BP-68-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "errors"
+
+func combine(first, second error) error {
+	errors.Join(first, second)
+	return first
+}

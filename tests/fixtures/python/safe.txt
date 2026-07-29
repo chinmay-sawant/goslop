@@ -1,0 +1,16 @@
+lang: python
+file: safe.py
+---
+import re
+
+PATTERN = re.compile(r"^\d+$")
+
+def only_uses_module_level_pattern(value: str) -> bool:
+    return bool(PATTERN.match(value))
+
+def compiles_exactly_once_then_iterates(values):
+    pattern = re.compile(r"[a-z]+")
+    out = []
+    for v in values:
+        out.append(pattern.match(v))
+    return out

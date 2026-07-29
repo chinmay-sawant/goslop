@@ -1,0 +1,12 @@
+# BP-80 positive: context.TODO is used in production code
+lang: go
+file: BP-80-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+func Load() context.Context {
+	return context.TODO()
+}

@@ -1,0 +1,30 @@
+# CWE-1067 positive: leading-wildcard LIKE scan (pure stdlib)
+lang: go
+file: CWE-1067-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1067: Excessive Execution of Sequential Searches of Data Resource.
+// Vulnerable: query uses LIKE '%term%' forcing full table scan on notes.body.
+
+import (
+	"database/sql"
+	"fmt"
+	"net/http"
+)
+
+func SearchNotesPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		term := r.URL.Query().Get("q")
+		pattern := fmt.Sprintf("%%%s%%", term)
+		rows, err := db.Query("SELECT id, body FROM notes WHERE body LIKE $1", pattern)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"results":[]}`))
+	}
+}

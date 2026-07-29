@@ -1,0 +1,28 @@
+# CWE-656: Reliance on Security Through Obscurity
+lang: go
+file: CWE-656-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type ConfigEntry struct {
+	Key   string
+	Value string
+}
+
+// Vulnerable: admin panel is protected only by a secret URL path.
+func HiddenConfigPanel(c *gin.Context, db *gorm.DB) {
+	if c.Request.URL.Path != "/maintenance-portal-9f3c2a" {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	var entries []ConfigEntry
+	db.Find(&entries)
+	c.JSON(http.StatusOK, entries)
+}

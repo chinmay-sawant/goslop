@@ -1,0 +1,19 @@
+# BP-79 positive: local cancellation ownership is passed away without visible local release
+lang: go
+file: BP-79-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"time"
+)
+
+func retainCancel(context.CancelFunc) {}
+
+func Request(parent context.Context) context.Context {
+	ctx, cancel := context.WithTimeout(parent, time.Second)
+	retainCancel(cancel)
+	return ctx
+}

@@ -1,0 +1,16 @@
+# BP-67 positive variant: a composite target is not an addressable pointer
+lang: go
+file: BP-67-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "errors"
+
+type problem struct{}
+
+func (problem) Error() string { return "problem" }
+
+func Find(err error) bool {
+	return errors.As(err, problem{})
+}

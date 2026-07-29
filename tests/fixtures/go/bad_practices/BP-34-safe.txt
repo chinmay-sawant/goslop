@@ -1,0 +1,15 @@
+# BP-34 negative: fmt.Errorf uses %w
+lang: go
+file: BP-34-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func wrap(err error) error {
+	if err == nil {
+		return nil
+	}
+	return fmt.Errorf("wrap: %w", err)
+}

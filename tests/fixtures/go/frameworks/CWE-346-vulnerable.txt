@@ -1,0 +1,21 @@
+# CWE-346 vulnerable — Origin Validation Error
+lang: go
+file: CWE-346-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Writer http.ResponseWriter
+	Request *http.Request
+}
+
+func ExportLedger(c *GinCtx) {
+	origin := c.Request.Header.Get("Origin")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+	c.Writer.Write([]byte(`{"status":"ok"}`))
+}

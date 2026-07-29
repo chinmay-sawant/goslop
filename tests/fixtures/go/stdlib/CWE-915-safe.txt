@@ -1,0 +1,38 @@
+# CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes (mitigated, pure stdlib)
+lang: go
+file: CWE-915-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+)
+
+type Profile struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Role    string `json:"role"`
+	Balance int    `json:"balance"`
+}
+
+var profiles = map[int]Profile{}
+
+// Safe: only explicitly allowed attributes may be updated from client input.
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	pid, _ := strconv.Atoi(idStr)
+	var body struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	p := profiles[pid]
+	p.Name = body.Name
+	profiles[pid] = p
+	w.WriteHeader(http.StatusOK)
+}

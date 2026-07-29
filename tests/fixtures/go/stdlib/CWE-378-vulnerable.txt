@@ -1,0 +1,29 @@
+# CWE-378 vulnerable: Creation of Temporary File With Insecure Permissions (positive, pure stdlib)
+lang: go
+file: CWE-378-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func SaveUploadBuffer(w http.ResponseWriter, r *http.Request) error {
+	job := r.URL.Query().Get("job")
+	chunk := r.FormValue("chunk")
+	if job == "" || chunk == "" {
+		http.Error(w, "job and chunk required", http.StatusBadRequest)
+		return http.ErrMissingFile
+	}
+	tmp := filepath.Join(os.TempDir(), "upload-"+job+".bin")
+	err := os.WriteFile(tmp, []byte(chunk), 0666)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

@@ -1,0 +1,16 @@
+# PERF-044 negative: a single type assertion is reused
+lang: go
+file: PERF-044-safe.go
+---
+package sample
+
+type anyVal interface{ Value() int }
+
+type intVal int
+
+func (i intVal) Value() int { return int(i) }
+
+func Handler(v anyVal) int {
+	concrete := v.(intVal)
+	return concrete.Value() + concrete.Value()
+}

@@ -1,0 +1,22 @@
+# CWE-279 — Incorrect Execution-Assigned Permissions (vulnerable)
+lang: go
+file: CWE-279-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: forces world-writable mode regardless of user preference.
+func StoreUpload(c *gin.Context) {
+	modeStr := c.PostForm("mode")
+	mode, _ := strconv.ParseUint(modeStr, 8, 32)
+	path := "/data/uploads/" + c.PostForm("name")
+	_ = os.WriteFile(path, []byte(c.PostForm("body")), 0777)
+	_ = mode
+	c.JSON(200, gin.H{"path": path})
+}

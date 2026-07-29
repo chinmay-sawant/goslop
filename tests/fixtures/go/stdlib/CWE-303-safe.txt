@@ -1,0 +1,30 @@
+# CWE-303 — Incorrect Implementation of Authentication Algorithm (safe) (pure stdlib)
+lang: go
+file: CWE-303-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/hex"
+	"io"
+	"net/http"
+)
+
+// Safe: constant-time MAC comparison per HMAC verification guidance.
+func VerifyWebhook(w http.ResponseWriter, r *http.Request) {
+	sigHex := r.Header.Get("X-Signature")
+	body, _ := io.ReadAll(r.Body)
+	mac := hmac.New(sha256.New, []byte("secret"))
+	mac.Write(body)
+	expected := mac.Sum(nil)
+	provided, err := hex.DecodeString(sigHex)
+	if err != nil || subtle.ConstantTimeCompare(expected, provided) != 1 {
+		http.Error(w, "bad sig", http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

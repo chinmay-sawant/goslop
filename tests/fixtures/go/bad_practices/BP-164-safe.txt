@@ -1,0 +1,21 @@
+# BP-164 negative: the functional option only mutates the supplied instance.
+lang: go
+file: BP-164-safe.go
+variant: option-instance-config
+---
+package sample
+
+import "time"
+
+type Config struct {
+	Timeout time.Duration
+}
+
+type Option func(*Config)
+
+// WithTimeout configures the supplied instance.
+func WithTimeout(timeout time.Duration) Option {
+	return func(config *Config) {
+		config.Timeout = timeout
+	}
+}

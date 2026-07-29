@@ -1,0 +1,19 @@
+# PERF-039 negative: select-default loop also calls time.Sleep as a backoff
+lang: go
+file: PERF-039-safe.go
+---
+package sample
+
+import "time"
+
+func Poll() {
+	for {
+		select {
+		case <-workAvailable():
+		default:
+			time.Sleep(10 * time.Millisecond)
+		}
+	}
+}
+
+func workAvailable() <-chan struct{} { return nil }

@@ -1,0 +1,13 @@
+# BP-86 positive variant: pointer mutex parameter is never unlocked
+lang: go
+file: BP-86-variant-vulnerable.go
+variant: parameter
+---
+package sample
+
+import "sync"
+
+func update(mu *sync.Mutex, value int) {
+	mu.Lock()
+	_ = value
+}

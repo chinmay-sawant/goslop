@@ -1,0 +1,16 @@
+# PERF-140 positive: debug.SetGCPercent(-1) disables the GC assist
+lang: go
+file: PERF-140-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"runtime/debug"
+)
+
+func Tune() {
+	debug.SetGCPercent(-1)
+	fmt.Println("gc disabled")
+}

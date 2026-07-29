@@ -1,0 +1,25 @@
+# PERF-224 negative: iterative walk over flat slice
+lang: go
+file: PERF-224-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+type Node struct {
+	ID    int
+	Level int
+	Kind  int
+}
+
+func assignID(node *Node) {
+	_ = node
+}
+
+func HandleTree(w http.ResponseWriter, r *http.Request, flatNodes []*Node) {
+	for _, node := range flatNodes {
+		assignID(node)
+	}
+	w.WriteHeader(http.StatusOK)
+}

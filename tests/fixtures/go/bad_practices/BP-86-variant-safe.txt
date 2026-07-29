@@ -1,0 +1,14 @@
+# BP-86 negative variant: explicit unlock balances the lock
+lang: go
+file: BP-86-variant-safe.go
+variant: parameter
+---
+package sample
+
+import "sync"
+
+func update(mu *sync.Mutex, value int) {
+	mu.Lock()
+	_ = value
+	mu.Unlock()
+}

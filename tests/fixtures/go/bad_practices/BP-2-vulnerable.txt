@@ -1,0 +1,16 @@
+# BP-2 positive: naked error return
+lang: go
+file: BP-2-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func Load(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	return data, nil
+}

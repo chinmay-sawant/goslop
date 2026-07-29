@@ -1,0 +1,29 @@
+# CWE-347 vulnerable: Improper Verification of Cryptographic Signature (positive, pure stdlib)
+lang: go
+file: CWE-347-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/base64"
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+func ApplyWebhookClaims(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	raw := r.Header.Get("X-Webhook-JWT")
+	parts := strings.Split(raw, ".")
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	var claims map[string]interface{}
+	_ = json.Unmarshal(payload, &claims)
+	_, err := db.Exec("UPDATE operators SET role = ? WHERE id = ?", claims["role"], claims["sub"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

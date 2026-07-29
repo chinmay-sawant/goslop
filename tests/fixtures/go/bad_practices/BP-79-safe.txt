@@ -1,0 +1,18 @@
+# BP-79 negative: locally owned cancellation is deferred in the same function
+lang: go
+file: BP-79-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"time"
+)
+
+// Request derives a context and releases its local cancellation function.
+func Request(parent context.Context) context.Context {
+	ctx, cancel := context.WithTimeout(parent, time.Second)
+	defer cancel()
+	return ctx
+}

@@ -1,0 +1,23 @@
+# BP-155 negative: MaxBytesReader bounds the request before decoding.
+lang: go
+file: BP-155-safe.go
+variant: bounded-decoder-request-body
+---
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func update(w http.ResponseWriter, r *http.Request) {
+	limited := http.MaxBytesReader(w, r.Body, 1<<20)
+	var request struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(limited).Decode(&request); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -1,0 +1,25 @@
+# PERF-183 negative: context.WithTimeout outside the loop, per-iteration values via WithValue
+lang: go
+file: PERF-183-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"time"
+)
+
+type itemKey struct{}
+
+func PerCall(parent context.Context, items []int) []int {
+	ctx, cancel := context.WithTimeout(parent, time.Second)
+	defer cancel()
+	out := make([]int, 0, len(items))
+	for _, item := range items {
+		iter := context.WithValue(ctx, itemKey{}, item)
+		out = append(out, item)
+		_ = iter
+	}
+	return out
+}

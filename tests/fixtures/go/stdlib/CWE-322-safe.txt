@@ -1,0 +1,46 @@
+# CWE-322 safe: Key Exchange without Entity Authentication (mitigated, pure stdlib)
+lang: go
+file: CWE-322-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"crypto/x509"
+	"io"
+	"net/http"
+	"os"
+)
+
+func ConnectPeerRelay(w http.ResponseWriter, r *http.Request) {
+	pool, err := x509.SystemCertPool()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if pem := os.Getenv("RELAY_CA_PEM"); pem != "" {
+		pool.AppendCertsFromPEM([]byte(pem))
+	}
+	peerHost := r.FormValue("relay_host")
+	conn, err := tls.Dial("tcp", peerHost, &tls.Config{
+		MinVersion: tls.VersionTLS12,
+		RootCAs:    pool,
+		ServerName: peerHost,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer conn.Close()
+	if err := conn.VerifyHostname(peerHost); err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	payload, err := io.ReadAll(conn)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	w.Write(payload)
+}

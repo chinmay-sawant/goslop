@@ -1,0 +1,37 @@
+# CWE-112 negative: required fields validated before use
+lang: go
+file: CWE-112-safe.go
+---
+package sample
+
+import (
+	"encoding/xml"
+	"net/http"
+	"regexp"
+
+	"github.com/gin-gonic/gin"
+)
+
+var invoiceIDPattern = regexp.MustCompile(`^[A-Z0-9-]{8,32}$`)
+
+// CWE-112 Missing XML Validation (mitigated)
+func AcceptInvoice(c *gin.Context) {
+	payload, err := c.GetRawData()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "body"})
+		return
+	}
+	var invoice struct {
+		ID     string  `xml:"id"`
+		Amount float64 `xml:"amount"`
+	}
+	if err := xml.Unmarshal(payload, &invoice); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "xml"})
+		return
+	}
+	if !invoiceIDPattern.MatchString(invoice.ID) || invoice.Amount <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "schema"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": invoice.ID, "amount": invoice.Amount})
+}

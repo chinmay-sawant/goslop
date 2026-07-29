@@ -1,0 +1,47 @@
+# CWE-645: Overly Restrictive Account Lockout Mechanism
+lang: go
+file: CWE-645-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+var lockoutMu sync.Mutex
+var failedAttempts = map[string]int{}
+var lockedAccounts = map[string]bool{}
+
+type Credential struct {
+	Username string
+	Password string
+}
+
+// Vulnerable: locks the account after a single failed login attempt.
+func Login(c *gin.Context, db *gorm.DB) {
+	user := c.PostForm("username")
+	pass := c.PostForm("password")
+	lockoutMu.Lock()
+	if lockedAccounts[user] {
+		lockoutMu.Unlock()
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	lockoutMu.Unlock()
+	var cred Credential
+	if err := db.Where("username = ? AND password = ?", user, pass).First(&cred).Error; err != nil {
+		lockoutMu.Lock()
+		failedAttempts[user]++
+		if failedAttempts[user] >= 1 {
+			lockedAccounts[user] = true
+		}
+		lockoutMu.Unlock()
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	c.Status(http.StatusOK)
+}

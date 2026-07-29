@@ -1,0 +1,27 @@
+# CWE-22 positive: path traversal via user-controlled filename
+lang: go
+file: CWE-22-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-22 Improper Limitation of a Pathname to a Restricted Directory
+// Vulnerable line: ReadFile joins user name without confining to baseDir.
+func DownloadArtifact(c *gin.Context) {
+	baseDir := "/var/app/storage"
+	name := c.Param("name")
+	target := filepath.Join(baseDir, name)
+	data, err := os.ReadFile(target)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.Data(http.StatusOK, "application/octet-stream", data)
+}

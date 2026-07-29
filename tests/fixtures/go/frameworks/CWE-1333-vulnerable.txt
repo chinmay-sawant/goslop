@@ -1,0 +1,39 @@
+# CWE-1333 vulnerable: catastrophic backtracking regex
+lang: go
+file: CWE-1333-vulnerable.go
+---
+package sample
+
+// CWE-1333: Inefficient Regular Expression Complexity (ReDoS).
+// Vulnerable: nested-quantifier regex applied to unbounded user comment input.
+
+import (
+	"net/http"
+	"regexp"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+var tagPattern = regexp.MustCompile(`^([a-zA-Z]+)*$`)
+
+type Comment struct {
+	ID  uint
+	Tag string
+}
+
+func ValidateCommentTag(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tag := c.PostForm("tag")
+		if !tagPattern.MatchString(tag) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag"})
+			return
+		}
+		rec := Comment{Tag: tag}
+		if err := db.Create(&rec).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"id": rec.ID})
+	}
+}

@@ -1,0 +1,30 @@
+# CWE-368 safe: Context Switching Race Condition (mitigated, pure stdlib)
+lang: go
+file: CWE-368-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"sync"
+)
+
+var privilegeMu sync.Mutex
+var privilegedMode bool
+
+func EnterPrivilegedMode(w http.ResponseWriter, r *http.Request) error {
+	privilegeMu.Lock()
+	defer privilegeMu.Unlock()
+	if r.Header.Get("X-Elevate") != "yes" {
+		privilegedMode = false
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return os.ErrPermission
+	}
+	privilegedMode = true
+	if !privilegedMode {
+		return os.ErrPermission
+	}
+	return os.Setenv("MAINT_SHELL", "/bin/sh")
+}

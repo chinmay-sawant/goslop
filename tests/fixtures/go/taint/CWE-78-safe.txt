@@ -1,0 +1,16 @@
+# CWE-78 negative: fixed command without user-controlled shell input
+lang: go
+file: CWE-78-taint-safe.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+)
+
+func RunCommand(w http.ResponseWriter, r *http.Request) {
+	_ = r
+	_ = exec.Command("sh", "-c", "status")
+}

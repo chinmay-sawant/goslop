@@ -1,0 +1,27 @@
+# CWE-502: user-controlled gob payload decoded into privileged action struct.
+lang: go
+file: CWE-502-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/gob"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type adminAction struct {
+	UserID uint
+	Grant  string
+}
+
+func ApplyPrivilege(c *gin.Context, db *gorm.DB) {
+	raw, _ := c.GetRawData()
+	var action adminAction
+	_ = gob.NewDecoder(bytes.NewReader(raw)).Decode(&action)
+	db.Exec("UPDATE users SET role = ? WHERE id = ?", action.Grant, action.UserID)
+	c.Status(http.StatusOK)
+}

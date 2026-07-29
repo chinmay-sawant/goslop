@@ -1,0 +1,19 @@
+# BP-159 positive variant: a renamed boolean flag is read before parsing.
+lang: go
+file: BP-159-variant-vulnerable.go
+variant: renamed-flag
+---
+package main
+
+import (
+	"flag"
+	"log"
+)
+
+func main() {
+	verbose := flag.Bool("verbose", false, "enable verbose output")
+	if *verbose {
+		log.Println("verbose")
+	}
+	flag.Parse()
+}

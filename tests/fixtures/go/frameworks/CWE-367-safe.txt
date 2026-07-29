@@ -1,0 +1,25 @@
+# CWE-367 safe — Time-of-check Time-of-use (TOCTOU) Race Condition (mitigated)
+lang: go
+file: CWE-367-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func LoadKYCScan(c *GinCtx) ([]byte, error) {
+	name := c.Request.URL.Query().Get("scan")
+	if strings.Contains(name, "..") {
+		return nil, os.ErrInvalid
+	}
+	target := filepath.Join("/var/kyc/inbox", filepath.Base(name))
+	return os.ReadFile(target)
+}

@@ -1,0 +1,6 @@
+# CWE registry — domain: path_traversal
+
+[[detector]]
+cwe = 22
+domain = "path_traversal"
+function = "detect_cwe_22_taint"

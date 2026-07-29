@@ -1,0 +1,32 @@
+# CWE-1230 vulnerable: leaks document metadata
+lang: go
+file: CWE-1230-vulnerable.go
+---
+package sample
+
+// CWE-1230: Exposure of Sensitive Information Through Metadata.
+// Vulnerable: redacted download still returns original filename and byte length.
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func DownloadRedacted() gin.HandlerFunc {
+	base := "/var/vault/documents"
+	return func(c *gin.Context) {
+		name := c.Param("name")
+		path := filepath.Join(base, name)
+		info, err := os.Stat(path)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+			return
+		}
+		c.Header("X-Original-Name", name)
+		c.Header("X-File-Size", string(rune(info.Size())))
+		c.String(http.StatusOK, "[REDACTED CONTENT]")
+	}
+}

@@ -1,0 +1,18 @@
+# BP-15 negative: sync.Once.Do is not recursive
+lang: go
+file: BP-15-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+// Init runs setup once without recursively calling the same sync.Once.
+func Init() {
+	var once sync.Once
+	once.Do(func() {
+		setup()
+	})
+}
+
+func setup() {}

@@ -1,0 +1,27 @@
+# BP-132 negative: the optimistic-lock UPDATE checks RowsAffected.
+lang: go
+file: BP-132-safe.go
+variant: database-sql-version-update-checked
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+)
+
+func updateUser(db *sql.DB, id, version int) error {
+	// index-backed
+	result, err := db.Exec("UPDATE users SET name = ?, version = version + 1 WHERE id = ? AND version = ?", "Ada", id, version)
+	if err != nil {
+		return fmt.Errorf("update: %w", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("rows affected: %w", err)
+	}
+	if rows == 0 {
+		return fmt.Errorf("stale user")
+	}
+	return nil
+}

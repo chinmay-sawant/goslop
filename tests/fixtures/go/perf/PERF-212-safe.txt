@@ -1,0 +1,21 @@
+# PERF-212 negative: db.Find with a chained .Limit
+lang: go
+file: PERF-212-safe.go
+variant: framework
+---
+package sample
+
+import "gorm.io/gorm"
+
+type Order struct {
+	ID    uint
+	Total float64
+}
+
+func LoadPage(db *gorm.DB, page, size int) ([]Order, error) {
+	var orders []Order
+	if err := db.Limit(size).Offset(page * size).Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

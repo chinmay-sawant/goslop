@@ -1,0 +1,20 @@
+# PERF-239 positive: dense map[int] written many times in one function
+lang: go
+file: PERF-239-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func buildOffsets(ids []int) map[int]int {
+	offsets := make(map[int]int, 64)
+	for _, id := range ids {
+		offsets[id] = id * 10
+	}
+	offsets[1] = 10
+	offsets[2] = 20
+	offsets[3] = 30
+	offsets[4] = 40
+	offsets[5] = 50
+	offsets[6] = 60
+	return offsets
+}

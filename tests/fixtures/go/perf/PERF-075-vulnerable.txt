@@ -1,0 +1,21 @@
+# PERF-75 positive: db.Session constructed inside a handler
+lang: go
+file: PERF-075-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
+
+func ListUsers(c echo.Context, db *gorm.DB) error {
+	tx := db.Session(&gorm.Session{SkipDefaultTransaction: true})
+	var users []User
+	tx.Find(&users)
+	return c.String(200, "ok")
+}
+
+type User struct {
+	gorm.Model
+}

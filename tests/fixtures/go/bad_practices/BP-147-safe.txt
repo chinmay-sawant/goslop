@@ -1,0 +1,13 @@
+# BP-147 negative: a service package uses only its structured logger.
+lang: go
+file: BP-147-safe.go
+variant: structured-service-logger
+---
+package handlers
+
+import "log/slog"
+
+// Handle processes a request.
+func Handle() {
+	slog.Info("request received")
+}

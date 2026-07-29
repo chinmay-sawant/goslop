@@ -1,0 +1,12 @@
+# PERF-157 positive: fmt.Sprint with single string literal
+lang: go
+file: PERF-157-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Label() string {
+	return fmt.Sprint("ready")
+}

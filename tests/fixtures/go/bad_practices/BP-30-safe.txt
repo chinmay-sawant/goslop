@@ -1,0 +1,17 @@
+# BP-30 negative: exported interface has a same-package implementation
+lang: go
+file: bp30/BP-30-safe.go
+variant: stdlib
+---
+// Package bp30 contains BP-30 fixture code.
+package bp30
+
+type Runner interface {
+	Run()
+	Stop()
+}
+
+type service struct{}
+
+func (service) Run()  {}
+func (service) Stop() {}

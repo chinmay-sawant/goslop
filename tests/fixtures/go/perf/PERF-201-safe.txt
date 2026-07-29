@@ -1,0 +1,19 @@
+# PERF-201 negative: a community CORS package is used
+lang: go
+file: PERF-201-safe.go
+variant: framework
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/rs/cors"
+)
+
+func Init() http.Handler {
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+	})
+	return c.Handler(http.DefaultServeMux)
+}

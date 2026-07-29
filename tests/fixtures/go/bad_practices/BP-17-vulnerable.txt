@@ -1,0 +1,13 @@
+# BP-17 positive: t.Error immediately followed by t.Fatal
+lang: go
+file: BP-17-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestRedundantFailure(t *testing.T) {
+	t.Error("bad")
+	t.Fatal("worse")
+}

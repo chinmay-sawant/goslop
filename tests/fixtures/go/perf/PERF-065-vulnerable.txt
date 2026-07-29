@@ -1,0 +1,32 @@
+# PERF-065 positive: c.ShouldBind lives in a .Use()-registered middleware
+lang: go
+file: PERF-065-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type Session struct {
+	UserID string `form:"user_id"`
+}
+
+func MiddlewareBindSession(c *gin.Context) {
+	var s Session
+	if err := c.ShouldBind(&s); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.Set("user_id", s.UserID)
+	c.Next()
+	_ = http.StatusOK
+}
+
+func BuildRouterWithBind() *gin.Engine {
+	r := gin.New()
+	r.Use(MiddlewareBindSession)
+	return r
+}

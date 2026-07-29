@@ -1,0 +1,16 @@
+# PERF-128 positive: three independent appends to the same slice
+lang: go
+file: PERF-128-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Build() {
+	var out []string
+	out = append(out, "a")
+	out = append(out, "b")
+	out = append(out, "c")
+	fmt.Println(out)
+}

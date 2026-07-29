@@ -1,0 +1,14 @@
+# BP-5 positive: Close error discarded directly
+lang: go
+file: BP-5-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type closer struct{}
+
+func (closer) Close() error { return nil }
+
+func CloseAndDiscard(c closer) {
+	c.Close()
+}

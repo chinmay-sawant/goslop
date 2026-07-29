@@ -1,0 +1,26 @@
+# CWE-344 safe — Use of Invariant Value in Dynamically Changing Context (mitigated)
+lang: go
+file: CWE-344-safe.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"net/http"
+	"os"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func SignInvoice(c *GinCtx, payload []byte) ([]byte, error) {
+	secret := os.Getenv("BILLING_HMAC_SECRET")
+	if secret == "" {
+		return nil, os.ErrInvalid
+	}
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(payload)
+	return mac.Sum(nil), nil
+}

@@ -1,0 +1,20 @@
+# CWE-272 — Least Privilege Violation (vulnerable)
+lang: go
+file: CWE-272-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: keeps elevated uid for the entire handler after chown.
+func FixOwnership(c *gin.Context) {
+	_ = syscall.Setuid(0)
+	path := c.Query("file")
+	_ = os.Chown(path, 1000, 1000)
+	c.JSON(200, gin.H{"updated": path})
+}

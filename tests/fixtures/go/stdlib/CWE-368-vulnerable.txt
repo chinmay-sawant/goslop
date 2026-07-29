@@ -1,0 +1,26 @@
+# CWE-368 vulnerable: Context Switching Race Condition (positive, pure stdlib)
+lang: go
+file: CWE-368-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"os/user"
+)
+
+var privilegedMode bool
+
+func EnterPrivilegedMode(w http.ResponseWriter, r *http.Request) error {
+	if r.Header.Get("X-Elevate") == "yes" {
+		privilegedMode = true
+	}
+	if privilegedMode {
+		return os.Setenv("MAINT_SHELL", "/bin/sh")
+	}
+	_, _ = user.Current()
+	w.WriteHeader(http.StatusForbidden)
+	return nil
+}

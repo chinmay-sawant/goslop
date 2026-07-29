@@ -1,0 +1,18 @@
+# CWE-215 negative: debug log omits secret material
+lang: go
+file: CWE-215-safe.go
+---
+package sample
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-215 Insertion of Sensitive Information Into Debugging Code (mitigated)
+func DebugSession(c *gin.Context) {
+	log.Printf("session debug path=%s method=%s", c.Request.URL.Path, c.Request.Method)
+	c.JSON(http.StatusOK, gin.H{"status": "logged"})
+}

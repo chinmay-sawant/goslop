@@ -1,0 +1,20 @@
+# PERF-90 positive: c.Set in middleware stores a large value
+lang: go
+file: PERF-090-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+func BigCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		big := make([]byte, 1<<20)
+		for i := range big {
+			big[i] = byte(i)
+		}
+		c.Set("big", big)
+		return next(c)
+	}
+}

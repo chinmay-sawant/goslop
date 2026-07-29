@@ -1,0 +1,821 @@
+# PERF registry — domain: general_perf
+
+[[detector]]
+perf = 26
+domain = "general_perf"
+function = "detect_perf_26"
+
+[[detector]]
+perf = 27
+domain = "general_perf"
+function = "detect_perf_27"
+
+[[detector]]
+perf = 28
+domain = "general_perf"
+function = "detect_perf_28"
+
+[[detector]]
+perf = 29
+domain = "general_perf"
+function = "detect_perf_29"
+
+[[detector]]
+perf = 30
+domain = "general_perf"
+function = "detect_perf_30"
+
+[[detector]]
+perf = 31
+domain = "general_perf"
+function = "detect_perf_31"
+
+[[detector]]
+perf = 32
+domain = "general_perf"
+function = "detect_perf_32"
+
+[[detector]]
+perf = 33
+domain = "general_perf"
+function = "detect_perf_33"
+
+[[detector]]
+perf = 34
+domain = "general_perf"
+function = "detect_perf_34"
+
+[[detector]]
+perf = 35
+domain = "general_perf"
+function = "detect_perf_35"
+
+[[detector]]
+perf = 36
+domain = "general_perf"
+function = "detect_perf_36"
+
+[[detector]]
+perf = 37
+domain = "general_perf"
+function = "detect_perf_37"
+
+[[detector]]
+perf = 38
+domain = "general_perf"
+function = "detect_perf_38"
+
+[[detector]]
+perf = 39
+domain = "general_perf"
+function = "detect_perf_39"
+
+[[detector]]
+perf = 40
+domain = "general_perf"
+function = "detect_perf_40"
+
+[[detector]]
+perf = 41
+domain = "general_perf"
+function = "detect_perf_41"
+
+[[detector]]
+perf = 42
+domain = "general_perf"
+function = "detect_perf_42"
+
+[[detector]]
+perf = 43
+domain = "general_perf"
+function = "detect_perf_43"
+
+[[detector]]
+perf = 44
+domain = "general_perf"
+function = "detect_perf_44"
+
+[[detector]]
+perf = 45
+domain = "general_perf"
+function = "detect_perf_45"
+
+[[detector]]
+perf = 46
+domain = "general_perf"
+function = "detect_perf_46"
+
+[[detector]]
+perf = 47
+domain = "general_perf"
+function = "detect_perf_47"
+
+[[detector]]
+perf = 48
+domain = "general_perf"
+function = "detect_perf_48"
+
+[[detector]]
+perf = 49
+domain = "general_perf"
+function = "detect_perf_49"
+
+[[detector]]
+perf = 50
+domain = "general_perf"
+function = "detect_perf_50"
+
+[[detector]]
+perf = 101
+domain = "general_perf"
+function = "detect_perf_101"
+
+[[detector]]
+perf = 102
+domain = "general_perf"
+function = "detect_perf_102"
+
+[[detector]]
+perf = 108
+domain = "general_perf"
+function = "detect_perf_108"
+
+[[detector]]
+perf = 133
+domain = "general_perf"
+function = "detect_perf_133"
+
+[[detector]]
+perf = 137
+domain = "general_perf"
+function = "detect_perf_137"
+
+[[detector]]
+perf = 141
+domain = "general_perf"
+function = "detect_perf_141"
+
+[[detector]]
+perf = 149
+domain = "general_perf"
+function = "detect_perf_149"
+
+[[detector]]
+perf = 161
+domain = "general_perf"
+function = "detect_perf_161"
+
+[[detector]]
+perf = 163
+domain = "general_perf"
+function = "detect_perf_163"
+
+[[detector]]
+perf = 170
+domain = "general_perf"
+function = "detect_perf_170"
+
+[[detector]]
+perf = 176
+domain = "general_perf"
+function = "detect_perf_176"
+
+[[detector]]
+perf = 195
+domain = "general_perf"
+function = "detect_perf_195"
+
+[[detector]]
+perf = 106
+domain = "general_perf"
+function = "detect_perf_106"
+
+[[detector]]
+perf = 103
+domain = "general_perf"
+function = "detect_perf_103"
+
+[[detector]]
+perf = 105
+domain = "general_perf"
+function = "detect_perf_105"
+
+[[detector]]
+perf = 107
+domain = "general_perf"
+function = "detect_perf_107"
+
+[[detector]]
+perf = 110
+domain = "general_perf"
+function = "detect_perf_110"
+
+[[detector]]
+perf = 111
+domain = "general_perf"
+function = "detect_perf_111"
+
+[[detector]]
+perf = 112
+domain = "general_perf"
+function = "detect_perf_112"
+
+[[detector]]
+perf = 113
+domain = "general_perf"
+function = "detect_perf_113"
+
+[[detector]]
+perf = 114
+domain = "general_perf"
+function = "detect_perf_114"
+
+[[detector]]
+perf = 115
+domain = "general_perf"
+function = "detect_perf_115"
+
+[[detector]]
+perf = 116
+domain = "general_perf"
+function = "detect_perf_116"
+
+[[detector]]
+perf = 117
+domain = "general_perf"
+function = "detect_perf_117"
+
+[[detector]]
+perf = 118
+domain = "general_perf"
+function = "detect_perf_118"
+
+[[detector]]
+perf = 119
+domain = "general_perf"
+function = "detect_perf_119"
+
+[[detector]]
+perf = 120
+domain = "general_perf"
+function = "detect_perf_120"
+
+[[detector]]
+perf = 122
+domain = "general_perf"
+function = "detect_perf_122"
+
+[[detector]]
+perf = 123
+domain = "general_perf"
+function = "detect_perf_123"
+
+[[detector]]
+perf = 124
+domain = "general_perf"
+function = "detect_perf_124"
+
+[[detector]]
+perf = 128
+domain = "general_perf"
+function = "detect_perf_128"
+
+[[detector]]
+perf = 125
+domain = "general_perf"
+function = "detect_perf_125"
+
+[[detector]]
+perf = 126
+domain = "general_perf"
+function = "detect_perf_126"
+
+[[detector]]
+perf = 127
+domain = "general_perf"
+function = "detect_perf_127"
+
+[[detector]]
+perf = 129
+domain = "general_perf"
+function = "detect_perf_129"
+
+[[detector]]
+perf = 130
+domain = "general_perf"
+function = "detect_perf_130"
+
+[[detector]]
+perf = 135
+domain = "general_perf"
+function = "detect_perf_135"
+
+[[detector]]
+perf = 140
+domain = "general_perf"
+function = "detect_perf_140"
+
+[[detector]]
+perf = 146
+domain = "general_perf"
+function = "detect_perf_146"
+
+[[detector]]
+perf = 147
+domain = "general_perf"
+function = "detect_perf_147"
+
+[[detector]]
+perf = 156
+domain = "general_perf"
+function = "detect_perf_156"
+
+[[detector]]
+perf = 158
+domain = "general_perf"
+function = "detect_perf_158"
+
+[[detector]]
+perf = 157
+domain = "general_perf"
+function = "detect_perf_157"
+
+[[detector]]
+perf = 171
+domain = "general_perf"
+function = "detect_perf_171"
+
+[[detector]]
+perf = 177
+domain = "general_perf"
+function = "detect_perf_177"
+
+[[detector]]
+perf = 181
+domain = "general_perf"
+function = "detect_perf_181"
+
+[[detector]]
+perf = 182
+domain = "general_perf"
+function = "detect_perf_182"
+
+[[detector]]
+perf = 121
+domain = "general_perf"
+function = "detect_perf_121"
+
+[[detector]]
+perf = 131
+domain = "general_perf"
+function = "detect_perf_131"
+
+[[detector]]
+perf = 132
+domain = "general_perf"
+function = "detect_perf_132"
+
+[[detector]]
+perf = 145
+domain = "general_perf"
+function = "detect_perf_145"
+
+[[detector]]
+perf = 165
+domain = "general_perf"
+function = "detect_perf_165"
+
+[[detector]]
+perf = 166
+domain = "general_perf"
+function = "detect_perf_166"
+
+[[detector]]
+perf = 168
+domain = "general_perf"
+function = "detect_perf_168"
+
+[[detector]]
+perf = 204
+domain = "general_perf"
+function = "detect_perf_204"
+
+[[detector]]
+perf = 209
+domain = "general_perf"
+function = "detect_perf_209"
+
+[[detector]]
+perf = 211
+domain = "general_perf"
+function = "detect_perf_211"
+
+[[detector]]
+perf = 212
+domain = "general_perf"
+function = "detect_perf_212"
+
+[[detector]]
+perf = 190
+domain = "general_perf"
+function = "detect_perf_190"
+
+[[detector]]
+perf = 192
+domain = "general_perf"
+function = "detect_perf_192"
+
+[[detector]]
+perf = 198
+domain = "general_perf"
+function = "detect_perf_198"
+
+[[detector]]
+perf = 138
+domain = "general_perf"
+function = "detect_perf_138"
+
+[[detector]]
+perf = 159
+domain = "general_perf"
+function = "detect_perf_159"
+
+[[detector]]
+perf = 167
+domain = "general_perf"
+function = "detect_perf_167"
+
+[[detector]]
+perf = 169
+domain = "general_perf"
+function = "detect_perf_169"
+
+[[detector]]
+perf = 173
+domain = "general_perf"
+function = "detect_perf_173"
+
+[[detector]]
+perf = 174
+domain = "general_perf"
+function = "detect_perf_174"
+
+[[detector]]
+perf = 175
+domain = "general_perf"
+function = "detect_perf_175"
+
+[[detector]]
+perf = 178
+domain = "general_perf"
+function = "detect_perf_178"
+
+[[detector]]
+perf = 179
+domain = "general_perf"
+function = "detect_perf_179"
+
+[[detector]]
+perf = 180
+domain = "general_perf"
+function = "detect_perf_180"
+
+[[detector]]
+perf = 183
+domain = "general_perf"
+function = "detect_perf_183"
+
+[[detector]]
+perf = 184
+domain = "general_perf"
+function = "detect_perf_184"
+
+[[detector]]
+perf = 185
+domain = "general_perf"
+function = "detect_perf_185"
+
+[[detector]]
+perf = 186
+domain = "general_perf"
+function = "detect_perf_186"
+
+[[detector]]
+perf = 187
+domain = "general_perf"
+function = "detect_perf_187"
+
+[[detector]]
+perf = 188
+domain = "general_perf"
+function = "detect_perf_188"
+
+[[detector]]
+perf = 193
+domain = "general_perf"
+function = "detect_perf_193"
+
+[[detector]]
+perf = 194
+domain = "general_perf"
+function = "detect_perf_194"
+
+[[detector]]
+perf = 202
+domain = "general_perf"
+function = "detect_perf_202"
+
+[[detector]]
+perf = 207
+domain = "general_perf"
+function = "detect_perf_207"
+
+[[detector]]
+perf = 210
+domain = "general_perf"
+function = "detect_perf_210"
+
+[[detector]]
+perf = 206
+domain = "general_perf"
+function = "detect_perf_206"
+
+[[detector]]
+perf = 109
+domain = "general_perf"
+function = "detect_perf_109"
+
+[[detector]]
+perf = 142
+domain = "general_perf"
+function = "detect_perf_142"
+
+[[detector]]
+perf = 144
+domain = "general_perf"
+function = "detect_perf_144"
+
+[[detector]]
+perf = 148
+domain = "general_perf"
+function = "detect_perf_148"
+
+[[detector]]
+perf = 152
+domain = "general_perf"
+function = "detect_perf_152"
+
+[[detector]]
+perf = 153
+domain = "general_perf"
+function = "detect_perf_153"
+
+[[detector]]
+perf = 154
+domain = "general_perf"
+function = "detect_perf_154"
+
+[[detector]]
+perf = 160
+domain = "general_perf"
+function = "detect_perf_160"
+
+[[detector]]
+perf = 162
+domain = "general_perf"
+function = "detect_perf_162"
+
+[[detector]]
+perf = 164
+domain = "general_perf"
+function = "detect_perf_164"
+
+[[detector]]
+perf = 189
+domain = "general_perf"
+function = "detect_perf_189"
+
+[[detector]]
+perf = 191
+domain = "general_perf"
+function = "detect_perf_191"
+
+[[detector]]
+perf = 197
+domain = "general_perf"
+function = "detect_perf_197"
+
+[[detector]]
+perf = 203
+domain = "general_perf"
+function = "detect_perf_203"
+
+[[detector]]
+perf = 205
+domain = "general_perf"
+function = "detect_perf_205"
+
+[[detector]]
+perf = 143
+domain = "general_perf"
+function = "detect_perf_143"
+
+[[detector]]
+perf = 155
+domain = "general_perf"
+function = "detect_perf_155"
+
+[[detector]]
+perf = 196
+domain = "general_perf"
+function = "detect_perf_196"
+
+[[detector]]
+perf = 199
+domain = "general_perf"
+function = "detect_perf_199"
+
+[[detector]]
+perf = 200
+domain = "general_perf"
+function = "detect_perf_200"
+
+[[detector]]
+perf = 201
+domain = "general_perf"
+function = "detect_perf_201"
+
+[[detector]]
+perf = 134
+domain = "general_perf"
+function = "detect_perf_134"
+
+[[detector]]
+perf = 139
+domain = "general_perf"
+function = "detect_perf_139"
+
+[[detector]]
+perf = 150
+domain = "general_perf"
+function = "detect_perf_150"
+
+[[detector]]
+perf = 151
+domain = "general_perf"
+function = "detect_perf_151"
+
+[[detector]]
+perf = 172
+domain = "general_perf"
+function = "detect_perf_172"
+
+[[detector]]
+perf = 213
+domain = "general_perf"
+function = "detect_perf_213"
+
+[[detector]]
+perf = 214
+domain = "general_perf"
+function = "detect_perf_214"
+
+[[detector]]
+perf = 215
+domain = "general_perf"
+function = "detect_perf_215"
+
+[[detector]]
+perf = 216
+domain = "general_perf"
+function = "detect_perf_216"
+
+[[detector]]
+perf = 217
+domain = "general_perf"
+function = "detect_perf_217"
+
+[[detector]]
+perf = 218
+domain = "general_perf"
+function = "detect_perf_218"
+
+[[detector]]
+perf = 219
+domain = "general_perf"
+function = "detect_perf_219"
+
+[[detector]]
+perf = 220
+domain = "general_perf"
+function = "detect_perf_220"
+
+[[detector]]
+perf = 221
+domain = "general_perf"
+function = "detect_perf_221"
+
+[[detector]]
+perf = 222
+domain = "general_perf"
+function = "detect_perf_222"
+
+[[detector]]
+perf = 223
+domain = "general_perf"
+function = "detect_perf_223"
+
+[[detector]]
+perf = 224
+domain = "general_perf"
+function = "detect_perf_224"
+
+[[detector]]
+perf = 225
+domain = "general_perf"
+function = "detect_perf_225"
+
+[[detector]]
+perf = 226
+domain = "general_perf"
+function = "detect_perf_226"
+
+[[detector]]
+perf = 227
+domain = "general_perf"
+function = "detect_perf_227"
+
+[[detector]]
+perf = 228
+domain = "general_perf"
+function = "detect_perf_228"
+
+[[detector]]
+perf = 229
+domain = "general_perf"
+function = "detect_perf_229"
+
+[[detector]]
+perf = 230
+domain = "general_perf"
+function = "detect_perf_230"
+
+[[detector]]
+perf = 231
+domain = "general_perf"
+function = "detect_perf_231"
+
+[[detector]]
+perf = 232
+domain = "general_perf"
+function = "detect_perf_232"
+
+[[detector]]
+perf = 233
+domain = "general_perf"
+function = "detect_perf_233"
+
+[[detector]]
+perf = 234
+domain = "general_perf"
+function = "detect_perf_234"
+
+[[detector]]
+perf = 235
+domain = "general_perf"
+function = "detect_perf_235"
+
+[[detector]]
+perf = 236
+domain = "general_perf"
+function = "detect_perf_236"
+
+[[detector]]
+perf = 237
+domain = "general_perf"
+function = "detect_perf_237"
+
+[[detector]]
+perf = 238
+domain = "general_perf"
+function = "detect_perf_238"
+
+[[detector]]
+perf = 239
+domain = "general_perf"
+function = "detect_perf_239"
+
+[[detector]]
+perf = 240
+domain = "general_perf"
+function = "detect_perf_240"
+
+[[detector]]
+perf = 241
+domain = "general_perf"
+function = "detect_perf_241"
+
+[[detector]]
+perf = 242
+domain = "general_perf"
+function = "detect_perf_242"

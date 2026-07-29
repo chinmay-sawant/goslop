@@ -1,0 +1,18 @@
+# PERF-223 negative: backing array retained on pool return
+lang: go
+file: PERF-223-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var pool sync.Pool
+
+func releaseBuffer(buf []byte) {
+	if cap(buf) > 4096 {
+		return
+	}
+	buf = buf[:0]
+	pool.Put(buf)
+}

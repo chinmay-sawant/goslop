@@ -1,0 +1,17 @@
+# BP-97 positive: a buffer is read before its bufio writer is flushed
+lang: go
+file: BP-97-vulnerable.go
+---
+package sample
+
+import (
+	"bufio"
+	"bytes"
+)
+
+func encode() string {
+	buf := &bytes.Buffer{}
+	writer := bufio.NewWriter(buf)
+	writer.WriteString("payload")
+	return buf.String()
+}

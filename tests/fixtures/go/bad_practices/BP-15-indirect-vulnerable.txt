@@ -1,0 +1,20 @@
+# BP-15 positive: sync.Once.Do recursion through a helper call
+lang: go
+file: BP-15-indirect-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var once sync.Once
+
+func Init() {
+	once.Do(func() {
+		setup()
+	})
+}
+
+func setup() {
+	once.Do(func() {})
+}

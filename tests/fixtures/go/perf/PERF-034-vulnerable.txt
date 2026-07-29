@@ -1,0 +1,13 @@
+# PERF-034 positive: append inside a for-range over a map
+lang: go
+file: PERF-034-vulnerable.go
+---
+package sample
+
+func CollectKeys(m map[string]int) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}

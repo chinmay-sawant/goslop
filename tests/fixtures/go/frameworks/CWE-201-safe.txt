@@ -1,0 +1,33 @@
+# CWE-201 negative: sensitive fields omitted from response
+lang: go
+file: CWE-201-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type userRecord struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	APIKey   string `json:"api_key"`
+}
+
+type publicUser struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
+// CWE-201 Insertion of Sensitive Information Into Sent Data (mitigated)
+func FetchUser(c *gin.Context, store map[string]userRecord) {
+	id := c.Param("id")
+	record, ok := store[id]
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.JSON(http.StatusOK, publicUser{Username: record.Username, Email: record.Email})
+}

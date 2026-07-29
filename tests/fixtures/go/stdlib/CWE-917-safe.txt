@@ -1,0 +1,35 @@
+# CWE-917 negative: fixed template with parameterized data (pure stdlib)
+lang: go
+file: CWE-917-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-917 mitigated: template structure is fixed; user values are data fields only.
+
+import (
+	"bytes"
+	"html"
+	"net/http"
+	"text/template"
+)
+
+const reportTemplatePure = `{{.Title}} filtered by {{.Filter}}`
+
+func RenderReportSafePure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		title := r.URL.Query().Get("title")
+		filter := r.URL.Query().Get("filter")
+		safeTitle := html.EscapeString(title)
+		safeFilter := html.EscapeString(filter)
+		tmpl := template.Must(template.New("report").Parse(reportTemplatePure))
+		var buf bytes.Buffer
+		data := map[string]string{"Title": safeTitle, "Filter": safeFilter}
+		if err := tmpl.Execute(&buf, data); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write(buf.Bytes())
+	}
+}

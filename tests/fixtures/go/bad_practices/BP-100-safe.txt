@@ -1,0 +1,18 @@
+# BP-100 negative: errgroup SetLimit bounds the fan-out
+lang: go
+file: BP-100-safe.go
+---
+package sample
+
+func processAll(items []int) {
+	sem := make(chan struct{}, 4)
+	for _, item := range items {
+		sem <- struct{}{}
+		go func(item int) {
+			process(item)
+			<-sem
+		}(item)
+	}
+}
+
+func process(item int) {}

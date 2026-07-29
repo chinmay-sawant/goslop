@@ -1,0 +1,7 @@
+# go.mod-less dependency fixture: local package
+lang: go
+file: cache/no_go_mod/pkg/db/db.go
+---
+package db
+
+func Run() {}

@@ -1,0 +1,22 @@
+# PERF-87 positive: c.Bind runs the default binder
+lang: go
+file: PERF-087-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+type LoginRequest struct {
+	User string `json:"user"`
+	Pass string `json:"pass"`
+}
+
+func Login(c echo.Context) error {
+	var req LoginRequest
+	if err := c.Bind(&req); err != nil {
+		return c.String(400, "bad")
+	}
+	return c.String(200, req.User)
+}

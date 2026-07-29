@@ -1,0 +1,27 @@
+# CWE-214 negative: token supplied via stdin not argv (pure stdlib)
+lang: go
+file: CWE-214-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"os/exec"
+	"strings"
+)
+
+// CWE-214 Invocation of Process Using Visible Sensitive Information (mitigated)
+func RunSnapshotJob(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("X-Api-Token")
+	cmd := exec.Command("archivectl", "--target", "ledger")
+	cmd.Stdin = strings.NewReader(token)
+	if err := cmd.Run(); err != nil {
+		http.Error(w, "backup", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "started"})
+}

@@ -1,0 +1,36 @@
+# CWE-421: alternate channel access is synchronized with the primary handler.
+lang: go
+file: CWE-421-safe.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	transferMu    sync.Mutex
+	transferToken string
+)
+
+func WireTransferNotify(r *gin.Engine) {
+	r.POST("/transfer/authorize", func(c *gin.Context) {
+		transferMu.Lock()
+		transferToken = c.PostForm("token")
+		transferMu.Unlock()
+		c.Status(http.StatusOK)
+	})
+	r.GET("/transfer/events", func(c *gin.Context) {
+		c.Stream(func(w io.Writer) bool {
+			transferMu.Lock()
+			payload := transferToken
+			transferMu.Unlock()
+			_, _ = w.Write([]byte("event: status\ndata: " + payload + "\n\n"))
+			return false
+		})
+	})
+}

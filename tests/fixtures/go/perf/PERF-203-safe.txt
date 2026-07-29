@@ -1,0 +1,20 @@
+# PERF-203 negative: ip.String() cached once
+lang: go
+file: PERF-203-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	ip := net.ParseIP(r.RemoteAddr)
+	if ip == nil {
+		return
+	}
+	s := ip.String()
+	_ = s
+}

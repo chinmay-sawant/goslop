@@ -1,0 +1,23 @@
+# PERF-036 negative: the loop variable is shadowed per iteration
+lang: go
+file: PERF-036-safe.go
+---
+package sample
+
+import (
+	"fmt"
+	"sync"
+)
+
+func FanOut(items []int) {
+	var wg sync.WaitGroup
+	for _, v := range items {
+		v := v
+		wg.Add(1)
+		go func() {
+			fmt.Println(v)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+}

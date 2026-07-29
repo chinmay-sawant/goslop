@@ -1,0 +1,11 @@
+# PERF-127 negative: unnecessary fmt.Sprintf in log call
+lang: go
+file: PERF-127-safe.go
+---
+package sample
+
+import "log"
+
+func Log() {
+    log.Printf("hello")
+}

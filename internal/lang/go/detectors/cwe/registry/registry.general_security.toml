@@ -1,0 +1,376 @@
+# CWE registry — domain: general_security
+
+[[detector]]
+cwe = 41
+domain = "general_security"
+function = "detect_cwe_41"
+
+[[detector]]
+cwe = 59
+domain = "general_security"
+function = "detect_cwe_59"
+
+[[detector]]
+cwe = 112
+domain = "general_security"
+function = "detect_cwe_112"
+
+[[detector]]
+cwe = 178
+domain = "general_security"
+function = "detect_cwe_178"
+
+[[detector]]
+cwe = 179
+domain = "general_security"
+function = "detect_cwe_179"
+
+[[detector]]
+cwe = 182
+domain = "general_security"
+function = "detect_cwe_182"
+
+[[detector]]
+cwe = 184
+domain = "general_security"
+function = "detect_cwe_184"
+
+[[detector]]
+cwe = 204
+domain = "general_security"
+function = "detect_cwe_204"
+
+[[detector]]
+cwe = 208
+domain = "general_security"
+function = "detect_cwe_208"
+
+[[detector]]
+cwe = 250
+domain = "general_security"
+function = "detect_cwe_250"
+
+[[detector]]
+cwe = 252
+domain = "general_security"
+function = "detect_cwe_252"
+
+[[detector]]
+cwe = 266
+domain = "general_security"
+function = "detect_cwe_266"
+
+[[detector]]
+cwe = 267
+domain = "general_security"
+function = "detect_cwe_267"
+
+[[detector]]
+cwe = 268
+domain = "general_security"
+function = "detect_cwe_268"
+
+[[detector]]
+cwe = 270
+domain = "general_security"
+function = "detect_cwe_270"
+
+[[detector]]
+cwe = 272
+domain = "general_security"
+function = "detect_cwe_272"
+
+[[detector]]
+cwe = 273
+domain = "general_security"
+function = "detect_cwe_273"
+
+[[detector]]
+cwe = 274
+domain = "general_security"
+function = "detect_cwe_274"
+
+[[detector]]
+cwe = 283
+domain = "general_security"
+function = "detect_cwe_283"
+
+[[detector]]
+cwe = 323
+domain = "general_security"
+function = "detect_cwe_323"
+
+[[detector]]
+cwe = 328
+domain = "general_security"
+function = "detect_cwe_328"
+
+[[detector]]
+cwe = 331
+domain = "general_security"
+function = "detect_cwe_331"
+
+[[detector]]
+cwe = 341
+domain = "general_security"
+function = "detect_cwe_341"
+
+[[detector]]
+cwe = 344
+domain = "general_security"
+function = "detect_cwe_344"
+
+[[detector]]
+cwe = 346
+domain = "general_security"
+function = "detect_cwe_346"
+
+[[detector]]
+cwe = 353
+domain = "general_security"
+function = "detect_cwe_353"
+
+[[detector]]
+cwe = 356
+domain = "general_security"
+function = "detect_cwe_356"
+
+[[detector]]
+cwe = 358
+domain = "general_security"
+function = "detect_cwe_358"
+
+[[detector]]
+cwe = 359
+domain = "general_security"
+function = "detect_cwe_359"
+
+[[detector]]
+cwe = 360
+domain = "general_security"
+function = "detect_cwe_360"
+
+[[detector]]
+cwe = 385
+domain = "general_security"
+function = "detect_cwe_385"
+
+[[detector]]
+cwe = 393
+domain = "general_security"
+function = "detect_cwe_393"
+
+[[detector]]
+cwe = 403
+domain = "general_security"
+function = "detect_cwe_403"
+
+[[detector]]
+cwe = 412
+domain = "general_security"
+function = "detect_cwe_412"
+
+[[detector]]
+cwe = 420
+domain = "general_security"
+function = "detect_cwe_420"
+
+[[detector]]
+cwe = 426
+domain = "general_security"
+function = "detect_cwe_426"
+
+[[detector]]
+cwe = 427
+domain = "general_security"
+function = "detect_cwe_427"
+
+[[detector]]
+cwe = 454
+domain = "general_security"
+function = "detect_cwe_454"
+
+[[detector]]
+cwe = 459
+domain = "general_security"
+function = "detect_cwe_459"
+
+[[detector]]
+cwe = 488
+domain = "general_security"
+function = "detect_cwe_488"
+
+[[detector]]
+cwe = 494
+domain = "general_security"
+function = "detect_cwe_494"
+
+[[detector]]
+cwe = 497
+domain = "general_security"
+function = "detect_cwe_497"
+
+[[detector]]
+cwe = 515
+domain = "general_security"
+function = "detect_cwe_515"
+
+[[detector]]
+cwe = 544
+domain = "general_security"
+function = "detect_cwe_544"
+
+[[detector]]
+cwe = 552
+domain = "general_security"
+function = "detect_cwe_552"
+
+[[detector]]
+cwe = 565
+domain = "general_security"
+function = "detect_cwe_565"
+
+[[detector]]
+cwe = 605
+domain = "general_security"
+function = "detect_cwe_605"
+
+[[detector]]
+cwe = 611
+domain = "general_security"
+function = "detect_cwe_611"
+
+[[detector]]
+cwe = 618
+domain = "general_security"
+function = "detect_cwe_618"
+
+[[detector]]
+cwe = 645
+domain = "general_security"
+function = "detect_cwe_645"
+
+[[detector]]
+cwe = 648
+domain = "general_security"
+function = "detect_cwe_648"
+
+[[detector]]
+cwe = 649
+domain = "general_security"
+function = "detect_cwe_649"
+
+[[detector]]
+cwe = 654
+domain = "general_security"
+function = "detect_cwe_654"
+
+[[detector]]
+cwe = 656
+domain = "general_security"
+function = "detect_cwe_656"
+
+[[detector]]
+cwe = 708
+domain = "general_security"
+function = "detect_cwe_708"
+
+[[detector]]
+cwe = 765
+domain = "general_security"
+function = "detect_cwe_765"
+
+[[detector]]
+cwe = 778
+domain = "general_security"
+function = "detect_cwe_778"
+
+[[detector]]
+cwe = 783
+domain = "general_security"
+function = "detect_cwe_783"
+
+[[detector]]
+cwe = 807
+domain = "general_security"
+function = "detect_cwe_807"
+
+[[detector]]
+cwe = 826
+domain = "general_security"
+function = "detect_cwe_826"
+
+[[detector]]
+cwe = 829
+domain = "general_security"
+function = "detect_cwe_829"
+
+[[detector]]
+cwe = 838
+domain = "general_security"
+function = "detect_cwe_838"
+
+[[detector]]
+cwe = 841
+domain = "general_security"
+function = "detect_cwe_841"
+
+[[detector]]
+cwe = 842
+domain = "general_security"
+function = "detect_cwe_842"
+
+[[detector]]
+cwe = 909
+domain = "general_security"
+function = "detect_cwe_909"
+
+[[detector]]
+cwe = 915
+domain = "general_security"
+function = "detect_cwe_915"
+
+[[detector]]
+cwe = 924
+domain = "general_security"
+function = "detect_cwe_924"
+
+[[detector]]
+cwe = 940
+domain = "general_security"
+function = "detect_cwe_940"
+
+[[detector]]
+cwe = 941
+domain = "general_security"
+function = "detect_cwe_941"
+
+[[detector]]
+cwe = 1125
+domain = "general_security"
+function = "detect_cwe_1125"
+
+[[detector]]
+cwe = 1265
+domain = "general_security"
+function = "detect_cwe_1265"
+
+[[detector]]
+cwe = 1286
+domain = "general_security"
+function = "detect_cwe_1286"
+
+[[detector]]
+cwe = 1289
+domain = "general_security"
+function = "detect_cwe_1289"
+
+[[detector]]
+cwe = 1322
+domain = "general_security"
+function = "detect_cwe_1322"
+
+[[detector]]
+cwe = 1389
+domain = "general_security"
+function = "detect_cwe_1389"

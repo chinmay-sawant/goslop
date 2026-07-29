@@ -1,0 +1,15 @@
+# BP-151 positive: a secret environment value is logged directly.
+lang: go
+file: BP-151-vulnerable.go
+variant: secret-env-log
+---
+package main
+
+import (
+	"log"
+	"os"
+)
+
+func main() {
+	log.Printf("starting with token=%s", os.Getenv("API_TOKEN"))
+}

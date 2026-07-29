@@ -1,0 +1,21 @@
+# PERF-172 positive: wg.Wait blocks handler before response write
+lang: go
+file: PERF-172-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+func BlockingHandler(w http.ResponseWriter, r *http.Request) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		wg.Done()
+	}()
+	wg.Wait()
+	w.Write([]byte("done"))
+}

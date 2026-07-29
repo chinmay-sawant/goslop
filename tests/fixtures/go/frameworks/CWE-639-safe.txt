@@ -1,0 +1,31 @@
+# CWE-639: Authorization Bypass Through User-Controlled Key (mitigated)
+lang: go
+file: CWE-639-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+type Invoice struct {
+	ID     int     `db:"id"`
+	UserID int     `db:"user_id"`
+	Amount float64 `db:"amount"`
+}
+
+// Safe: user-controlled key is scoped to the authenticated owner.
+func GetInvoice(c *gin.Context, db *sqlx.DB) {
+	invoiceID := c.Param("invoice_id")
+	ownerID, _ := c.Get("user_id")
+	var inv Invoice
+	err := db.Get(&inv, "SELECT id, user_id, amount FROM invoices WHERE id = $1 AND user_id = $2", invoiceID, ownerID)
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, inv)
+}

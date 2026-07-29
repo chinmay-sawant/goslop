@@ -1,0 +1,16 @@
+# PERF-050 positive: regexp.MatchString inside a per-row loop
+lang: go
+file: PERF-050-vulnerable.go
+---
+package sample
+
+import "regexp"
+
+func FindHits(rows []string) []bool {
+	hits := make([]bool, 0, len(rows))
+	for _, r := range rows {
+		matched, _ := regexp.MatchString(`^[A-Z]+$`, r)
+		hits = append(hits, matched)
+	}
+	return hits
+}

@@ -1,0 +1,11 @@
+# BP-90 positive variant: standalone receive is trapped in an infinite loop
+lang: go
+file: BP-90-variant-vulnerable.go
+---
+package sample
+
+func wait(ch <-chan struct{}) {
+	for {
+		<-ch
+	}
+}

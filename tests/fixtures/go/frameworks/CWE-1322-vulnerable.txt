@@ -1,0 +1,31 @@
+# CWE-1322 vulnerable: blocking sleep in async worker
+lang: go
+file: CWE-1322-vulnerable.go
+---
+package sample
+
+// CWE-1322: Use of Blocking Code in Single-threaded, Non-blocking Context.
+// Vulnerable: event loop goroutine calls time.Sleep while draining webhook queue.
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func StartWebhookWorker(db *gorm.DB) gin.HandlerFunc {
+	queue := make(chan string, 32)
+	go func() {
+		for payload := range queue {
+			time.Sleep(2 * time.Second)
+			_ = db.Exec("INSERT INTO webhook_events (payload) VALUES (?)", payload).Error
+		}
+	}()
+	return func(c *gin.Context) {
+		body := c.PostForm("payload")
+		queue <- body
+		c.JSON(http.StatusAccepted, gin.H{"queued": true})
+	}
+}

@@ -1,0 +1,18 @@
+# PERF-190 negative: http.Client has Timeout
+lang: go
+file: PERF-190-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func Client() *http.Client {
+	return &http.Client{
+		Transport: http.DefaultTransport,
+		Timeout:   5 * time.Second,
+	}
+}

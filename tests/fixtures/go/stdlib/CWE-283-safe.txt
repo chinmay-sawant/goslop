@@ -1,0 +1,31 @@
+# CWE-283 — Unverified Ownership (safe) (pure stdlib)
+lang: go
+file: CWE-283-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"strconv"
+	"syscall"
+)
+
+// Safe: ensures the file is owned by the authenticated uid before deletion.
+func DeleteUserFile(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Query().Get("path")
+	info, err := os.Stat(path)
+	if err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	stat := info.Sys().(*syscall.Stat_t)
+	callerUID, _ := strconv.Atoi(r.Header.Get("X-UID"))
+	if int(stat.Uid) != callerUID {
+		http.Error(w, "not owner", http.StatusForbidden)
+		return
+	}
+	_ = os.Remove(path)
+	w.WriteHeader(http.StatusOK)
+}

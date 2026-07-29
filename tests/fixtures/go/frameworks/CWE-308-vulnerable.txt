@@ -1,0 +1,21 @@
+# CWE-308 — Use of Single-factor Authentication (vulnerable)
+lang: go
+file: CWE-308-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Vulnerable: high-value wire transfer authorized by password alone.
+func InitiateWire(c *gin.Context, db *sqlx.DB) {
+	if c.PostForm("password") == "" {
+		c.JSON(401, gin.H{"error": "password required"})
+		return
+	}
+	amount := c.PostForm("amount")
+	_, _ = db.Exec("INSERT INTO wires (amount) VALUES (?)", amount)
+	c.JSON(200, gin.H{"queued": amount})
+}

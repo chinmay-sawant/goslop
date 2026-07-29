@@ -1,0 +1,17 @@
+# PERF-93 positive: c.JSON allocated per request in a Fiber handler
+lang: go
+file: PERF-093-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+type Resp struct {
+	Msg string `json:"msg"`
+}
+
+func GetUser(c *fiber.Ctx) error {
+	return c.JSON(Resp{Msg: "hello"})
+}

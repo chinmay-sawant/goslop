@@ -1,0 +1,22 @@
+# PERF-169 positive: atomic.Value.Store called inside a loop (allocates an eface per call)
+lang: go
+file: PERF-169-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"sync/atomic"
+)
+
+type Config struct {
+	Limit int
+}
+
+var cfg atomic.Value
+
+func UpdateLimits(values []int) {
+	for _, v := range values {
+		cfg.Store(Config{Limit: v})
+	}
+}

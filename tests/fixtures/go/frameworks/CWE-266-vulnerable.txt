@@ -1,0 +1,23 @@
+# CWE-266 — Incorrect Privilege Assignment (vulnerable)
+lang: go
+file: CWE-266-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Membership struct {
+	UserID uint
+	Role   string
+}
+
+// Vulnerable: trusts client-supplied role when provisioning access.
+func InviteMember(c *gin.Context, db *gorm.DB) {
+	role := c.Query("role")
+	m := Membership{UserID: 42, Role: role}
+	db.Create(&m)
+	c.JSON(201, gin.H{"role": role})
+}

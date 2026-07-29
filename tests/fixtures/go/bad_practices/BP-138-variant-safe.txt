@@ -1,0 +1,18 @@
+# BP-138 negative variant: the hook delegates to a post-commit service.
+lang: go
+file: BP-138-variant-safe.go
+variant: gorm-post-commit-delegation
+---
+package sample
+
+import "gorm.io/gorm"
+
+type Account struct{}
+
+// AfterDelete queues an audit event for post-commit delivery.
+func (a *Account) AfterDelete(tx *gorm.DB) error {
+	queueAuditEvent(a)
+	return nil
+}
+
+func queueAuditEvent(account *Account) {}

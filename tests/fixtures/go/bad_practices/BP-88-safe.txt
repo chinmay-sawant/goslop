@@ -1,0 +1,12 @@
+# BP-88 negative: channel is initialized before direct operation
+lang: go
+file: BP-88-safe.go
+variant: stdlib
+---
+package sample
+
+func send(work int) {
+	var ready chan int
+	ready = make(chan int, 1)
+	ready <- work
+}

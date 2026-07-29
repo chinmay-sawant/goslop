@@ -1,0 +1,15 @@
+# PERF-101 positive: http.Server missing timeouts
+lang: go
+file: PERF-101-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Serve(handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:    ":8080",
+		Handler: handler,
+	}
+}

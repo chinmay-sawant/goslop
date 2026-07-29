@@ -1,0 +1,21 @@
+# PERF-135 positive: gob.NewEncoder inside a loop
+lang: go
+file: PERF-135-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/gob"
+	"net"
+)
+
+func Send(items []int, conn net.Conn) error {
+	for _, it := range items {
+		enc := gob.NewEncoder(conn)
+		if err := enc.Encode(it); err != nil {
+			return err
+		}
+	}
+	return nil
+}

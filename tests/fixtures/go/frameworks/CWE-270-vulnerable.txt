@@ -1,0 +1,17 @@
+# CWE-270 — Privilege Context Switching Error (vulnerable)
+lang: go
+file: CWE-270-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Vulnerable: elevates to maintenance user but never restores caller context.
+func RunMaintenanceJob(c *gin.Context, db *gorm.DB) {
+	c.Set("effective_user", "root")
+	db.Exec("DELETE FROM stale_sessions")
+	c.JSON(200, gin.H{"done": true})
+}

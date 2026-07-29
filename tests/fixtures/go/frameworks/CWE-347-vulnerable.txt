@@ -1,0 +1,29 @@
+# CWE-347 vulnerable — Improper Verification of Cryptographic Signature
+lang: go
+file: CWE-347-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Get(dest interface{}, query string, args ...interface{}) error { return nil }
+
+func AcceptSignedProfile(c *GinCtx, db *SqlxDB) error {
+	raw := c.Request.Header.Get("X-Profile-JWT")
+	parts := strings.Split(raw, ".")
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	var claims map[string]interface{}
+	_ = json.Unmarshal(payload, &claims)
+	return db.Get(&claims, "UPDATE profiles SET role = ? WHERE id = ?", claims["role"], claims["sub"])
+}

@@ -1,0 +1,37 @@
+# CWE-41 negative: canonical path checked under root (pure stdlib)
+lang: go
+file: CWE-41-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// CWE-41 Improper Resolution of Path Equivalence (mitigated)
+func FetchMemo(w http.ResponseWriter, r *http.Request) {
+	root := "/srv/memos"
+	rel := r.URL.Query().Get("path")
+	full, err := filepath.Abs(filepath.Join(root, rel))
+	if err != nil {
+		http.Error(w, "bad path", http.StatusBadRequest)
+		return
+	}
+	rootAbs, err := filepath.Abs(root)
+	if err != nil || !strings.HasPrefix(full, rootAbs+string(os.PathSeparator)) {
+		http.Error(w, "bad path", http.StatusBadRequest)
+		return
+	}
+	body, err := os.ReadFile(full)
+	if err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(body)
+}

@@ -1,0 +1,26 @@
+# PERF-89 positive: Echo middleware allocates per request
+lang: go
+file: PERF-089-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"github.com/labstack/echo/v4"
+)
+
+type Config struct {
+	Token string `json:"token"`
+}
+
+func ConfigMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var cfg Config
+		raw := []byte(`{"token":"abc"}`)
+		if err := json.Unmarshal(raw, &cfg); err != nil {
+			return next(c)
+		}
+		c.Set("token", cfg.Token)
+		return next(c)
+	}
+}

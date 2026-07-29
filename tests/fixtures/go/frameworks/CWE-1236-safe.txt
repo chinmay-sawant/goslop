@@ -1,0 +1,56 @@
+# CWE-1236 safe: CSV cells escaped against formulas
+lang: go
+file: CWE-1236-safe.go
+---
+package sample
+
+// CWE-1236 mitigated: dangerous leading characters prefixed before CSV export.
+
+import (
+	"encoding/csv"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Feedback struct {
+	ID      uint
+	Comment string
+}
+
+func sanitizeCSVField(value string) string {
+	if value == "" {
+		return value
+	}
+	switch value[0] {
+	case '=', '+', '-', '@', '\t', '\r':
+		return "'" + value
+	default:
+		return value
+	}
+}
+
+func ExportFeedbackCSVSafe(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var rows []Feedback
+		if err := db.Find(&rows).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		var b strings.Builder
+		w := csv.NewWriter(&b)
+		_ = w.Write([]string{"id", "comment"})
+		for _, row := range rows {
+			_ = w.Write([]string{
+				strconv.FormatUint(uint64(row.ID), 10),
+				sanitizeCSVField(row.Comment),
+			})
+		}
+		w.Flush()
+		c.Header("Content-Type", "text/csv")
+		c.String(http.StatusOK, b.String())
+	}
+}

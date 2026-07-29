@@ -1,0 +1,22 @@
+# PERF-001 positive: regexp.MustCompile inside loop
+lang: go
+file: PERF-001-vulnerable.go
+---
+package sample
+
+import (
+	"regexp"
+	"strings"
+)
+
+func CountMatches(text string) int {
+	parts := strings.Split(text, "\n")
+	count := 0
+	for _, line := range parts {
+		re := regexp.MustCompile(`^[A-Z]+$`)
+		if re.MatchString(line) {
+			count++
+		}
+	}
+	return count
+}

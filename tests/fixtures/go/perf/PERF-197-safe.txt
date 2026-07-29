@@ -1,0 +1,19 @@
+# PERF-197 negative: body is read once and cached
+lang: go
+file: PERF-197-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strconv"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	defer r.Body.Close()
+	body := []byte("ok")
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+	_, _ = w.Write(body)
+}

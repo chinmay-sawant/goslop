@@ -1,0 +1,13 @@
+# PERF-113 positive: single-case select
+lang: go
+file: PERF-113-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Wait(ch <-chan int) int {
+	select {
+	case value := <-ch:
+		return value
+	}
+}

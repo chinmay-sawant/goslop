@@ -1,0 +1,15 @@
+# PERF-107 negative: encoding/binary read/write inside loop
+lang: go
+file: PERF-107-safe.go
+---
+package sample
+
+import (
+    "bytes"
+    "encoding/binary"
+)
+
+func ReadOnce(r *bytes.Reader) {
+    var x int32
+    binary.Read(r, binary.LittleEndian, &x)
+}

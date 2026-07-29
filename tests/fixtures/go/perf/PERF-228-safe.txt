@@ -1,0 +1,16 @@
+# PERF-228 negative: serial path for a single item (no fan-out)
+lang: go
+file: PERF-228-safe.go
+variant: stdlib
+---
+package sample
+
+type Page struct {
+	Data []byte
+}
+
+func CompressPages(p Page) error {
+	// N==1: do the work inline instead of errgroup over a 1-element slice.
+	_ = p.Data
+	return nil
+}

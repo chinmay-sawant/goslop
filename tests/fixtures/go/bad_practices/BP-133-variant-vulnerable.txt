@@ -1,0 +1,14 @@
+# BP-133 variant positive: a GORM Create chain result is discarded.
+lang: go
+file: BP-133-variant-vulnerable.go
+variant: gorm-create-chain
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct{}
+
+func createUser(db *gorm.DB, user *User) {
+	db.Create(user)
+}

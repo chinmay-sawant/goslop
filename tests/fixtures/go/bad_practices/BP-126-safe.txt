@@ -1,0 +1,21 @@
+# BP-126 negative: the transaction has a visible commit path.
+lang: go
+file: BP-126-safe.go
+variant: database-sql
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+)
+
+func update(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err == nil {
+		if err = tx.Commit(); err == nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("transaction: %w", err)
+}

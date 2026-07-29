@@ -1,0 +1,16 @@
+# PERF-140 negative: debug.SetGCPercent with a production-friendly value
+lang: go
+file: PERF-140-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"runtime/debug"
+)
+
+func Tune() {
+	debug.SetGCPercent(100)
+	fmt.Println("gc tuned")
+}

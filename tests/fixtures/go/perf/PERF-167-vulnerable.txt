@@ -1,0 +1,22 @@
+# PERF-167 positive: wg.Add called inside a goroutine body
+lang: go
+file: PERF-167-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func FanOut(work []int) {
+	var wg sync.WaitGroup
+	for _, item := range work {
+		go func() {
+			wg.Add(1)
+			defer wg.Done()
+			process(item)
+		}()
+	}
+	wg.Wait()
+}
+
+func process(n int) { _ = n }

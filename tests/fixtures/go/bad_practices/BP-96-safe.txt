@@ -1,0 +1,21 @@
+# BP-96 negative: Query rows are closed after the error check
+lang: go
+file: BP-96-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+)
+
+func load(db *sql.DB) error {
+	rows, err := db.Query("select 1")
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+	if closeErr := rows.Close(); closeErr != nil {
+		return fmt.Errorf("close rows: %w", closeErr)
+	}
+	return nil
+}

@@ -1,0 +1,25 @@
+# CWE-263 — Password Aging with Long Expiration (vulnerable) (pure stdlib)
+lang: go
+file: CWE-263-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+type rotationPolicy struct {
+	MaxAgeDays int
+}
+
+// Vulnerable: policy allows passwords to remain valid for ten years.
+func EnforceRotation(w http.ResponseWriter, r *http.Request, changed time.Time) {
+	policy := rotationPolicy{MaxAgeDays: 3650}
+	if time.Since(changed) < time.Duration(policy.MaxAgeDays)*24*time.Hour {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Error(w, "expired", http.StatusForbidden)
+}

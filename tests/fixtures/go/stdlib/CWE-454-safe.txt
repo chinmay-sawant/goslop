@@ -1,0 +1,23 @@
+# CWE-454 negative: MFA policy from server environment only (pure stdlib)
+lang: go
+file: CWE-454-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+	"os"
+)
+
+var enforceMFA bool
+
+func RegisterBootstrap(db *sql.DB) {
+	enforceMFA = os.Getenv("ENFORCE_MFA") == "true"
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]bool{"mfa": enforceMFA})
+	})
+	_, _ = db.Exec("UPDATE settings SET mfa = ?", enforceMFA)
+}

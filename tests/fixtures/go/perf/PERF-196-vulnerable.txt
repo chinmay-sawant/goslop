@@ -1,0 +1,26 @@
+# PERF-196 positive: JWT parse in a request handler
+lang: go
+file: PERF-196-vulnerable.go
+variant: framework
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type Claims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	tok := r.Header.Get("Authorization")
+	claims := &Claims{}
+	_, _ = jwt.ParseWithClaims(tok, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	w.WriteHeader(200)
+}

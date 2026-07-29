@@ -1,0 +1,19 @@
+# BP-46 negative: http.Server sets both read and write timeouts
+lang: go
+file: BP-46-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func server() *http.Server {
+	return &http.Server{
+		Addr:         ":8080",
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+	}
+}

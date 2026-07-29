@@ -1,0 +1,29 @@
+# CWE-838: Inappropriate Encoding for Output Context (mitigated)
+lang: go
+file: CWE-838-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Notice struct {
+	Title string
+	Body  string
+}
+
+// Safe: response encoding matches the declared UTF-8 JSON content type.
+func PublishNotice(c *gin.Context, db *gorm.DB) {
+	id := c.Param("id")
+	var notice Notice
+	if err := db.First(&notice, id).Error; err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.Header("Content-Type", "application/json; charset=utf-8")
+	c.JSON(http.StatusOK, notice)
+}

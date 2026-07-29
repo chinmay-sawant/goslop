@@ -1,0 +1,19 @@
+# CWE-93 positive: CRLF injected into HTTP header value
+lang: go
+file: CWE-93-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-93 Improper Neutralization of CRLF Sequences
+// Vulnerable line: redirect URL copied into Location header raw.
+func SetRedirect(c *gin.Context) {
+	next := c.Query("next")
+	c.Header("Location", "https://app.example/login?continue="+next)
+	c.Status(http.StatusFound)
+}

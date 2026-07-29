@@ -1,0 +1,35 @@
+# CWE-312 — Cleartext Storage of Sensitive Information (safe)
+lang: go
+file: CWE-312-safe.go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"io"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Patient struct {
+	ID         uint
+	SSNCipher  []byte
+	SSNNonce   []byte
+}
+
+// Safe: encrypts SSN at rest with AES-GCM before insert.
+func StorePatient(c *gin.Context, db *gorm.DB) {
+	key := []byte(os.Getenv("DATA_KEY"))
+	block, _ := aes.NewCipher(key)
+	gcm, _ := cipher.NewGCM(block)
+	nonce := make([]byte, gcm.NonceSize())
+	_, _ = io.ReadFull(rand.Reader, nonce)
+	ciphertext := gcm.Seal(nil, nonce, []byte(c.PostForm("ssn")), nil)
+	rec := Patient{SSNCipher: ciphertext, SSNNonce: nonce}
+	db.Create(&rec)
+	c.JSON(201, gin.H{"id": rec.ID})
+}

@@ -1,0 +1,38 @@
+# CWE-544 negative: unified database error helper (pure stdlib)
+lang: go
+file: CWE-544-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"errors"
+	"net/http"
+)
+
+func writeDBFailure(w http.ResponseWriter, err error) {
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	http.Error(w, "internal error", http.StatusInternalServerError)
+}
+
+func FetchProfileName(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var name string
+	if err := db.QueryRow("SELECT name FROM users WHERE id = ?", r.PathValue("id")).Scan(&name); err != nil {
+		writeDBFailure(w, err)
+		return
+	}
+	w.Write([]byte(name))
+}
+
+func FetchAccountBalance(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var balance float64
+	if err := db.QueryRow("SELECT balance FROM accounts WHERE id = ?", r.PathValue("id")).Scan(&balance); err != nil {
+		writeDBFailure(w, err)
+		return
+	}
+	_, _ = w.Write([]byte("balance recorded"))
+}

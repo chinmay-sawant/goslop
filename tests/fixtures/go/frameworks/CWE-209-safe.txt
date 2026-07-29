@@ -1,0 +1,25 @@
+# CWE-209 negative: generic client error without internals
+lang: go
+file: CWE-209-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-209 Generation of Error Message Containing Sensitive Information (mitigated)
+func CreateOrder(c *gin.Context, db *sql.DB) {
+	id := c.PostForm("id")
+	_, err := db.Exec("INSERT INTO orders(id) VALUES(?)", id)
+	if err != nil {
+		log.Printf("order insert failed: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "could not create order"})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"status": "created"})
+}

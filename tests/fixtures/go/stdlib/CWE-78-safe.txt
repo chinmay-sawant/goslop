@@ -1,0 +1,30 @@
+# CWE-78 negative: fixed argv without shell interpolation (pure stdlib)
+lang: go
+file: CWE-78-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+	"regexp"
+)
+
+// CWE-78 Improper Neutralization of Special Elements used in an OS Command (mitigated)
+func TraceRoute(w http.ResponseWriter, r *http.Request) {
+	host := r.URL.Query().Get("host")
+	if !regexp.MustCompile(`^[a-zA-Z0-9.-]+$`).MatchString(host) {
+		http.Error(w, "invalid host", http.StatusBadRequest)
+		return
+	}
+	cmd := exec.Command("traceroute", "-m", "1", host)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		http.Error(w, "trace failed", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(out)
+}

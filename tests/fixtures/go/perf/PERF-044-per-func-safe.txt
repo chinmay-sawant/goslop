@@ -1,0 +1,29 @@
+# PERF-044-per-func negative: same local name asserted once per function is fine
+lang: go
+file: PERF-044-per-func-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type anyVal interface{ Value() int }
+
+type intVal int
+
+func (i intVal) Value() int { return int(i) }
+
+func Get(c *gin.Context) {
+	var v anyVal = intVal(7)
+	_ = v.(intVal).Value()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}
+
+func Incr(c *gin.Context) {
+	var v anyVal = intVal(7)
+	_ = v.(intVal).Value()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

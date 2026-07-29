@@ -1,0 +1,20 @@
+# IP-013: Outer function keeps attribution after a nested closure
+lang: go
+file: IP-013-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+func handler(r *http.Request) {
+	_ = func() {
+		local := "inner"
+		_ = local
+	}
+	path := r.URL.Query().Get("path")
+	os.Open(path)
+}

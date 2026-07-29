@@ -1,0 +1,25 @@
+# CWE-821: Incorrect Synchronization
+lang: go
+file: CWE-821-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var cacheMu sync.RWMutex
+var tokenCache = map[string]string{}
+
+// Vulnerable: read lock is taken while mutating shared state.
+func StoreToken(c *gin.Context) {
+	key := c.Query("session")
+	value := c.Query("token")
+	cacheMu.RLock()
+	tokenCache[key] = value
+	cacheMu.RUnlock()
+	c.Status(http.StatusOK)
+}

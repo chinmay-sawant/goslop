@@ -1,0 +1,25 @@
+# CWE-273 — Improper Check for Dropped Privileges (vulnerable) (pure stdlib)
+lang: go
+file: CWE-273-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"syscall"
+)
+
+// Vulnerable: ignores whether Setuid actually lowered privileges.
+func ServeAfterDrop(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = syscall.Setuid(1000)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"serving":true}`))
+	_ = r.RemoteAddr
+}

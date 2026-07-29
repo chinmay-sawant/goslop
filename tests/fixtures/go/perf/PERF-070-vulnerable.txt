@@ -1,0 +1,23 @@
+# PERF-070 positive: go func(){} in a Gin handler with no WaitGroup/done channel/context cancel
+lang: go
+file: PERF-070-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func backgroundWork() {
+	// runs after the response has been written
+}
+
+func LeakyHandler(c *gin.Context) {
+	go func() {
+		backgroundWork()
+	}()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

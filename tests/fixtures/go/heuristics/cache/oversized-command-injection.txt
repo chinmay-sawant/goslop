@@ -1,0 +1,21 @@
+# Cache oversized-file fixture
+lang: go
+file: cache/oversized/sample.go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+)
+
+func TraceRoute(w http.ResponseWriter, r *http.Request) {
+	host := r.URL.Query().Get("host")
+	cmd := exec.Command("sh", "-c", "traceroute -m 1 "+host)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		http.Error(w, string(out), http.StatusBadRequest)
+		return
+	}
+	w.Write(out)
+}

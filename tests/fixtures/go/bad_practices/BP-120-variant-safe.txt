@@ -1,0 +1,23 @@
+# BP-120 negative variant: a non-Fiber context with BodyParser is ignored.
+lang: go
+file: BP-120-variant-safe.go
+variant: non-fiber
+---
+package sample
+
+import "fmt"
+
+type Context struct{}
+
+// BodyParser is a test-only method with a framework-like name.
+func (Context) BodyParser(any) error { return nil }
+
+func update(ctx Context) error {
+	var request struct {
+		Enabled bool
+	}
+	if err := ctx.BodyParser(&request); err != nil {
+		return fmt.Errorf("parse request: %w", err)
+	}
+	return nil
+}

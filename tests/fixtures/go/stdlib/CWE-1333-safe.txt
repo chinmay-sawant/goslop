@@ -1,0 +1,48 @@
+# CWE-1333 negative: linear-time tag validation (pure stdlib)
+lang: go
+file: CWE-1333-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1333 mitigated: simple anchored pattern and length cap prevent ReDoS.
+
+import (
+	"net/http"
+	"regexp"
+	"sync"
+	"unicode"
+)
+
+var safeTagPatternPure = regexp.MustCompile(`^[a-zA-Z]{1,32}$`)
+
+var commentStoreSafeMu sync.Mutex
+var commentStoreSafePure = map[string]string{}
+
+func ValidateCommentTagSafePure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		tag := r.FormValue("tag")
+		if len(tag) > 32 {
+			http.Error(w, "tag too long", http.StatusBadRequest)
+			return
+		}
+		for _, r := range tag {
+			if !unicode.IsLetter(r) {
+				http.Error(w, "invalid tag", http.StatusBadRequest)
+				return
+			}
+		}
+		if !safeTagPatternPure.MatchString(tag) {
+			http.Error(w, "invalid tag", http.StatusBadRequest)
+			return
+		}
+		commentStoreSafeMu.Lock()
+		commentStoreSafePure[tag] = r.FormValue("body")
+		commentStoreSafeMu.Unlock()
+		w.WriteHeader(http.StatusCreated)
+	}
+}

@@ -1,0 +1,12 @@
+# BP-9 positive: blocking select without timeout
+lang: go
+file: BP-9-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Wait(ch <-chan struct{}) {
+	select {
+	case <-ch:
+	}
+}

@@ -1,0 +1,25 @@
+# PERF-97 negative: proto.Marshal hoisted out of the loop
+lang: go
+file: PERF-097-safe.go
+---
+package sample
+
+import (
+	"google.golang.org/protobuf/proto"
+)
+
+type Msg struct {
+	Text string
+}
+
+func MarshalAll(messages []*Msg) []byte {
+	if len(messages) == 0 {
+		return nil
+	}
+	return marshalOne(messages[0])
+}
+
+func marshalOne(m *Msg) []byte {
+	data, _ := proto.Marshal(m)
+	return data
+}

@@ -1,0 +1,37 @@
+# CWE-426 negative: plugins loaded from fixed directory only (pure stdlib)
+lang: go
+file: CWE-426-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+	"path/filepath"
+	"plugin"
+	"strings"
+)
+
+const trustedPluginRoot = "/opt/codehound/plugins"
+
+func LoadExtension(w http.ResponseWriter, r *http.Request) {
+	name := filepath.Base(r.PathValue("name"))
+	if strings.Contains(name, "..") {
+		http.Error(w, "invalid plugin name", http.StatusBadRequest)
+		return
+	}
+	modPath := filepath.Join(trustedPluginRoot, name+".so")
+	p, err := plugin.Open(modPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	sym, err := p.Lookup("Init")
+	if err != nil {
+		http.Error(w, fmt.Sprintf("lookup failed: %v", err), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_ = sym
+}

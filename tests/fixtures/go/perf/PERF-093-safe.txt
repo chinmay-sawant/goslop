@@ -1,0 +1,16 @@
+# PERF-93 negative: Fiber handler returns a pre-encoded body, no per-request JSON encode
+lang: go
+file: PERF-093-safe.go
+---
+package sample
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+var cachedBody = []byte(`{"msg":"hello"}`)
+
+func GetUser(c *fiber.Ctx) error {
+	c.Set("Content-Type", "application/json")
+	return c.Send(cachedBody)
+}

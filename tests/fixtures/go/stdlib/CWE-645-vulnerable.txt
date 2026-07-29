@@ -1,0 +1,42 @@
+# CWE-645: Overly Restrictive Account Lockout Mechanism (pure stdlib)
+lang: go
+file: CWE-645-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"sync"
+)
+
+var lockoutMu sync.Mutex
+var failedAttempts = map[string]int{}
+var lockedAccounts = map[string]bool{}
+
+// Vulnerable: locks the account after a single failed login attempt.
+func Login(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	user := r.FormValue("username")
+	pass := r.FormValue("password")
+	lockoutMu.Lock()
+	if lockedAccounts[user] {
+		lockoutMu.Unlock()
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	lockoutMu.Unlock()
+	var stored string
+	err := db.QueryRow("SELECT password FROM accounts WHERE username = $1", user).Scan(&stored)
+	if err != nil || stored != pass {
+		lockoutMu.Lock()
+		failedAttempts[user]++
+		if failedAttempts[user] >= 1 {
+			lockedAccounts[user] = true
+		}
+		lockoutMu.Unlock()
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

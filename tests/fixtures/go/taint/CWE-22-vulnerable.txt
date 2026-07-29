@@ -1,0 +1,17 @@
+# CWE-22 positive: taint-tracked path traversal (identifier flow)
+lang: go
+file: CWE-22-taint-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func ServeFile(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Query().Get("path")
+	_ = os.Open(filepath.Clean(path))
+}

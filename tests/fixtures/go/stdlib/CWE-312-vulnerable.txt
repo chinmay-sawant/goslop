@@ -1,0 +1,25 @@
+# CWE-312 — Cleartext Storage of Sensitive Information (vulnerable) (pure stdlib)
+lang: go
+file: CWE-312-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+)
+
+type patientRecord struct {
+	ID  string `json:"id"`
+	SSN string `json:"ssn"`
+}
+
+// Vulnerable: persists government id in plaintext JSON on disk.
+func StorePatient(w http.ResponseWriter, r *http.Request) {
+	rec := patientRecord{ID: r.FormValue("id"), SSN: r.FormValue("ssn")}
+	data, _ := json.Marshal(rec)
+	_ = os.WriteFile("/data/patients/"+rec.ID+".json", data, 0600)
+	w.WriteHeader(http.StatusCreated)
+}

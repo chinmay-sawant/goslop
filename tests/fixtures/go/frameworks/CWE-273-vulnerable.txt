@@ -1,0 +1,17 @@
+# CWE-273 — Improper Check for Dropped Privileges (vulnerable)
+lang: go
+file: CWE-273-vulnerable.go
+---
+package sample
+
+import (
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: ignores whether Setuid actually lowered privileges.
+func DropAndServe(c *gin.Context) {
+	_ = syscall.Setuid(1000)
+	c.JSON(200, gin.H{"serving": true})
+}

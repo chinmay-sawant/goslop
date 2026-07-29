@@ -1,0 +1,18 @@
+# IP-010: Goroutine with taint — safe (constant sent via channel)
+# Quarantined with vulnerable twin: cross-goroutine channel still unsupported.
+lang: go
+file: IP-010-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func caller() {
+    ch := make(chan string)
+    go func() {
+        s := <-ch
+        os.Open(s)
+    }()
+    ch <- "/safe/path"
+}

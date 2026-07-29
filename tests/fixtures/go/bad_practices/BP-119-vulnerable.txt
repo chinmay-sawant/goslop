@@ -1,0 +1,14 @@
+# BP-119 positive: a Fiber context is used inside a goroutine.
+lang: go
+file: BP-119-vulnerable.go
+variant: fiber
+---
+package sample
+
+import "github.com/gofiber/fiber/v2"
+
+func handle(c *fiber.Ctx) {
+	go func() {
+		_ = c.Path()
+	}()
+}

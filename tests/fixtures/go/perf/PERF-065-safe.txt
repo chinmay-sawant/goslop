@@ -1,0 +1,25 @@
+# PERF-065 negative: c.ShouldBind is called in a regular route handler, not middleware
+lang: go
+file: PERF-065-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type LoginInput struct {
+	User string `form:"user"`
+}
+
+func Login(c *gin.Context) {
+	var in LoginInput
+	if err := c.ShouldBind(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"user": in.User})
+	_ = http.StatusOK
+}

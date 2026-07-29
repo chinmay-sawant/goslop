@@ -1,0 +1,38 @@
+{
+  "CWE-112": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product accepts XML from an untrusted source but does not validate the XML against the proper schema.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 112,
+    "name": "Missing XML Validation",
+    "original_description": "The product accepts XML from an untrusted source but does not validate the XML against the proper schema.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-140": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation",
+    "description": "The product does not neutralize or incorrectly neutralizes delimiters.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 140,
+    "name": "Improper Neutralization of Delimiters",
+    "original_description": "The product does not neutralize or incorrectly neutralizes delimiters.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  }
+}

@@ -1,0 +1,27 @@
+# BP-53 positive: gob.Register does not match encoded payload type
+lang: go
+file: BP-53-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/gob"
+)
+
+type Message struct {
+	ID string
+}
+
+type Other struct {
+	Name string
+}
+
+func encode() error {
+	gob.Register(Message{})
+	payload := Other{Name: "oops"}
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	return enc.Encode(payload)
+}

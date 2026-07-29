@@ -1,0 +1,29 @@
+# CWE-322 vulnerable: Key Exchange without Entity Authentication (positive, pure stdlib)
+lang: go
+file: CWE-322-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"io"
+	"net/http"
+)
+
+// ConnectPeerRelay dials a relay host without verifying its identity.
+func ConnectPeerRelay(w http.ResponseWriter, r *http.Request) {
+	peerHost := r.FormValue("relay_host")
+	conn, err := tls.Dial("tcp", peerHost, &tls.Config{InsecureSkipVerify: true})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer conn.Close()
+	payload, err := io.ReadAll(conn)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	w.Write(payload)
+}

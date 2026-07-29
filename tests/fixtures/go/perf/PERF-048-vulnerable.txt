@@ -1,0 +1,23 @@
+# PERF-048 positive: bytes.Equal on long inputs in a hot path
+lang: go
+file: PERF-048-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Match(c *gin.Context) {
+	body := c.Request.Body
+	buf := make([]byte, 1024)
+	n, _ := body.Read(buf)
+	if bytes.Equal(buf[:n], []byte("expected")) {
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"mismatch": true})
+}

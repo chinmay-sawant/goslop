@@ -1,0 +1,30 @@
+# PERF-81 negative: slice is chunked and the result is pre-allocated
+lang: go
+file: PERF-081-safe.go
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct {
+	ID    int64  `db:"id"`
+	Email string `db:"email"`
+}
+
+func FindByIDs(db *sqlx.DB, ids []int64) ([]User, error) {
+	const chunk = 500
+	users := make([]User, 0, len(ids))
+	for i := 0; i < len(ids); {
+		end := i + chunk
+		if end > len(ids) {
+			end = len(ids)
+		}
+		var part []User
+		if err := db.Select(&part, "SELECT id, email FROM users WHERE id IN (?)", ids[i:end]); err != nil {
+			return nil, err
+		}
+		users = append(users, part...)
+		i = end
+	}
+	return users, nil
+}

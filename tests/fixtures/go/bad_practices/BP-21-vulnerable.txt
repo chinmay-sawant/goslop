@@ -1,0 +1,19 @@
+# BP-21 positive: subtest omits t.Parallel
+lang: go
+file: BP-21-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestParallelSubtest(t *testing.T) {
+	tests := []int{1, 2}
+	for _, tc := range tests {
+		t.Run("case", func(t *testing.T) {
+			if tc == 0 {
+				t.Fatal("bad")
+			}
+		})
+	}
+}

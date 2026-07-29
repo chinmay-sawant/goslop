@@ -1,0 +1,29 @@
+# CWE-212 positive: backup JSON still contains card number (pure stdlib)
+lang: go
+file: CWE-212-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type chargeRecord struct {
+	Payer string `json:"payer"`
+	PAN   string `json:"pan"`
+}
+
+// CWE-212 Improper Removal of Sensitive Information Before Storage or Transfer
+// Vulnerable line: exports full struct including PAN field.
+func PublishReceipts(w http.ResponseWriter, r *http.Request, rows []chargeRecord) {
+	payload, err := json.Marshal(rows)
+	if err != nil {
+		http.Error(w, "encode", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(payload)
+}

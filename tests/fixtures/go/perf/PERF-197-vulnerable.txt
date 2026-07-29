@@ -1,0 +1,18 @@
+# PERF-197 positive: io.ReadAll(c.Request.Body) called twice
+lang: go
+file: PERF-197-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	body, _ := io.ReadAll(r.Body)
+	body2, _ := io.ReadAll(r.Body)
+	_, _ = body
+	_, _ = body2
+}

@@ -1,0 +1,49 @@
+# CWE-1236 negative: CSV cells escaped against formulas (pure stdlib)
+lang: go
+file: CWE-1236-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1236 mitigated: dangerous leading characters prefixed before CSV export.
+
+import (
+	"encoding/csv"
+	"net/http"
+	"strconv"
+	"strings"
+)
+
+type FeedbackSafePure struct {
+	ID      int
+	Comment string
+}
+
+func sanitizeCSVFieldPure(value string) string {
+	if value == "" {
+		return value
+	}
+	switch value[0] {
+	case '=', '+', '-', '@', '\t', '\r':
+		return "'" + value
+	default:
+		return value
+	}
+}
+
+func ExportFeedbackCSVSafePure(rows []FeedbackSafePure) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var b strings.Builder
+		wr := csv.NewWriter(&b)
+		_ = wr.Write([]string{"id", "comment"})
+		for _, row := range rows {
+			_ = wr.Write([]string{
+				strconv.Itoa(row.ID),
+				sanitizeCSVFieldPure(row.Comment),
+			})
+		}
+		wr.Flush()
+		w.Header().Set("Content-Type", "text/csv")
+		w.Write([]byte(b.String()))
+	}
+}

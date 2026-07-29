@@ -1,0 +1,39 @@
+# CWE-916 safe: bcrypt password hashing
+lang: go
+file: CWE-916-safe.go
+---
+package sample
+
+// CWE-916 mitigated: bcrypt provides adaptive work factor for password storage.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID       uint
+	Username string
+	Password string
+}
+
+func RegisterStrongHash(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		username := c.PostForm("username")
+		password := c.PostForm("password")
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		rec := Account{Username: username, Password: string(hash)}
+		if err := db.Create(&rec).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"id": rec.ID})
+	}
+}

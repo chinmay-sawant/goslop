@@ -1,0 +1,23 @@
+# PERF-218 negative: sharded pool
+lang: go
+file: PERF-218-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+type shardedPools struct {
+	shards [8]sync.Pool
+}
+
+var pools shardedPools
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	item := pools.shards[0].Get()
+	pools.shards[0].Put(item)
+	w.WriteHeader(http.StatusOK)
+}

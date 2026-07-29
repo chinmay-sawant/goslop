@@ -1,0 +1,16 @@
+# PERF-180 negative: csv.NewReader(...).ReadAll() reads everything in one call
+lang: go
+file: PERF-180-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/csv"
+)
+
+func ParseAll(data []byte) ([][]string, error) {
+	r := csv.NewReader(bytes.NewReader(data))
+	return r.ReadAll()
+}

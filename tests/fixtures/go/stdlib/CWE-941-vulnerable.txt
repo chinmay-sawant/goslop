@@ -1,0 +1,32 @@
+# CWE-941 positive: misdirected outbound notification (pure stdlib)
+lang: go
+file: CWE-941-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-941: Incorrectly Specified Destination in a Communication Channel.
+// Vulnerable: password reset email sent to unvalidated address from query param.
+
+import (
+	"fmt"
+	"net/http"
+	"net/smtp"
+)
+
+func SendResetLinkPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		email := r.URL.Query().Get("email")
+		token := r.URL.Query().Get("token")
+		body := fmt.Sprintf("Reset here: https://app.example/reset?token=%s", token)
+		msg := []byte("To: " + email + "\r\nSubject: Reset\r\n\r\n" + body)
+		if err := smtp.SendMail(
+			"smtp.example.com:587", nil, "noreply@example.com", []string{email}, msg,
+		); err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"sent":true}`))
+	}
+}

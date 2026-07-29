@@ -1,0 +1,33 @@
+# BP-158 positive: a gRPC-shaped method returns a raw error
+lang: go
+file: BP-158-vulnerable.go
+variant: grpc
+---
+package sample
+
+import (
+	"context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
+)
+
+type Request struct{}
+type Response struct{}
+type server struct {
+	grpc.Server
+}
+
+func (s *server) Get(ctx context.Context, req *Request) (*Response, error) {
+	resp, err := loadResponse(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+func loadResponse(*Request) (*Response, error) { return nil, nil }
+
+func naked(err error) error {
+	_ = status.Code(err)
+	return err
+}

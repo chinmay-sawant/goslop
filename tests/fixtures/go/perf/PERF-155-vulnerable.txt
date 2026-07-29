@@ -1,0 +1,16 @@
+# PERF-155 positive: handler internally checks r.Method
+lang: go
+file: PERF-155-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		w.Write([]byte("get"))
+	} else if r.Method == http.MethodPost {
+		w.Write([]byte("post"))
+	}
+}

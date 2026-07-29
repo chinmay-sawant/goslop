@@ -1,0 +1,36 @@
+# CWE-1389 positive: decimal-only parsing assumption (pure stdlib)
+lang: go
+file: CWE-1389-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1389: Incorrect Parsing of Numbers with Different Radices.
+// Vulnerable: seat limit parsed with strconv.ParseInt base 0, accepting octal 010.
+
+import (
+	"database/sql"
+	"net/http"
+	"strconv"
+)
+
+func ReserveSeatsPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		raw := r.URL.Query().Get("count")
+		seats, err := strconv.ParseInt(raw, 0, 64)
+		if err != nil {
+			http.Error(w, "invalid count", http.StatusBadRequest)
+			return
+		}
+		showID := r.URL.Query().Get("show")
+		_, err = db.Exec(
+			"UPDATE shows SET reserved = reserved + $1 WHERE id = $2", seats, showID,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"reserved":true}`))
+	}
+}

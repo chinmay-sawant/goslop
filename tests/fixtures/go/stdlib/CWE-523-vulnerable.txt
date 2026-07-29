@@ -1,0 +1,23 @@
+# CWE-523 positive: login served on cleartext HTTP (pure stdlib)
+lang: go
+file: CWE-523-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func StartCleartextLogin(db *sql.DB) *http.Server {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		user := r.FormValue("username")
+		pass := r.FormValue("password")
+		_ = db.QueryRow("SELECT id FROM users WHERE email = ? AND password = ?", user, pass)
+		w.WriteHeader(http.StatusOK)
+	})
+	return &http.Server{Addr: ":8080", Handler: mux}
+}

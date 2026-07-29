@@ -1,0 +1,19 @@
+# PERF-98 positive: redis Set called in a for loop without Pipeline
+lang: go
+file: PERF-098-vulnerable.go
+---
+package sample
+
+import (
+	"context"
+	"github.com/redis/go-redis/v9"
+)
+
+func SetAll(ctx context.Context, rdb *redis.Client, keys []string) error {
+	for _, k := range keys {
+		if err := rdb.Set(ctx, k, "1", 0).Err(); err != nil {
+			return err
+		}
+	}
+	return nil
+}

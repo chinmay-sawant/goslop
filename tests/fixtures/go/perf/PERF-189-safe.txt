@@ -1,0 +1,19 @@
+# PERF-189 negative: drain happens before close
+lang: go
+file: PERF-189-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	resp, _ := http.Get("https://example.com")
+	if resp != nil {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}
+}

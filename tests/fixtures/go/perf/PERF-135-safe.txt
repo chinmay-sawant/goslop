@@ -1,0 +1,21 @@
+# PERF-135 negative: gob.NewEncoder hoisted out of the loop
+lang: go
+file: PERF-135-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/gob"
+	"net"
+)
+
+func Send(items []int, conn net.Conn) error {
+	enc := gob.NewEncoder(conn)
+	for _, it := range items {
+		if err := enc.Encode(it); err != nil {
+			return err
+		}
+	}
+	return nil
+}

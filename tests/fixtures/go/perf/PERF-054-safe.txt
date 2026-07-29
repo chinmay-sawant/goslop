@@ -1,0 +1,26 @@
+# PERF-054 negative: pooled strings.Builder reset between uses
+lang: go
+file: PERF-054-safe.go
+---
+package sample
+
+import (
+	"strings"
+	"sync"
+)
+
+var builderPool = sync.Pool{
+	New: func() any { return &strings.Builder{} },
+}
+
+func EncodePath(segments []string) string {
+	b := builderPool.Get().(*strings.Builder)
+	b.Reset()
+	for _, seg := range segments {
+		b.WriteString(seg)
+		b.WriteString("/")
+	}
+	out := b.String()
+	builderPool.Put(b)
+	return out
+}

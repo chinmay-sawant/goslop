@@ -1,0 +1,40 @@
+# CWE-1173 positive: manual validation bypasses framework (pure stdlib)
+lang: go
+file: CWE-1173-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1173: Improper Use of Validation Framework.
+// Vulnerable: signup handler unmarshals into map and ignores struct validation tags.
+
+import (
+	"encoding/json"
+	"net/http"
+	"sync"
+)
+
+type SignupPayloadPure struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=12"`
+}
+
+var customersMu sync.Mutex
+var customersPure = map[string]string{}
+
+func SignupManualPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var raw map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&raw); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		email, _ := raw["email"].(string)
+		password, _ := raw["password"].(string)
+		customersMu.Lock()
+		customersPure[email] = password
+		customersMu.Unlock()
+		w.WriteHeader(http.StatusCreated)
+		_ = SignupPayloadPure{}
+	}
+}

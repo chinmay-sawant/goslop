@@ -1,0 +1,23 @@
+# PERF-232 positive: errgroup fan-out has no concurrency bound
+lang: go
+file: PERF-232-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+func ProcessItems(items []Item) error {
+	var group errgroup.Group
+	for _, item := range items {
+		item := item
+		group.Go(func() error {
+			return work(item)
+		})
+	}
+	return group.Wait()
+}
+
+type Item struct{}
+
+func work(Item) error { return nil }

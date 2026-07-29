@@ -1,0 +1,25 @@
+# CWE-838: Inappropriate Encoding for Output Context (mitigated, pure stdlib)
+lang: go
+file: CWE-838-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Notice struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
+// Safe: response encoding matches the declared UTF-8 JSON content type.
+// json.Encoder emits valid UTF-8 for all string fields in the payload.
+func PublishNotice(w http.ResponseWriter, r *http.Request) {
+	notice := Notice{Title: "Alert", Body: "update"}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_ = json.NewEncoder(w).Encode(notice)
+}

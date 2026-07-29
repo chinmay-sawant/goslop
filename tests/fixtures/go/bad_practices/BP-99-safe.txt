@@ -1,0 +1,18 @@
+# BP-99 negative: Cond.Wait is reached while the associated locker is held
+lang: go
+file: BP-99-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func waitForReady(ready *bool) {
+	mu := &sync.Mutex{}
+	cond := sync.NewCond(mu)
+	mu.Lock()
+	for !*ready {
+		cond.Wait()
+	}
+	mu.Unlock()
+}

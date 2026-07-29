@@ -1,0 +1,14 @@
+# BP-86 positive: mutex is locked and never unlocked
+lang: go
+file: BP-86-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func update(value int) {
+	var mu sync.Mutex
+	mu.Lock()
+	_ = value
+}

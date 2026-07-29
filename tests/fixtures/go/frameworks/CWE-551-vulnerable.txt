@@ -1,0 +1,23 @@
+# CWE-551: authorization checked on raw URL before path unescaping.
+lang: go
+file: CWE-551-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func AdminGate(c *gin.Context) {
+	raw := c.Request.URL.Path
+	if !strings.HasPrefix(raw, "/admin") {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	clean := strings.ReplaceAll(raw, "%2f", "/")
+	c.Request.URL.Path = clean
+	c.Next()
+}

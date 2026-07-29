@@ -1,0 +1,26 @@
+# BP-158 negative: the gRPC-shaped method returns a status error
+lang: go
+file: BP-158-safe.go
+variant: grpc
+---
+package sample
+
+import (
+	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type Request struct{}
+type Response struct{}
+type server struct{}
+
+func (s *server) Get(ctx context.Context, req *Request) (*Response, error) {
+	resp, err := loadResponse(req)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "load response: %v", err)
+	}
+	return resp, nil
+}
+
+func loadResponse(*Request) (*Response, error) { return nil, nil }

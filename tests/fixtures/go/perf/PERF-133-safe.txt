@@ -1,0 +1,22 @@
+# PERF-133 negative: hoist sort.Slice out of the loop
+lang: go
+file: PERF-133-safe.go
+variant: stdlib
+---
+package sample
+
+import "sort"
+
+func TopK(buckets [][]int, k int) [][]int {
+	for i := range buckets {
+		SortDesc(buckets[i])
+		if len(buckets[i]) > k {
+			buckets[i] = buckets[i][:k]
+		}
+	}
+	return buckets
+}
+
+func SortDesc(xs []int) {
+	sort.Sort(sort.Reverse(sort.IntSlice(xs)))
+}

@@ -1,0 +1,10 @@
+# PERF-113 negative: direct channel receive
+lang: go
+file: PERF-113-safe.go
+variant: stdlib
+---
+package sample
+
+func Wait(ch <-chan int) int {
+	return <-ch
+}

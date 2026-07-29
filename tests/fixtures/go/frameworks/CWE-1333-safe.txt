@@ -1,0 +1,49 @@
+# CWE-1333 safe: linear-time tag validation
+lang: go
+file: CWE-1333-safe.go
+---
+package sample
+
+// CWE-1333 mitigated: simple anchored pattern and length cap prevent ReDoS.
+
+import (
+	"net/http"
+	"regexp"
+	"unicode"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+var safeTagPattern = regexp.MustCompile(`^[a-zA-Z]{1,32}$`)
+
+type Comment struct {
+	ID  uint
+	Tag string
+}
+
+func ValidateCommentTagSafe(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tag := c.PostForm("tag")
+		if len(tag) > 32 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "tag too long"})
+			return
+		}
+		for _, r := range tag {
+			if !unicode.IsLetter(r) {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag"})
+				return
+			}
+		}
+		if !safeTagPattern.MatchString(tag) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag"})
+			return
+		}
+		rec := Comment{Tag: tag}
+		if err := db.Create(&rec).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"id": rec.ID})
+	}
+}

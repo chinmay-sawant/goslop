@@ -1,0 +1,18 @@
+# PERF-185 positive: http.DetectContentType in a request handler
+lang: go
+file: PERF-185-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	body, _ := io.ReadAll(r.Body)
+	t := http.DetectContentType(body)
+	w.Header().Set("Content-Type", t)
+	w.WriteHeader(200)
+}

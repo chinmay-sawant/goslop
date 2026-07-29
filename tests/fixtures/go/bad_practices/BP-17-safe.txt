@@ -1,0 +1,12 @@
+# BP-17 negative: single fatal failure
+lang: go
+file: BP-17-safe_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestFatalOnly(t *testing.T) {
+	t.Fatal("bad")
+}

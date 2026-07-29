@@ -1,0 +1,32 @@
+# CWE-278 — Insecure Preserved Inherited Permissions (safe) (pure stdlib)
+lang: go
+file: CWE-278-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"archive/tar"
+	"io"
+	"net/http"
+	"os"
+)
+
+// Safe: clamps permissions after extraction instead of trusting archive metadata.
+func ExtractBundle(w http.ResponseWriter, r *http.Request, bundle io.Reader) {
+	tr := tar.NewReader(bundle)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			break
+		}
+		f, _ := os.OpenFile(hdr.Name, os.O_CREATE|os.O_WRONLY, 0640)
+		_, _ = io.Copy(f, tr)
+		f.Close()
+		_ = os.Chmod(hdr.Name, 0640)
+	}
+	w.WriteHeader(http.StatusOK)
+}

@@ -1,0 +1,20 @@
+# BP-142 positive variant: sqlx.In output reaches a Get call without Rebind.
+lang: go
+file: BP-142-variant-vulnerable.go
+variant: sqlx-tx
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct{}
+
+func loadUser(tx *sqlx.Tx, id int) (User, error) {
+	query, args, err := sqlx.In("SELECT id FROM users WHERE id IN (?)", []int{id})
+	if err != nil {
+		return User{}, err
+	}
+	var user User
+	err = tx.Get(&user, query, args...)
+	return user, err
+}

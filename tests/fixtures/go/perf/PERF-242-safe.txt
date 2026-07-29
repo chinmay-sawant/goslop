@@ -1,0 +1,17 @@
+# PERF-242 negative: one scratch reused across iterations (no per-iter make)
+lang: go
+file: PERF-242-safe.go
+variant: stdlib
+---
+package sample
+
+func EncodeAll(items [][]byte) int {
+	scratch := make([]byte, 0, 256)
+	total := 0
+	for _, raw := range items {
+		scratch = scratch[:0]
+		scratch = append(scratch, raw...)
+		total += len(scratch)
+	}
+	return total
+}

@@ -1,0 +1,22 @@
+# BP-141 positive: a snake_case named placeholder has no matching db tag.
+lang: go
+file: BP-141-vulnerable.go
+variant: sqlx-named-untagged
+---
+package sample
+
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+)
+
+type User struct {
+	UserID int
+	Name   string
+}
+
+func insertUser(db *sqlx.DB, user User) error {
+	_, err := db.NamedExec("INSERT INTO users (user_id, name) VALUES (:user_id, :name)", user)
+	return fmt.Errorf("insert user: %w", err)
+}

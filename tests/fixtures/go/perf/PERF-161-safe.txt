@@ -1,0 +1,33 @@
+# PERF-161 negative: rows.Err() called after the rows.Next() loop
+lang: go
+file: PERF-161-safe.go
+variant: stdlib
+---
+package sample
+
+import "database/sql"
+
+type User struct {
+	ID   int
+	Name string
+}
+
+func LoadUsers(db *sql.DB) ([]User, error) {
+	rows, err := db.Query("SELECT id, name FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Name); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
+}

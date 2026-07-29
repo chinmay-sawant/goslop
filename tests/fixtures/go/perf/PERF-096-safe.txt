@@ -1,0 +1,30 @@
+# PERF-96 negative: gRPC client reuses a single message struct across Recv calls
+lang: go
+file: PERF-096-safe.go
+---
+package sample
+
+import (
+	"io"
+)
+
+type ItemRequest struct {
+	Name string
+}
+
+type ItemStream interface {
+	RecvMsg(m *ItemRequest) error
+}
+
+func Drain(stream ItemStream) error {
+	msg := &ItemRequest{}
+	for {
+		if err := stream.RecvMsg(msg); err != nil {
+			if err == io.EOF {
+				return nil
+			}
+			return err
+		}
+		_ = msg
+	}
+}

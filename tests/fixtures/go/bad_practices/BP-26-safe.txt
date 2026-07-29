@@ -1,0 +1,15 @@
+# BP-26 negative: context.Context is the first parameter
+lang: go
+file: BP-26-safe.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+// Fetch accepts context first.
+func Fetch(ctx context.Context, name string) error {
+	_ = ctx
+	_ = name
+	return nil
+}

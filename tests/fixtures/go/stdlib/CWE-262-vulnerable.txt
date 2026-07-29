@@ -1,0 +1,29 @@
+# CWE-262 — Not Using Password Aging (vulnerable) (pure stdlib)
+lang: go
+file: CWE-262-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"time"
+)
+
+// Vulnerable: authenticates without checking when the password was last rotated.
+func PortalLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	user := r.FormValue("user")
+	if user == "" {
+		http.Error(w, "missing user", http.StatusBadRequest)
+		return
+	}
+	var hash string
+	var lastSeen time.Time
+	_ = db.QueryRow("SELECT hash, last_seen FROM creds WHERE user = ?", user).Scan(&hash, &lastSeen)
+	w.WriteHeader(http.StatusOK)
+}

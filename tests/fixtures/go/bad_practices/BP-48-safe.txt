@@ -1,0 +1,12 @@
+# BP-48 negative: process exit stays in main
+lang: go
+file: BP-48-safe.go
+variant: stdlib
+---
+package main
+
+import "log"
+
+func main() {
+	log.Fatal("boom")
+}

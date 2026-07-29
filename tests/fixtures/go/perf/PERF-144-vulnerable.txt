@@ -1,0 +1,14 @@
+# PERF-144 positive: w.Write without setting Content-Length (but other headers set)
+lang: go
+file: PERF-144-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	body := []byte("hello world")
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write(body)
+}

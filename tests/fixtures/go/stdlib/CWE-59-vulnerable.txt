@@ -1,0 +1,35 @@
+# CWE-59 positive: follows symlink to unintended file (pure stdlib)
+lang: go
+file: CWE-59-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+// CWE-59 Improper Link Resolution Before File Access
+// Vulnerable line: opens user filename without resolving symlinks safely.
+func DeliverAttachment(w http.ResponseWriter, r *http.Request) {
+	staging := "/var/staging"
+	name := r.FormValue("filename")
+	path := filepath.Join(staging, name)
+	file, err := os.Open(path)
+	if err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+	data, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, "read", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}

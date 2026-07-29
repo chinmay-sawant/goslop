@@ -1,0 +1,32 @@
+# CWE-368 safe — Context Switching Race Condition (mitigated)
+lang: go
+file: CWE-368-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"sync"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+var maintMu sync.Mutex
+var maintEnabled bool
+
+func RunMaintenanceShell(c *GinCtx) error {
+	maintMu.Lock()
+	defer maintMu.Unlock()
+	if c.Request.Header.Get("X-Maintainer") != "yes" {
+		maintEnabled = false
+		return os.ErrPermission
+	}
+	maintEnabled = true
+	if !maintEnabled {
+		return os.ErrPermission
+	}
+	return os.Setenv("SHELL", "/bin/sh")
+}

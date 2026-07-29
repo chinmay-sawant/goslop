@@ -1,0 +1,28 @@
+# CWE-656: Reliance on Security Through Obscurity (pure stdlib)
+lang: go
+file: CWE-656-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type ConfigEntry struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+var configEntries = []ConfigEntry{{Key: "debug", Value: "true"}}
+
+// Vulnerable: admin panel is protected only by a secret URL path.
+func HiddenConfigPanel(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/maintenance-portal-9f3c2a" {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(configEntries)
+}

@@ -1,0 +1,28 @@
+# IP-012: Same-file methods — Safe.Open stays silent (Sink declared first)
+lang: go
+file: IP-012-safe.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+type Safe struct{}
+type Sink struct{}
+
+// Opposite Open order from the vulnerable sibling.
+func (s *Sink) Open(value string) {
+	os.Open(value)
+}
+
+func (s *Safe) Open(value string) {
+	_ = value
+}
+
+func (s *Safe) Handle(r *http.Request) {
+	path := r.URL.Query().Get("path")
+	s.Open(path)
+}

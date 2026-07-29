@@ -1,0 +1,122 @@
+{
+  "PERF-232": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "Parallel work is fanned out from a loop with errgroup without a concurrency bound such as SetLimit or a semaphore. Unbounded fan-out can overwhelm CPU, memory, and pooled resources.",
+    "detection_notes": "Match loop-contained errgroup.Go when the enclosing function has no SetLimit or semaphore acquisition.",
+    "go_relevance": "High",
+    "id": 232,
+    "name": "Unbounded Parallel Fan-Out",
+    "original_description": "Detect unbounded per-item parallelism on bulk work paths",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-234": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "A bulk output buffer uses a large fixed Grow capacity or is taken from a pool, reset, and written without an estimated Grow. Prefer sizing from a known workload estimate when possible.",
+    "detection_notes": "Match .Grow(N) with a large fixed integer literal (N>=4096), or Get().(*bytes.Buffer) plus Reset and Write without any Grow in the unit.",
+    "go_relevance": "High",
+    "id": 234,
+    "name": "Bulk Buffer Without Workload Sizing",
+    "original_description": "Detect fixed or absent capacity planning for bulk buffers",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-235": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "A temporary strings.Builder is filled and then converted with .String() into a WriteString, Write, or append sink. Prefer writing operators/bytes into the destination []byte or *bytes.Buffer directly.",
+    "detection_notes": "Match strings.Builder in the enclosing function plus WriteString/Write/append of X.String().",
+    "go_relevance": "Medium",
+    "id": 235,
+    "name": "Intermediate Strings Builder Bridge",
+    "original_description": "Detect temporary strings.Builder flushed through .String() into a byte sink",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-236": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "A signing helper clones an entire buffer before patching fixed-width fields. Prefer an owned writable buffer or in-place mutation when the caller already owns the data.",
+    "detection_notes": "Match bytes.Clone inside functions whose name contains sign or signature.",
+    "go_relevance": "Medium",
+    "id": 236,
+    "name": "Full Buffer Clone On Signing Path",
+    "original_description": "Detect full-buffer copies in signature patching paths",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-237": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "errgroup fans out over a dynamic range with no serial short-circuit for tiny worksets (len <= 2). Spawn cost often dominates for one or two items; run those serially first.",
+    "detection_notes": "Match errgroup.Go inside for-range when a local window before the loop has no len(...) compared to 1/2/3.",
+    "go_relevance": "Medium",
+    "id": 237,
+    "name": "Always-Parallel Fan-Out Without Tiny-N Serial Path",
+    "original_description": "Detect errgroup always-parallel paths missing a serial branch for small N",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-238": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "Rune membership is tracked with map[rune]bool and updated inside a loop. For BMP-heavy text, a compact bitset or denser set reduces hashing and allocation overhead.",
+    "detection_notes": "Match map[rune]bool in the unit and map writes of the form m[x] = true inside a for/range loop.",
+    "go_relevance": "Medium",
+    "id": 238,
+    "name": "Rune Membership Map In Loop",
+    "original_description": "Detect map[rune]bool membership updates on hot loops",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-239": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "An integer-keyed map is written many times (>=6) in one function after make(map[int]…). Dense integer keys are usually better served by a slice or append-only offset records with one final index pass.",
+    "detection_notes": "Match name := make(map[int…] or map[int64…] then count name[ writes in the enclosing function; flag when count >= 6.",
+    "go_relevance": "Medium",
+    "id": 239,
+    "name": "Dense Integer Map Write Churn",
+    "original_description": "Detect many map[int] index writes in one function",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-240": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "A hot path allocates make([]byte, len(src)) (or equivalent) without reusing a pooled scratch buffer. Prefer sync.Pool + Reset for large temporary copies of source tables or payloads.",
+    "detection_notes": "Match make([]byte … len( …) in a loop or encode/build/subset-style function when the function body has no sync.Pool / Pool.Get.",
+    "go_relevance": "Medium",
+    "id": 240,
+    "name": "Unpooled Len-Sized Byte Scratch",
+    "original_description": "Detect make([]byte from len(source) without pool reuse on hot paths",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-241": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "A signing/CMS-style helper calls asn1.Marshal while also using time.Now, typically re-serializing mostly-static structure every call. Cache immutable DER components and only re-marshal time-varying attributes.",
+    "detection_notes": "Match asn1.Marshal inside functions whose names contain sign/signature/pkcs/cms when the function body also contains time.Now.",
+    "go_relevance": "Medium",
+    "id": 241,
+    "name": "ASN1 Remarshal With Fresh Time On Sign Path",
+    "original_description": "Detect asn1.Marshal + time.Now on signing helpers",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-242": {
+    "applicable_to": ["golang"],
+    "category": "Performance",
+    "description": "A loop allocates make([]byte, … len(x)*N …) every iteration for encoding or buffering. Reuse one scratch buffer outside the loop with [:0] growth.",
+    "detection_notes": "Match make([]byte inside for/range when the size expression includes len( and *.",
+    "go_relevance": "Medium",
+    "id": 242,
+    "name": "Per-Iteration Encode Scratch Allocation",
+    "original_description": "Detect make([]byte, len*const) inside loops",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  }
+}

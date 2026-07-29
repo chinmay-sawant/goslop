@@ -1,0 +1,17 @@
+# PERF-204 positive: db.Updates(map) without a preceding .Select
+lang: go
+file: PERF-204-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func RenameUser(db *gorm.DB, id uint, name string) error {
+	return db.Model(&User{}).Where("id = ?", id).Updates(map[string]interface{}{"name": name}).Error
+}

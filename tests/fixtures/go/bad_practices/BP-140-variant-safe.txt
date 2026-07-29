@@ -1,0 +1,33 @@
+# BP-140 variant negative: sqlx StructScan returns an error to the caller.
+lang: go
+file: BP-140-variant-safe.go
+variant: sqlx-structscan-checked
+---
+package sample
+
+import (
+	"fmt"
+	"github.com/jmoiron/sqlx"
+)
+
+type User struct{}
+
+func loadUser(db *sqlx.DB, user *User) error {
+	rows, err := db.Queryx("SELECT id FROM users")
+	if err != nil {
+		return fmt.Errorf("query users: %w", err)
+	}
+	if !rows.Next() {
+		if closeErr := rows.Close(); closeErr != nil {
+			return fmt.Errorf("close rows: %w", closeErr)
+		}
+		return nil
+	}
+	if err := rows.StructScan(user); err != nil {
+		return fmt.Errorf("scan user: %w", err)
+	}
+	if closeErr := rows.Close(); closeErr != nil {
+		return fmt.Errorf("close rows: %w", closeErr)
+	}
+	return nil
+}

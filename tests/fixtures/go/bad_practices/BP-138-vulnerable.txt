@@ -1,0 +1,21 @@
+# BP-138 positive: a GORM lifecycle hook performs direct HTTP I/O.
+lang: go
+file: BP-138-vulnerable.go
+variant: gorm-http-hook
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+// AfterCreate records the newly created user.
+func (u *User) AfterCreate(tx *gorm.DB) error {
+	_, err := http.Post("https://audit.example/events", "application/json", nil)
+	return fmt.Errorf("audit event: %w", err)
+}

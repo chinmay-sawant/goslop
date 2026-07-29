@@ -1,0 +1,17 @@
+# PERF-138 negative: runtime.Stack only used in a startup helper
+lang: go
+file: PERF-138-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"runtime"
+)
+
+func captureStack() string {
+	const size = 4096
+	buf := make([]byte, size)
+	n := runtime.Stack(buf, false)
+	return string(buf[:n])
+}

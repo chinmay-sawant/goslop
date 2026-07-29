@@ -1,0 +1,20 @@
+# PERF-005 positive: json.Marshal inside loop
+lang: go
+file: PERF-005-vulnerable.go
+---
+package sample
+
+import "encoding/json"
+
+type Item struct {
+	Name string `json:"name"`
+}
+
+func EncodeAll(items []Item) [][]byte {
+	out := make([][]byte, 0, len(items))
+	for _, item := range items {
+		b, _ := json.Marshal(item)
+		out = append(out, b)
+	}
+	return out
+}

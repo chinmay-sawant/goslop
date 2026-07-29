@@ -1,0 +1,21 @@
+# BP-142 negative variant: the transaction rebinds sqlx.In output before Get.
+lang: go
+file: BP-142-variant-safe.go
+variant: sqlx-tx
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct{}
+
+func loadUser(tx *sqlx.Tx, id int) (User, error) {
+	query, args, err := sqlx.In("SELECT id FROM users WHERE id IN (?)", []int{id})
+	if err != nil {
+		return User{}, err
+	}
+	query = tx.Rebind(query)
+	var user User
+	err = tx.Get(&user, query, args...)
+	return user, err
+}

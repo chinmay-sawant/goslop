@@ -1,0 +1,29 @@
+# CWE-565 negative: role cookie matched to session subject (pure stdlib)
+lang: go
+file: CWE-565-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func DeleteTenantRecord(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	roleCookie, err := r.Cookie("role")
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if roleCookie.Value != r.Header.Get("X-Role") {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	if r.Header.Get("X-Role") != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	_, _ = db.Exec("DELETE FROM tenants WHERE id = ?", r.PathValue("id"))
+	w.WriteHeader(http.StatusOK)
+}

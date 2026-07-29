@@ -1,0 +1,21 @@
+# PERF-139 negative: no closure, variable passed explicitly
+lang: go
+file: PERF-139-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"strings"
+)
+
+func SafeNoClosureHandler(w http.ResponseWriter, r *http.Request) {
+	secret := r.Header.Get("Authorization")
+	writeSecret(w, secret)
+}
+
+func writeSecret(w http.ResponseWriter, data string) {
+	_, _ = io.Copy(w, strings.NewReader(data))
+}

@@ -1,0 +1,26 @@
+# CWE-1327 positive: binds all interfaces (pure stdlib)
+lang: go
+file: CWE-1327-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1327: Binding to an Unrestricted IP Address.
+// Vulnerable: ListenAndServe on :9090 binds 0.0.0.0 and exposes the service network-wide.
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func StartPublicAPIPure(db *sql.DB) error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+		if db == nil || db.Ping() != nil {
+			http.Error(w, "db down", http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+	return http.ListenAndServe(":9090", mux)
+}

@@ -1,0 +1,6 @@
+# CWE registry — domain: file_handling
+
+[[detector]]
+cwe = 434
+domain = "file_handling"
+function = "detect_cwe_434"

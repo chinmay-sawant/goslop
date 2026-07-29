@@ -1,0 +1,29 @@
+# CWE-656: Reliance on Security Through Obscurity (mitigated)
+lang: go
+file: CWE-656-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type ConfigEntry struct {
+	Key   string
+	Value string
+}
+
+// Safe: configuration access requires authenticated admin authorization.
+func HiddenConfigPanel(c *gin.Context, db *gorm.DB) {
+	role, _ := c.Get("role")
+	if role != "admin" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	var entries []ConfigEntry
+	db.Find(&entries)
+	c.JSON(http.StatusOK, entries)
+}

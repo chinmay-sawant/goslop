@@ -1,0 +1,14 @@
+# BP-46 positive: http.Server is missing timeouts
+lang: go
+file: BP-46-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func server() *http.Server {
+	return &http.Server{
+		Addr: ":8080",
+	}
+}

@@ -1,0 +1,11 @@
+# PERF-026 negative: base64 encoding used once outside any loop
+lang: go
+file: PERF-026-safe.go
+---
+package sample
+
+import "encoding/base64"
+
+func EncodeOne(value []byte) string {
+	return base64.StdEncoding.EncodeToString(value)
+}

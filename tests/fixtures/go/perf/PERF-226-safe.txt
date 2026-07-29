@@ -1,0 +1,14 @@
+# PERF-226 negative: return producer bytes without second copy
+lang: go
+file: PERF-226-safe.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func Encode(payload []byte) []byte {
+	var buf bytes.Buffer
+	buf.Write(payload)
+	return buf.Bytes()
+}

@@ -1,0 +1,27 @@
+# CWE-501 positive: trusted approval merged with client JSON (pure stdlib)
+lang: go
+file: CWE-501-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type payoutEnvelope struct {
+	Approved bool    `json:"approved"`
+	Amount   float64 `json:"amount"`
+	Memo     string  `json:"memo"`
+}
+
+func QueuePayout(w http.ResponseWriter, r *http.Request) {
+	var msg payoutEnvelope
+	if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	msg.Approved = true
+	_ = json.NewEncoder(w).Encode(msg)
+}

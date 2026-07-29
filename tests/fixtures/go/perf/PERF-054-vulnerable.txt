@@ -1,0 +1,16 @@
+# PERF-054 positive: strings.Builder{} allocated on a hot path
+lang: go
+file: PERF-054-vulnerable.go
+---
+package sample
+
+import "strings"
+
+func EncodePath(segments []string) string {
+	var b = strings.Builder{}
+	for _, seg := range segments {
+		b.WriteString(seg)
+		b.WriteString("/")
+	}
+	return b.String()
+}

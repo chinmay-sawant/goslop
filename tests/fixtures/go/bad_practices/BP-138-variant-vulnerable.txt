@@ -1,0 +1,19 @@
+# BP-138 positive variant: a GORM delete hook sends mail directly.
+lang: go
+file: BP-138-variant-vulnerable.go
+variant: gorm-smtp-hook
+---
+package sample
+
+import (
+	"net/smtp"
+
+	"gorm.io/gorm"
+)
+
+type Account struct{}
+
+// AfterDelete notifies the audit mailbox.
+func (a *Account) AfterDelete(tx *gorm.DB) error {
+	return smtp.SendMail("smtp.example:25", nil, "audit@example", []string{"ops@example"}, []byte("deleted"))
+}

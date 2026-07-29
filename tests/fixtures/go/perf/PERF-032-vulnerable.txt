@@ -1,0 +1,13 @@
+# PERF-032 positive: string -> []byte conversion inside a hot encode loop
+lang: go
+file: PERF-032-vulnerable.go
+---
+package sample
+
+func EncodeParts(parts []string) [][]byte {
+	out := make([][]byte, 0, len(parts))
+	for _, v := range parts {
+		out = append(out, []byte(v))
+	}
+	return out
+}

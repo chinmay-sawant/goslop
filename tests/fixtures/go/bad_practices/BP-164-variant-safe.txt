@@ -1,0 +1,20 @@
+# BP-164 variant negative: the option updates only the supplied config.
+lang: go
+file: BP-164-variant-safe.go
+variant: option-local-map
+---
+package sample
+
+type Config struct {
+	Retries int
+}
+
+type Option func(*Config)
+
+// WithRetries configures the supplied instance.
+func WithRetries(retries int) Option {
+	return func(config *Config) {
+		localRetries := map[string]int{"api": retries}
+		config.Retries = localRetries["api"]
+	}
+}

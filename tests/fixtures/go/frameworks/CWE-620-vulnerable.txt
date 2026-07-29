@@ -1,0 +1,32 @@
+# CWE-620: Unverified Password Change
+lang: go
+file: CWE-620-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID       uint
+	Username string
+	Password string
+}
+
+// Vulnerable: password is replaced without verifying the current password.
+func ChangePassword(c *gin.Context, db *gorm.DB) {
+	var body struct {
+		Username    string `json:"username"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	db.Model(&Account{}).Where("username = ?", body.Username).Update("password", body.NewPassword)
+	c.Status(http.StatusOK)
+}

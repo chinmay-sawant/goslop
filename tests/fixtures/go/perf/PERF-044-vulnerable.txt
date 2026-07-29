@@ -1,0 +1,22 @@
+# PERF-044 positive: repeated type assertions on the same interface value
+lang: go
+file: PERF-044-vulnerable.go
+---
+package sample
+
+import "net/http"
+
+import "github.com/gin-gonic/gin"
+
+type anyVal interface{ Value() int }
+
+type intVal int
+
+func (i intVal) Value() int { return int(i) }
+
+func Handler(c *gin.Context) {
+	var v anyVal = intVal(7)
+	_ = v.(intVal).Value()
+	_ = v.(intVal).Value()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

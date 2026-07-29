@@ -1,0 +1,16 @@
+# BP-104 positive: a ServeMux receives the same literal pattern twice.
+lang: go
+file: BP-104-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func routes() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/admin", admin)
+	mux.HandleFunc("/admin", admin)
+}
+
+func admin(http.ResponseWriter, *http.Request) {}

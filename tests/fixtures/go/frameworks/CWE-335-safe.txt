@@ -1,0 +1,25 @@
+# CWE-335 safe — Incorrect Usage of Seeds in PRNG (mitigated)
+lang: go
+file: CWE-335-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/binary"
+	"net/http"
+	"strconv"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func AssignSeatLottery(c *GinCtx) (string, error) {
+	var n uint32
+	if err := binary.Read(rand.Reader, binary.BigEndian, &n); err != nil {
+		return "", err
+	}
+	ticket := strconv.FormatUint(uint64(n%50), 10)
+	return ticket, nil
+}

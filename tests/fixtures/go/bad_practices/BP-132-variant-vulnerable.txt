@@ -1,0 +1,16 @@
+# BP-132 variant positive: an id-based ExecContext ignores the affected count.
+lang: go
+file: BP-132-variant-vulnerable.go
+variant: database-sql-id-update
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+)
+
+func renameUser(ctx context.Context, db *sql.DB, id int) error {
+	_, err := db.ExecContext(ctx, "UPDATE users SET display_name = ? WHERE id = ?", "Ada", id)
+	return err
+}

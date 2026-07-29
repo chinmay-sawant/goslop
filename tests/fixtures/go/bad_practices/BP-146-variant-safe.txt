@@ -1,0 +1,14 @@
+# BP-146 negative variant: the token is hashed before it reaches the logger.
+lang: go
+file: BP-146-variant-safe.go
+variant: stdlib-hashed-format
+---
+package service
+
+import "log"
+
+func report(token string) {
+	log.Printf("request token hash=%s", hash(token))
+}
+
+func hash(value string) string { return "digest" }

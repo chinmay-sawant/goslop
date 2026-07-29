@@ -1,0 +1,28 @@
+# CWE-204 positive: different HTTP bodies reveal account state
+lang: go
+file: CWE-204-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-204 Observable Response Discrepancy
+// Vulnerable line: distinct messages for unknown vs wrong password.
+func LoginHint(c *gin.Context, users map[string]string) {
+	email := c.PostForm("email")
+	password := c.PostForm("password")
+	stored, ok := users[email]
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no account"})
+		return
+	}
+	if stored != password {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "bad password"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

@@ -1,0 +1,40 @@
+# CWE-544: handlers route database failures through one helper.
+lang: go
+file: CWE-544-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	"errors"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func writeDBError(c *gin.Context, err error) {
+	if errors.Is(err, sql.ErrNoRows) {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	c.AbortWithStatus(http.StatusInternalServerError)
+}
+
+func FetchProfile(c *gin.Context, db *sqlx.DB) {
+	var name string
+	if err := db.Get(&name, "SELECT name FROM users WHERE id = ?", c.Param("id")); err != nil {
+		writeDBError(c, err)
+		return
+	}
+	c.String(http.StatusOK, name)
+}
+
+func FetchBalance(c *gin.Context, db *sqlx.DB) {
+	var balance float64
+	if err := db.Get(&balance, "SELECT balance FROM accounts WHERE id = ?", c.Param("id")); err != nil {
+		writeDBError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"balance": balance})
+}

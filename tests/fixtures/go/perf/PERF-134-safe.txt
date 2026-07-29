@@ -1,0 +1,15 @@
+# PERF-134 negative: uses io.Copy instead of manual loop
+lang: go
+file: PERF-134-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func SafeCopyHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = io.Copy(w, r.Body)
+}

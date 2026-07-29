@@ -1,0 +1,16 @@
+# PERF-151 negative: simple handler, inlinable
+lang: go
+file: PERF-151-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+)
+
+var okPage = []byte("ok")
+
+func SimpleHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write(okPage)
+}

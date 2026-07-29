@@ -1,0 +1,29 @@
+# CWE-270 — Privilege Context Switching Error (vulnerable) (pure stdlib)
+lang: go
+file: CWE-270-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+)
+
+type ctxKey string
+
+const effectiveUserKey ctxKey = "effective_user"
+
+// Vulnerable: elevates to maintenance user but never restores caller context.
+func RunMaintenanceSweep(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	ctx := context.WithValue(r.Context(), effectiveUserKey, "root")
+	r = r.WithContext(ctx)
+	_ = r.Context().Value(effectiveUserKey)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"done":true}`))
+}

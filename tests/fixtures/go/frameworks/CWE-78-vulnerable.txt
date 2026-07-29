@@ -1,0 +1,25 @@
+# CWE-78 positive: shell command built from request input
+lang: go
+file: CWE-78-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-78 Improper Neutralization of Special Elements used in an OS Command
+// Vulnerable line: user host interpolated into sh -c.
+func PingHost(c *gin.Context) {
+	host := c.Query("host")
+	cmd := exec.Command("sh", "-c", "ping -c 1 "+host)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": string(out)})
+		return
+	}
+	c.String(http.StatusOK, string(out))
+}

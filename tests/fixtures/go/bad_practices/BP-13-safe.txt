@@ -1,0 +1,13 @@
+# BP-13 negative: context propagated from caller
+lang: go
+file: BP-13-safe.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+// Fetch returns the caller-provided context unchanged.
+func Fetch(ctx context.Context) context.Context {
+	return ctx
+}

@@ -1,0 +1,29 @@
+# CWE-89 safe: same-function literal Prepare → Stmt.Query (bound params)
+lang: go
+file: CWE-89-prepare-same-var-safe.go
+variant: taint-prepare
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// LookupUser uses a prepared statement with a literal SQL string and bound arg.
+func LookupUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	stmt, err := db.Prepare("SELECT id, name FROM users WHERE name = ?")
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(name)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+	_ = rows
+}

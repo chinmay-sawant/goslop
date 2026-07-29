@@ -1,0 +1,19 @@
+# BP-96 positive variant: QueryContext result uses an alternate rows name
+lang: go
+file: BP-96-variant-vulnerable.go
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+)
+
+func load(db *sql.DB) error {
+	rs, err := db.QueryContext(context.Background(), "select 1")
+	if err != nil {
+		return err
+	}
+	_ = rs
+	return nil
+}

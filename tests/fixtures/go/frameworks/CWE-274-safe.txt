@@ -1,0 +1,27 @@
+# CWE-274 — Improper Handling of Insufficient Privileges (safe)
+lang: go
+file: CWE-274-safe.go
+---
+package sample
+
+import (
+	"errors"
+	"os"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: maps insufficient privilege to a forbidden response.
+func RotateAuditLog(c *gin.Context) {
+	err := os.Rename("/var/log/audit/current", "/var/log/audit/prev")
+	if err != nil {
+		if errors.Is(err, syscall.EPERM) {
+			c.JSON(403, gin.H{"error": "insufficient privilege"})
+			return
+		}
+		c.JSON(500, gin.H{"error": "rotate failed"})
+		return
+	}
+	c.JSON(200, gin.H{"rotated": true})
+}

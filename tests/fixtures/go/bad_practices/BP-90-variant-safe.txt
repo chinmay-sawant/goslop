@@ -1,0 +1,18 @@
+# BP-90 negative variant: a context case provides an exit path
+lang: go
+file: BP-90-variant-safe.go
+---
+package sample
+
+import "context"
+
+func drain(ctx context.Context, ch <-chan int) {
+	for {
+		select {
+		case value := <-ch:
+			_ = value
+		case <-ctx.Done():
+			return
+		}
+	}
+}

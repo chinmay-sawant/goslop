@@ -1,0 +1,12 @@
+# BP-83 positive: a synchronization-shaped function sleeps instead of waiting on a primitive.
+lang: go
+file: BP-83-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func waitForWorker() {
+	time.Sleep(time.Second)
+}

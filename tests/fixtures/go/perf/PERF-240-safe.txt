@@ -1,0 +1,11 @@
+# PERF-240 negative: caller-owned scratch, no make(len(src)) on the hot path
+lang: go
+file: PERF-240-safe.go
+variant: stdlib
+---
+package sample
+
+// EncodePayload copies src into a caller-owned destination buffer.
+func EncodePayload(dst, src []byte) int {
+	return copy(dst[:len(src)], src)
+}

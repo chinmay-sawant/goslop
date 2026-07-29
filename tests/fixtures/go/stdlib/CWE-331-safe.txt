@@ -1,0 +1,31 @@
+# CWE-331 safe: Insufficient Entropy (mitigated, pure stdlib)
+lang: go
+file: CWE-331-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
+	"io"
+	"net/http"
+)
+
+func IssueEmailResetCode(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	buf := make([]byte, 16)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	code := hex.EncodeToString(buf)
+	email := r.FormValue("email")
+	_, err := db.Exec("INSERT INTO reset_codes (email, code) VALUES (?, ?)", email, code)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

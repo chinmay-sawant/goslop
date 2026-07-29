@@ -1,0 +1,16 @@
+# BP-143 variant positive: a go-redis Set Result is invoked as a bare expression.
+lang: go
+file: BP-143-variant-vulnerable.go
+variant: redis-set-result-bare
+---
+package sample
+
+import (
+	"context"
+
+	"github.com/redis/go-redis/v9"
+)
+
+func saveName(ctx context.Context, rdb *redis.Client, key, value string) {
+	rdb.Set(ctx, key, value, 0).Result()
+}

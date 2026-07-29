@@ -1,0 +1,28 @@
+# BP-132 variant negative: the id-based ExecContext checks the affected count.
+lang: go
+file: BP-132-variant-safe.go
+variant: database-sql-id-update-checked
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+)
+
+func renameUser(ctx context.Context, db *sql.DB, id int) error {
+	// index-backed
+	result, err := db.ExecContext(ctx, "UPDATE users SET display_name = ? WHERE id = ?", "Ada", id)
+	if err != nil {
+		return fmt.Errorf("update: %w", err)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("rows affected: %w", err)
+	}
+	if rows != 1 {
+		return sql.ErrNoRows
+	}
+	return nil
+}

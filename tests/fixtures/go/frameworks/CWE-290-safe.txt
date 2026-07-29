@@ -1,0 +1,24 @@
+# CWE-290 — Authentication Bypass by Spoofing (safe)
+lang: go
+file: CWE-290-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: identity comes only from validated session cookie set by auth middleware.
+func WhoAmI(c *gin.Context) {
+	sid, err := c.Cookie("session_id")
+	if err != nil || sid == "" {
+		c.JSON(401, gin.H{"error": "anonymous"})
+		return
+	}
+	user, ok := c.Get("session_user")
+	if !ok {
+		c.JSON(401, gin.H{"error": "invalid session"})
+		return
+	}
+	c.JSON(200, gin.H{"user": user})
+}

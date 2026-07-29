@@ -1,0 +1,25 @@
+# CWE-366 safe — Race Condition within a Thread (mitigated)
+lang: go
+file: CWE-366-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync/atomic"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+var walletCredits int64
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func ApplyPromoCredit(c *GinCtx, db *SqlxDB) error {
+	newTotal := atomic.AddInt64(&walletCredits, 10)
+	return db.Exec("UPDATE wallets SET credits = ? WHERE user = ?", newTotal, c.Request.URL.Query().Get("user"))
+}

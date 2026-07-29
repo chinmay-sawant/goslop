@@ -1,0 +1,35 @@
+# PERF-121 negative: use a direct type conversion
+lang: go
+file: PERF-121-safe.go
+variant: stdlib
+---
+package sample
+
+type Config struct {
+	Host string
+	Port int
+}
+
+type Options struct {
+	Host string
+	Port int
+}
+
+func toOptions(c Config) Options {
+	return Options(c)
+}
+
+func independentOptions(c Config) Options {
+	return Options{
+		Host: c.Host,
+		Port: 8080,
+	}
+}
+
+func commentedOptions(c, other Config) Options {
+	src := Config{Host: c.Host, Port: c.Port}
+	return Options{
+		Host: other.Host, // Host: src.Host
+		Port: other.Port, // Port: src.Port
+	}
+}

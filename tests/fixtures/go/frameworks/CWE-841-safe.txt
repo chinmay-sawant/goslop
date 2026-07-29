@@ -1,0 +1,35 @@
+# CWE-841: Improper Enforcement of Behavioral Workflow (mitigated)
+lang: go
+file: CWE-841-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID        uint
+	Email     string
+	MFAPassed bool
+}
+
+// Safe: reset requires the MFA workflow step to be completed first.
+func ResetAccount(c *gin.Context, db *gorm.DB) {
+	email := c.PostForm("email")
+	newPass := c.PostForm("new_password")
+	var acct Account
+	if err := db.Where("email = ?", email).First(&acct).Error; err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	if !acct.MFAPassed {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	db.Model(&acct).Update("password", newPass)
+	c.Status(http.StatusOK)
+}

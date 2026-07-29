@@ -1,0 +1,27 @@
+# CWE-342 safe — Predictable Exact Value from Previous Values (mitigated)
+lang: go
+file: CWE-342-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/binary"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Updates(values interface{}) error { return nil }
+
+func SendLoginOTP(c *GinCtx, db *GormDB) error {
+	var code uint32
+	if err := binary.Read(rand.Reader, binary.BigEndian, &code); err != nil {
+		return err
+	}
+	return db.Updates(map[string]interface{}{"email": c.Request.PostFormValue("email"), "otp": code})
+}

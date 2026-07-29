@@ -1,0 +1,21 @@
+# CodeHound text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: sample.py
+---
+"""Fixture with re.compile inside a loop."""
+
+import re
+
+
+def bad(rows):
+    out = []
+    for r in rows:
+        pat = re.compile(r"^\d+")
+        if pat.match(r):
+            out.append(r)
+    return out
+
+
+def good(rows):
+    pat = re.compile(r"^\d+")
+    return [r for r in rows if pat.match(r)]

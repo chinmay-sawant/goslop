@@ -1,0 +1,28 @@
+# CWE-1230 negative: metadata stripped from response (pure stdlib)
+lang: go
+file: CWE-1230-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1230 mitigated: response omits filename, size, and other derived metadata.
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func DownloadRedactedSafePure() http.HandlerFunc {
+	base := "/var/vault/documents"
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("name")
+		path := filepath.Join(base, name)
+		if _, err := os.Stat(path); err != nil {
+			http.Error(w, "missing", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Cache-Control", "no-store")
+		w.Write([]byte("[REDACTED CONTENT]"))
+	}
+}

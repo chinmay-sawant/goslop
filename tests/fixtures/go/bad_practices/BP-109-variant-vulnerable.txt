@@ -1,0 +1,21 @@
+# BP-109 positive variant: an aliased Gin context still continues after an error.
+lang: go
+file: BP-109-variant-vulnerable.go
+variant: gin
+---
+package sample
+
+import (
+	"net/http"
+
+	gin "github.com/gin-gonic/gin"
+)
+
+func update(ctx *gin.Context) {
+	if err := updateRecord(); err != nil {
+		ctx.JSON(500, gin.H{"error": err.Error()})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"updated": true})
+}
+
+func updateRecord() error { return nil }

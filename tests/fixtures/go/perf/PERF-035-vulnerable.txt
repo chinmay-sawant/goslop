@@ -1,0 +1,18 @@
+# PERF-035 positive: fmt.Sprintf with format verbs in a request handler
+lang: go
+file: PERF-035-vulnerable.go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Greet(c *gin.Context) {
+	name := c.Param("name")
+	msg := fmt.Sprintf("hello %s", name)
+	c.String(http.StatusOK, msg)
+}

@@ -1,0 +1,38 @@
+# CWE-1333 positive: catastrophic backtracking regex (pure stdlib)
+lang: go
+file: CWE-1333-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1333: Inefficient Regular Expression Complexity (ReDoS).
+// Vulnerable: nested-quantifier regex applied to unbounded user tag input.
+
+import (
+	"net/http"
+	"regexp"
+	"sync"
+)
+
+var tagPatternPure = regexp.MustCompile(`^([a-zA-Z]+)*$`)
+
+var commentStoreMu sync.Mutex
+var commentStorePure = map[string]string{}
+
+func ValidateCommentTagPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		tag := r.FormValue("tag")
+		if !tagPatternPure.MatchString(tag) {
+			http.Error(w, "invalid tag", http.StatusBadRequest)
+			return
+		}
+		commentStoreMu.Lock()
+		commentStorePure[tag] = r.FormValue("body")
+		commentStoreMu.Unlock()
+		w.WriteHeader(http.StatusCreated)
+	}
+}

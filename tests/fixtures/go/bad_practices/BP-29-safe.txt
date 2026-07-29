@@ -1,0 +1,14 @@
+# BP-29 negative: interface stays below the method-count threshold
+lang: go
+file: BP-29-safe.go
+variant: stdlib
+---
+package sample
+
+type repository interface {
+	Save()
+	Load()
+	Delete()
+	List()
+	Watch()
+}

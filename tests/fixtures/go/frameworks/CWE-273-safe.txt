@@ -1,0 +1,20 @@
+# CWE-273 — Improper Check for Dropped Privileges (safe)
+lang: go
+file: CWE-273-safe.go
+---
+package sample
+
+import (
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: verifies privilege drop before continuing request handling.
+func DropAndServe(c *gin.Context) {
+	if err := syscall.Setuid(1000); err != nil {
+		c.JSON(500, gin.H{"error": "privilege drop failed"})
+		return
+	}
+	c.JSON(200, gin.H{"serving": true})
+}

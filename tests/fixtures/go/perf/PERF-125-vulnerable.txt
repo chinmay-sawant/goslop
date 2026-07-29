@@ -1,0 +1,20 @@
+# PERF-125 positive: redundant nil check before append
+lang: go
+file: PERF-125-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Add(s []int, v int) []int {
+	if s != nil {
+		s = append(s, v)
+	}
+	return s
+}
+
+func _() {
+	out := Add(nil, 1)
+	fmt.Println(out)
+}

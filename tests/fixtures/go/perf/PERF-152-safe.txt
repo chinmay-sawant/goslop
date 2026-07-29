@@ -1,0 +1,13 @@
+# PERF-152 negative: http.Header.Clone() does a shallow copy in bulk
+lang: go
+file: PERF-152-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func ForwardHeaders(dst, src http.Header) {
+	cloned := src.Clone()
+	dst = cloned
+}

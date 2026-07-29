@@ -1,0 +1,18 @@
+# BP-37 positive: type-switch guard RHS writes the package global before the alias scope
+lang: go
+file: BP-37-type-switch-vulnerable.go
+variant: stdlib
+---
+package sample
+
+var counter int
+
+func classify(value any) {
+	switch counter := func() any {
+		counter++
+		return value
+	}().(type) {
+	case int:
+		counter++
+	}
+}

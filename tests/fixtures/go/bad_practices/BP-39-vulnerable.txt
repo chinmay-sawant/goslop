@@ -1,0 +1,10 @@
+# BP-39 positive: exported function has no doc comment
+lang: go
+file: BP-39-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Fetch() error {
+	return nil
+}

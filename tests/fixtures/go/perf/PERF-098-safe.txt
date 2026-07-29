@@ -1,0 +1,19 @@
+# PERF-98 negative: redis commands batched via rdb.Pipeline()
+lang: go
+file: PERF-098-safe.go
+---
+package sample
+
+import (
+	"context"
+	"github.com/redis/go-redis/v9"
+)
+
+func SetAll(ctx context.Context, rdb *redis.Client, keys []string) error {
+	pipe := rdb.Pipeline()
+	for _, k := range keys {
+		pipe.Set(ctx, k, "1", 0)
+	}
+	_, err := pipe.Exec(ctx)
+	return err
+}

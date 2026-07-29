@@ -1,0 +1,37 @@
+# CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes (pure stdlib)
+lang: go
+file: CWE-915-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Profile struct {
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Role    string `json:"role"`
+	Balance int    `json:"balance"`
+}
+
+var profiles = map[int]Profile{}
+
+// Vulnerable: user-controlled map can update privileged fields such as role and balance.
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	var fields map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&fields); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	var pid int
+	_ = json.Unmarshal([]byte(id), &pid)
+	p := profiles[pid]
+	raw, _ := json.Marshal(fields)
+	_ = json.Unmarshal(raw, &p)
+	profiles[pid] = p
+	w.WriteHeader(http.StatusOK)
+}

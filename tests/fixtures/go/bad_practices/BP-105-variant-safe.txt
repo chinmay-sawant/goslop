@@ -1,0 +1,17 @@
+# BP-105 negative variant: a refresh token sets both flags and SameSite.
+lang: go
+file: BP-105-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func issue(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}

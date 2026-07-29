@@ -1,0 +1,36 @@
+# CWE-918 positive: client-controlled outbound fetch (pure stdlib)
+lang: go
+file: CWE-918-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-918: Server-Side Request Forgery — handler fetches arbitrary client URL.
+// Vulnerable: http.Get uses r.URL.Query().Get("url") without host allowlisting.
+
+import (
+	"io"
+	"net/http"
+)
+
+func ProxyPreviewPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		target := r.URL.Query().Get("url")
+		resp, err := http.Get(target)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if ct := resp.Header.Get("Content-Type"); ct != "" {
+			w.Header().Set("Content-Type", ct)
+		}
+		w.WriteHeader(resp.StatusCode)
+		w.Write(body)
+	}
+}

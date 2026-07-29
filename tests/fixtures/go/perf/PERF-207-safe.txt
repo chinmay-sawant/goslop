@@ -1,0 +1,14 @@
+# PERF-207 negative: c.SendFile with cache headers set in the same handler
+lang: go
+file: PERF-207-safe.go
+variant: framework
+---
+package sample
+
+import "github.com/gofiber/fiber/v2"
+
+func Handle(c *fiber.Ctx) error {
+	c.Set("Cache-Control", "public, max-age=3600")
+	c.Set("ETag", "v1")
+	return c.SendFile("./public/index.html")
+}

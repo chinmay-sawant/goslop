@@ -1,0 +1,16 @@
+# BP-117 positive variant: an aliased Echo context still discards Bind's error.
+lang: go
+file: BP-117-variant-vulnerable.go
+variant: echo
+---
+package sample
+
+import echo "github.com/labstack/echo/v4"
+
+func remove(ctx echo.Context) error {
+	var request struct {
+		ID string `json:"id"`
+	}
+	ctx.Bind(&request)
+	return nil
+}

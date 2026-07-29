@@ -1,0 +1,18 @@
+# BP-6 negative: nested goroutines use an Add performed by the parent
+lang: go
+file: BP-6-nested-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func run() {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		go func() {
+			wg.Done()
+		}()
+	}()
+}

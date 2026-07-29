@@ -1,0 +1,22 @@
+# BP-109 negative: Gin terminates after writing the error response.
+lang: go
+file: BP-109-safe.go
+variant: gin
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func create(c *gin.Context) {
+	if err := save(); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"ok": true})
+}
+
+func save() error { return nil }

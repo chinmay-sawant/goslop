@@ -1,0 +1,20 @@
+# PERF-205 negative: keyset pagination avoids OFFSET
+lang: go
+file: PERF-205-safe.go
+variant: framework
+---
+package sample
+
+import "gorm.io/gorm"
+
+type Order struct {
+	ID uint
+}
+
+func ListAfter(db *gorm.DB, lastID uint, size int) ([]Order, error) {
+	var orders []Order
+	if err := db.Where("id > ?", lastID).Limit(size).Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

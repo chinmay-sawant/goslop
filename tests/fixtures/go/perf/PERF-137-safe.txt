@@ -1,0 +1,22 @@
+# PERF-137 negative: cache the source location in a package-level var
+lang: go
+file: PERF-137-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"runtime"
+	"strconv"
+)
+
+var sourceTag = func() string {
+	_, file, line, _ := runtime.Caller(0)
+	return file + ":" + strconv.Itoa(line)
+}()
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("X-Source", sourceTag)
+	_ = r
+}

@@ -1,0 +1,17 @@
+# IP-009: Multiple returns — safe (constant return)
+lang: go
+file: IP-009-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func caller() {
+    path, _ := lookup()
+    os.Open(path)
+}
+
+func lookup() (string, error) {
+    return "/safe/path", nil
+}

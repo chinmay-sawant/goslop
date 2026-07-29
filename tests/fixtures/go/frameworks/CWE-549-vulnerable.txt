@@ -1,0 +1,21 @@
+# CWE-549: password echoed back in API response during signup.
+lang: go
+file: CWE-549-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func PreviewSignup(c *gin.Context, db *gorm.DB) {
+	_ = db
+	pass := c.PostForm("password")
+	c.JSON(http.StatusOK, gin.H{
+		"email":    c.PostForm("email"),
+		"password": pass,
+	})
+}

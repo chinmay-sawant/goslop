@@ -1,0 +1,39 @@
+# CWE-1051 negative: billing endpoint from environment (pure stdlib)
+lang: go
+file: CWE-1051-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1051 mitigated: network destination loaded from configuration at startup.
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func ChargeCardSafePure() http.HandlerFunc {
+	billingAPI := os.Getenv("BILLING_API_URL")
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		cardToken := r.FormValue("card_token")
+		req, err := http.NewRequest(http.MethodPost, billingAPI, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		req.Header.Set("X-Card-Token", cardToken)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(fmt.Sprintf(`{"status":"%s"}`, resp.Status)))
+	}
+}

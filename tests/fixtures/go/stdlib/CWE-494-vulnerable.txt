@@ -1,0 +1,29 @@
+# CWE-494 positive: remote bundle executed without integrity check (pure stdlib)
+lang: go
+file: CWE-494-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+)
+
+func InstallRemoteWorker(w http.ResponseWriter, r *http.Request) {
+	resp, err := http.Get(r.URL.Query().Get("bundle_url"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+	path := "/tmp/worker.bin"
+	f, _ := os.Create(path)
+	_, _ = io.Copy(f, resp.Body)
+	_ = f.Close()
+	cmd := exec.Command(path)
+	_ = cmd.Run()
+	w.WriteHeader(http.StatusOK)
+}

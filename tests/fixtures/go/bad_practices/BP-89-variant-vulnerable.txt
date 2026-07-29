@@ -1,0 +1,13 @@
+# BP-89 positive variant: repeated close remains unconditional after work
+lang: go
+file: BP-89-variant-vulnerable.go
+variant: cleanup
+---
+package sample
+
+func stop(done chan struct{}, work func()) {
+	work()
+	close(done)
+	work()
+	close(done)
+}

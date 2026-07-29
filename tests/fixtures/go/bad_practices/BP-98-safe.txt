@@ -1,0 +1,21 @@
+# BP-98 negative: opened file is closed on the owning function path
+lang: go
+file: BP-98-safe.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func readConfig(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	data := make([]byte, 16)
+	_, err = f.Read(data)
+	if closeErr := f.Close(); closeErr != nil {
+		return nil, closeErr
+	}
+	return data, err
+}

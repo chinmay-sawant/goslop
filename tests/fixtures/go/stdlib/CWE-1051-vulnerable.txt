@@ -1,0 +1,40 @@
+# CWE-1051 positive: hard-coded upstream API host (pure stdlib)
+lang: go
+file: CWE-1051-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1051: Initialization with Hard-Coded Network Resource Configuration Data.
+// Vulnerable: billing client always dials fixed private IP 10.20.30.40.
+
+import (
+	"fmt"
+	"net/http"
+)
+
+const billingAPIPure = "http://10.20.30.40:9090/v1/charge"
+
+func ChargeCardPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		cardToken := r.FormValue("card_token")
+		req, err := http.NewRequest(http.MethodPost, billingAPIPure, nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		req.Header.Set("X-Card-Token", cardToken)
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(fmt.Sprintf(`{"status":"%s"}`, resp.Status)))
+	}
+}

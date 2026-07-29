@@ -1,0 +1,19 @@
+# PERF-069 positive: c.Writer.Write called without c.Writer.Flush()
+lang: go
+file: PERF-069-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func StreamNoFlush(c *gin.Context) {
+	chunk := []byte("hello world\n")
+	for i := 0; i < 10; i++ {
+		c.Writer.Write(chunk)
+	}
+	_ = http.StatusOK
+}

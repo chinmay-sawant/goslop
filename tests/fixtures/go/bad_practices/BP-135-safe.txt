@@ -1,0 +1,21 @@
+# BP-135 negative: the request-scoped GORM chain starts with WithContext.
+lang: go
+file: BP-135-safe.go
+variant: gorm-global-http-context
+---
+package sample
+
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func listUsers(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	var users []User
+	if err := db.WithContext(r.Context()).Where("active = ?", true).Find(&users).Error; err != nil {
+		http.Error(w, "query failed", http.StatusInternalServerError)
+	}
+}

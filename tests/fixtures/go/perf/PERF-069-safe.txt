@@ -1,0 +1,20 @@
+# PERF-069 negative: c.Writer.Flush() is called after writes
+lang: go
+file: PERF-069-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func StreamWithFlush(c *gin.Context) {
+	chunk := []byte("hello world\n")
+	c.Writer.Write(chunk)
+	c.Writer.Flush()
+	c.Writer.Write(chunk)
+	c.Writer.Flush()
+	_ = http.StatusOK
+}

@@ -1,0 +1,41 @@
+# CWE-1220 positive: coarse role gate on all records (pure stdlib)
+lang: go
+file: CWE-1220-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1220: Insufficient Granularity of Access Control.
+// Vulnerable: any authenticated user may read any invoice by numeric id.
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type InvoicePure struct {
+	ID     int     `json:"id"`
+	Owner  int     `json:"owner_id"`
+	Amount float64 `json:"amount"`
+}
+
+func GetInvoicePure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "" {
+			http.Error(w, "login required", http.StatusUnauthorized)
+			return
+		}
+		id := r.URL.Query().Get("id")
+		var inv InvoicePure
+		err := db.QueryRow(
+			"SELECT id, owner_id, amount FROM invoices WHERE id = $1", id,
+		).Scan(&inv.ID, &inv.Owner, &inv.Amount)
+		if err != nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(inv)
+	}
+}

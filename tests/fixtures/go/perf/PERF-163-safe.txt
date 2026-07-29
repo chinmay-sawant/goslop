@@ -1,0 +1,14 @@
+# PERF-163 negative: db.QueryRow for a single-row query
+lang: go
+file: PERF-163-safe.go
+variant: stdlib
+---
+package sample
+
+import "database/sql"
+
+func FindUser(db *sql.DB, id int) (string, error) {
+	var name string
+	err := db.QueryRow("SELECT name FROM users WHERE id = ?", id).Scan(&name)
+	return name, err
+}

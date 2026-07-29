@@ -1,0 +1,21 @@
+# CWE-565 positive: delete trusts unverified role cookie (pure stdlib)
+lang: go
+file: CWE-565-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func DeleteTenantRecord(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	role, err := r.Cookie("role")
+	if err != nil || role.Value != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	_, _ = db.Exec("DELETE FROM tenants WHERE id = ?", r.PathValue("id"))
+	w.WriteHeader(http.StatusOK)
+}

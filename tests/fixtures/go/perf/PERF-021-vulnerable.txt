@@ -1,0 +1,21 @@
+# PERF-021 positive: io.ReadAll on c.Request.Body in a handler
+lang: go
+file: PERF-021-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Upload(c *gin.Context) {
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"size": len(body)})
+}

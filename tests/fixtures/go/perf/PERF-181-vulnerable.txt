@@ -1,0 +1,21 @@
+# PERF-181 positive: json.NewDecoder without .UseNumber()
+lang: go
+file: PERF-181-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/json"
+	"io"
+)
+
+type Row struct {
+	ID   int64
+	Name string
+}
+
+func Decode(r io.Reader, out *Row) error {
+	dec := json.NewDecoder(r)
+	return dec.Decode(out)
+}

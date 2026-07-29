@@ -1,0 +1,15 @@
+# PERF-94 negative: Fiber handler uses c.PostBody() (zero-copy) for the body
+lang: go
+file: PERF-094-safe.go
+---
+package sample
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+func Ingest(c *fiber.Ctx) error {
+	body := c.PostBody()
+	_ = body
+	return c.SendString("ok")
+}

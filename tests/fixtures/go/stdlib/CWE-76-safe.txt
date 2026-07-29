@@ -1,0 +1,32 @@
+# CWE-76 negative: full HTML escaping for output context (pure stdlib)
+lang: go
+file: CWE-76-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"html"
+	"net/http"
+)
+
+// CWE-76 Improper Neutralization of Equivalent Special Elements (mitigated)
+func WritePreview(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "form", http.StatusBadRequest)
+		return
+	}
+	raw := r.FormValue("snippet")
+	if raw == "" {
+		http.Error(w, "empty", http.StatusBadRequest)
+		return
+	}
+	safe := html.EscapeString(raw)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("<article>" + safe + "</article>"))
+}

@@ -1,0 +1,17 @@
+# BP-67 positive: errors.As receives the target value instead of its address
+lang: go
+file: BP-67-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "errors"
+
+type problem struct{}
+
+func (problem) Error() string { return "problem" }
+
+func Find(err error) bool {
+	var target *problem
+	return errors.As(err, target)
+}

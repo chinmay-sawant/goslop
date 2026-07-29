@@ -1,0 +1,21 @@
+# CWE-272 — Least Privilege Violation (safe)
+lang: go
+file: CWE-272-safe.go
+---
+package sample
+
+import (
+	"os"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: drops elevated uid immediately after the privileged syscall.
+func FixOwnership(c *gin.Context) {
+	_ = syscall.Setuid(0)
+	path := c.Query("file")
+	_ = os.Chown(path, 1000, 1000)
+	_ = syscall.Setuid(1000)
+	c.JSON(200, gin.H{"updated": path})
+}

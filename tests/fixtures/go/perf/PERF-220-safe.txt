@@ -1,0 +1,15 @@
+# PERF-220 negative: merged single loop
+lang: go
+file: PERF-220-safe.go
+variant: stdlib
+---
+package sample
+
+func Process(row []int) int {
+	total := 0
+	for _, cell := range row {
+		total += cell
+		total += cell * 2
+	}
+	return total
+}

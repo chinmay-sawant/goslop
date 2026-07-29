@@ -1,0 +1,22 @@
+# PERF-170 positive: sync.Once.Do in a request handler
+lang: go
+file: PERF-170-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var once sync.Once
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	once.Do(func() {
+		// This runs once per process, but the atomic load
+		// happens on every request.
+	})
+	_ = r
+	_ = w
+}

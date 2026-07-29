@@ -1,0 +1,33 @@
+# CWE-319 — Cleartext Transmission of Sensitive Information (safe)
+lang: go
+file: CWE-319-safe.go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"encoding/json"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type cardPayload struct {
+	Number string `json:"number"`
+	CVV    string `json:"cvv"`
+}
+
+// Safe: terminates TLS before accepting cardholder data.
+func StartPaymentsAPI(r *gin.Engine) {
+	r.POST("/pay", func(c *gin.Context) {
+		var p cardPayload
+		_ = json.Unmarshal([]byte(c.PostForm("payload")), &p)
+		c.JSON(200, gin.H{"charged": true})
+	})
+	srv := &http.Server{
+		Addr:      ":8443",
+		Handler:   r,
+		TLSConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+	}
+	_ = srv.ListenAndServeTLS("/etc/certs/server.crt", "/etc/certs/server.key")
+}

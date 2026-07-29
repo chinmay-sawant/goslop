@@ -1,0 +1,20 @@
+# PERF-76 negative: CreateInBatches replaces the per-row insert
+lang: go
+file: PERF-076-safe.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func BulkInsert(db *gorm.DB, names []string) error {
+	users := make([]User, 0, len(names))
+	for _, n := range names {
+		users = append(users, User{Name: n})
+	}
+	return db.CreateInBatches(users, 100).Error
+}

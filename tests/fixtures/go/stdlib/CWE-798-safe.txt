@@ -1,0 +1,25 @@
+# CWE-798: Use of Hard-coded Credentials (mitigated, pure stdlib)
+lang: go
+file: CWE-798-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"os"
+)
+
+// Safe: credentials are loaded from environment at runtime.
+func ConnectReporting(w http.ResponseWriter, r *http.Request) {
+	dsn := os.Getenv("REPORTING_DSN")
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		http.Error(w, "connection failed", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"connected":true}`))
+}

@@ -1,0 +1,28 @@
+# CWE-829: Inclusion of Functionality from Untrusted Control Sphere
+lang: go
+file: CWE-829-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"plugin"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: loads a shared object from a user-supplied filesystem path.
+func LoadExtension(c *gin.Context) {
+	path := c.Query("module_path")
+	p, err := plugin.Open(path)
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	sym, err := p.Lookup("Init")
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"loaded": sym != nil})
+}

@@ -1,0 +1,20 @@
+# PERF-057 positive: Gin middleware that reads the body with io.ReadAll
+lang: go
+file: PERF-057-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func MiddlewareBind(c *gin.Context) {
+	body, _ := io.ReadAll(c.Request.Body)
+	_ = body
+	c.Request.Body.Close()
+	c.Next()
+	_ = http.StatusOK
+}

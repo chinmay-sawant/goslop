@@ -1,0 +1,15 @@
+# PERF-234 positive: bulk buffer uses a large fixed Grow
+lang: go
+file: PERF-234-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func NewBulkBuffer(data []byte) *bytes.Buffer {
+	var buf bytes.Buffer
+	buf.Grow(65536)
+	buf.Write(data)
+	return &buf
+}

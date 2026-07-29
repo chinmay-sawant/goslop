@@ -1,0 +1,25 @@
+# CWE-268 — Privilege Chaining (safe) (pure stdlib)
+lang: go
+file: CWE-268-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+// Safe: export requires explicit admin role, not a combination of weak scopes.
+func ExportDirectory(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if r.Header.Get("X-Role") != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+	_, _ = w.Write([]byte(`{"status":"queued"}`))
+}

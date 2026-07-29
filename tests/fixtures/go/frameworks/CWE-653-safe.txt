@@ -1,0 +1,37 @@
+# CWE-653: Improper Isolation or Compartmentalization (mitigated)
+lang: go
+file: CWE-653-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type AuditLog struct {
+	ID      uint
+	Message string
+}
+
+// Safe: read-only replica serves public queries; admin mutations use a separate privileged handle.
+var readOnlyDB *gorm.DB
+var adminDB *gorm.DB
+
+func PublicSearch(c *gin.Context) {
+	q := c.Query("q")
+	var logs []AuditLog
+	readOnlyDB.Where("message LIKE ?", "%"+q+"%").Find(&logs)
+	c.JSON(http.StatusOK, logs)
+}
+
+func AdminPurge(c *gin.Context) {
+	if c.GetHeader("X-Admin-Token") == "" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	adminDB.Exec("DELETE FROM audit_logs")
+	c.Status(http.StatusOK)
+}

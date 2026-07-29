@@ -1,0 +1,21 @@
+# CWE-455: server starts even when HSM/key initialization fails.
+lang: go
+file: CWE-455-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
+
+func StartAPI() *gin.Engine {
+	cert, err := tls.LoadX509KeyPair("/etc/hsm/tls.crt", "/etc/hsm/tls.key")
+	if err != nil {
+		log.Printf("hsm tls unavailable, continuing without mTLS: %v", err)
+	}
+	_ = cert
+	return gin.Default()
+}

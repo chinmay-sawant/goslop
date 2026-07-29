@@ -1,0 +1,34 @@
+# PERF-025 negative: key generated once at startup
+lang: go
+file: PERF-025-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	signingKey  *rsa.PrivateKey
+	signingOnce sync.Once
+)
+
+func loadSigningKey() (*rsa.PrivateKey, error) {
+	signingOnce.Do(func() {
+		signingKey, _ = rsa.GenerateKey(rand.Reader, 2048)
+	})
+	return signingKey, nil
+}
+
+func IssueToken(c *gin.Context) {
+	priv, err := loadSigningKey()
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"n": priv.N.String()})
+}

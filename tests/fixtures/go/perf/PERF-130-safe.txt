@@ -1,0 +1,12 @@
+# PERF-130 negative: the call is inlined
+lang: go
+file: PERF-130-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Run() {
+	fmt.Println("hi")
+}

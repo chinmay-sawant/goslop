@@ -1,0 +1,25 @@
+# PERF-027 negative: large buffer pooled and reused across iterations
+lang: go
+file: PERF-027-safe.go
+---
+package sample
+
+import "sync"
+
+var bufPool = sync.Pool{
+	New: func() interface{} {
+		b := make([]byte, 8192)
+		return &b
+	},
+}
+
+func EncodeChunks(chunks []string) int {
+	total := 0
+	for range chunks {
+		bp := bufPool.Get().(*[]byte)
+		buf := *bp
+		total += len(buf)
+		bufPool.Put(bp)
+	}
+	return total
+}

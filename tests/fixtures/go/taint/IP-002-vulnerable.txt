@@ -1,0 +1,20 @@
+# IP-002: Sanitized call chain — vulnerable (no sanitizer in path)
+lang: go
+file: IP-002-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    x := r.URL.Query().Get("input")
+    callee(x)
+}
+
+func callee(s string) {
+    os.Open(s)
+}

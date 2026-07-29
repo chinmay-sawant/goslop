@@ -1,0 +1,114 @@
+{
+  "PERF-225": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A large slice is fully cloned more than once in the same function (slices.Clone, append([]T(nil), src...), or equivalent), discarding ownership of an intermediate buffer. Prefer a single clone or in-place mutation when the source is already exclusively owned.",
+    "detection_notes": "Flag two or more full-slice clones (slices.Clone / append([]T(nil), x...) / append([]T{}, x...)) of the same identifier in one function body.",
+    "go_relevance": "High",
+    "id": 225,
+    "name": "Redundant Large Slice Clone",
+    "original_description": "Detect double slices.Clone or append-nil full copies of the same buffer",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-226": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Immediately after a producer fills or returns a buffer (bytes.Buffer.Bytes, compress writer Close, similar), the code allocates a second slice and copy/clones the result without the source being returned to a pool. Prefer taking ownership of the producer buffer or copying only when the source must be recycled.",
+    "detection_notes": "Match make([]byte, len(x)) + copy(dst, x) or slices.Clone(x) within a short window after Bytes()/Close() on a buffer or flate/zlib/gzip writer.",
+    "go_relevance": "High",
+    "id": 226,
+    "name": "Post-Producer Buffer Re-Copy",
+    "original_description": "Detect make+copy or Clone right after Bytes/Close of a just-produced buffer",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-227": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A flate, zlib, or gzip writer is constructed with NewWriter / NewWriterLevel on a hot path or inside a loop without reusing a pooled writer via Reset. Writer construction allocates deflate state; pool + Reset is the standard reuse pattern.",
+    "detection_notes": "Match flate.NewWriter, flate.NewWriterDict, zlib.NewWriter, zlib.NewWriterLevel, gzip.NewWriter, gzip.NewWriterLevel under loop/hot or compress-shaped function gates. Suppress only when the *enclosing function* is a pool getter (GetZlibWriter) or its body uses writer Reset — file-level pool helpers must not silence NewWriter in other functions.",
+    "go_relevance": "High",
+    "id": 227,
+    "name": "Compress Writer Allocated Without Pool",
+    "original_description": "Detect flate/zlib/gzip NewWriter on hot path without sync.Pool reuse",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-228": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A tiny workset (composite slice literal with 1\u20132 elements, or a for-range over such a slice) is parallelized with errgroup.Go, WaitGroup + go, or bare go func per item. Spawn and synchronization cost often exceeds the work for N\u22642; prefer a serial path for small fixed fan-out.",
+    "detection_notes": "Match g.Go / wg.Add+go / go func inside a for-range whose range target is a composite literal with \u22642 elements, or a named slice assigned from such a literal in the same function.",
+    "go_relevance": "Medium",
+    "id": 228,
+    "name": "Parallel Fan-Out For Tiny Workset",
+    "original_description": "Detect errgroup/WaitGroup/go fan-out over 1\u20132 element worksets",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-229": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A temporary string is built with strconv.Itoa, FormatInt, or fmt.Sprintf and then immediately appended or written into a []byte / bytes.Buffer sink. Prefer strconv.AppendInt / AppendFormat-style APIs that write into the destination buffer without an intermediate string.",
+    "detection_notes": "Match Itoa/FormatInt/Sprintf assigned to a name then used in append(dst, s...) or WriteString(s) or []byte(s) in the same function.",
+    "go_relevance": "Medium",
+    "id": 229,
+    "name": "Intermediate String On Byte Append Path",
+    "original_description": "Detect Itoa/Sprintf then append/WriteString of the temporary string",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-230": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A pure-looking function is re-evaluated on every loop iteration with arguments that do not depend on the loop variable. Hoist the call before the loop or cache the result when the inputs are stable across iterations.",
+    "detection_notes": "Match calls inside for/range bodies where all arguments are loop-invariant identifiers or literals and the callee does not look impure (Rand/Now/Read/Write/Next).",
+    "go_relevance": "Medium",
+    "id": 230,
+    "name": "Pure Function Re-Evaluated In Loop With Stable Args",
+    "original_description": "Detect loop-invariant pure function calls inside loop bodies",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-231": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "PEM blocks, X.509 certificates, or private keys are parsed on a hot path (encode/sign/serve/loop) instead of once at process start. Parsing is expensive relative to using a cached *rsa.PrivateKey / certificate chain. Distinct from key generation (PERF-025).",
+    "detection_notes": "Match pem.Decode, x509.ParseCertificate, x509.ParsePKCS1PrivateKey, x509.ParsePKCS8PrivateKey, x509.ParseECPrivateKey, tls.X509KeyPair under hot-path gates; suppress init/sync.Once/package-level parse.",
+    "go_relevance": "High",
+    "id": 231,
+    "name": "PEM Or Key Material Parsed On Hot Path",
+    "original_description": "Detect pem.Decode / x509.Parse* / tls.X509KeyPair on hot paths",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-233": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A flate/zlib/gzip writer is created with DefaultCompression, BestCompression, or the default NewWriter level on a hot encode path. For bulk stream compression where output size budgets allow, BestSpeed (or level 1) typically cuts CPU substantially while remaining compatible with standard flate decoders.",
+    "detection_notes": "Match zlib.NewWriter/gzip.NewWriter (default level) or *NewWriterLevel/flate.NewWriter with DefaultCompression or BestCompression inside hot or compress-shaped functions. Suppress BestSpeed/HuffmanOnly/NoCompression. Distinct from PERF-227 (pool/Reset).",
+    "go_relevance": "High",
+    "id": 233,
+    "name": "Slow Compress Level On Hot Encode Path",
+    "original_description": "Detect Default/BestCompression flate on hot paths where BestSpeed is viable",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  }
+}

@@ -1,0 +1,28 @@
+# CWE-309 — Use of Password System for Primary Authentication (safe) (pure stdlib)
+lang: go
+file: CWE-309-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+// Safe: primary authentication uses WebAuthn assertion, not password form.
+func EnterpriseLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	assertion := r.FormValue("webauthn_assertion")
+	if assertion == "" {
+		http.Error(w, "webauthn required", http.StatusBadRequest)
+		return
+	}
+	if r.Header.Get("X-WebAuthn-OK") != "true" {
+		http.Error(w, "invalid assertion", http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

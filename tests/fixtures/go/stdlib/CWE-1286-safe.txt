@@ -1,0 +1,46 @@
+# CWE-1286 negative: strict JSON syntax and URL validation (pure stdlib)
+lang: go
+file: CWE-1286-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1286 mitigated: decoder rejects unknown fields and validates URL syntax.
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+	"net/url"
+)
+
+type HookConfigValidatedPure struct {
+	URL     string `json:"url"`
+	Enabled bool   `json:"enabled"`
+}
+
+func SaveHookConfigValidatedPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		dec := json.NewDecoder(r.Body)
+		dec.DisallowUnknownFields()
+		var cfg HookConfigValidatedPure
+		if err := dec.Decode(&cfg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		parsed, err := url.ParseRequestURI(cfg.URL)
+		if err != nil || parsed.Scheme != "https" {
+			http.Error(w, "invalid hook url", http.StatusBadRequest)
+			return
+		}
+		_, err = db.Exec(
+			"INSERT INTO hook_configs (url, enabled) VALUES ($1, $2)", cfg.URL, cfg.Enabled,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"saved":true}`))
+	}
+}

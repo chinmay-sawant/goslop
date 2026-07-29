@@ -1,0 +1,35 @@
+# CWE-280 — Improper Handling of Insufficient Permissions or Privileges (safe) (pure stdlib)
+lang: go
+file: CWE-280-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"errors"
+	"net/http"
+	"os"
+	"path/filepath"
+	"sync"
+	"syscall"
+)
+
+var tenantStore sync.Map
+
+// Safe: aborts when the process lacks permission to access the resource.
+func DeleteTenant(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("id")
+	path := "/secure/tenants/" + filepath.Base(raw)
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, syscall.EACCES) || errors.Is(err, syscall.EPERM) {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		http.Error(w, "open failed", http.StatusInternalServerError)
+		return
+	}
+	f.Close()
+	tenantStore.Delete(r.URL.Query().Get("id"))
+	w.WriteHeader(http.StatusOK)
+}

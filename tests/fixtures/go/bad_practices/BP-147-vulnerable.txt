@@ -1,0 +1,17 @@
+# BP-147 positive: a service package uses the standard logger beside slog.
+lang: go
+file: BP-147-vulnerable.go
+variant: mixed-service-loggers
+---
+package handlers
+
+import (
+	"log"
+	"log/slog"
+)
+
+// Handle processes a request.
+func Handle() {
+	slog.Info("handler ready")
+	log.Printf("request received")
+}

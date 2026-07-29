@@ -1,0 +1,18 @@
+# BP-97 negative: the bufio writer is flushed before reading the buffer
+lang: go
+file: BP-97-safe.go
+---
+package sample
+
+import (
+	"bufio"
+	"bytes"
+)
+
+func encode() string {
+	buf := &bytes.Buffer{}
+	writer := bufio.NewWriter(buf)
+	writer.WriteString("payload")
+	writer.Flush()
+	return buf.String()
+}

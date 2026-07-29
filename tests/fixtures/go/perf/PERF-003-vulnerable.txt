@@ -1,0 +1,21 @@
+# PERF-003 positive: make([]int, len(items)) inside loop body
+lang: go
+file: PERF-003-vulnerable.go
+---
+package sample
+
+import "strings"
+
+func GroupLines(texts []string) [][]string {
+	var out [][]string
+	for _, text := range texts {
+		group := make([]string, len(texts))
+		for i, other := range texts {
+			if strings.Contains(other, text) {
+				group[i] = other
+			}
+		}
+		out = append(out, group)
+	}
+	return out
+}

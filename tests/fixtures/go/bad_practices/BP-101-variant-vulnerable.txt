@@ -1,0 +1,13 @@
+# BP-101 positive variant: an inline net/http handler uses the writer directly.
+lang: go
+file: BP-101-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+var route = http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	writer.Write([]byte("ok"))
+	writer.WriteHeader(http.StatusNoContent)
+})

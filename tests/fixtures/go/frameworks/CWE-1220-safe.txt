@@ -1,0 +1,42 @@
+# CWE-1220 safe: owner-scoped invoice access
+lang: go
+file: CWE-1220-safe.go
+---
+package sample
+
+// CWE-1220 mitigated: query filters by authenticated owner_id and invoice id.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+type Invoice struct {
+	ID     int     `db:"id"`
+	Owner  int     `db:"owner_id"`
+	Amount float64 `db:"amount"`
+}
+
+func GetInvoiceScoped(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ownerID := c.GetInt("user_id")
+		if ownerID == 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "login required"})
+			return
+		}
+		id := c.Param("id")
+		var inv Invoice
+		err := db.Get(
+			&inv,
+			"SELECT id, owner_id, amount FROM invoices WHERE id = $1 AND owner_id = $2",
+			id, ownerID,
+		)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		}
+		c.JSON(http.StatusOK, inv)
+	}
+}

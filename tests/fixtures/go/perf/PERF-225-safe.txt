@@ -1,0 +1,12 @@
+# PERF-225 negative: single clone of input buffer
+lang: go
+file: PERF-225-safe.go
+variant: stdlib
+---
+package sample
+
+import "slices"
+
+func Finalize(buf []byte) []byte {
+	return slices.Clone(buf)
+}

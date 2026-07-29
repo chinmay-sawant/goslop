@@ -1,0 +1,20 @@
+# PERF-108 negative: sort.Search hoisted out of the loop
+lang: go
+file: PERF-108-safe.go
+variant: stdlib
+---
+package sample
+
+import "sort"
+
+func Lookup(values []int, queries []int) []int {
+	// Pre-sort once (or rely on the caller to do so). The
+	// per-query search uses an index into a sorted slice.
+	sort.Ints(values)
+	out := make([]int, len(queries))
+	for i, q := range queries {
+		idx := sort.SearchInts(values, q)
+		out[i] = idx
+	}
+	return out
+}

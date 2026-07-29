@@ -1,0 +1,41 @@
+# CWE-1322 safe: non-blocking worker with timer channel
+lang: go
+file: CWE-1322-safe.go
+---
+package sample
+
+// CWE-1322 mitigated: worker schedules retries with time.After instead of Sleep.
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type webhookJob struct {
+	payload string
+	attempt int
+}
+
+func StartWebhookWorkerSafe(db *gorm.DB) gin.HandlerFunc {
+	queue := make(chan webhookJob, 32)
+	go func() {
+		for job := range queue {
+			if err := db.Exec("INSERT INTO webhook_events (payload) VALUES (?)", job.payload).Error; err != nil {
+				if job.attempt < 3 {
+					delay := time.Duration(job.attempt+1) * time.Second
+					time.AfterFunc(delay, func() {
+						queue <- webhookJob{payload: job.payload, attempt: job.attempt + 1}
+					})
+				}
+			}
+		}
+	}()
+	return func(c *gin.Context) {
+		body := c.PostForm("payload")
+		queue <- webhookJob{payload: body}
+		c.JSON(http.StatusAccepted, gin.H{"queued": true})
+	}
+}

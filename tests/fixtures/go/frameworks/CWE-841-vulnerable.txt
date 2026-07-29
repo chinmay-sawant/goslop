@@ -1,0 +1,26 @@
+# CWE-841: Improper Enforcement of Behavioral Workflow
+lang: go
+file: CWE-841-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID    uint
+	Email string
+	MFAPassed bool
+}
+
+// Vulnerable: password reset proceeds without confirming MFA step completed.
+func ResetAccount(c *gin.Context, db *gorm.DB) {
+	email := c.PostForm("email")
+	newPass := c.PostForm("new_password")
+	db.Model(&Account{}).Where("email = ?", email).Update("password", newPass)
+	c.Status(http.StatusOK)
+}

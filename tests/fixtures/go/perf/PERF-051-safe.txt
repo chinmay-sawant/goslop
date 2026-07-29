@@ -1,0 +1,17 @@
+# PERF-051 negative: no unsafe.Pointer in the request handler
+lang: go
+file: PERF-051-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func HandleSafe(c *gin.Context) {
+	s := string([]byte("hello world"))
+	c.JSON(http.StatusOK, gin.H{"value": s})
+	_ = http.StatusOK
+}

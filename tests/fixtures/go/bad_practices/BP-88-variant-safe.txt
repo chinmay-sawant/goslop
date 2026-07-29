@@ -1,0 +1,14 @@
+# BP-88 negative variant: nil channel is used only to disable a select case
+lang: go
+file: BP-88-variant-safe.go
+variant: stdlib
+---
+package sample
+
+func receive(done <-chan struct{}) {
+	var ready chan int
+	select {
+	case <-ready:
+	case <-done:
+	}
+}

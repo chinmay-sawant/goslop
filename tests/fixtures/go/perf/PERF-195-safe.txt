@@ -1,0 +1,23 @@
+# PERF-195 negative: return the error from a synchronous call
+lang: go
+file: PERF-195-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"errors"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = w
+	_ = r
+	// Inline the call; the caller decides what to do with
+	// the error. No goroutine, so no log.Fatal in a worker.
+	if err := connect(); err != nil {
+		_ = err
+	}
+}
+
+func connect() error { return errors.New("not implemented") }

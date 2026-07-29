@@ -1,0 +1,21 @@
+# CWE-76 positive: neutralizes < but not URL-encoded equivalents
+lang: go
+file: CWE-76-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-76 Improper Neutralization of Equivalent Special Elements
+// Vulnerable line: strips literal angle brackets only.
+func RenderSnippet(c *gin.Context) {
+	raw := c.PostForm("snippet")
+	safe := strings.ReplaceAll(raw, "<", "")
+	safe = strings.ReplaceAll(safe, ">", "")
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte("<section>"+safe+"</section>"))
+}

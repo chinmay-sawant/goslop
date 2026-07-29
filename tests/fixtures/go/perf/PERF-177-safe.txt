@@ -1,0 +1,16 @@
+# PERF-177 negative: os.ReadDir returns []os.DirEntry
+lang: go
+file: PERF-177-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"os"
+)
+
+func ListDir(path string) {
+	entries, _ := os.ReadDir(path)
+	fmt.Println(len(entries))
+}

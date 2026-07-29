@@ -1,0 +1,36 @@
+# CWE-917 vulnerable: user-controlled template expression
+lang: go
+file: CWE-917-vulnerable.go
+---
+package sample
+
+// CWE-917: Expression Language Injection via text/template built from request input.
+// Vulnerable: template body concatenates client-supplied filter expression.
+
+import (
+	"bytes"
+	"net/http"
+	"text/template"
+
+	"github.com/gin-gonic/gin"
+)
+
+func RenderReport() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		title := c.Query("title")
+		expr := c.Query("filter")
+		src := "{{.Title}} where " + expr
+		tmpl, err := template.New("report").Parse(src)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		var buf bytes.Buffer
+		data := map[string]string{"Title": title}
+		if err := tmpl.Execute(&buf, data); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.String(http.StatusOK, buf.String())
+	}
+}

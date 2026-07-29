@@ -1,0 +1,33 @@
+# PERF-100 positive: cobra.Command with many flag registrations in init
+lang: go
+file: PERF-100-vulnerable.go
+---
+package main
+
+import (
+	"github.com/spf13/cobra"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "myapp",
+	Short: "My app",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runWithFlags(cmd, args)
+	},
+}
+
+func init() {
+	rootCmd.Flags().String("config", "", "config file path")
+	rootCmd.Flags().String("log-level", "info", "log level")
+	rootCmd.Flags().Bool("verbose", false, "verbose output")
+	rootCmd.Flags().Int("retries", 3, "retry count")
+	rootCmd.Flags().Duration("timeout", 30, "request timeout")
+}
+
+func runWithFlags(cmd *cobra.Command, args []string) error {
+	return nil
+}
+
+func main() {
+	_ = rootCmd.Execute()
+}

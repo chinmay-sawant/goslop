@@ -1,0 +1,92 @@
+{
+  "CWE-178": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly account for differences in case sensitivity when accessing or determining the properties of a resource, leading to inconsistent results.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 178,
+    "name": "Improper Handling of Case Sensitivity",
+    "original_description": "The product does not properly account for differences in case sensitivity when accessing or determining the properties of a resource, leading to inconsistent results.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-179": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product validates input before applying protection mechanisms that modify the input, which could allow an attacker to bypass the validation via dangerous inputs that only arise after the modification.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 179,
+    "name": "Incorrect Behavior Order: Early Validation",
+    "original_description": "The product validates input before applying protection mechanisms that modify the input, which could allow an attacker to bypass the validation via dangerous inputs that only arise after the modification.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-182": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product filters data in a way that causes it to be reduced or collapsed into an unsafe value that violates an expected security property.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 182,
+    "name": "Collapse of Data into Unsafe Value",
+    "original_description": "The product filters data in a way that causes it to be reduced or collapsed into an unsafe value that violates an expected security property.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-184": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product implements a protection mechanism that relies on a list of inputs (or properties of inputs) that are not allowed by policy or otherwise require other action to neutralize before additional processing takes place, but the list is incomplete.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 184,
+    "name": "Incomplete List of Disallowed Inputs",
+    "original_description": "The product implements a protection mechanism that relies on a list of inputs (or properties of inputs) that are not allowed by policy or otherwise require other action to neutralize before additional processing takes place, but the list is incomplete.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-186": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation (ReDoS)",
+    "description": "A regular expression is overly restrictive, which prevents dangerous values from being detected.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 186,
+    "name": "Overly Restrictive Regular Expression",
+    "original_description": "A regular expression is overly restrictive, which prevents dangerous values from being detected.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  }
+}

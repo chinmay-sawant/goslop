@@ -1,0 +1,23 @@
+# CWE-472 positive: hidden role form field trusted for refund (pure stdlib)
+lang: go
+file: CWE-472-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func RefundOrder(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	_ = r.ParseForm()
+	orderID := r.FormValue("order_id")
+	role := r.FormValue("role")
+	if role != "manager" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	_, _ = db.Exec("UPDATE orders SET status = 'refunded' WHERE id = ?", orderID)
+	w.WriteHeader(http.StatusOK)
+}

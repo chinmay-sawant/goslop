@@ -1,0 +1,12 @@
+# BP-56 positive: deprecated package import
+lang: go
+file: BP-56-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "io/ioutil"
+
+func read(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
+}

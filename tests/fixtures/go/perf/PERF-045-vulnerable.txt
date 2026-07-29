@@ -1,0 +1,13 @@
+# PERF-045 positive: append in a loop without a make+cap hint
+lang: go
+file: PERF-045-vulnerable.go
+---
+package sample
+
+func Collect(values []int) []int {
+	var out []int
+	for _, v := range values {
+		out = append(out, v)
+	}
+	return out
+}

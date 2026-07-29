@@ -1,0 +1,28 @@
+# CWE-640: Weak Password Recovery Mechanism (pure stdlib)
+lang: go
+file: CWE-640-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: resets password using only the email address as proof of identity.
+func ForgotPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	email := r.FormValue("email")
+	newPass := r.FormValue("new_password")
+	res, err := db.Exec("UPDATE users SET password = $1 WHERE email = $2", newPass, email)
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

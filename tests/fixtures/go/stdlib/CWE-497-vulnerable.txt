@@ -1,0 +1,25 @@
+# CWE-497 positive: diagnostics leak host environment (pure stdlib)
+lang: go
+file: CWE-497-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+	"runtime"
+)
+
+func RegisterHostDiagnostics() {
+	http.HandleFunc("/diag/host", func(w http.ResponseWriter, r *http.Request) {
+		host, _ := os.Hostname()
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"hostname": host,
+			"env":      os.Environ(),
+			"cpus":     runtime.NumCPU(),
+			"goos":     runtime.GOOS,
+		})
+	})
+}

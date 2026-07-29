@@ -1,0 +1,16 @@
+# BP-104 negative: explicit method patterns are distinct registrations.
+lang: go
+file: BP-104-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func routes() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /admin", admin)
+	mux.HandleFunc("POST /admin", admin)
+}
+
+func admin(http.ResponseWriter, *http.Request) {}

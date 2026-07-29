@@ -1,0 +1,24 @@
+# PERF-91 negative: Fiber handler uses sync.Pool to reuse buffers
+lang: go
+file: PERF-091-safe.go
+---
+package sample
+
+import (
+	"bytes"
+	"sync"
+	"github.com/gofiber/fiber/v2"
+)
+
+var bufPool = sync.Pool{
+	New: func() interface{} {
+		return new(bytes.Buffer)
+	},
+}
+
+func UploadHandler(c *fiber.Ctx) error {
+	buf := bufPool.Get().(*bytes.Buffer)
+	buf.Reset()
+	defer bufPool.Put(buf)
+	return c.SendString(buf.String())
+}

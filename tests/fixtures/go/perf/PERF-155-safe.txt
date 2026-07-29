@@ -1,0 +1,22 @@
+# PERF-155 negative: Go 1.22+ method routing is used
+lang: go
+file: PERF-155-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Get(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("get"))
+}
+
+func Post(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("post"))
+}
+
+func Init() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /path", Get)
+	mux.HandleFunc("POST /path", Post)
+}

@@ -1,0 +1,36 @@
+# PERF-230 positive: pure helper re-evaluated with stable args in loop
+lang: go
+file: PERF-230-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func parseProps(props string) int {
+	return len(props)
+}
+
+func EstimateTextWidth(font string, text string, size float64) float64 {
+	return float64(len(text)) * size * 0.5
+}
+
+func GetTextWidth(font string, text string) float64 {
+	return float64(len(text))
+}
+
+func resolveFontName(props string) string {
+	return props
+}
+
+func DrawCells(cells []string, props string, font string, size float64) float64 {
+	total := 0.0
+	for _, cell := range cells {
+		// props/font/size are loop-invariant (or cacheable keys); re-parsing /
+		// re-measuring every item is the stable-arg-in-loop smell.
+		w := parseProps(props)
+		_ = resolveFontName(props)
+		tw := EstimateTextWidth(font, cell, size)
+		gw := GetTextWidth(font, cell)
+		total += float64(w) + tw + gw
+	}
+	return total
+}

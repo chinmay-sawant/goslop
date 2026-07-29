@@ -1,0 +1,18 @@
+# BP-93 positive variant: multiple return values are both discarded
+lang: go
+file: BP-93-variant-vulnerable.go
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+func run() error {
+	var g errgroup.Group
+	g.Go(func() error {
+		_, _ = doWork()
+		return nil
+	})
+	return g.Wait()
+}
+
+func doWork() (int, error) { return 0, nil }

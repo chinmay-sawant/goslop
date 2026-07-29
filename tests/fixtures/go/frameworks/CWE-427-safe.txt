@@ -1,0 +1,18 @@
+# CWE-427: helper binary invoked via absolute path, PATH not mutated.
+lang: go
+file: CWE-427-safe.go
+---
+package sample
+
+import (
+	"os/exec"
+
+	"github.com/gin-gonic/gin"
+)
+
+const pdftopngPath = "/usr/bin/pdftopng"
+
+func RunReportRenderer(c *gin.Context) error {
+	cmd := exec.Command(pdftopngPath, c.PostForm("input"))
+	return cmd.Run()
+}

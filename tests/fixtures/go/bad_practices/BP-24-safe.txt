@@ -1,0 +1,10 @@
+# BP-24 negative: _test file contains a Test function
+lang: go
+file: BP-24-safe_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestPresent(t *testing.T) {}

@@ -1,0 +1,12 @@
+# PERF-241 negative: signing fills a pre-sized output without ASN.1 re-marshal
+lang: go
+file: PERF-241-safe.go
+variant: stdlib
+---
+package sample
+
+func SignPayload(out, digest, cachedPrefix []byte) error {
+	copy(out, cachedPrefix)
+	copy(out[len(cachedPrefix):], digest)
+	return nil
+}

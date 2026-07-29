@@ -1,0 +1,27 @@
+# CWE-921 vulnerable: world-readable secret file
+lang: go
+file: CWE-921-vulnerable.go
+---
+package sample
+
+// CWE-921: Storage of Sensitive Data without Access Control.
+// Vulnerable: API key written to /tmp with permissive mode 0644.
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+func StoreIntegrationKey() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		key := c.PostForm("api_key")
+		path := "/tmp/integration.key"
+		if err := os.WriteFile(path, []byte(key), 0644); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"stored": path})
+	}
+}

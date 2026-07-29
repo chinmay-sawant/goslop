@@ -1,0 +1,20 @@
+# BP-133 negative: the GORM chain's Error field is checked.
+lang: go
+file: BP-133-safe.go
+variant: gorm-find-chain-checked
+---
+package sample
+
+import (
+	"fmt"
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func listUsers(db *gorm.DB, users *[]User) error {
+	if err := db.Where("active = ?", true).Find(users).Error; err != nil {
+		return fmt.Errorf("list users: %w", err)
+	}
+	return nil
+}

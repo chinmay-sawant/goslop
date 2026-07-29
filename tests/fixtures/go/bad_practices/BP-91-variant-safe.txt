@@ -1,0 +1,10 @@
+# BP-91 negative variant: an integer channel payload is inspected
+lang: go
+file: BP-91-variant-safe.go
+---
+package sample
+
+func notify(done chan int) int {
+	done <- 1
+	return <-done
+}

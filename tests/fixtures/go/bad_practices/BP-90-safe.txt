@@ -1,0 +1,11 @@
+# BP-90 negative: ranging over a channel exits when the channel closes
+lang: go
+file: BP-90-safe.go
+---
+package sample
+
+func drain(ch <-chan int) {
+	for value := range ch {
+		_ = value
+	}
+}

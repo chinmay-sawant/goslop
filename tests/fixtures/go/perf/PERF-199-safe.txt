@@ -1,0 +1,25 @@
+# PERF-199 negative: session lookup lives in a middleware
+lang: go
+file: PERF-199-safe.go
+variant: framework
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SessionMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess, _ := c.Cookie("session")
+		c.Set("session", sess)
+		c.Next()
+	}
+}
+
+func Handle(c *gin.Context) {
+	_ = c.Get("session")
+	c.Status(200)
+}

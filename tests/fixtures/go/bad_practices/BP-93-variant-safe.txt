@@ -1,0 +1,25 @@
+# BP-93 negative variant: the closure handles the returned error
+lang: go
+file: BP-93-variant-safe.go
+---
+package sample
+
+import (
+	"context"
+	"fmt"
+	"golang.org/x/sync/errgroup"
+)
+
+func run(parent context.Context) error {
+	g, ctx := errgroup.WithContext(parent)
+	_ = ctx
+	g.Go(func() error {
+		if _, err := doWork(); err != nil {
+			return fmt.Errorf("work: %w", err)
+		}
+		return nil
+	})
+	return g.Wait()
+}
+
+func doWork() (int, error) { return 0, nil }

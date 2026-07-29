@@ -1,0 +1,44 @@
+# CWE-613: Insufficient Session Expiration (mitigated, pure stdlib)
+lang: go
+file: CWE-613-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+var revokedSessions = map[string]struct{}{}
+
+// Safe: short-lived cookie and server-side revocation on logout.
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	sid := r.FormValue("session_id")
+	http.SetCookie(w, &http.Cookie{Name: "sid", Value: sid, MaxAge: 900, Path: "/", Secure: true, HttpOnly: true})
+	w.WriteHeader(http.StatusOK)
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	c, _ := r.Cookie("sid")
+	if c != nil && c.Value != "" {
+		revokedSessions[c.Value] = struct{}{}
+	}
+	http.SetCookie(w, &http.Cookie{Name: "sid", Value: "", MaxAge: -1, Path: "/", Secure: true, HttpOnly: true})
+	w.WriteHeader(http.StatusOK)
+}
+
+func ProtectedHandler(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie("sid")
+	if err != nil || c.Value == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if _, revoked := revokedSessions[c.Value]; revoked {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	_ = time.Now()
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"data":"secret"}`))
+}

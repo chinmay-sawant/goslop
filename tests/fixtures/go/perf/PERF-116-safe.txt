@@ -1,0 +1,11 @@
+# PERF-116 negative: strings.Index used for contains
+lang: go
+file: PERF-116-safe.go
+---
+package sample
+
+import "strings"
+
+func Has(s, sub string) bool {
+    return strings.Contains(s, sub)
+}

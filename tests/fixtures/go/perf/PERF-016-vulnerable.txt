@@ -1,0 +1,20 @@
+# PERF-016 positive: bytes.Buffer allocated inside loop
+lang: go
+file: PERF-016-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func RenderAll(values []int) []string {
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		buf := bytes.Buffer{}
+		fmt.Fprintf(&buf, "v=%d", v)
+		out = append(out, buf.String())
+	}
+	return out
+}

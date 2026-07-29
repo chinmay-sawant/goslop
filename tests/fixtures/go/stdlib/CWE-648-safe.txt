@@ -1,0 +1,27 @@
+# CWE-648: Incorrect Use of Privileged APIs (mitigated, pure stdlib)
+lang: go
+file: CWE-648-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"path/filepath"
+)
+
+const uploadRoot = "/var/app/uploads"
+
+// Safe: ownership changes are restricted to files under a controlled upload root.
+func AssignFileOwner(w http.ResponseWriter, r *http.Request) {
+	name := r.FormValue("filename")
+	clean := filepath.Clean(name)
+	full := filepath.Join(uploadRoot, clean)
+	if !filepath.HasPrefix(full, uploadRoot) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"file": full, "owner": "app"})
+}

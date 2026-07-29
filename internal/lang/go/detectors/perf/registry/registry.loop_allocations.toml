@@ -1,0 +1,41 @@
+# PERF registry — domain: loop_allocations
+
+[[detector]]
+perf = 1
+domain = "loop_allocations"
+function = "detect_perf_1"
+
+[[detector]]
+perf = 2
+domain = "loop_allocations"
+function = "detect_perf_2"
+
+[[detector]]
+perf = 3
+domain = "loop_allocations"
+function = "detect_perf_3"
+
+[[detector]]
+perf = 4
+domain = "loop_allocations"
+function = "detect_perf_4"
+
+[[detector]]
+perf = 5
+domain = "loop_allocations"
+function = "detect_perf_5"
+
+[[detector]]
+perf = 6
+domain = "loop_allocations"
+function = "detect_perf_6"
+
+[[detector]]
+perf = 7
+domain = "loop_allocations"
+function = "detect_perf_7"
+
+[[detector]]
+perf = 8
+domain = "loop_allocations"
+function = "detect_perf_8"

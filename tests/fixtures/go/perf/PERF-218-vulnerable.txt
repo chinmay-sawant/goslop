@@ -1,0 +1,19 @@
+# PERF-218 positive: single global pool on hot path
+lang: go
+file: PERF-218-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var bufPool sync.Pool
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	buf := bufPool.Get()
+	bufPool.Put(buf)
+	w.WriteHeader(http.StatusOK)
+}

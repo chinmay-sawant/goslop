@@ -1,0 +1,25 @@
+# CWE-214 negative: token supplied via stdin not argv
+lang: go
+file: CWE-214-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-214 Invocation of Process Using Visible Sensitive Information (mitigated)
+func BackupDatabase(c *gin.Context) {
+	token := c.GetHeader("X-Api-Token")
+	cmd := exec.Command("pg_dump", "--db", "billing")
+	cmd.Stdin = strings.NewReader(token)
+	if err := cmd.Run(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "backup"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "started"})
+}

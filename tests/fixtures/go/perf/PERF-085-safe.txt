@@ -1,0 +1,28 @@
+# PERF-85 negative: query is built once outside the loop
+lang: go
+file: PERF-085-safe.go
+---
+package sample
+
+import (
+	"github.com/jmoiron/sqlx"
+)
+
+type Row struct {
+	ID   int64
+	Name string
+}
+
+func InsertAll(db *sqlx.DB, rows []Row) error {
+	query, args, err := sqlx.Named("INSERT INTO t (id, name) VALUES (:id, :name)", rows)
+	if err != nil {
+		return err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return err
+	}
+	query = db.Rebind(query)
+	_, err = db.Exec(query, args...)
+	return err
+}

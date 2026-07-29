@@ -1,0 +1,21 @@
+# PERF-171 positive: make(chan struct{}, 1) used as a mutex
+lang: go
+file: PERF-171-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type Counter struct {
+	mu chan struct{}
+	n  int
+}
+
+func New() *Counter {
+	return &Counter{mu: make(chan struct{}, 1)}
+}
+
+func (c *Counter) Inc() {
+	c.mu <- struct{}{}
+	c.n++
+	<-c.mu
+}

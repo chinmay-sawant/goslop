@@ -1,0 +1,12 @@
+# BP-80 negative variant: a real context is passed through a helper
+lang: go
+file: BP-80-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+func newRequestContext(ctx context.Context) context.Context {
+	return ctx
+}

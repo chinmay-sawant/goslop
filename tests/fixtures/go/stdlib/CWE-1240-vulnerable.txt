@@ -1,0 +1,36 @@
+# CWE-1240 positive: homegrown XOR cipher (pure stdlib)
+lang: go
+file: CWE-1240-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1240: Use of a Cryptographic Primitive with a Risky Implementation.
+// Vulnerable: custom XOR stream cipher protects session tokens.
+
+import (
+	"encoding/base64"
+	"net/http"
+)
+
+func xorCipherPure(key byte, data []byte) []byte {
+	out := make([]byte, len(data))
+	for i, b := range data {
+		out[i] = b ^ key
+	}
+	return out
+}
+
+func SealSessionTokenPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := r.FormValue("token")
+		sealed := xorCipherPure(0x5A, []byte(token))
+		encoded := base64.StdEncoding.EncodeToString(sealed)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"sealed":"` + encoded + `"}`))
+	}
+}

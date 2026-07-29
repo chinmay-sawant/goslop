@@ -1,0 +1,30 @@
+# CWE-308 — Use of Single-factor Authentication (vulnerable) (pure stdlib)
+lang: go
+file: CWE-308-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: high-value wire transfer authorized by password alone.
+func InitiateWire(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if r.FormValue("password") == "" {
+		http.Error(w, "password required", http.StatusUnauthorized)
+		return
+	}
+	amount := r.FormValue("amount")
+	if amount == "" {
+		http.Error(w, "missing amount", http.StatusBadRequest)
+		return
+	}
+	_, _ = db.Exec("INSERT INTO wires (amount) VALUES (?)", amount)
+	w.WriteHeader(http.StatusOK)
+}

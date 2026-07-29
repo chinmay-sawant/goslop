@@ -1,0 +1,26 @@
+# PERF-182 positive: bufio.NewWriter without size followed by a large Write
+lang: go
+file: PERF-182-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bufio"
+	"fmt"
+	"io"
+)
+
+func Write(w io.Writer) error {
+	bw := bufio.NewWriter(w)
+	payload := "this is a fairly long string that exceeds the default bufio writer buffer size of 4 KiB and would force repeated flushes if the buffer were not sized up front"
+	if _, err := bw.WriteString(payload); err != nil {
+		return err
+	}
+	return bw.Flush()
+}
+
+func _() {
+	_ = Write(nil)
+	fmt.Println("ok")
+}

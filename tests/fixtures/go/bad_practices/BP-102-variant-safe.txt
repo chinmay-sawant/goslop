@@ -1,0 +1,19 @@
+# BP-102 negative variant: a status is written directly before returning.
+lang: go
+file: BP-102-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func serve(writer http.ResponseWriter, request *http.Request) {
+	result, err := load(request)
+	if err != nil {
+		writer.WriteHeader(http.StatusBadGateway)
+		return
+	}
+	writer.Write(result)
+}
+
+func load(*http.Request) ([]byte, error) { return []byte("ok"), nil }

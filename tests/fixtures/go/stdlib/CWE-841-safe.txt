@@ -1,0 +1,25 @@
+# CWE-841: Improper Enforcement of Behavioral Workflow (mitigated, pure stdlib)
+lang: go
+file: CWE-841-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+var accountMFAPassed = map[string]bool{}
+var accountPasswords = map[string]string{}
+
+// Safe: reset requires the MFA workflow step to be completed first.
+func ResetAccount(w http.ResponseWriter, r *http.Request) {
+	email := r.FormValue("email")
+	newPass := r.FormValue("new_password")
+	if !accountMFAPassed[email] {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	accountPasswords[email] = newPass
+	w.WriteHeader(http.StatusOK)
+}

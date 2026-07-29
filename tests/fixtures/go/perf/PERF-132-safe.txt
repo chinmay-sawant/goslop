@@ -1,0 +1,21 @@
+# PERF-132 negative: pass ctx as a goroutine parameter so the
+# request lifetime cancels the work
+lang: go
+file: PERF-132-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+	"net/http"
+)
+
+func Handle(ctx context.Context, r *http.Request, db *sql.DB) {
+	_ = r
+	_ = db
+	// Inline: no goroutine; the call propagates ctx directly.
+	rows, _ := db.QueryContext(ctx, "SELECT id FROM users")
+	_ = rows
+}

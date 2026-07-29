@@ -1,0 +1,16 @@
+# PERF-158 positive: sort.Slice on []int with a simple < comparator
+lang: go
+file: PERF-158-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"sort"
+)
+
+func Sort(xs []int) {
+	sort.Slice(xs, func(i, j int) bool { return xs[i] < xs[j] })
+	fmt.Println(xs)
+}

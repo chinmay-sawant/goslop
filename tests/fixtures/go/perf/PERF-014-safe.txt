@@ -1,0 +1,21 @@
+# PERF-014 negative: scan once outside the loop
+lang: go
+file: PERF-014-safe.go
+---
+package sample
+
+import (
+	"os"
+	"path/filepath"
+	"sort"
+)
+
+func Collect(root string, patterns []string) []string {
+	entries, _ := os.ReadDir(root)
+	all := make([]string, 0, len(entries))
+	for _, e := range entries {
+		all = append(all, filepath.Join(root, e.Name()))
+	}
+	sort.Strings(all)
+	return all
+}

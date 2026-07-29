@@ -1,0 +1,21 @@
+# PERF-203 positive: ip.String() called twice in a handler
+lang: go
+file: PERF-203-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	ip := net.ParseIP(r.RemoteAddr)
+	if ip == nil {
+		return
+	}
+	s1 := ip.String()
+	s2 := ip.String()
+	_, _ = s1, s2
+}

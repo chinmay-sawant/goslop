@@ -1,0 +1,18 @@
+# PERF-138 positive: runtime.Stack inside a request handler
+lang: go
+file: PERF-138-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"runtime"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	buf := make([]byte, 4096)
+	n := runtime.Stack(buf, false)
+	_ = n
+	_, _ = w, r
+}

@@ -1,0 +1,13 @@
+# BP-18 negative: t.Error followed by return
+lang: go
+file: BP-18-safe_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestErrorReturns(t *testing.T) {
+	t.Error("bad")
+	return
+}

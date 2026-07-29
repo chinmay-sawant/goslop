@@ -1,0 +1,10 @@
+# Project-rule negative: reusable library source
+lang: go
+file: config.go
+---
+// Package library provides configuration values for a reusable package.
+package library
+
+type Config struct {
+	Name string
+}

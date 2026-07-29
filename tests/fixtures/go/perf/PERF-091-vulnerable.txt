@@ -1,0 +1,20 @@
+# PERF-91 positive: per-request buffer allocation in Fiber handler (no sync.Pool)
+lang: go
+file: PERF-091-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"github.com/gofiber/fiber/v2"
+)
+
+func UploadHandler(c *fiber.Ctx) error {
+	body := c.Request.Body()
+	_ = body
+	writer := c.Response.BodyWriter()
+	_ = writer
+	rdr := bytes.NewReader([]byte("payload"))
+	_ = rdr
+	return c.SendString("ok")
+}

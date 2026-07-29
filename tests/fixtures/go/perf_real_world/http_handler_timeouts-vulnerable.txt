@@ -1,0 +1,35 @@
+# Real-world-ish: net/http API server missing server timeouts (PERF-101)
+lang: go
+file: cmd/api/main.go
+---
+package main
+
+import (
+	"log"
+	"net/http"
+	"time"
+)
+
+// Production-shaped service entrypoint (not package sample).
+func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+	mux.HandleFunc("/v1/items", listItems)
+
+	// Vulnerable: no Read/Write/Idle timeouts — Slowloris risk.
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+	log.Fatal(srv.ListenAndServe())
+}
+
+func listItems(w http.ResponseWriter, r *http.Request) {
+	// pretend work
+	time.Sleep(10 * time.Millisecond)
+	w.Header().Set("Content-Type", "application/json")
+	_, _ = w.Write([]byte(`[]`))
+}

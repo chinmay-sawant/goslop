@@ -1,0 +1,25 @@
+# CWE-366 vulnerable — Race Condition within a Thread
+lang: go
+file: CWE-366-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+var walletCredits int
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func ApplyPromoCredit(c *GinCtx, db *SqlxDB) error {
+	amount := 10
+	walletCredits += amount
+	return db.Exec("UPDATE wallets SET credits = ? WHERE user = ?", walletCredits, c.Request.URL.Query().Get("user"))
+}

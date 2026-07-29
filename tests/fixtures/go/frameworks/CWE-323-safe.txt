@@ -1,0 +1,28 @@
+# CWE-323 safe — Reusing a Nonce, Key Pair in Encryption (mitigated)
+lang: go
+file: CWE-323-safe.go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"io"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func SealUserBlob(c *gin.Context, db *gorm.DB, plaintext []byte) error {
+	key := []byte("0123456789abcdef0123456789abcdef")
+	block, _ := aes.NewCipher(key)
+	aead, _ := cipher.NewGCM(block)
+	nonce := make([]byte, aead.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		return err
+	}
+	ciphertext := aead.Seal(nil, nonce, plaintext, nil)
+	payload := append(nonce, ciphertext...)
+	return db.Exec("UPDATE users SET blob = ? WHERE id = ?", payload, c.Query("id")).Error
+}

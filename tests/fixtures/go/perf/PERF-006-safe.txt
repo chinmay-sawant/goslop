@@ -1,0 +1,17 @@
+# PERF-006 negative: bytes.Buffer reuse
+lang: go
+file: PERF-006-safe.go
+---
+package sample
+
+import (
+	"bytes"
+	"strconv"
+)
+
+func FormatOne(buf *bytes.Buffer, v int) string {
+	buf.Reset()
+	buf.WriteString("value=")
+	buf.WriteString(strconv.Itoa(v))
+	return buf.String()
+}

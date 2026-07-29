@@ -1,0 +1,12 @@
+# BP-105 positive: a session cookie omits Secure and HttpOnly.
+lang: go
+file: BP-105-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func login(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{Name: "session_id", Value: "opaque", Path: "/"})
+}

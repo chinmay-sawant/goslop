@@ -1,0 +1,12 @@
+# BP-40 positive: const block mixes unrelated prefixes
+lang: go
+file: BP-40-vulnerable.go
+variant: stdlib
+---
+package sample
+
+const (
+	HttpPort     = 8080
+	RetryCount   = 3
+	BuildVersion = "v1"
+)

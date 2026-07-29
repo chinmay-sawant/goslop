@@ -1,0 +1,20 @@
+# BP-6 positive: WaitGroup Add inside goroutine
+lang: go
+file: BP-6-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func Run(items []int) {
+	var wg sync.WaitGroup
+	for _, item := range items {
+		go func(v int) {
+			wg.Add(1)
+			defer wg.Done()
+			_ = v
+		}(item)
+	}
+	wg.Wait()
+}

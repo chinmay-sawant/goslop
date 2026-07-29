@@ -1,0 +1,16 @@
+# CWE-306 — Missing Authentication for Critical Function (vulnerable)
+lang: go
+file: CWE-306-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Vulnerable: destructive purge endpoint has no auth gate.
+func PurgeLedger(c *gin.Context, db *sqlx.DB) {
+	_, _ = db.Exec("TRUNCATE ledger")
+	c.JSON(200, gin.H{"purged": true})
+}

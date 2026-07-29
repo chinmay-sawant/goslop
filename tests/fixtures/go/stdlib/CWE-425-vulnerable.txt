@@ -1,0 +1,30 @@
+# CWE-425 positive: admin export without authorization (pure stdlib)
+lang: go
+file: CWE-425-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+func ServeAdminExport(db *sql.DB) {
+	http.HandleFunc("/internal/admin/export.csv", func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT email, ssn FROM customers")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		out := []map[string]string{}
+		for rows.Next() {
+			var email, ssn string
+			_ = rows.Scan(&email, &ssn)
+			out = append(out, map[string]string{"email": email, "ssn": ssn})
+		}
+		_ = json.NewEncoder(w).Encode(out)
+	})
+}

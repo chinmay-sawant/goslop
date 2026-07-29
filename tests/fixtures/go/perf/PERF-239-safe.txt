@@ -1,0 +1,18 @@
+# PERF-239 negative: append-only offset records
+lang: go
+file: PERF-239-safe.go
+variant: stdlib
+---
+package sample
+
+type rec struct {
+	id, off int
+}
+
+func buildOffsets(ids []int) []rec {
+	out := make([]rec, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, rec{id: id, off: id * 10})
+	}
+	return out
+}

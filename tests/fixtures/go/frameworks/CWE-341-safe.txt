@@ -1,0 +1,29 @@
+# CWE-341 safe — Predictable from Observable State (mitigated)
+lang: go
+file: CWE-341-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"io"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func CreateDeviceToken(c *GinCtx, db *SqlxDB) error {
+	buf := make([]byte, 24)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		return err
+	}
+	token := hex.EncodeToString(buf)
+	return db.Exec("INSERT INTO device_tokens (token) VALUES (?)", token)
+}

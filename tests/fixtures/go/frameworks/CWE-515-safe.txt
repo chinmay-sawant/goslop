@@ -1,0 +1,30 @@
+# CWE-515: quota state stored per tenant in DB, not a cross-request covert flag.
+lang: go
+file: CWE-515-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func SetQuotaSecret(c *gin.Context, db *sqlx.DB) {
+	tenant := c.GetString("tenant")
+	over := c.PostForm("over") == "1"
+	_, _ = db.Exec("UPDATE quotas SET over_limit = ? WHERE tenant = ?", over, tenant)
+	c.Status(http.StatusOK)
+}
+
+func ProbeQuotaSecret(c *gin.Context, db *sqlx.DB) {
+	tenant := c.GetString("tenant")
+	var over bool
+	_ = db.Get(&over, "SELECT over_limit FROM quotas WHERE tenant = ?", tenant)
+	if over {
+		c.String(http.StatusOK, "over_limit")
+		return
+	}
+	c.String(http.StatusOK, "ok")
+}

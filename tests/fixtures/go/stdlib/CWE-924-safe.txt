@@ -1,0 +1,56 @@
+# CWE-924 negative: HMAC-verified webhook payload (pure stdlib)
+lang: go
+file: CWE-924-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-924 mitigated: reject webhook when HMAC signature does not match body.
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
+	"encoding/json"
+	"io"
+	"net/http"
+)
+
+type PaymentEventVerifiedPure struct {
+	InvoiceID string  `json:"invoice_id"`
+	Amount    float64 `json:"amount"`
+}
+
+func AcceptWebhookVerifiedPure(db *sql.DB, secret []byte) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		sigHeader := r.Header.Get("X-Signature")
+		mac := hmac.New(sha256.New, secret)
+		mac.Write(body)
+		expected := hex.EncodeToString(mac.Sum(nil))
+		if !hmac.Equal([]byte(expected), []byte(sigHeader)) {
+			http.Error(w, "invalid signature", http.StatusUnauthorized)
+			return
+		}
+		var evt PaymentEventVerifiedPure
+		if err := json.Unmarshal(body, &evt); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, err = db.Exec(
+			"UPDATE invoices SET paid = true, amount = $1 WHERE id = $2",
+			evt.Amount, evt.InvoiceID,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"applied"}`))
+	}
+}

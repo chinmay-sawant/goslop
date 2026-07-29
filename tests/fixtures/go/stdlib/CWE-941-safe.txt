@@ -1,0 +1,40 @@
+# CWE-941 negative: email destination from session only (pure stdlib)
+lang: go
+file: CWE-941-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-941 mitigated: reset notification always uses the authenticated user's stored email.
+
+import (
+	"fmt"
+	"net/http"
+	"net/smtp"
+)
+
+func SendResetLinkSafePure(lookupEmail func(userID string) (string, error)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sessionUserID := r.Header.Get("X-User-ID")
+		if sessionUserID == "" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		email, err := lookupEmail(sessionUserID)
+		if err != nil {
+			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
+		token := r.Header.Get("X-Reset-Token")
+		body := fmt.Sprintf("Reset here: https://app.example/reset?token=%s", token)
+		msg := []byte("To: " + email + "\r\nSubject: Reset\r\n\r\n" + body)
+		if err := smtp.SendMail(
+			"smtp.example.com:587", nil, "noreply@example.com", []string{email}, msg,
+		); err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"sent":true}`))
+	}
+}

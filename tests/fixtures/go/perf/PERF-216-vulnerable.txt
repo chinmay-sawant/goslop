@@ -1,0 +1,21 @@
+# PERF-216 positive: struct allocation inside hot loop
+lang: go
+file: PERF-216-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type TreeNode struct {
+	A int
+	B int
+	C int
+}
+
+func Build(items []int) []*TreeNode {
+	out := make([]*TreeNode, 0, len(items))
+	for i := range items {
+		node := &TreeNode{A: i, B: i + 1, C: i + 2}
+		out = append(out, node)
+	}
+	return out
+}

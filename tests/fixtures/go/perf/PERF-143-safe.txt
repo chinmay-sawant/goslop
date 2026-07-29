@@ -1,0 +1,22 @@
+# PERF-143 negative: handler is wrapped in TimeoutHandler
+lang: go
+file: PERF-143-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func slowHandler(w http.ResponseWriter, r *http.Request) {
+	for _, c := range []byte("data") {
+		_ = c
+	}
+	w.WriteHeader(200)
+}
+
+func Init() {
+	http.Handle("/slow", http.TimeoutHandler(slowHandler, 5*time.Second, ""))
+}

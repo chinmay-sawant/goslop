@@ -1,0 +1,21 @@
+# BP-109 positive: Gin writes an error response but continues the handler.
+lang: go
+file: BP-109-vulnerable.go
+variant: gin
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func create(c *gin.Context) {
+	if err := save(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+	c.JSON(http.StatusCreated, gin.H{"ok": true})
+}
+
+func save() error { return nil }

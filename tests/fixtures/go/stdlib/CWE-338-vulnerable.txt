@@ -1,0 +1,27 @@
+# CWE-338 vulnerable: Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG) (positive, pure stdlib)
+lang: go
+file: CWE-338-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"math/rand"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+func MintAccessToken(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	token := strconv.FormatInt(rng.Int63(), 10)
+	user := r.URL.Query().Get("user")
+	_, err := db.Exec("UPDATE sessions SET token = ? WHERE user = ?", token, user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

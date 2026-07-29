@@ -1,0 +1,23 @@
+# CWE-549 negative: password omitted from API response (pure stdlib)
+lang: go
+file: CWE-549-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func PreviewSignup(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	email := r.FormValue("email")
+	if email == "" {
+		http.Error(w, "email required", http.StatusBadRequest)
+		return
+	}
+	_ = r.FormValue("password")
+	w.Header().Set("Cache-Control", "no-store")
+	_ = json.NewEncoder(w).Encode(map[string]string{"email": email})
+}

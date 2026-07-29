@@ -1,0 +1,11 @@
+# Project-rule negative: documentation example, not a deployable application
+lang: go
+file: examples/server/main.go
+---
+package main
+
+import "net/http"
+
+func main() {
+	_ = http.ListenAndServe(":8080", http.NewServeMux())
+}

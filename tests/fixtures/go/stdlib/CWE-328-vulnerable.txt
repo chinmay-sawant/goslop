@@ -1,0 +1,27 @@
+# CWE-328 vulnerable: Use of Weak Hash (positive, pure stdlib)
+lang: go
+file: CWE-328-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/md5"
+	"database/sql"
+	"encoding/hex"
+	"net/http"
+)
+
+func HashSignupPassword(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+	sum := md5.Sum([]byte(password))
+	digest := hex.EncodeToString(sum[:])
+	_, err := db.Exec("INSERT INTO accounts (email, pass_hash) VALUES (?, ?)", email, digest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusCreated)
+	return nil
+}

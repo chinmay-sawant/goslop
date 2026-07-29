@@ -1,0 +1,21 @@
+# PERF-77 positive: db.Save used in an update-only path
+lang: go
+file: PERF-077-vulnerable.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func RenameUser(db *gorm.DB, id uint, name string) error {
+	var u User
+	if err := db.First(&u, id).Error; err != nil {
+		return err
+	}
+	u.Name = name
+	return db.Save(&u).Error
+}

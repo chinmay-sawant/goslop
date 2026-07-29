@@ -1,0 +1,12 @@
+# BP-44 negative: blank import matches a standard registration pattern
+lang: go
+file: BP-44-safe.go
+variant: stdlib
+---
+package sample
+
+import _ "image/png"
+
+func trim(value string) string {
+	return value
+}

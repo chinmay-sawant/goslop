@@ -1,0 +1,151 @@
+# CWE registry — domain: access_control
+
+[[detector]]
+cwe = 276
+domain = "access_control"
+function = "detect_cwe_276"
+
+[[detector]]
+cwe = 277
+domain = "access_control"
+function = "detect_cwe_277"
+
+[[detector]]
+cwe = 278
+domain = "access_control"
+function = "detect_cwe_278"
+
+[[detector]]
+cwe = 279
+domain = "access_control"
+function = "detect_cwe_279"
+
+[[detector]]
+cwe = 280
+domain = "access_control"
+function = "detect_cwe_280"
+
+[[detector]]
+cwe = 281
+domain = "access_control"
+function = "detect_cwe_281"
+
+[[detector]]
+cwe = 289
+domain = "access_control"
+function = "detect_cwe_289"
+
+[[detector]]
+cwe = 290
+domain = "access_control"
+function = "detect_cwe_290"
+
+[[detector]]
+cwe = 294
+domain = "access_control"
+function = "detect_cwe_294"
+
+[[detector]]
+cwe = 301
+domain = "access_control"
+function = "detect_cwe_301"
+
+[[detector]]
+cwe = 303
+domain = "access_control"
+function = "detect_cwe_303"
+
+[[detector]]
+cwe = 305
+domain = "access_control"
+function = "detect_cwe_305"
+
+[[detector]]
+cwe = 306
+domain = "access_control"
+function = "detect_cwe_306"
+
+[[detector]]
+cwe = 307
+domain = "access_control"
+function = "detect_cwe_307"
+
+[[detector]]
+cwe = 308
+domain = "access_control"
+function = "detect_cwe_308"
+
+[[detector]]
+cwe = 309
+domain = "access_control"
+function = "detect_cwe_309"
+
+[[detector]]
+cwe = 322
+domain = "access_control"
+function = "detect_cwe_322"
+
+[[detector]]
+cwe = 378
+domain = "access_control"
+function = "detect_cwe_378"
+
+[[detector]]
+cwe = 379
+domain = "access_control"
+function = "detect_cwe_379"
+
+[[detector]]
+cwe = 408
+domain = "access_control"
+function = "detect_cwe_408"
+
+[[detector]]
+cwe = 425
+domain = "access_control"
+function = "detect_cwe_425"
+
+[[detector]]
+cwe = 551
+domain = "access_control"
+function = "detect_cwe_551"
+
+[[detector]]
+cwe = 603
+domain = "access_control"
+function = "detect_cwe_603"
+
+[[detector]]
+cwe = 613
+domain = "access_control"
+function = "detect_cwe_613"
+
+[[detector]]
+cwe = 620
+domain = "access_control"
+function = "detect_cwe_620"
+
+[[detector]]
+cwe = 639
+domain = "access_control"
+function = "detect_cwe_639"
+
+[[detector]]
+cwe = 653
+domain = "access_control"
+function = "detect_cwe_653"
+
+[[detector]]
+cwe = 836
+domain = "access_control"
+function = "detect_cwe_836"
+
+[[detector]]
+cwe = 921
+domain = "access_control"
+function = "detect_cwe_921"
+
+[[detector]]
+cwe = 1220
+domain = "access_control"
+function = "detect_cwe_1220"

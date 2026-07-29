@@ -1,0 +1,18 @@
+# BP-149 positive: an error branch logs failure without the error value.
+lang: go
+file: BP-149-vulnerable.go
+variant: slog-error-without-attribute
+---
+package service
+
+import "log/slog"
+
+func load() error {
+	err := doLoad()
+	if err != nil {
+		slog.Error("load failed")
+	}
+	return nil
+}
+
+func doLoad() error { return nil }

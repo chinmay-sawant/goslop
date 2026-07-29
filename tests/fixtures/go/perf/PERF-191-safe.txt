@@ -1,0 +1,19 @@
+# PERF-191 negative: slice of values, not pointers
+lang: go
+file: PERF-191-safe.go
+variant: stdlib
+---
+package sample
+
+type Point struct {
+	X int
+	Y int
+}
+
+func makePoints(n int) []Point {
+	out := make([]Point, n)
+	for i := 0; i < n; i++ {
+		out[i] = Point{X: i, Y: i}
+	}
+	return out
+}

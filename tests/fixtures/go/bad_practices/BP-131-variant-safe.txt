@@ -1,0 +1,15 @@
+# BP-131 negative variant: Query is retained for a statement that explicitly returns rows.
+lang: go
+file: BP-131-variant-safe.go
+variant: query-context
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+)
+
+func create(ctx context.Context, db *sql.DB, name string) (*sql.Rows, error) {
+	return db.QueryContext(ctx, "INSERT INTO accounts(name) VALUES (?) RETURNING id", name)
+}

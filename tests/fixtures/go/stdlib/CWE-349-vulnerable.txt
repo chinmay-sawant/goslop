@@ -1,0 +1,33 @@
+# CWE-349 vulnerable: Acceptance of Extraneous Untrusted Data With Trusted Data (positive, pure stdlib)
+lang: go
+file: CWE-349-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type SignedEnvelope struct {
+	TrustedChannel bool            `json:"trusted_channel"`
+	Profile        json.RawMessage `json:"profile"`
+}
+
+func ProcessSignedEnvelope(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	var env SignedEnvelope
+	_ = json.NewDecoder(r.Body).Decode(&env)
+	var profile map[string]interface{}
+	_ = json.Unmarshal(env.Profile, &profile)
+	if env.TrustedChannel {
+		_, err := db.Exec("UPDATE users SET role = ? WHERE id = ?", profile["role"], profile["id"])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return err
+		}
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

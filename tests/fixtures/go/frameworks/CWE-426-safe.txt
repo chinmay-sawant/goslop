@@ -1,0 +1,29 @@
+# CWE-426: plugins load only from a fixed, server-controlled directory.
+lang: go
+file: CWE-426-safe.go
+---
+package sample
+
+import (
+	"fmt"
+	"path/filepath"
+	"plugin"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+const trustedPluginDir = "/opt/codehound/plugins"
+
+func LoadTenantPlugin(c *gin.Context) (plugin.Symbol, error) {
+	name := filepath.Base(c.Param("name"))
+	if strings.Contains(name, "..") {
+		return nil, fmt.Errorf("invalid plugin name")
+	}
+	modPath := filepath.Join(trustedPluginDir, name+".so")
+	p, err := plugin.Open(modPath)
+	if err != nil {
+		return nil, err
+	}
+	return p.Lookup("Init")
+}

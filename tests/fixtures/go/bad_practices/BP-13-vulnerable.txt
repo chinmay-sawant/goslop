@@ -1,0 +1,12 @@
+# BP-13 positive: context.Background in library function
+lang: go
+file: BP-13-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+func Fetch() context.Context {
+	return context.Background()
+}

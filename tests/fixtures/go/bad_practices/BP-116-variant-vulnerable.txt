@@ -1,0 +1,21 @@
+# BP-116 positive variant: Echo returns an error variable after a JSON error.
+lang: go
+file: BP-116-variant-vulnerable.go
+variant: echo
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+func remove(c echo.Context) error {
+	dbErr := removeRecord()
+	if dbErr != nil {
+		c.JSON(404, map[string]string{"error": "missing"})
+		return dbErr
+	}
+	return nil
+}
+
+func removeRecord() error { return nil }

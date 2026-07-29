@@ -1,0 +1,16 @@
+# BP-19 positive: helper omits t.Helper
+lang: go
+file: BP-19-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func helper(t *testing.T) {
+	t.Fatal("boom")
+}
+
+func TestUsesHelper(t *testing.T) {
+	helper(t)
+}

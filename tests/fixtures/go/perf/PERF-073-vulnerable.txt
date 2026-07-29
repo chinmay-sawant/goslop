@@ -1,0 +1,23 @@
+# PERF-73 positive: relation field accessed without Preload or Joins
+lang: go
+file: PERF-073-vulnerable.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Orders []Order
+}
+
+type Order struct {
+	gorm.Model
+	UserID uint
+}
+
+func UserOrders(db *gorm.DB) {
+	var u User
+	db.First(&u, 1)
+	_ = u.Orders
+}

@@ -1,0 +1,33 @@
+# PERF-012 negative: prepared statement cached at startup
+lang: go
+file: PERF-012-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	"sync"
+)
+
+var (
+	userStmt   *sql.Stmt
+	userStmtMu sync.Mutex
+)
+
+func InitUserStmt(db *sql.DB) error {
+	stmt, err := db.Prepare("SELECT id, email FROM users WHERE id = ?")
+	if err != nil {
+		return err
+	}
+	userStmtMu.Lock()
+	userStmt = stmt
+	userStmtMu.Unlock()
+	return nil
+}
+
+func LookupUser(id string) (*sql.Row, error) {
+	if userStmt == nil {
+		return nil, sql.ErrNoRows
+	}
+	return userStmt.QueryRow(id), nil
+}

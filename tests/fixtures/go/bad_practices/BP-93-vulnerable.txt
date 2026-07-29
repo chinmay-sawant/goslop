@@ -1,0 +1,18 @@
+# BP-93 positive: an errgroup closure discards a call result
+lang: go
+file: BP-93-vulnerable.go
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+func run() error {
+	var g errgroup.Group
+	g.Go(func() error {
+		_ = doWork()
+		return nil
+	})
+	return g.Wait()
+}
+
+func doWork() error { return nil }

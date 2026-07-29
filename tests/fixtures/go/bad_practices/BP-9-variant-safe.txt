@@ -1,0 +1,18 @@
+# BP-9 negative variant: strings/comments that resemble select are not code
+lang: go
+file: BP-9-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func wait(ch <-chan struct{}) {
+	// select { case <-ch: } is documentation, not a blocking select.
+	_ = "select { case <-ch: }"
+	select {
+	case <-ch:
+		_ = "{"
+	case <-time.After(time.Second):
+	}
+}

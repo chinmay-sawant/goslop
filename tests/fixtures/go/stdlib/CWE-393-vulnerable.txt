@@ -1,0 +1,29 @@
+# CWE-393 vulnerable: Return of Wrong Status Code (positive, pure stdlib)
+lang: go
+file: CWE-393-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func ReplyAccountBalance(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	accountID := r.URL.Query().Get("id")
+	if accountID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"error":"id required"}`))
+		return
+	}
+	var balance float64
+	err := db.QueryRow("SELECT balance FROM accounts WHERE id = ?", accountID).Scan(&balance)
+	if err != nil {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"balance":0}`))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"balance":` + http.StatusText(int(balance)) + `}`))
+}

@@ -1,0 +1,20 @@
+# CWE-343 vulnerable — Predictable Value Range from Previous Values
+lang: go
+file: CWE-343-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+var spinState int = 7
+
+func NextRaffleNumber(c *GinCtx) int {
+	spinState = (spinState*3 + 1) % 97
+	return spinState
+}

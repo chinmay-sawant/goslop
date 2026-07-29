@@ -1,0 +1,18 @@
+# PERF-176 positive: io.Copy inside a loop
+lang: go
+file: PERF-176-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "io"
+
+func DrainAll(readers []io.Reader, dst io.Writer) error {
+	for _, r := range readers {
+		// Each call allocates a 32 KiB buffer.
+		if _, err := io.Copy(dst, r); err != nil {
+			return err
+		}
+	}
+	return nil
+}

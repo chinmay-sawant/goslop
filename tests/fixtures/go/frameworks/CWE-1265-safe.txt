@@ -1,0 +1,41 @@
+# CWE-1265 safe: lock scope avoids nested acquisition
+lang: go
+file: CWE-1265-safe.go
+---
+package sample
+
+// CWE-1265 mitigated: helper performs SQL update; handler holds lock only once per path.
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+var ledgerMuSafe sync.Mutex
+
+func applyBalanceDelta(db *sqlx.DB, userID int, delta float64) error {
+	_, err := db.Exec("UPDATE balances SET amount = amount + $1 WHERE user_id = $2", delta, userID)
+	return err
+}
+
+func PostTransferSafe(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		from := c.GetInt("from_user")
+		to := c.GetInt("to_user")
+		amount := c.GetFloat64("amount")
+		ledgerMuSafe.Lock()
+		defer ledgerMuSafe.Unlock()
+		if err := applyBalanceDelta(db, from, -amount); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if err := applyBalanceDelta(db, to, amount); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	}
+}

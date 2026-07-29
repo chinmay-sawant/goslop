@@ -1,0 +1,25 @@
+# CWE-488: global map shares cart state across unrelated sessions.
+lang: go
+file: CWE-488-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var sessionCarts = map[string][]string{}
+
+func ViewCart(c *gin.Context) {
+	sid := c.Query("session")
+	items := sessionCarts[sid]
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+func AddCartItem(c *gin.Context) {
+	sid := c.Query("session")
+	sessionCarts[sid] = append(sessionCarts[sid], c.PostForm("sku"))
+	c.Status(http.StatusOK)
+}

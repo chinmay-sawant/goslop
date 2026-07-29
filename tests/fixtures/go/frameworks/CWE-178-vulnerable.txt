@@ -1,0 +1,28 @@
+# CWE-178 positive: inconsistent case handling for resource lookup
+lang: go
+file: CWE-178-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+var allowedBuckets = map[string]bool{
+	"reports": true,
+	"public":  true,
+}
+
+// CWE-178 Improper Handling of Case Sensitivity
+// Vulnerable line: compares lowered input against mixed-case map keys.
+func OpenBucket(c *gin.Context) {
+	bucket := strings.ToLower(c.Param("bucket"))
+	if !allowedBuckets[bucket] {
+		c.JSON(http.StatusForbidden, gin.H{"error": "denied"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"bucket": bucket})
+}

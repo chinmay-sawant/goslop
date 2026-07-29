@@ -1,0 +1,18 @@
+# BP-107 negative variant: a logging middleware calls its downstream handler.
+lang: go
+file: BP-107-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"log"
+	"net/http"
+)
+
+func audit(downstream http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method)
+		downstream.ServeHTTP(w, r)
+	})
+}

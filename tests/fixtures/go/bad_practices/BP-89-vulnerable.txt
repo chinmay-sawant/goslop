@@ -1,0 +1,11 @@
+# BP-89 positive: the same channel is closed twice sequentially
+lang: go
+file: BP-89-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func finish(done chan struct{}) {
+	close(done)
+	close(done)
+}

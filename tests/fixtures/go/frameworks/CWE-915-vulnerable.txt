@@ -1,0 +1,31 @@
+# CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes
+lang: go
+file: CWE-915-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Profile struct {
+	ID      uint
+	Name    string
+	Role    string
+	Balance int
+}
+
+// Vulnerable: user-controlled map can update privileged fields such as role and balance.
+func UpdateProfile(c *gin.Context, db *gorm.DB) {
+	id := c.Param("id")
+	var fields map[string]interface{}
+	if err := c.BindJSON(&fields); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	db.Model(&Profile{}).Where("id = ?", id).Updates(fields)
+	c.Status(http.StatusOK)
+}

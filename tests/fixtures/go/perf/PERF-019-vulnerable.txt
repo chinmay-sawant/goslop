@@ -1,0 +1,19 @@
+# PERF-019 positive: range over slice of large structs by value
+lang: go
+file: PERF-019-vulnerable.go
+---
+package sample
+
+type Record struct {
+	ID   int64
+	Blob [256]byte
+	Meta [1024]byte
+}
+
+func processRecords(records []Record) {
+	for _, record := range records {
+		_ = processRecord(record)
+	}
+}
+
+func processRecord(r Record) int64 { return r.ID }

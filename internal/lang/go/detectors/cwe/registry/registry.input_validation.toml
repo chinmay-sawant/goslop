@@ -1,0 +1,26 @@
+# CWE registry — domain: input_validation
+
+[[detector]]
+cwe = 76
+domain = "input_validation"
+function = "detect_cwe_76"
+
+[[detector]]
+cwe = 79
+domain = "input_validation"
+function = "detect_cwe_79_taint"
+
+[[detector]]
+cwe = 140
+domain = "input_validation"
+function = "detect_cwe_140"
+
+[[detector]]
+cwe = 1173
+domain = "input_validation"
+function = "detect_cwe_1173"
+
+[[detector]]
+cwe = 1236
+domain = "input_validation"
+function = "detect_cwe_1236"

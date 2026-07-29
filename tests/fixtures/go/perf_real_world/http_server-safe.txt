@@ -1,0 +1,33 @@
+# perf-real-world: HTTP server with idiomatic fixes applied
+lang: go
+file: http_server-safe.go
+variant: stdlib
+---
+package server
+
+import (
+	"log"
+	"net/http"
+	"strings"
+	"time"
+)
+
+func handleGet(w http.ResponseWriter, r *http.Request) {
+	vals := r.URL.Query()
+	page := vals.Get("page")
+	size := vals.Get("size")
+	sort := vals.Get("sort")
+
+	name := strings.ReplaceAll(r.URL.Path, "/", "")
+	w.Write([]byte("page=" + page + " size=" + size + " sort=" + sort + " name=" + name))
+}
+
+// NewServer creates an *http.Server with configured timeouts.
+func NewServer(handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:         ":8080",
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+}

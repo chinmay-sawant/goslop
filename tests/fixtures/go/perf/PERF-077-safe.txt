@@ -1,0 +1,19 @@
+# PERF-77 negative: db.Updates with explicit .Select so only the
+# intended columns are written
+lang: go
+file: PERF-077-safe.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func RenameUser(db *gorm.DB, id uint, name string) error {
+	return db.Model(&User{}).Where("id = ?", id).
+		Select("name").
+		Updates(map[string]interface{}{"name": name}).Error
+}

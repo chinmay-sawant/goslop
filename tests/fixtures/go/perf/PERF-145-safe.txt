@@ -1,0 +1,23 @@
+# PERF-145 negative: propagate context via a middleware that doesn't reallocate the request
+lang: go
+file: PERF-145-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+)
+
+func Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "userID", 42)
+		// Use a request-scoped context attached to the request only
+		// when the value actually changes. Most call sites do not
+		// need r.WithContext; reading the context from the request
+		// is enough.
+		_ = ctx
+		next.ServeHTTP(w, r)
+	})
+}

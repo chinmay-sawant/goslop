@@ -1,0 +1,16 @@
+# BP-85 positive variant: ServeHTTP makes the request boundary explicit.
+lang: go
+file: BP-85-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+type requestHandler struct{}
+type roleKey struct{}
+
+func (requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	role := r.Context().Value(roleKey{}).(string)
+	_, _ = w, role
+}

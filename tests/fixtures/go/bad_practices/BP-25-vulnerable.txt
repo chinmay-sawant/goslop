@@ -1,0 +1,19 @@
+# BP-25 positive: helper returns error instead of failing directly
+lang: go
+file: BP-25-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func helper(t *testing.T) error {
+	t.Helper()
+	return nil
+}
+
+func TestHelperError(t *testing.T) {
+	if err := helper(t); err != nil {
+		t.Fatal(err)
+	}
+}

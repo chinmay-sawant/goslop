@@ -1,0 +1,15 @@
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+.codehound-cache/
+.target-materialize/
+/tmp/
+.idea/
+.vscode/
+*.swp
+coverage.out
+
+scripts/chunks
+scripts/findings

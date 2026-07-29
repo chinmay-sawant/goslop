@@ -1,0 +1,14 @@
+# PERF-127 positive: unnecessary fmt.Sprintf in log call
+lang: go
+file: PERF-127-vulnerable.go
+---
+package sample
+
+import (
+    "fmt"
+    "log"
+)
+
+func Log() {
+    log.Printf(fmt.Sprintf("hello"))
+}

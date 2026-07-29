@@ -1,0 +1,29 @@
+# PERF-82 positive: rows.StructScan inside a for rows.Next() loop
+lang: go
+file: PERF-082-vulnerable.go
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct {
+	ID    int64  `db:"id"`
+	Email string `db:"email"`
+}
+
+func ListUsers(db *sqlx.DB) ([]User, error) {
+	rows, err := db.Queryx("SELECT id, email FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []User
+	for rows.Next() {
+		var u User
+		if err := rows.StructScan(&u); err != nil {
+			return nil, err
+		}
+		out = append(out, u)
+	}
+	return out, nil
+}

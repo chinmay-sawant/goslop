@@ -1,0 +1,21 @@
+# PERF-194 positive: time.Sleep used as a polling primitive in a handler
+lang: go
+file: PERF-194-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	for i := 0; i < 3; i++ {
+		time.Sleep(100 * time.Millisecond)
+		if r.Context().Err() != nil {
+			return
+		}
+	}
+	w.WriteHeader(200)
+}

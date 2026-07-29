@@ -1,0 +1,22 @@
+# CWE-379 vulnerable — Creation of Temporary File in Directory with Insecure Permissions
+lang: go
+file: CWE-379-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func StageReportDraft(c *GinCtx) error {
+	dir := "/tmp/shared-reports"
+	_ = os.MkdirAll(dir, 0777)
+	path := filepath.Join(dir, "draft-"+c.Request.URL.Query().Get("id")+".json")
+	return os.WriteFile(path, []byte(c.Request.PostFormValue("body")), 0644)
+}

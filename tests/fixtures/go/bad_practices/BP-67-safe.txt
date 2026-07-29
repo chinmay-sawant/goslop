@@ -1,0 +1,17 @@
+# BP-67 negative: errors.As receives the address of the target variable
+lang: go
+file: BP-67-safe.go
+variant: stdlib
+---
+package sample
+
+import "errors"
+
+type problem struct{}
+
+func (problem) Error() string { return "problem" }
+
+func find(err error) bool {
+	var target *problem
+	return errors.As(err, &target)
+}

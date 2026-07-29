@@ -1,0 +1,16 @@
+# PERF-114-interface negative: interface boxing requires a conversion loop; copy() cannot do this
+lang: go
+file: PERF-114-interface-safe.go
+variant: stdlib
+---
+package sample
+
+// Run packs typed args into []interface{} for a variadic API.
+// This is an element conversion, not a memmove copy.
+func Run(args ...int64) []interface{} {
+	argv := make([]interface{}, len(args))
+	for i, arg := range args {
+		argv[i] = arg
+	}
+	return argv
+}

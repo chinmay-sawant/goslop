@@ -1,0 +1,20 @@
+# CWE-277 — Insecure Inherited Permissions (safe)
+lang: go
+file: CWE-277-safe.go
+---
+package sample
+
+import (
+	"os"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: restrictive umask so created directories are not world-writable.
+func CreateWorkspace(c *gin.Context) {
+	old := syscall.Umask(027)
+	defer syscall.Umask(old)
+	_ = os.MkdirAll(c.Query("dir"), 0750)
+	c.JSON(201, gin.H{"dir": c.Query("dir")})
+}

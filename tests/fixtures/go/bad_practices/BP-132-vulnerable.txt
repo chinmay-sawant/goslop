@@ -1,0 +1,13 @@
+# BP-132 positive: an optimistic-lock UPDATE ignores whether a row matched.
+lang: go
+file: BP-132-vulnerable.go
+variant: database-sql-version-update
+---
+package sample
+
+import "database/sql"
+
+func updateUser(db *sql.DB, id, version int) error {
+	_, err := db.Exec("UPDATE users SET name = ?, version = version + 1 WHERE id = ? AND version = ?", "Ada", id, version)
+	return err
+}

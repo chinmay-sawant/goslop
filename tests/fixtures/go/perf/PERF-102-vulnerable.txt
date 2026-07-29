@@ -1,0 +1,15 @@
+# PERF-102 positive: w.WriteHeader called multiple times
+lang: go
+file: PERF-102-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = r
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusInternalServerError)
+}

@@ -1,0 +1,20 @@
+# CWE-549 positive: signup preview echoes password field (pure stdlib)
+lang: go
+file: CWE-549-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func PreviewSignup(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	pass := r.FormValue("password")
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"email":    r.FormValue("email"),
+		"password": pass,
+	})
+}

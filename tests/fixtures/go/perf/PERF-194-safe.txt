@@ -1,0 +1,22 @@
+# PERF-194 negative: the handler waits on a condition channel instead of polling
+lang: go
+file: PERF-194-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request, ready <-chan struct{}) {
+	select {
+	case <-ready:
+	case <-r.Context().Done():
+		return
+	case <-time.After(5 * time.Second):
+		return
+	}
+	w.WriteHeader(200)
+}

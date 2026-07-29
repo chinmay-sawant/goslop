@@ -1,0 +1,27 @@
+# CWE-89 positive: concatenated SQL from request parameter
+lang: go
+file: CWE-89-vulnerable.go
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-89 Improper Neutralization of Special Elements used in an SQL Command
+// Vulnerable line: fmt.Sprintf builds SQL with user id.
+func LookupAccount(c *gin.Context, db *sql.DB) {
+	id := c.Query("id")
+	query := fmt.Sprintf("SELECT email FROM accounts WHERE id = %s", id)
+	row := db.QueryRow(query)
+	var email string
+	if err := row.Scan(&email); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"email": email})
+}

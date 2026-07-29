@@ -1,0 +1,33 @@
+# CWE-328 safe — Use of Weak Hash (mitigated)
+lang: go
+file: CWE-328-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func StorePasswordDigest(c *GinCtx, db *SqlxDB) error {
+	password := c.Request.PostFormValue("password")
+	salt := make([]byte, 16)
+	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
+		return err
+	}
+	material := append(salt, []byte(password)...)
+	sum := sha256.Sum256(material)
+	digest := hex.EncodeToString(salt) + ":" + hex.EncodeToString(sum[:])
+	return db.Exec("INSERT INTO accounts (email, pass_hash) VALUES (?, ?)", c.Request.PostFormValue("email"), digest)
+}

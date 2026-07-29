@@ -1,0 +1,19 @@
+# PERF-038 negative: channel is buffered to smooth producer/consumer
+lang: go
+file: PERF-038-safe.go
+---
+package sample
+
+import "fmt"
+
+func Pipeline(input []int) {
+	ch := make(chan int, 16)
+	go func() {
+		for v := range ch {
+			fmt.Println(v)
+		}
+	}()
+	for _, v := range input {
+		ch <- v
+	}
+}

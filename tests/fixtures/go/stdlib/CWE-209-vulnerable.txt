@@ -1,0 +1,29 @@
+# CWE-209 positive: error text includes database details (pure stdlib)
+lang: go
+file: CWE-209-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+// CWE-209 Generation of Error Message Containing Sensitive Information
+// Vulnerable line: returns driver error verbatim to client.
+func InsertReservation(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	ref := r.FormValue("ref")
+	_, err := db.Exec("INSERT INTO reservations(ref) VALUES(?)", ref)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": fmt.Sprintf("db failure: %v", err)})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "created"})
+}

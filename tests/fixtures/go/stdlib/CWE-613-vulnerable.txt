@@ -1,0 +1,36 @@
+# CWE-613: Insufficient Session Expiration (pure stdlib)
+lang: go
+file: CWE-613-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+var revokedSessions = map[string]struct{}{}
+
+// Vulnerable: session cookie never expires and logout does not invalidate server-side state.
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
+	sid := r.FormValue("session_id")
+	http.SetCookie(w, &http.Cookie{Name: "sid", Value: sid, Path: "/", HttpOnly: true})
+	w.WriteHeader(http.StatusOK)
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{Name: "sid", Value: "", Path: "/", MaxAge: -1, HttpOnly: true})
+	w.WriteHeader(http.StatusOK)
+}
+
+func ProtectedHandler(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie("sid")
+	if err != nil || c.Value == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	_ = time.Now()
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"data":"secret"}`))
+}

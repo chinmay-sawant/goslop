@@ -1,0 +1,25 @@
+# CWE-618: Exposed Unsafe ActiveX Method (pure stdlib)
+lang: go
+file: CWE-618-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+)
+
+// Vulnerable: HTTP endpoint exposes a privileged native helper without sandbox checks.
+func InvokePluginMethod(w http.ResponseWriter, r *http.Request) {
+	method := r.URL.Query().Get("method")
+	args := r.URL.Query().Get("args")
+	cmd := exec.Command("/opt/vendor/activex-bridge", method, args)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		http.Error(w, string(out), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(out)
+}

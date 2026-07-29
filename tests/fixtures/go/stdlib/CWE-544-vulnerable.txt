@@ -1,0 +1,30 @@
+# CWE-544 positive: inconsistent database error handling (pure stdlib)
+lang: go
+file: CWE-544-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"log"
+	"net/http"
+)
+
+func FetchProfileName(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var name string
+	err := db.QueryRow("SELECT name FROM users WHERE id = ?", r.PathValue("id")).Scan(&name)
+	if err != nil {
+		panic(err)
+	}
+	w.Write([]byte(name))
+}
+
+func FetchAccountBalance(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var balance float64
+	err := db.QueryRow("SELECT balance FROM accounts WHERE id = ?", r.PathValue("id")).Scan(&balance)
+	if err != nil {
+		log.Println(err)
+	}
+	_, _ = w.Write([]byte("balance recorded"))
+}

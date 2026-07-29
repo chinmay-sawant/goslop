@@ -1,0 +1,29 @@
+# CWE-338 safe — Use of Cryptographically Weak PRNG (mitigated)
+lang: go
+file: CWE-338-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"io"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Save(model interface{}) error { return nil }
+
+func RotateSessionID(c *GinCtx, db *GormDB) error {
+	buf := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		return err
+	}
+	sid := hex.EncodeToString(buf)
+	return db.Save(map[string]string{"user": c.Request.URL.Query().Get("user"), "sid": sid})
+}

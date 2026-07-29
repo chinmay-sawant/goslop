@@ -1,0 +1,25 @@
+# CWE-334 vulnerable: Small Space of Random Values (positive, pure stdlib)
+lang: go
+file: CWE-334-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"math/rand"
+	"net/http"
+	"strconv"
+)
+
+func GenerateRegistrationPin(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	pin := strconv.Itoa(rand.Intn(4096))
+	owner := r.URL.Query().Get("owner")
+	_, err := db.Exec("INSERT INTO registrations (pin, owner) VALUES (?, ?)", pin, owner)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusCreated)
+	return nil
+}

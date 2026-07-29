@@ -1,0 +1,29 @@
+# CWE-89 positive: concatenated SQL from request parameter (pure stdlib)
+lang: go
+file: CWE-89-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+// CWE-89 Improper Neutralization of Special Elements used in an SQL Command
+// Vulnerable line: fmt.Sprintf builds SQL with user-supplied email.
+func FindCustomer(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	email := r.URL.Query().Get("email")
+	query := fmt.Sprintf("SELECT id FROM customers WHERE email = '%s'", email)
+	row := db.QueryRow(query)
+	var id int
+	if err := row.Scan(&id); err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]int{"id": id})
+}

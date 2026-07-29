@@ -1,0 +1,28 @@
+# CWE-552: contract directory and files restricted to owner-only access.
+lang: go
+file: CWE-552-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SaveContract(c *gin.Context) {
+	file, err := c.FormFile("contract")
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	dest := filepath.Join("/srv/contracts", filepath.Base(file.Filename))
+	if err := c.SaveUploadedFile(file, dest); err != nil {
+		c.String(http.StatusInternalServerError, "save failed")
+		return
+	}
+	_ = os.Chmod(dest, 0o600)
+	c.Status(http.StatusOK)
+}

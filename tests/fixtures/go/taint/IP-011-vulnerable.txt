@@ -1,0 +1,21 @@
+# IP-011: Pointer aliasing — callee writes source through *p param
+lang: go
+file: IP-011-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    x := ""
+    mutate(&x)
+    os.Open(x)
+}
+
+func mutate(p *string) {
+    *p = r.URL.Query().Get("input")
+}

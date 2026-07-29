@@ -1,0 +1,26 @@
+# BP-145 negative variant: a renamed pgxpool connection is closed on return.
+lang: go
+file: BP-145-variant-safe.go
+variant: renamed-connection
+---
+package sample
+
+import (
+	"context"
+	"fmt"
+
+	pgxpool "github.com/jackc/pgx/v5/pgxpool"
+)
+
+func query(ctx context.Context, pool *pgxpool.Pool) error {
+	acquired, err := pool.Acquire(ctx)
+	if err != nil {
+		return fmt.Errorf("acquire: %w", err)
+	}
+	defer acquired.Release()
+	_, err = acquired.Query(ctx, "SELECT 1")
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+	return nil
+}

@@ -1,0 +1,25 @@
+# CWE-308 — Use of Single-factor Authentication (safe)
+lang: go
+file: CWE-308-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Safe: requires password plus TOTP for high-value transfers.
+func InitiateWire(c *gin.Context, db *sqlx.DB) {
+	if c.PostForm("password") == "" || c.PostForm("totp") == "" {
+		c.JSON(401, gin.H{"error": "mfa required"})
+		return
+	}
+	if !c.GetBool("totp_valid") {
+		c.JSON(401, gin.H{"error": "invalid second factor"})
+		return
+	}
+	amount := c.PostForm("amount")
+	_, _ = db.Exec("INSERT INTO wires (amount) VALUES (?)", amount)
+	c.JSON(200, gin.H{"queued": amount})
+}

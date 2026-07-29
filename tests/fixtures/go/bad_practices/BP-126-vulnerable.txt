@@ -1,0 +1,17 @@
+# BP-126 positive: a transaction has no visible completion path.
+lang: go
+file: BP-126-vulnerable.go
+variant: database-sql
+---
+package sample
+
+import "database/sql"
+
+func update(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	_ = tx
+	return nil
+}

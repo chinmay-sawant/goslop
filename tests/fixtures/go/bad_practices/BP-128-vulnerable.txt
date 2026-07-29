@@ -1,0 +1,19 @@
+# BP-128 positive: every QueryRow.Scan error is mapped to the same failure.
+lang: go
+file: BP-128-vulnerable.go
+variant: database-sql-queryrow
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+)
+
+func findUser(db *sql.DB, id int) (string, error) {
+	var name string
+	if err := db.QueryRow("SELECT name FROM users WHERE id = ?", id).Scan(&name); err != nil {
+		return "", fmt.Errorf("lookup failed: %w", err)
+	}
+	return name, nil
+}

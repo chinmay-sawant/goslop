@@ -1,0 +1,11 @@
+# PERF-118 positive: unnecessary http.NewRequest for simple methods
+lang: go
+file: PERF-118-vulnerable.go
+---
+package sample
+
+import "net/http"
+
+func New() {
+    http.NewRequest("GET", "http://example.com", nil)
+}

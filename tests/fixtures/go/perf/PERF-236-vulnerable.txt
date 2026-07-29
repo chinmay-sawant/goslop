@@ -1,0 +1,14 @@
+# PERF-236 positive: signing clones the complete buffer
+lang: go
+file: PERF-236-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func SignDocument(doc []byte) []byte {
+	result := bytes.Clone(doc)
+	copy(result[10:20], []byte("patched"))
+	return result
+}

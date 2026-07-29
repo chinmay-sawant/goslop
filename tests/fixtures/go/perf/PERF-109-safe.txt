@@ -1,0 +1,14 @@
+# PERF-109 negative: a simple key computed once
+lang: go
+file: PERF-109-safe.go
+variant: stdlib
+---
+package sample
+
+func Counts(items []int) map[string]int {
+	out := make(map[string]int, len(items))
+	for _, item := range items {
+		out[item]++
+	}
+	return out
+}

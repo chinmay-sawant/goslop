@@ -1,0 +1,25 @@
+# CWE-379 vulnerable: Creation of Temporary File in Directory with Insecure Permissions (positive, pure stdlib)
+lang: go
+file: CWE-379-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func WriteSessionSnapshot(w http.ResponseWriter, r *http.Request) error {
+	dir := "/tmp/shared-sessions"
+	_ = os.MkdirAll(dir, 0777)
+	path := filepath.Join(dir, "snap-"+r.URL.Query().Get("id")+".json")
+	err := os.WriteFile(path, []byte(r.FormValue("body")), 0644)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

@@ -1,0 +1,25 @@
+# BP-128 variant negative: a QueryRowContext result distinguishes sql.ErrNoRows.
+lang: go
+file: BP-128-variant-safe.go
+variant: database-sql-queryrow-context-safe
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+)
+
+func findEmail(ctx context.Context, db *sql.DB, id int) (string, error) {
+	row := db.QueryRowContext(ctx, "SELECT email FROM users WHERE id = ?", id)
+	var email string
+	err := row.Scan(&email)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return email, nil
+}

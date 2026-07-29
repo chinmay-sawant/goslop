@@ -1,0 +1,13 @@
+# PERF-88 positive: e.Static handler is missing cache headers
+lang: go
+file: PERF-088-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+func Register(e *echo.Echo) {
+	e.Static("/assets", "./public")
+}

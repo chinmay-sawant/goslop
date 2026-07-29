@@ -1,0 +1,50 @@
+# CWE-257 positive: reversible AES encryption for passwords (pure stdlib)
+lang: go
+file: CWE-257-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"database/sql"
+	"encoding/base64"
+	"encoding/json"
+	"io"
+	"net/http"
+)
+
+// CWE-257 Storing Passwords in a Recoverable Format
+// Vulnerable line: encrypts password with static key for later decryption.
+func PersistLoginSecret(w http.ResponseWriter, r *http.Request, db *sql.DB, key []byte) {
+	plain := []byte(r.FormValue("pass"))
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		http.Error(w, "crypto", http.StatusInternalServerError)
+		return
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		http.Error(w, "crypto", http.StatusInternalServerError)
+		return
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		http.Error(w, "crypto", http.StatusInternalServerError)
+		return
+	}
+	ciphertext := gcm.Seal(nil, nonce, plain, nil)
+	ciphertext = append(nonce, ciphertext...)
+	encoded := base64.StdEncoding.EncodeToString(ciphertext)
+	login := r.FormValue("login")
+	_, err = db.Exec("INSERT INTO logins(login, secret) VALUES(?, ?)", login, encoded)
+	if err != nil {
+		http.Error(w, "save", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "stored"})
+}

@@ -1,0 +1,16 @@
+# BP-12 negative: buffered or coordinated channel fan-in is allowed
+lang: go
+file: BP-12-safe.go
+variant: stdlib
+---
+package sample
+
+func run() {
+	ch := make(chan int, 2)
+	go func() {
+		ch <- 1
+	}()
+	go func() {
+		ch <- 2
+	}()
+}

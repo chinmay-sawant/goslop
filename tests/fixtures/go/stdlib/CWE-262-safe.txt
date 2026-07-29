@@ -1,0 +1,31 @@
+# CWE-262 — Not Using Password Aging (safe) (pure stdlib)
+lang: go
+file: CWE-262-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"time"
+)
+
+const maxPasswordAge = 90 * 24 * time.Hour
+
+// Safe: rejects credentials older than the configured rotation window.
+func PortalLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	user := r.FormValue("user")
+	var hash string
+	var changedAt time.Time
+	err := db.QueryRow("SELECT hash, changed_at FROM creds WHERE user = ?", user).Scan(&hash, &changedAt)
+	if err != nil {
+		http.Error(w, "auth", http.StatusUnauthorized)
+		return
+	}
+	if time.Since(changedAt) > maxPasswordAge {
+		http.Error(w, "password_expired", http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

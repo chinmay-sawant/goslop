@@ -1,0 +1,32 @@
+# CWE-334 safe — Small Space of Random Values (mitigated)
+lang: go
+file: CWE-334-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) NamedExec(query string, arg interface{}) error { return nil }
+
+func MintInviteToken(c *GinCtx, db *SqlxDB) error {
+	buf := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		return err
+	}
+	token := base64.RawURLEncoding.EncodeToString(buf)
+	return db.NamedExec("INSERT INTO invites (token, owner) VALUES (:token, :owner)", map[string]string{
+		"token": token,
+		"owner": c.Request.URL.Query().Get("owner"),
+	})
+}

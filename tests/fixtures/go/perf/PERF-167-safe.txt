@@ -1,0 +1,22 @@
+# PERF-167 negative: wg.Add called before the goroutine is launched, no defer in loop
+lang: go
+file: PERF-167-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func FanOut(work []int, workers chan struct{}) {
+	var wg sync.WaitGroup
+	wg.Add(len(work))
+	for _, item := range work {
+		go func(n int) {
+			process(n)
+			wg.Done()
+		}(item)
+	}
+	wg.Wait()
+}
+
+func process(n int) { _ = n }

@@ -1,0 +1,25 @@
+# CWE-341 vulnerable — Predictable from Observable State
+lang: go
+file: CWE-341-vulnerable.go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func CreateDeviceToken(c *GinCtx, db *SqlxDB) error {
+	token := fmt.Sprintf("%d-%d-%s", os.Getpid(), time.Now().Unix(), c.Request.URL.Query().Get("device"))
+	return db.Exec("INSERT INTO device_tokens (token) VALUES (?)", token)
+}

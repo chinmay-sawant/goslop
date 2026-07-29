@@ -1,0 +1,20 @@
+# BP-142 positive: sqlx.In expands placeholders and the query is executed without Rebind.
+lang: go
+file: BP-142-vulnerable.go
+variant: sqlx-db
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct{}
+
+func loadUsers(db *sqlx.DB, ids []int) ([]User, error) {
+	query, args, err := sqlx.In("SELECT id FROM users WHERE id IN (?)", ids)
+	if err != nil {
+		return nil, err
+	}
+	var users []User
+	err = db.Select(&users, query, args...)
+	return users, err
+}

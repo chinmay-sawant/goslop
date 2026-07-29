@@ -1,0 +1,20 @@
+# PERF-051 positive: unsafe.Pointer used in a Gin handler
+lang: go
+file: PERF-051-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"unsafe"
+
+	"github.com/gin-gonic/gin"
+)
+
+func HandleRaw(c *gin.Context) {
+	b := []byte("hello world")
+	// zero-copy conversion via unsafe.Pointer
+	s := *(*string)(unsafe.Pointer(&b))
+	c.JSON(http.StatusOK, gin.H{"value": s})
+	_ = http.StatusOK
+}

@@ -1,0 +1,17 @@
+# PERF-031 negative: defer is used only for resource cleanup idioms
+lang: go
+file: PERF-031-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Echo(c *gin.Context) {
+	body := c.Request.Body
+	defer body.Close()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

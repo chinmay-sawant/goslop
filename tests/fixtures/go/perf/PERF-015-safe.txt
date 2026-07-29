@@ -1,0 +1,20 @@
+# PERF-015 negative: strconv.AppendInt with reusable buffer
+lang: go
+file: PERF-015-safe.go
+---
+package sample
+
+import (
+	"strconv"
+	"strings"
+)
+
+func NumbersToStrings(values []int) []string {
+	out := make([]string, 0, len(values))
+	buf := make([]byte, 0, 16)
+	for _, v := range values {
+		buf = strconv.AppendInt(buf[:0], int64(v), 10)
+		out = append(out, strings.Clone(string(buf)))
+	}
+	return out
+}

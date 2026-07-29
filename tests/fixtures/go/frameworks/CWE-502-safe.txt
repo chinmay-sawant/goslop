@@ -1,0 +1,31 @@
+# CWE-502: JSON unmarshaled into validated DTO with explicit field checks.
+lang: go
+file: CWE-502-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type roleChangeRequest struct {
+	UserID uint   `json:"user_id"`
+	Grant  string `json:"grant"`
+}
+
+func ApplyPrivilege(c *gin.Context, db *gorm.DB) {
+	var req roleChangeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	if req.Grant != "viewer" && req.Grant != "editor" {
+		c.String(http.StatusBadRequest, "invalid grant")
+		return
+	}
+	db.Exec("UPDATE users SET role = ? WHERE id = ?", req.Grant, req.UserID)
+	c.Status(http.StatusOK)
+}

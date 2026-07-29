@@ -1,0 +1,17 @@
+# BP-6 negative variant: Add stays outside a goroutine containing braces
+lang: go
+file: BP-6-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func run() {
+	var wg sync.WaitGroup
+	go func() {
+		_ = "{"
+		wg.Done()
+	}()
+	wg.Add(1)
+}

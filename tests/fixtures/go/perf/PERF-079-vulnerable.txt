@@ -1,0 +1,15 @@
+# PERF-79 positive: database handle opened with no pool tuning
+lang: go
+file: PERF-079-vulnerable.go
+---
+package sample
+
+import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+func OpenDB() *sql.DB {
+	db, _ := sql.Open("sqlite3", ":memory:")
+	return db
+}

@@ -1,0 +1,22 @@
+# CWE-312 — Cleartext Storage of Sensitive Information (vulnerable)
+lang: go
+file: CWE-312-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Patient struct {
+	ID  uint
+	SSN string
+}
+
+// Vulnerable: persists government id in plaintext column.
+func StorePatient(c *gin.Context, db *gorm.DB) {
+	rec := Patient{SSN: c.PostForm("ssn")}
+	db.Create(&rec)
+	c.JSON(201, gin.H{"id": rec.ID})
+}

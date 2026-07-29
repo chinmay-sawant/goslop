@@ -1,0 +1,20 @@
+# BP-110 positive variant: an aliased Gin context still discards the bind error.
+lang: go
+file: BP-110-variant-vulnerable.go
+variant: gin
+---
+package sample
+
+import gin "github.com/gin-gonic/gin"
+
+type Payload struct {
+	Name string `json:"name"`
+}
+
+func update(ctx *gin.Context) {
+	var payload Payload
+	ctx.ShouldBind(&payload)
+	use(payload)
+}
+
+func use(Payload) {}

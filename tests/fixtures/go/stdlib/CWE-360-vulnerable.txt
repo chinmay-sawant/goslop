@@ -1,0 +1,27 @@
+# CWE-360 vulnerable: Trust of System Event Data (positive, pure stdlib)
+lang: go
+file: CWE-360-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func RecordVisitorAddress(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	reason := r.FormValue("reason")
+	if reason == "" {
+		http.Error(w, "reason required", http.StatusBadRequest)
+		return http.ErrMissingFile
+	}
+	clientIP := r.Header.Get("X-Forwarded-For")
+	_, err := db.Exec("INSERT INTO visitor_blocks (ip, reason) VALUES (?, ?)", clientIP, reason)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusAccepted)
+	return nil
+}

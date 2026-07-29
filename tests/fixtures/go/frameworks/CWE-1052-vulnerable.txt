@@ -1,0 +1,33 @@
+# CWE-1052 vulnerable: hard-coded database DSN literal
+lang: go
+file: CWE-1052-vulnerable.go
+---
+package sample
+
+// CWE-1052: Excessive Use of Hard-Coded Literals in Initialization.
+// Vulnerable: GORM opened with embedded username, password, and host strings.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+func OpenAppDB() (*gorm.DB, error) {
+	dsn := "host=db.internal user=app_admin password=SuperSecret99 dbname=orders sslmode=disable"
+	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+}
+
+func HealthWithDB() gin.HandlerFunc {
+	db, _ := OpenAppDB()
+	return func(c *gin.Context) {
+		sqlDB, err := db.DB()
+		if err != nil || sqlDB.Ping() != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"db": "down"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"db": "up"})
+	}
+}

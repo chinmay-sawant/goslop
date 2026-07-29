@@ -1,0 +1,28 @@
+# CWE-276 — Incorrect Default Permissions (safe) (pure stdlib)
+lang: go
+file: CWE-276-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+// Safe: owner-only permissions on sensitive session artifacts.
+func PersistSession(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	body := r.Header.Get("X-Session-Data")
+	sid := r.Header.Get("X-Session-ID")
+	if sid == "" {
+		http.Error(w, "missing session id", http.StatusBadRequest)
+		return
+	}
+	path := "/var/lib/codehound/sessions/" + sid
+	_ = os.WriteFile(path, []byte(body), 0600)
+	w.WriteHeader(http.StatusOK)
+}

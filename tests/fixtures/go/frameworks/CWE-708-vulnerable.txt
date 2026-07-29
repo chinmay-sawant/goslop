@@ -1,0 +1,25 @@
+# CWE-708: Incorrect Ownership Assignment
+lang: go
+file: CWE-708-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: uploaded file ownership is assigned to a client-provided uid.
+func FinishUpload(c *gin.Context) {
+	dest := c.PostForm("dest")
+	owner := c.PostForm("owner_uid")
+	uid, _ := strconv.Atoi(owner)
+	if err := os.Chown(dest, uid, uid); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusOK)
+}

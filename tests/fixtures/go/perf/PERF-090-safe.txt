@@ -1,0 +1,18 @@
+# PERF-90 negative: middleware only stores small scalar identifiers
+lang: go
+file: PERF-090-safe.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+func UserIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Set("user_id", "abc")
+		c.Set("request_id", "req-1")
+		c.Set("trace_id", "trace-1")
+		return next(c)
+	}
+}

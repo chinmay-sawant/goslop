@@ -1,0 +1,21 @@
+# BP-122 positive variant: Chi middleware only records the request.
+lang: go
+file: BP-122-variant-vulnerable.go
+variant: chi
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
+
+func record(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = handler
+		_ = r.URL.Path
+	})
+}
+
+func router() chi.Router { return chi.NewRouter() }

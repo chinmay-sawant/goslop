@@ -1,0 +1,29 @@
+# CWE-281 — Improper Preservation of Permissions (safe) (pure stdlib)
+lang: go
+file: CWE-281-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"os"
+)
+
+// Safe: copies content then reapplies source permission bits.
+func BackupConfig(w http.ResponseWriter, r *http.Request) {
+	src := "/etc/app/config.toml"
+	dst := "/backups/config.toml"
+	info, err := os.Stat(src)
+	if err != nil {
+		http.Error(w, "stat", http.StatusInternalServerError)
+		return
+	}
+	in, _ := os.Open(src)
+	out, _ := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+	_, _ = io.Copy(out, in)
+	in.Close()
+	out.Close()
+	w.WriteHeader(http.StatusOK)
+}

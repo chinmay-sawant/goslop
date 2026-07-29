@@ -1,0 +1,26 @@
+# CWE-262 — Not Using Password Aging (vulnerable)
+lang: go
+file: CWE-262-vulnerable.go
+---
+package sample
+
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+type credRow struct {
+	User     string    `db:"user"`
+	Hash     string    `db:"hash"`
+	LastSeen time.Time `db:"last_seen"`
+}
+
+// Vulnerable: login never checks password age or forces rotation.
+func LoginNoAging(c *gin.Context, db *sqlx.DB) {
+	user := c.PostForm("user")
+	var row credRow
+	_ = db.Get(&row, "SELECT user, hash, last_seen FROM creds WHERE user = ?", user)
+	c.JSON(200, gin.H{"session": user})
+}

@@ -1,0 +1,21 @@
+# BP-93 negative: the errgroup closure returns the call error
+lang: go
+file: BP-93-safe.go
+---
+package sample
+
+import (
+	"context"
+	"golang.org/x/sync/errgroup"
+)
+
+func run(parent context.Context) error {
+	g, ctx := errgroup.WithContext(parent)
+	_ = ctx
+	g.Go(func() error {
+		return doWork()
+	})
+	return g.Wait()
+}
+
+func doWork() error { return nil }

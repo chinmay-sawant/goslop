@@ -1,0 +1,15 @@
+# PERF-223 positive: pool return discards backing array
+lang: go
+file: PERF-223-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var pool sync.Pool
+
+func releaseBuffer(buf []byte) {
+	buf = nil
+	pool.Put(buf)
+}

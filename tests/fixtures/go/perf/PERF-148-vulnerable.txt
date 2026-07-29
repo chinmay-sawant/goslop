@@ -1,0 +1,13 @@
+# PERF-148 positive: unbuffered channel with send but no receive
+lang: go
+file: PERF-148-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Spawn(work []int) {
+	ch := make(chan int)
+	for _, item := range work {
+		ch <- item
+	}
+}

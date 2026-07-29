@@ -1,0 +1,28 @@
+# CWE-15 positive: external control of configuration setting (pure stdlib)
+lang: go
+file: CWE-15-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// CWE-15 External Control of System or Configuration Setting
+// Vulnerable line: opens database using client-supplied connection string.
+func ConfigureDatabase(w http.ResponseWriter, r *http.Request) {
+	dsn := r.URL.Query().Get("dsn")
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		http.Error(w, "database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+	if err := db.Ping(); err != nil {
+		http.Error(w, "database", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

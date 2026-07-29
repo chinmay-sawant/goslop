@@ -1,0 +1,20 @@
+# CWE-252 positive: ignores error from critical write
+lang: go
+file: CWE-252-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-252 Unchecked Return Value
+// Vulnerable line: WriteFile error discarded with blank identifier.
+func PersistAudit(c *gin.Context) {
+	entry := []byte(c.PostForm("entry"))
+	os.WriteFile("/var/log/audit.log", entry, 0o600)
+	c.JSON(http.StatusOK, gin.H{"status": "stored"})
+}

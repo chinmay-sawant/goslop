@@ -1,0 +1,21 @@
+# PERF-042 negative: errors.New is used for the static string
+lang: go
+file: PERF-042-safe.go
+---
+package sample
+
+import (
+	"errors"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Handler(c *gin.Context) {
+	err := errors.New("missing param")
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

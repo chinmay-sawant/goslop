@@ -1,0 +1,17 @@
+# PERF-164 negative: db.QueryContext propagates cancellation
+lang: go
+file: PERF-164-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	rows, _ := db.QueryContext(r.Context(), "SELECT id FROM users")
+	defer rows.Close()
+	_ = rows
+}

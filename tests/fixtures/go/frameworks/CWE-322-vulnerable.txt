@@ -1,0 +1,23 @@
+# CWE-322 vulnerable — Key Exchange without Entity Authentication
+lang: go
+file: CWE-322-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"io"
+
+	"github.com/gin-gonic/gin"
+)
+
+// ExchangeSessionKey dials a peer relay without authenticating its certificate.
+func ExchangeSessionKey(c *gin.Context) ([]byte, error) {
+	peerHost := c.PostForm("relay_host")
+	conn, err := tls.Dial("tcp", peerHost, &tls.Config{InsecureSkipVerify: true})
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+	return io.ReadAll(conn)
+}

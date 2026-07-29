@@ -1,0 +1,26 @@
+# CWE-344 vulnerable: Use of Invariant Value in Dynamically Changing Context (positive, pure stdlib)
+lang: go
+file: CWE-344-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"net/http"
+)
+
+const shipmentHMACSecret = "warehouse-shared-secret-42"
+
+func SignShipmentManifest(w http.ResponseWriter, r *http.Request) {
+	payload := []byte(r.FormValue("manifest"))
+	if len(payload) == 0 {
+		http.Error(w, "manifest required", http.StatusBadRequest)
+		return
+	}
+	mac := hmac.New(sha256.New, []byte(shipmentHMACSecret))
+	mac.Write(payload)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Write(mac.Sum(nil))
+}

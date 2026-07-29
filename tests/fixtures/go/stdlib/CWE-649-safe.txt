@@ -1,0 +1,45 @@
+# CWE-649: Reliance on Obfuscation without Integrity Checking (mitigated, pure stdlib)
+lang: go
+file: CWE-649-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
+	"net/http"
+	"os"
+	"strings"
+)
+
+// Safe: HMAC verifies the encoded profile has not been tampered with.
+func AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	raw, err := r.Cookie("profile")
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	parts := strings.Split(raw.Value, ".")
+	if len(parts) != 2 {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	mac := hmac.New(sha256.New, []byte(os.Getenv("COOKIE_KEY")))
+	mac.Write([]byte(parts[0]))
+	expected := mac.Sum(nil)
+	got, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	if !hmac.Equal(expected, got) {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[0])
+	if strings.Contains(string(payload), "role=admin") {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]string{"panel": "admin"})
+		return
+	}
+	http.Error(w, "forbidden", http.StatusForbidden)
+}

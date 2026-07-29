@@ -1,0 +1,35 @@
+# CWE-393 vulnerable — Return of Wrong Status Code
+lang: go
+file: CWE-393-vulnerable.go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+type GinCtx struct {
+	Writer  http.ResponseWriter
+	Request *http.Request
+}
+
+type SqlxDB struct {
+	DB *sql.DB
+}
+
+func (db *SqlxDB) QueryRow(query string, args ...interface{}) *sql.Row {
+	return db.DB.QueryRow(query, args...)
+}
+
+func GetBalance(c *GinCtx, db *SqlxDB) {
+	var balance float64
+	err := db.QueryRow("SELECT balance FROM accounts WHERE id = ?", c.Request.URL.Query().Get("id")).Scan(&balance)
+	if err != nil {
+		c.Writer.WriteHeader(http.StatusOK)
+		_, _ = c.Writer.Write([]byte(`{"balance":0}`))
+		return
+	}
+	c.Writer.WriteHeader(http.StatusOK)
+	_, _ = c.Writer.Write([]byte(`{"balance":` + http.StatusText(int(balance)) + `}`))
+}

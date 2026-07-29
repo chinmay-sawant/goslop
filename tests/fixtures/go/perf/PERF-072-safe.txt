@@ -1,0 +1,16 @@
+# PERF-72 negative: single-statement insert without a transaction wrapper
+lang: go
+file: PERF-072-safe.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+func CreateUser(db *gorm.DB) error {
+	return db.Create(&User{Name: "x"}).Error
+}
+
+type User struct {
+	gorm.Model
+	Name string
+}

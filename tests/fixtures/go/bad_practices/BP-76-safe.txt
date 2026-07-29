@@ -1,0 +1,21 @@
+# BP-76 negative: keys are sorted before they are joined.
+lang: go
+file: BP-76-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"sort"
+	"strings"
+)
+
+func names() string {
+	items := map[string]int{"b": 2, "a": 1}
+	keys := make([]string, 0, len(items))
+	for key := range items {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return strings.Join(keys, ",")
+}

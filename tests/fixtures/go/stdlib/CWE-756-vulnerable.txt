@@ -1,0 +1,25 @@
+# CWE-756: Missing Custom Error Page (pure stdlib)
+lang: go
+file: CWE-756-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: raw database errors are returned to the client.
+// Internal schema and connection details may leak through err.Error().
+func FetchProfile(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	id := r.URL.Query().Get("id")
+	var email string
+	err := db.QueryRow("SELECT email FROM profiles WHERE id = $1", id).Scan(&email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(email))
+}

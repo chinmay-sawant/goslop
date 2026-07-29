@@ -1,0 +1,14 @@
+# BP-111 positive: a Gin context is used inside a goroutine without Copy.
+lang: go
+file: BP-111-vulnerable.go
+variant: gin
+---
+package sample
+
+import "github.com/gin-gonic/gin"
+
+func handle(c *gin.Context) {
+	go func() {
+		_ = c.Request.URL.Path
+	}()
+}

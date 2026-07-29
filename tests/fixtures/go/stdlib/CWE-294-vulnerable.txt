@@ -1,0 +1,26 @@
+# CWE-294 — Authentication Bypass by Capture-replay (vulnerable) (pure stdlib)
+lang: go
+file: CWE-294-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+// Vulnerable: accepts the same signed login blob repeatedly without nonce tracking.
+func TokenLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	token := r.FormValue("auth_token")
+	if token == "" {
+		http.Error(w, "missing token", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"ok":true}`))
+}

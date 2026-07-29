@@ -1,0 +1,32 @@
+# CWE-208 negative: constant-time comparison hides mismatch position (pure stdlib)
+lang: go
+file: CWE-208-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/subtle"
+	"encoding/json"
+	"net/http"
+)
+
+// CWE-208 Observable Timing Discrepancy (mitigated)
+func VerifyNonce(w http.ResponseWriter, r *http.Request, expected []byte) {
+	provided := []byte(r.FormValue("nonce"))
+	if len(provided) != len(expected) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "denied"})
+		return
+	}
+	if subtle.ConstantTimeCompare(provided, expected) != 1 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "denied"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}

@@ -1,0 +1,17 @@
+# BP-72 positive: typed nil pointer is returned as an error interface
+lang: go
+file: BP-72-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type typedError struct{}
+
+func (*typedError) Error() string {
+	return "typed error"
+}
+
+func load() error {
+	var err *typedError = nil
+	return err
+}

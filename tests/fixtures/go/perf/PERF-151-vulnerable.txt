@@ -1,0 +1,30 @@
+# PERF-151 positive: non-inlinable handler with loop + switch + closure
+lang: go
+file: PERF-151-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+func ComplexHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		for _, v := range r.URL.Query() {
+			for _, s := range v {
+				go func(s string) {
+					w.Write([]byte(s))
+				}(s)
+			}
+		}
+	case "POST":
+		var b strings.Builder
+		for i := 0; i < 10; i++ {
+			b.WriteString("item")
+		}
+		w.Write([]byte(b.String()))
+	}
+}

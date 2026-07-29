@@ -1,0 +1,17 @@
+# PERF-109 positive: fmt.Sprintf called twice in a loop for a map key
+lang: go
+file: PERF-109-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Counts(items []int) map[string]int {
+	out := make(map[string]int)
+	for _, item := range items {
+		key := fmt.Sprintf("k=%d", item)
+		out[key]++
+	}
+	return out
+}

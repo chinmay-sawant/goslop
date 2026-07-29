@@ -1,0 +1,15 @@
+# BP-87 positive variant: channel receive occurs while read lock is held
+lang: go
+file: BP-87-variant-vulnerable.go
+variant: channel
+---
+package sample
+
+import "sync"
+
+func wait(done <-chan struct{}) {
+	var mu sync.RWMutex
+	mu.RLock()
+	<-done
+	mu.RUnlock()
+}

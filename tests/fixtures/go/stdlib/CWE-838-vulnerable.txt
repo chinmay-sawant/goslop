@@ -1,0 +1,25 @@
+# CWE-838: Inappropriate Encoding for Output Context (pure stdlib)
+lang: go
+file: CWE-838-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Notice struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
+// Vulnerable: emits invalid UTF-8 bytes while declaring UTF-8 JSON to downstream clients.
+// Malformed sequences can break parsers that trust the charset declaration.
+func PublishNotice(w http.ResponseWriter, r *http.Request) {
+	notice := Notice{Title: "Alert", Body: "update"}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	_, _ = w.Write([]byte{0xC3, 0x28})
+	_ = json.NewEncoder(w).Encode(notice)
+}

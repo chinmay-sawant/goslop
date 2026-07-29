@@ -1,0 +1,14 @@
+# PERF-221 positive: map[int] used for dense keys
+lang: go
+file: PERF-221-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Index(items []string) map[int]string {
+	m := make(map[int]string, len(items))
+	for i, v := range items {
+		m[i+1] = v
+	}
+	return m
+}

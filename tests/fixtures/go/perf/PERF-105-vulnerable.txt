@@ -1,0 +1,20 @@
+# PERF-105 positive: runtime.SetFinalizer on a hot-path object
+lang: go
+file: PERF-105-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "runtime"
+
+type Buffer struct {
+	data []byte
+}
+
+func MakeBuffer() *Buffer {
+	b := &Buffer{}
+	runtime.SetFinalizer(b, (*Buffer).Release)
+	return b
+}
+
+func (b *Buffer) Release() {}

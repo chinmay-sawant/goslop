@@ -1,0 +1,23 @@
+# PERF-159 negative: json.Unmarshal on pre-buffered []byte
+lang: go
+file: PERF-159-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Payload struct {
+	Name string `json:"name"`
+}
+
+var cached = []byte{0x7b, 0x22, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0x3a, 0x22, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x22, 0x7d}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	var p Payload
+	_ = json.Unmarshal(cached, &p)
+	w.WriteHeader(200)
+}

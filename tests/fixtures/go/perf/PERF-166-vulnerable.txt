@@ -1,0 +1,19 @@
+# PERF-166 positive: rows.Scan into a *string with nil check
+lang: go
+file: PERF-166-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "database/sql"
+
+func LoadName(rows *sql.Rows) (string, error) {
+	var name *string
+	if err := rows.Scan(&name); err != nil {
+		return "", err
+	}
+	if name != nil {
+		return *name, nil
+	}
+	return "", nil
+}

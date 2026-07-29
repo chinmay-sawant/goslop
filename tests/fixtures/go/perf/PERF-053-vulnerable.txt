@@ -1,0 +1,18 @@
+# PERF-053 positive: math/rand.Intn on the request path
+lang: go
+file: PERF-053-vulnerable.go
+---
+package sample
+
+import (
+	"math/rand"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func RollDice(c *gin.Context) {
+	n := rand.Intn(6) + 1
+	c.JSON(http.StatusOK, gin.H{"roll": n})
+	_ = http.StatusOK
+}

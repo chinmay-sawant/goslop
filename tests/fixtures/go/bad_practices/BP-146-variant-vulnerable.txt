@@ -1,0 +1,12 @@
+# BP-146 positive variant: printf formats a token into a log message.
+lang: go
+file: BP-146-variant-vulnerable.go
+variant: stdlib-sensitive-format
+---
+package service
+
+import "log"
+
+func report(token string) {
+	log.Printf("request token=%s", token)
+}

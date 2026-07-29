@@ -1,0 +1,36 @@
+# CWE-940 safe: state parameter validates callback origin
+lang: go
+file: CWE-940-safe.go
+---
+package sample
+
+// CWE-940 mitigated: callback rejected when state cookie does not match request.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func OAuthCallbackVerified(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		code := c.Query("code")
+		state := c.Query("state")
+		cookie, err := c.Cookie("oauth_state")
+		if err != nil || cookie != state {
+			c.JSON(http.StatusForbidden, gin.H{"error": "invalid oauth state"})
+			return
+		}
+		userID := c.GetString("authenticated_user")
+		_, err = db.Exec(
+			"INSERT INTO oauth_tokens (user_id, code) VALUES ($1, $2)",
+			userID, code,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.Redirect(http.StatusFound, "/dashboard")
+	}
+}

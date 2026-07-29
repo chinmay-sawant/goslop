@@ -1,0 +1,18 @@
+# BP-149 positive variant: zap logs an error branch without zap.Error.
+lang: go
+file: BP-149-variant-vulnerable.go
+variant: zap-error-without-attribute
+---
+package service
+
+import "go.uber.org/zap"
+
+func save() error {
+	err := doSave()
+	if err != nil {
+		zap.L().Error("save failed")
+	}
+	return nil
+}
+
+func doSave() error { return nil }

@@ -1,0 +1,31 @@
+# CWE-261 — Weak Encoding for Password (vulnerable) (pure stdlib)
+lang: go
+file: CWE-261-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/base64"
+	"net/http"
+	"sync"
+)
+
+var accountVault sync.Map
+
+// Vulnerable: stores reversible base64 of the password instead of a hash.
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	user := r.FormValue("username")
+	pw := r.FormValue("password")
+	if user == "" || pw == "" {
+		http.Error(w, "missing credentials", http.StatusBadRequest)
+		return
+	}
+	encoded := base64.StdEncoding.EncodeToString([]byte(pw))
+	accountVault.Store(user, encoded)
+	w.WriteHeader(http.StatusCreated)
+}

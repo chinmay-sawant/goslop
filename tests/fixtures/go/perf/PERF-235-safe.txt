@@ -1,0 +1,14 @@
+# PERF-235 negative: write directly into the destination buffer
+lang: go
+file: PERF-235-safe.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func Render(dst *bytes.Buffer, parts []string) {
+	for _, p := range parts {
+		dst.WriteString(p)
+	}
+}

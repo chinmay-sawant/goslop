@@ -1,0 +1,29 @@
+# PERF-187 negative: a template is parsed inside a sync.Once at startup, never in handler
+lang: go
+file: PERF-187-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"html/template"
+	"net/http"
+	"sync"
+)
+
+var (
+	tmpl     *template.Template
+	tmplOnce sync.Once
+)
+
+func loadTmpl() *template.Template {
+	tmplOnce.Do(func() {
+		tmpl = template.ParseFiles("./hi.tmpl")
+	})
+	return tmpl
+}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	_ = loadTmpl().Execute(w, name)
+}

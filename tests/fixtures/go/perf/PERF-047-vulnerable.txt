@@ -1,0 +1,16 @@
+# PERF-047 positive: strings.Split called per iteration of a loop
+lang: go
+file: PERF-047-vulnerable.go
+---
+package sample
+
+import "strings"
+
+func SplitAll(rows []string) [][]string {
+	var out [][]string
+	for _, r := range rows {
+		parts := strings.Split(r, ",")
+		out = append(out, parts)
+	}
+	return out
+}

@@ -1,0 +1,27 @@
+# PERF-71 positive: N+1 query pattern
+lang: go
+file: PERF-071-vulnerable.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Orders []Order
+}
+
+type Order struct {
+	gorm.Model
+	UserID uint
+}
+
+func ListUserOrders(db *gorm.DB) {
+	var users []User
+	db.Find(&users)
+	for _, u := range users {
+		var orders []Order
+		db.Where("user_id = ?", u.ID).Find(&orders)
+		_ = orders
+	}
+}

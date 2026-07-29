@@ -1,0 +1,13 @@
+# BP-27 negative: exported function returns an exported type
+lang: go
+file: BP-27-safe.go
+variant: stdlib
+---
+package sample
+
+type Client struct{}
+
+// NewClient returns an exported result type.
+func NewClient() *Client {
+	return &Client{}
+}

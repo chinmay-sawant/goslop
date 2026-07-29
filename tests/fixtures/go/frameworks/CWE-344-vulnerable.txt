@@ -1,0 +1,23 @@
+# CWE-344 vulnerable — Use of Invariant Value in Dynamically Changing Context
+lang: go
+file: CWE-344-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+const billingHMACSecret = "prod-only-shared-secret-77"
+
+func SignInvoice(c *GinCtx, payload []byte) []byte {
+	mac := hmac.New(sha256.New, []byte(billingHMACSecret))
+	mac.Write(payload)
+	return mac.Sum(nil)
+}

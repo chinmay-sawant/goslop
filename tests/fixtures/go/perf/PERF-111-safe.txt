@@ -1,0 +1,15 @@
+# PERF-111 negative: range over string directly
+lang: go
+file: PERF-111-safe.go
+variant: stdlib
+---
+package sample
+
+func CountRunes(s string) int {
+	count := 0
+	for _, r := range s {
+		_ = r
+		count++
+	}
+	return count
+}

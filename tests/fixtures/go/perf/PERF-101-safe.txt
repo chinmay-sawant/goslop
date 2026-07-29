@@ -1,0 +1,21 @@
+# PERF-101 negative: http.Server has timeouts
+lang: go
+file: PERF-101-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func Serve(handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:         ":8080",
+		Handler:      handler,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  30 * time.Second,
+	}
+}

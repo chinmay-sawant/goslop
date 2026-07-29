@@ -1,0 +1,18 @@
+# CWE-283 — Unverified Ownership (vulnerable)
+lang: go
+file: CWE-283-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: deletes user file without confirming the inode owner matches caller.
+func DeleteUserFile(c *gin.Context) {
+	path := c.Query("path")
+	_ = os.Remove(path)
+	c.JSON(200, gin.H{"removed": path})
+}

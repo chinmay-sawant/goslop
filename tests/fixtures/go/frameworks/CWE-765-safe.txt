@@ -1,0 +1,28 @@
+# CWE-765: Multiple Unlocks of a Critical Resource (mitigated)
+lang: go
+file: CWE-765-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var walletMu sync.Mutex
+var walletBalance int
+
+// Safe: single unlock via defer on every exit path.
+func DebitWallet(c *gin.Context) {
+	amount := c.GetInt("amount")
+	walletMu.Lock()
+	defer walletMu.Unlock()
+	if amount <= 0 {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	walletBalance -= amount
+	c.JSON(http.StatusOK, gin.H{"balance": walletBalance})
+}

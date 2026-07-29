@@ -1,0 +1,11 @@
+# BP-28 negative: interface has multiple methods
+lang: go
+file: BP-28-safe.go
+variant: stdlib
+---
+package sample
+
+type callback interface {
+	Run()
+	Stop()
+}

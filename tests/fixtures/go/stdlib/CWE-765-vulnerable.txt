@@ -1,0 +1,32 @@
+# CWE-765: Multiple Unlocks of a Critical Resource (pure stdlib)
+lang: go
+file: CWE-765-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+	"sync"
+)
+
+var walletMu sync.Mutex
+var walletBalance int
+
+// Vulnerable: unlocks the mutex twice when validation fails.
+func DebitWallet(w http.ResponseWriter, r *http.Request) {
+	amount, _ := strconv.Atoi(r.URL.Query().Get("amount"))
+	walletMu.Lock()
+	if amount <= 0 {
+		walletMu.Unlock()
+		http.Error(w, "bad request", http.StatusBadRequest)
+		walletMu.Unlock()
+		return
+	}
+	walletBalance -= amount
+	walletMu.Unlock()
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]int{"balance": walletBalance})
+}

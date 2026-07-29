@@ -1,0 +1,44 @@
+# CWE-1204 vulnerable: static AES-CBC initialization vector
+lang: go
+file: CWE-1204-vulnerable.go
+---
+package sample
+
+// CWE-1204: Generation of Weak Initialization Vector (IV).
+// Vulnerable: cipher.NewCBCEncrypter reuses fixed iv bytes for every request.
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var weakIV = []byte("1234567890123456")
+
+func EncryptField(key []byte) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		plain := c.PostForm("value")
+		block, err := aes.NewCipher(key)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		mode := cipher.NewCBCEncrypter(block, weakIV)
+		padded := pkcs7Pad([]byte(plain), block.BlockSize())
+		out := make([]byte, len(padded))
+		mode.CryptBlocks(out, padded)
+		c.JSON(http.StatusOK, gin.H{"ciphertext": base64.StdEncoding.EncodeToString(out)})
+	}
+}
+
+func pkcs7Pad(data []byte, blockSize int) []byte {
+	pad := blockSize - len(data)%blockSize
+	padding := make([]byte, pad)
+	for i := range padding {
+		padding[i] = byte(pad)
+	}
+	return append(data, padding...)
+}

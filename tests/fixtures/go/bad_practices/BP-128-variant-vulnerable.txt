@@ -1,0 +1,20 @@
+# BP-128 variant positive: a QueryRowContext result is scanned without a no-rows branch.
+lang: go
+file: BP-128-variant-vulnerable.go
+variant: database-sql-queryrow-context
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+)
+
+func findEmail(ctx context.Context, db *sql.DB, id int) (string, error) {
+	row := db.QueryRowContext(ctx, "SELECT email FROM users WHERE id = ?", id)
+	var email string
+	if err := row.Scan(&email); err != nil {
+		return "", err
+	}
+	return email, nil
+}

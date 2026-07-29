@@ -1,0 +1,15 @@
+# PERF-027 positive: large []byte make inside loop without pool
+lang: go
+file: PERF-027-vulnerable.go
+---
+package sample
+
+func EncodeChunks(chunks []string) int {
+	total := 0
+	for range chunks {
+		// Large scratch buffer re-allocated every iteration.
+		buf := make([]byte, 8192)
+		total += len(buf)
+	}
+	return total
+}

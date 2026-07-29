@@ -1,0 +1,23 @@
+# PERF-062 positive: c.Param parsed with regexp inside a middleware
+lang: go
+file: PERF-062-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"regexp"
+
+	"github.com/gin-gonic/gin"
+)
+
+var idPattern = regexp.MustCompile(`^[a-f0-9]{32}$`)
+
+func MiddlewareIDCheck(c *gin.Context) {
+	id := c.Param("id")
+	if !idPattern.MatchString(id) {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.Next()
+}

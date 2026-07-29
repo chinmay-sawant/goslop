@@ -1,0 +1,25 @@
+# PERF-228 positive: errgroup fan-out over a 1-element composite workset
+lang: go
+file: PERF-228-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+type Page struct {
+	Data []byte
+}
+
+func CompressPages(p Page) error {
+	pages := []Page{p}
+	var g errgroup.Group
+	for _, page := range pages {
+		page := page
+		g.Go(func() error {
+			_ = page.Data
+			return nil
+		})
+	}
+	return g.Wait()
+}

@@ -1,0 +1,28 @@
+# PERF-121 positive: two same-shape struct literals; the second
+# could be a direct type conversion of the first
+lang: go
+file: PERF-121-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type Config struct {
+	Host string
+	Port int
+}
+
+type Options struct {
+	Host string
+	Port int
+}
+
+func toOptions(c Config) Options {
+	src := Config{
+		Host: c.Host,
+		Port: c.Port,
+	}
+	return Options{
+		Host: src.Host,
+		Port: src.Port,
+	}
+}

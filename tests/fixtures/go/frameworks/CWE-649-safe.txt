@@ -1,0 +1,44 @@
+# CWE-649: Reliance on Obfuscation without Integrity Checking (mitigated)
+lang: go
+file: CWE-649-safe.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: HMAC verifies the encoded profile has not been tampered with.
+func AdminDashboard(c *gin.Context) {
+	raw, err := c.Cookie("profile")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	parts := strings.Split(raw, ".")
+	if len(parts) != 2 {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	mac := hmac.New(sha256.New, []byte(os.Getenv("COOKIE_KEY")))
+	mac.Write([]byte(parts[0]))
+	expected := mac.Sum(nil)
+	got, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	if !hmac.Equal(expected, got) {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[0])
+	if strings.Contains(string(payload), "role=admin") {
+		c.JSON(http.StatusOK, gin.H{"panel": "admin"})
+		return
+	}
+	c.AbortWithStatus(http.StatusForbidden)
+}

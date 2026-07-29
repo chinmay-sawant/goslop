@@ -1,0 +1,16 @@
+# PERF-039 positive: for { select { ... default: } } busy-wait
+lang: go
+file: PERF-039-vulnerable.go
+---
+package sample
+
+func Poll() {
+	for {
+		select {
+		case <-workAvailable():
+		default:
+		}
+	}
+}
+
+func workAvailable() <-chan struct{} { return nil }

@@ -1,0 +1,18 @@
+# PERF-231 positive: pem.Decode on hot sign path
+lang: go
+file: PERF-231-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "encoding/pem"
+
+func SignPDF(doc []byte, pemBytes []byte) []byte {
+	block, _ := pem.Decode(pemBytes)
+	if block == nil {
+		return doc
+	}
+	// Would parse key and sign; decode on every call is the smell.
+	_ = block
+	return doc
+}

@@ -1,0 +1,31 @@
+# CWE-359 vulnerable: Exposure of Private Personal Information to an Unauthorized Actor (positive, pure stdlib)
+lang: go
+file: CWE-359-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type PersonRecord struct {
+	Email string `json:"email"`
+	SSN   string `json:"ssn"`
+	Phone string `json:"phone"`
+}
+
+func RenderAccountDetails(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	id := r.URL.Query().Get("id")
+	var row PersonRecord
+	err := db.QueryRow("SELECT email, ssn, phone FROM people WHERE id = ?", id).Scan(&row.Email, &row.SSN, &row.Phone)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return err
+	}
+	out, _ := json.Marshal(row)
+	w.Write(out)
+	return nil
+}

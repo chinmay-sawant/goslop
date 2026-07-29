@@ -1,0 +1,14 @@
+# BP-140 positive: sqlx.Get is invoked as a bare expression.
+lang: go
+file: BP-140-vulnerable.go
+variant: sqlx-get-bare
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct{}
+
+func loadUser(db *sqlx.DB, user *User) {
+	db.Get(user, "SELECT id FROM users WHERE id = ?", 1)
+}

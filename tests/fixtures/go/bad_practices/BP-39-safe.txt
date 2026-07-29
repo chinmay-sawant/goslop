@@ -1,0 +1,11 @@
+# BP-39 negative: exported function has a doc comment
+lang: go
+file: BP-39-safe.go
+variant: stdlib
+---
+package sample
+
+// Fetch returns nil in the fixture.
+func Fetch() error {
+	return nil
+}

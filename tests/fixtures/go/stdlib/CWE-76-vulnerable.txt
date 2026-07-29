@@ -1,0 +1,34 @@
+# CWE-76 positive: neutralizes < but not URL-encoded equivalents (pure stdlib)
+lang: go
+file: CWE-76-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+// CWE-76 Improper Neutralization of Equivalent Special Elements
+// Vulnerable line: strips literal angle brackets only before HTML output.
+func WritePreview(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "form", http.StatusBadRequest)
+		return
+	}
+	raw := r.FormValue("snippet")
+	if raw == "" {
+		http.Error(w, "empty", http.StatusBadRequest)
+		return
+	}
+	safe := strings.ReplaceAll(raw, "<", "")
+	safe = strings.ReplaceAll(safe, ">", "")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("<article>" + safe + "</article>"))
+}

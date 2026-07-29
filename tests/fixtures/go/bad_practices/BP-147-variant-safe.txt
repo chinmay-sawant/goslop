@@ -1,0 +1,16 @@
+# BP-147 negative variant: log.Print in main is outside service-package scope.
+lang: go
+file: BP-147-variant-safe.go
+variant: main-package-bootstrap-log
+---
+package main
+
+import (
+	"log"
+	"log/slog"
+)
+
+func main() {
+	slog.Info("starting")
+	log.Println("startup complete")
+}

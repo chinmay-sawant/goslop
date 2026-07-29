@@ -1,0 +1,16 @@
+# BP-99 positive: Cond.Wait has no visible locker acquisition
+lang: go
+file: BP-99-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func waitForReady(ready *bool) {
+	mu := &sync.Mutex{}
+	cond := sync.NewCond(mu)
+	for !*ready {
+		cond.Wait()
+	}
+}

@@ -1,0 +1,12 @@
+# BP-73 positive: local map is written before make
+lang: go
+file: BP-73-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func collect() map[string]int {
+	var counts map[string]int
+	counts["ok"] = 1
+	return counts
+}

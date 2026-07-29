@@ -1,0 +1,32 @@
+# CWE-22 negative: filename-only policy under vaultRoot (pure stdlib)
+lang: go
+file: CWE-22-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// CWE-22 Improper Limitation of a Pathname to a Restricted Directory (mitigated)
+func ServeDocument(w http.ResponseWriter, r *http.Request) {
+	vaultRoot := "/var/data/vault"
+	docName := r.URL.Query().Get("name")
+	target := filepath.Join(vaultRoot, filepath.Base(docName))
+	if !strings.HasPrefix(target, vaultRoot+string(os.PathSeparator)) {
+		http.Error(w, "invalid", http.StatusBadRequest)
+		return
+	}
+	data, err := os.ReadFile(target)
+	if err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}

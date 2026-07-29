@@ -1,0 +1,16 @@
+# PERF-166 negative: use sql.NullString instead of a *string + nil check
+lang: go
+file: PERF-166-safe.go
+variant: stdlib
+---
+package sample
+
+import "database/sql"
+
+func LoadName(rows *sql.Rows) (string, error) {
+	var name sql.NullString
+	if err := rows.Scan(&name); err != nil {
+		return "", err
+	}
+	return name.String, nil
+}

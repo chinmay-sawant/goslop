@@ -1,0 +1,28 @@
+# PERF-216 negative: pooled struct reuse
+lang: go
+file: PERF-216-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+type TreeNode struct {
+	A int
+	B int
+	C int
+}
+
+var nodePool = sync.Pool{
+	New: func() any { return &TreeNode{} },
+}
+
+func Build(items []int) []*TreeNode {
+	out := make([]*TreeNode, 0, len(items))
+	for i := range items {
+		node := nodePool.Get().(*TreeNode)
+		node.A, node.B, node.C = i, i+1, i+2
+		out = append(out, node)
+	}
+	return out
+}

@@ -1,0 +1,6 @@
+# CWE registry — domain: network_binding
+
+[[detector]]
+cwe = 1327
+domain = "network_binding"
+function = "detect_cwe_1327"

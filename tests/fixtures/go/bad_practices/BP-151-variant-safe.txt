@@ -1,0 +1,15 @@
+# BP-151 negative variant: a non-sensitive environment value is logged.
+lang: go
+file: BP-151-variant-safe.go
+variant: slog-secret-env
+---
+package main
+
+import (
+	"log/slog"
+	"os"
+)
+
+func main() {
+	slog.Info("service starting", "region", os.Getenv("REGION"))
+}

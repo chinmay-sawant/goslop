@@ -1,0 +1,20 @@
+# PERF-023 positive: bytes.NewReader allocated per request
+lang: go
+file: PERF-023-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Echo(c *gin.Context) {
+	body := []byte("ok")
+	reader := bytes.NewReader(body)
+	_ = reader
+	io.Copy(c.Writer, reader)
+}

@@ -1,0 +1,16 @@
+# BP-154 positive: json.Unmarshal is used as an expression statement
+lang: go
+file: BP-154-vulnerable.go
+variant: encoding-json
+---
+package sample
+
+import "encoding/json"
+
+func decode(data []byte, cfg *Config) {
+	json.Unmarshal(data, cfg)
+}
+
+type Config struct {
+	Name string `json:"name"`
+}

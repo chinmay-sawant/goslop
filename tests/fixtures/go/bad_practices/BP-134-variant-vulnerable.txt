@@ -1,0 +1,17 @@
+# BP-134 variant positive: Take errors have no not-found branch.
+lang: go
+file: BP-134-variant-vulnerable.go
+variant: gorm-take-uniform-error
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct{}
+
+func takeUser(db *gorm.DB, user *User) error {
+	if err := db.Take(user).Error; err != nil {
+		return err
+	}
+	return nil
+}

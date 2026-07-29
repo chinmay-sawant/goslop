@@ -1,0 +1,21 @@
+# PERF-016 negative: bytes.Buffer hoisted with Reset
+lang: go
+file: PERF-016-safe.go
+---
+package sample
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func RenderAll(values []int) []string {
+	var buf bytes.Buffer
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		buf.Reset()
+		fmt.Fprintf(&buf, "v=%d", v)
+		out = append(out, buf.String())
+	}
+	return out
+}

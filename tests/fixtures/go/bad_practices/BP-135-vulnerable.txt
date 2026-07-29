@@ -1,0 +1,21 @@
+# BP-135 positive: a request handler starts a GORM chain on a package global.
+lang: go
+file: BP-135-vulnerable.go
+variant: gorm-global-http
+---
+package sample
+
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+type User struct{}
+
+func listUsers(w http.ResponseWriter, r *http.Request) {
+	var users []User
+	DB.Where("active = ?", true).Find(&users)
+}

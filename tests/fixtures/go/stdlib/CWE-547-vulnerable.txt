@@ -1,0 +1,24 @@
+# CWE-547 positive: HMAC signing secret hard-coded in source (pure stdlib)
+lang: go
+file: CWE-547-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+)
+
+const sessionMACKey = "super-secret-not-rotated"
+
+func IssueSessionCookie(w http.ResponseWriter, r *http.Request) {
+	uid := r.Header.Get("X-UID")
+	mac := hmac.New(sha256.New, []byte(sessionMACKey))
+	mac.Write([]byte(uid))
+	token := hex.EncodeToString(mac.Sum(nil))
+	http.SetCookie(w, &http.Cookie{Name: "session", Value: token})
+	w.WriteHeader(http.StatusOK)
+}

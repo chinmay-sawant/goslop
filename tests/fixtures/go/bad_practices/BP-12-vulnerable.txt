@@ -1,0 +1,16 @@
+# BP-12 positive: unbuffered channel receives sends from multiple goroutines
+lang: go
+file: BP-12-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func run() {
+	ch := make(chan int)
+	go func() {
+		ch <- 1
+	}()
+	go func() {
+		ch <- 2
+	}()
+}

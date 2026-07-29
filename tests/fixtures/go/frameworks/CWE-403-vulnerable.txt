@@ -1,0 +1,26 @@
+# CWE-403 vulnerable — Exposure of File Descriptor to Unintended Control Sphere
+lang: go
+file: CWE-403-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"os/exec"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func RunUserScript(c *GinCtx) error {
+	secret, err := os.Open("/etc/codehound/master.key")
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("/bin/sh", "-c", c.Request.PostFormValue("script"))
+	cmd.Stdout = os.Stdout
+	_ = secret
+	return cmd.Run()
+}

@@ -1,0 +1,39 @@
+# CWE-654: Reliance on a Single Factor in a Security Decision (mitigated, pure stdlib)
+lang: go
+file: CWE-654-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+// Safe: requires authenticated session role in addition to a service credential.
+func ExportUsers(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Header.Get("X-User-Role") != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	if r.Header.Get("X-Api-Key") == "" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	rows, err := db.Query("SELECT id, email FROM users")
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var out []map[string]interface{}
+	for rows.Next() {
+		var id int
+		var email string
+		_ = rows.Scan(&id, &email)
+		out = append(out, map[string]interface{}{"id": id, "email": email})
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(out)
+}

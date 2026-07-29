@@ -1,0 +1,31 @@
+# CWE registry — domain: concurrency
+
+[[detector]]
+cwe = 366
+domain = "concurrency"
+function = "detect_cwe_366"
+
+[[detector]]
+cwe = 367
+domain = "concurrency"
+function = "detect_cwe_367"
+
+[[detector]]
+cwe = 368
+domain = "concurrency"
+function = "detect_cwe_368"
+
+[[detector]]
+cwe = 421
+domain = "concurrency"
+function = "detect_cwe_421"
+
+[[detector]]
+cwe = 820
+domain = "concurrency"
+function = "detect_cwe_820"
+
+[[detector]]
+cwe = 821
+domain = "concurrency"
+function = "detect_cwe_821"

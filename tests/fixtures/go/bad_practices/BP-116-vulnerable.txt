@@ -1,0 +1,22 @@
+# BP-116 positive: Echo writes an error response and returns the raw error.
+lang: go
+file: BP-116-vulnerable.go
+variant: echo
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+func create(c echo.Context) error {
+	if saveErr := save(); saveErr != nil {
+		c.JSON(http.StatusInternalServerError, map[string]string{"error": saveErr.Error()})
+		return saveErr
+	}
+	return c.JSON(http.StatusCreated, map[string]bool{"ok": true})
+}
+
+func save() error { return nil }

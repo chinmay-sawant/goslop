@@ -1,0 +1,22 @@
+# PERF-222 negative: concrete function in loop
+lang: go
+file: PERF-222-safe.go
+variant: stdlib
+---
+package sample
+
+type Item struct {
+	Value int
+}
+
+func processItem(v Item) int {
+	return 1
+}
+
+func Render(items []Item) int {
+	total := 0
+	for _, item := range items {
+		total += processItem(item)
+	}
+	return total
+}

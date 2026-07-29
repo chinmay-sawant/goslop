@@ -1,0 +1,24 @@
+# CWE-305 — Authentication Bypass by Primary Weakness (safe)
+lang: go
+file: CWE-305-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Safe: administrative route always requires authenticated subject.
+func AdminDashboard(c *gin.Context, db *gorm.DB) {
+	sub := c.GetString("jwt_sub")
+	if sub == "" {
+		c.JSON(401, gin.H{"error": "auth"})
+		return
+	}
+	if c.GetString("role") != "admin" {
+		c.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+	c.JSON(200, gin.H{"panel": "admin"})
+}

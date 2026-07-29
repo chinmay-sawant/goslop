@@ -1,0 +1,18 @@
+# BP-147 positive variant: zap is present but a handler still calls log.Println.
+lang: go
+file: BP-147-variant-vulnerable.go
+variant: zap-and-stdlib-loggers
+---
+package handlers
+
+import (
+	"log"
+
+	"go.uber.org/zap"
+)
+
+// Handle processes a request.
+func Handle() {
+	zap.L().Info("handler ready")
+	log.Println("request received")
+}

@@ -1,0 +1,38 @@
+# CWE-611: Improper Restriction of XML External Entity Reference (mitigated)
+lang: go
+file: CWE-611-safe.go
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/xml"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: rejects DOCTYPE and keeps Strict parsing on trusted-size payloads.
+func ImportCatalog(c *gin.Context) {
+	body, err := io.ReadAll(io.LimitReader(c.Request.Body, 1<<20))
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	if bytes.Contains(bytes.ToUpper(body), []byte("<!DOCTYPE")) {
+		c.String(http.StatusBadRequest, "DOCTYPE not allowed")
+		return
+	}
+	dec := xml.NewDecoder(bytes.NewReader(body))
+	dec.Strict = true
+	var catalog struct {
+		XMLName xml.Name `xml:"catalog"`
+		Item    string   `xml:"item"`
+	}
+	if err := dec.Decode(&catalog); err != nil {
+		c.String(http.StatusBadRequest, "invalid catalog")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"item": catalog.Item})
+}

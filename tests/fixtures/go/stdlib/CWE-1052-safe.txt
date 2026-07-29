@@ -1,0 +1,38 @@
+# CWE-1052 negative: DSN from environment (pure stdlib)
+lang: go
+file: CWE-1052-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1052 mitigated: database connection string read from APP_DATABASE_URL.
+
+import (
+	"database/sql"
+	"net/http"
+	"os"
+)
+
+func OpenAppDBSafePure() (*sql.DB, error) {
+	dsn := os.Getenv("APP_DATABASE_URL")
+	if dsn == "" {
+		return nil, os.ErrInvalid
+	}
+	return sql.Open("postgres", dsn)
+}
+
+func HealthWithDBSafePure() http.HandlerFunc {
+	db, err := OpenAppDBSafePure()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err != nil || db == nil {
+			http.Error(w, `{"db":"down"}`, http.StatusServiceUnavailable)
+			return
+		}
+		if err := db.Ping(); err != nil {
+			http.Error(w, `{"db":"down"}`, http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"db":"up"}`))
+	}
+}

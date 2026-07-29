@@ -1,0 +1,16 @@
+# CWE registry — domain: deserialization
+
+[[detector]]
+cwe = 349
+domain = "deserialization"
+function = "detect_cwe_349"
+
+[[detector]]
+cwe = 501
+domain = "deserialization"
+function = "detect_cwe_501"
+
+[[detector]]
+cwe = 502
+domain = "deserialization"
+function = "detect_cwe_502"

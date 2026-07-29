@@ -1,0 +1,31 @@
+# CWE-279 — Incorrect Execution-Assigned Permissions (vulnerable) (pure stdlib)
+lang: go
+file: CWE-279-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"strconv"
+)
+
+// Vulnerable: forces world-writable mode regardless of user preference.
+func StoreArtifact(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	modeStr := r.FormValue("mode")
+	mode, _ := strconv.ParseUint(modeStr, 8, 32)
+	name := r.FormValue("name")
+	if name == "" {
+		http.Error(w, "missing name", http.StatusBadRequest)
+		return
+	}
+	path := "/data/uploads/" + name
+	_ = os.WriteFile(path, []byte(r.FormValue("body")), 0777)
+	_ = mode
+	w.WriteHeader(http.StatusOK)
+}

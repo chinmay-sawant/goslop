@@ -1,0 +1,21 @@
+# IP-006: Sanitized in callee — vulnerable (callee doesn't sanitize)
+lang: go
+file: IP-006-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    x := r.URL.Query().Get("input")
+    tainted := callee(x)
+    os.Open(tainted)
+}
+
+func callee(s string) string {
+    return s
+}

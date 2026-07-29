@@ -1,0 +1,36 @@
+# CWE-836: Use of Password Hash Instead of Password for Authentication
+lang: go
+file: CWE-836-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type UserAuth struct {
+	Username     string
+	PasswordHash string
+}
+
+// Vulnerable: client submits a password hash that is compared directly to storage.
+func Authenticate(c *gin.Context, db *gorm.DB) {
+	var body struct {
+		Username     string `json:"username"`
+		PasswordHash string `json:"password_hash"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	var row UserAuth
+	err := db.Where("username = ? AND password_hash = ?", body.Username, body.PasswordHash).First(&row).Error
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	c.Status(http.StatusOK)
+}

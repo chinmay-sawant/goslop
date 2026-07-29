@@ -1,0 +1,25 @@
+# PERF-059 negative: handler uses c.ShouldBind (non-JSON path)
+lang: go
+file: PERF-059-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type UpdateUserInput struct {
+	Name string `form:"name"`
+}
+
+func UpdateUser(c *gin.Context) {
+	var in UpdateUserInput
+	if err := c.ShouldBind(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"user": in})
+	_ = http.StatusOK
+}

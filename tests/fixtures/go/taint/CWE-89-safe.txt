@@ -1,0 +1,16 @@
+# CWE-89 negative: taint-tracked SQL injection with hardcoded query
+lang: go
+file: CWE-89-taint-safe.go
+variant: taint
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func LookupUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	_ = r.URL.Query().Get("name")
+	_ = db.Query("SELECT * FROM users WHERE name = 'alice'")
+}

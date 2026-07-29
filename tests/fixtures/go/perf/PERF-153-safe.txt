@@ -1,0 +1,17 @@
+# PERF-153 negative: cookie fields are extracted once
+lang: go
+file: PERF-153-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == "session" {
+			val := cookie.Value
+			_ = val
+		}
+	}
+}

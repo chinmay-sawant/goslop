@@ -1,0 +1,13 @@
+# BP-94 negative variant: sync.Map uses Store instead of an index write
+lang: go
+file: BP-94-variant-safe.go
+---
+package sample
+
+import "sync"
+
+func update(values *sync.Map) {
+	go func() {
+		values.Store("ready", "yes")
+	}()
+}

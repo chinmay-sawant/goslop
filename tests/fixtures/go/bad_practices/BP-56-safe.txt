@@ -1,0 +1,12 @@
+# BP-56 negative: modern package import
+lang: go
+file: BP-56-safe.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func read(path string) ([]byte, error) {
+	return os.ReadFile(path)
+}
