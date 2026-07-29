@@ -67,6 +67,7 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.NoTerminal, "no-terminal", false, "print product scan summary only (skip per-finding text dump)")
 	fs.BoolVar(&opts.NoFail, "no-fail", false, "always exit 0 even when findings match the fail policy")
 	fs.StringVar(&opts.ExplainRule, "explain", "", "print catalogue metadata for a rule id and exit")
+	fs.StringVar(&opts.ConfigPath, "config", "", "path to codehound.toml (default: discover upward from PATH)")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {

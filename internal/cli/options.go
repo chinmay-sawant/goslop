@@ -69,6 +69,8 @@ type Options struct {
 	ExplainRule string
 	// Version requests version printing.
 	Version bool
+	// ConfigPath overrides codehound.toml discovery.
+	ConfigPath string
 	// Command is a top-level subcommand when set ("init").
 	Command string
 }

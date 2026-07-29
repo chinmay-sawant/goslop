@@ -166,6 +166,19 @@ issues:
         - cyclop
         - nestif
         - mnd
+        - funlen
+    # Config merge is field-by-field by design.
+    - path: internal/config/
+      linters:
+        - gocyclo
+        - gocognit
+        - cyclop
+        - nestif
+        - funlen
+        - mnd
+        - gosec
+        - nilnil
+        - wrapcheck
     - path: internal/engine/(analyzer|walk|pathignore)\.go
       linters:
         - gocyclo

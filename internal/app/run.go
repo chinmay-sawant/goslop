@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/chinmay/codehound/internal/cli"
+	"github.com/chinmay/codehound/internal/config"
 	"github.com/chinmay/codehound/internal/core"
 	"github.com/chinmay/codehound/internal/engine"
 	"github.com/chinmay/codehound/internal/engine/baseline"
@@ -65,21 +66,58 @@ func run(args []string, stdout, stderr io.Writer) error {
 		}
 	}
 
-	ctx := core.NewScanContext(profile, opts.Only, opts.Skip)
-	ctx.IncludeTests = opts.IncludeTests
-	ctx.NoCache = opts.NoCache
+	// Load codehound.toml (discover or --config) and merge with CLI.
+	merged, merr := config.LoadAndMerge(config.MergeInput{
+		Only:           opts.Only,
+		Skip:           opts.Skip,
+		IncludeTests:   opts.IncludeTests,
+		NoCache:        opts.NoCache,
+		CacheDir:       opts.CacheDir,
+		NoBaseline:     opts.NoBaseline,
+		BaselineFile:   opts.BaselineFile,
+		Taint:          opts.Taint,
+		NoTaint:        opts.NoTaint,
+		TaintShowPaths: opts.TaintShowPaths,
+		NoFail:         opts.NoFail,
+		ConfigPath:     opts.ConfigPath,
+		Paths:          opts.Paths,
+	})
+	if merr != nil {
+		return &ExitCodeError{Code: ExitConfig, Err: merr}
+	}
+
+	ctx := core.NewScanContext(profile, merged.Only, merged.Skip)
+	ctx.IncludeTests = merged.IncludeTests
+	ctx.NoCache = merged.NoCache
 	ctx.ShowIgnored = opts.ShowIgnored
 	ctx.ShowBaselined = opts.ShowBaselined
-	ctx.NoBaseline = opts.NoBaseline
-	if opts.NoTaint {
+	ctx.NoBaseline = merged.NoBaseline
+	if merged.FailPolicy != nil {
+		ctx.FailPolicy = *merged.FailPolicy
+	}
+	if merged.BadPracticesEnabled != nil {
+		ctx.BadPracticesEnabled = *merged.BadPracticesEnabled
+	}
+	if merged.BPSeverity != nil {
+		ctx.BadPracticeSeverity = merged.BPSeverity
+	}
+	if len(merged.SeverityOverrides) > 0 {
+		if ctx.SeverityOverrides == nil {
+			ctx.SeverityOverrides = map[string]rules.Severity{}
+		}
+		for k, v := range merged.SeverityOverrides {
+			ctx.SeverityOverrides[k] = v
+		}
+	}
+	if merged.NoTaint {
 		ctx.TaintEnabled = false
-	} else if opts.Taint {
+	} else if merged.Taint {
 		ctx.TaintEnabled = true
 	}
 	if opts.TaintDepth > 0 {
 		ctx.TaintMaxDepth = opts.TaintDepth
 	}
-	ctx.TaintShowPaths = opts.TaintShowPaths
+	ctx.TaintShowPaths = merged.TaintShowPaths
 	// Retain sources only when export needs them (Rust parity).
 	if opts.ExportContext || opts.ExportChunks {
 		ctx.RetainSources = true
@@ -88,8 +126,8 @@ func run(args []string, stdout, stderr io.Writer) error {
 
 	// Cache open / rebuild / prune.
 	var store *cache.Store
-	if !opts.NoCache {
-		cacheDir := opts.CacheDir
+	if !merged.NoCache {
+		cacheDir := merged.CacheDir
 		if cacheDir == "" {
 			cacheDir = cache.DEFAULT_CACHE_DIR
 		}
@@ -97,6 +135,12 @@ func run(args []string, stdout, stderr io.Writer) error {
 			MaxSizeMB:     500,
 			MaxFileSizeMB: 4,
 			ToolVersion:   Version,
+		}
+		if merged.CacheMaxSizeMB != nil {
+			openOpts.MaxSizeMB = *merged.CacheMaxSizeMB
+		}
+		if merged.CacheMaxFileSizeMB != nil {
+			openOpts.MaxFileSizeMB = *merged.CacheMaxFileSizeMB
 		}
 		if opts.RebuildCache {
 			store, err = cache.Rebuild(cacheDir, openOpts)
@@ -119,8 +163,8 @@ func run(args []string, stdout, stderr io.Writer) error {
 
 	// Baseline discovery / load.
 	var bl *baseline.Baseline
-	if !opts.NoBaseline {
-		path := opts.BaselineFile
+	if !merged.NoBaseline {
+		path := merged.BaselineFile
 		if path == "" {
 			path = baseline.Discover(".")
 		}
@@ -148,9 +192,15 @@ func run(args []string, stdout, stderr io.Writer) error {
 		}
 	}
 
+	walkOpts := engine.DefaultWalkOptions()
+	walkOpts.IncludeTests = merged.IncludeTests
+	walkOpts.Include = merged.Include
+	walkOpts.Exclude = merged.Exclude
+
 	analyzer := engine.NewAnalyzerBuilder().
 		Registry(reg).
 		ScanContext(ctx).
+		WalkOptions(walkOpts).
 		Cache(store).
 		Baseline(bl).
 		ProjectRoot(projectRoot).
