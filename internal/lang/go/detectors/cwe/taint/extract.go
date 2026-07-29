@@ -5,8 +5,8 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/goparse"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
 // ExtractTaintFacts walks the unit AST and collects sources/sinks/sanitizers/assignments.

@@ -18,7 +18,7 @@ type serviceConfig struct {
 
 // Vulnerable: loads API secret from a world-readable JSON settings file.
 func ConfigSecretHandler(w http.ResponseWriter, r *http.Request) {
-	raw, err := os.ReadFile("/etc/codehound/service.json")
+	raw, err := os.ReadFile("/etc/goslop/service.json")
 	if err != nil {
 		http.Error(w, "config", http.StatusInternalServerError)
 		return

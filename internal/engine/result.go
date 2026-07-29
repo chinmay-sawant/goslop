@@ -4,8 +4,8 @@ package engine
 import (
 	"fmt"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // ScanErrorKind is a coarse per-file error category.
@@ -77,7 +77,7 @@ type AnalysisResult struct {
 	Stats *ScanStats
 	// SourceCache maps display path → source when ScanContext.RetainSources is set.
 	SourceCache map[string]string
-	// SuppressedCount is findings removed/tagged by codehound-ignore directives.
+	// SuppressedCount is findings removed/tagged by goslop-ignore directives.
 	SuppressedCount int
 	// BaselinedCount is findings filtered by the baseline store.
 	BaselinedCount int

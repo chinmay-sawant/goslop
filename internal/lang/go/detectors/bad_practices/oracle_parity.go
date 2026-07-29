@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/goslop/internal/core"
 )
 
 // pureFalsePositiveRules fire on gopdfsuit in Go but never in the Rust oracle
@@ -40,7 +40,7 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 		}
 		if strings.Contains(p, "tests/fixtures") ||
 			strings.Contains(p, `tests\fixtures`) ||
-			strings.Contains(p, "codehound-fixtures") ||
+			strings.Contains(p, "goslop-fixtures") ||
 			strings.Contains(p, "-vulnerable") ||
 			strings.Contains(p, "-safe") {
 			return false

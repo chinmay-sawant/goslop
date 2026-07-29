@@ -8,7 +8,7 @@ func TestFingerprintV2Stable(t *testing.T) {
 	if a != b {
 		t.Fatalf("unstable fingerprint: %q vs %q", a, b)
 	}
-	if len(a) < len("codehound:2:") || a[:len("codehound:2:")] != "codehound:2:" {
+	if len(a) < len("goslop:2:") || a[:len("goslop:2:")] != "goslop:2:" {
 		t.Fatalf("prefix: %q", a)
 	}
 	c := FingerprintV2("CWE-78", "main.go", "other")

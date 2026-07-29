@@ -1,12 +1,12 @@
 ## Summary
 
-Rebrand all markdown documentation from CodeHound/codehound to **goslop**, and remove em dashes (and related unicode dashes) from every `.md` file so prose matches the goslop product name and plain ASCII hyphen style.
+Rebrand all markdown documentation from goslop/goslop to **goslop**, and remove em dashes (and related unicode dashes) from every `.md` file so prose matches the goslop product name and plain ASCII hyphen style.
 
 ---
 
 ## Motivation / context
 
-- Product and GitHub repository are **goslop**; leftover CodeHound branding in docs was confusing.
+- Product and GitHub repository are **goslop**; leftover goslop branding in docs was confusing.
 - Plans: `plans/PR/PR_TEMPLATE.md` (process)
 - Issues: see **Related issues**
 
@@ -16,7 +16,7 @@ Rebrand all markdown documentation from CodeHound/codehound to **goslop**, and r
 
 ### Branding
 
-- Replace `CodeHound` / `codehound` with `goslop` across all markdown (README, `documents/`, `plans/`, detector READMEs, fixture README).
+- Replace `goslop` / `goslop` with `goslop` across all markdown (README, `documents/`, `plans/`, detector READMEs, fixture README).
 - Soften rewrite-oriented wording in user docs (overview presents goslop as a Go SAT for PERF, BP, and CWE).
 
 ### Typography
@@ -52,7 +52,7 @@ Rebrand all markdown documentation from CodeHound/codehound to **goslop**, and r
 
 ## Test plan
 
-- [x] Grep all `*.md` for `codehound` / `CodeHound` (expect zero)
+- [x] Grep all `*.md` for `goslop` / `goslop` (expect zero)
 - [x] Grep all `*.md` for em dash `—` (expect zero)
 - [ ] Spot-check README and `documents/` for readable prose after dash replacement
 - [ ] Docs-only; no `make test` required for correctness of product binary
@@ -60,7 +60,7 @@ Rebrand all markdown documentation from CodeHound/codehound to **goslop**, and r
 ### Commands
 
 ```sh
-rg -i 'codehound' --glob '*.md' || true
+rg -i 'goslop' --glob '*.md' || true
 rg $'\u2014' --glob '*.md' || true
 ```
 
@@ -69,7 +69,7 @@ rg $'\u2014' --glob '*.md' || true
 ## Screenshots / sample output
 
 ```
-Remaining codehound in markdown: 0
+Remaining goslop in markdown: 0
 Remaining em dashes in markdown: 0
 ```
 
@@ -93,7 +93,7 @@ Remaining em dashes in markdown: 0
 
 ## Follow-ups (out of scope)
 
-- Align runtime identifiers (`cmd/codehound`, `codehound.toml`, fingerprints, ignore directives) with goslop if a full code rename is desired later.
+- Align runtime identifiers (`cmd/goslop`, `goslop.toml`, fingerprints, ignore directives) with goslop if a full code rename is desired later.
 
 ---
 

@@ -3,7 +3,7 @@ package perf
 import (
 	"sync"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 var registerMu sync.Mutex

@@ -15,6 +15,6 @@ import (
 func DumpConfigSnapshot(c *gin.Context, db *gorm.DB) error {
 	_ = db
 	dsn := os.Getenv("DATABASE_URL")
-	path := filepath.Join("/var/lib/codehound/private", "config-snapshot.txt")
+	path := filepath.Join("/var/lib/goslop/private", "config-snapshot.txt")
 	return os.WriteFile(path, []byte("dsn="+dsn), 0o600)
 }

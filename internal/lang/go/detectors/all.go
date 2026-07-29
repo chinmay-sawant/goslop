@@ -2,11 +2,11 @@
 package detectors
 
 import (
-	"github.com/chinmay/codehound/internal/core"
-	badpractices "github.com/chinmay/codehound/internal/lang/go/detectors/bad_practices"
-	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe"
-	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe/taint"
-	"github.com/chinmay/codehound/internal/lang/go/detectors/perf"
+	"github.com/chinmay/goslop/internal/core"
+	badpractices "github.com/chinmay/goslop/internal/lang/go/detectors/bad_practices"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/cwe"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/cwe/taint"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/perf"
 )
 
 // All returns the detector set registered with the Go language plugin.

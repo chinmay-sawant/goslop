@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// Conventional exit codes (parity with Rust CodeHound):
+// Conventional exit codes (parity with Rust goslop):
 //
 //	0 — clean (no failing findings, no errors)
 //	1 — findings that violate FailPolicy

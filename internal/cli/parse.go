@@ -28,7 +28,7 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 		return opts, nil
 	}
 
-	fs := flag.NewFlagSet("codehound", flag.ContinueOnError)
+	fs := flag.NewFlagSet("goslop", flag.ContinueOnError)
 	if w != nil {
 		fs.SetOutput(w)
 	} else {
@@ -48,12 +48,12 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.ListRules, "list-rules", false, "list registered rules and exit")
 	fs.BoolVar(&opts.IncludeTests, "include-tests", false, "include test files (*_test.*) in analysis")
 	fs.BoolVar(&opts.NoCache, "no-cache", false, "disable the incremental analysis cache")
-	fs.StringVar(&opts.CacheDir, "cache-dir", "", "incremental cache directory (default .codehound-cache)")
+	fs.StringVar(&opts.CacheDir, "cache-dir", "", "incremental cache directory (default .goslop-cache)")
 	fs.BoolVar(&opts.RebuildCache, "rebuild-cache", false, "purge the cache directory before scanning")
 	fs.BoolVar(&opts.PruneCache, "prune-cache", false, "prune stale cache entries for PATHS and exit")
-	fs.BoolVar(&opts.NoBaseline, "no-baseline", false, "ignore any existing .codehound-baseline.json")
+	fs.BoolVar(&opts.NoBaseline, "no-baseline", false, "ignore any existing .goslop-baseline.json")
 	fs.StringVar(&opts.BaselineFile, "baseline-file", "", "path to baseline file (default: discover)")
-	fs.BoolVar(&opts.ShowIgnored, "show-ignored", false, "report findings suppressed by codehound-ignore")
+	fs.BoolVar(&opts.ShowIgnored, "show-ignored", false, "report findings suppressed by goslop-ignore")
 	fs.BoolVar(&opts.ShowBaselined, "show-baselined", false, "report findings present in the baseline")
 	fs.BoolVar(&opts.Taint, "taint", false, "enable experimental taint tracking (CWE-22/78/79/89)")
 	fs.BoolVar(&opts.NoTaint, "no-taint", false, "disable taint tracking even under security profile")
@@ -67,13 +67,13 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.NoTerminal, "no-terminal", false, "print product scan summary only (skip per-finding text dump)")
 	fs.BoolVar(&opts.NoFail, "no-fail", false, "always exit 0 even when findings match the fail policy")
 	fs.StringVar(&opts.ExplainRule, "explain", "", "print catalogue metadata for a rule id and exit")
-	fs.StringVar(&opts.ConfigPath, "config", "", "path to codehound.toml (default: discover upward from PATH)")
+	fs.StringVar(&opts.ConfigPath, "config", "", "path to goslop.toml (default: discover upward from PATH)")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {
 		out := fs.Output()
-		_, _ = fmt.Fprintf(out, "Usage: codehound [flags] [PATH...]\n")
-		_, _ = fmt.Fprintf(out, "       codehound init\n\n")
+		_, _ = fmt.Fprintf(out, "Usage: goslop [flags] [PATH...]\n")
+		_, _ = fmt.Fprintf(out, "       goslop init\n\n")
 		_, _ = fmt.Fprintf(out, "Flags:\n")
 		fs.PrintDefaults()
 	}

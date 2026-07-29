@@ -11,10 +11,10 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/engine"
-	"github.com/chinmay/codehound/internal/fixture"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/engine"
+	"github.com/chinmay/goslop/internal/fixture"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // RepoRoot returns the repository root (directory that contains go.mod),

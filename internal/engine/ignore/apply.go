@@ -3,7 +3,7 @@ package ignore
 import (
 	"strings"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 const suppressedTag = " (suppressed)"

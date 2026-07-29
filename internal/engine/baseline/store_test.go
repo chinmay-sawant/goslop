@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/engine/baseline"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/engine/baseline"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestBaselineRoundTripAndFilter(t *testing.T) {

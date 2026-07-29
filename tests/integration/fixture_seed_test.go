@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chinmay/codehound/tests/integration"
+	"github.com/chinmay/goslop/tests/integration"
 )
 
 // TestSeedFixtureOracle exercises the Phase 12 integration harness on a small

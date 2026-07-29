@@ -8,7 +8,7 @@ import "strings"
 // Current implementation: one strings.Contains per needle at build time.
 // Upgrade path: replace Build with Aho-Corasick (or similar multi-pattern
 // matcher) when needle tables grow large enough that N×M scanning matters —
-// see Rust codehound::lang::source_index which uses aho-corasick with a
+// see Rust goslop::lang::source_index which uses aho-corasick with a
 // process-lifetime matcher cache keyed by needle table identity.
 type SourceIndex struct {
 	flags  []bool

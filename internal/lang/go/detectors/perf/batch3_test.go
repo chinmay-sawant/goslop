@@ -3,7 +3,7 @@ package perf_test
 import (
 	"testing"
 
-	"github.com/chinmay/codehound/internal/lang/go/detectors/perf"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/perf"
 )
 
 func TestBatch3RuleIDsRegistered(t *testing.T) {

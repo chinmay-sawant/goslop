@@ -3,8 +3,8 @@ package perf
 import (
 	"sort"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // ruleFn is one PERF detector over a prebuilt fact bag.

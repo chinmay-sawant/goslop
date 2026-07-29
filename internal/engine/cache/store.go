@@ -8,14 +8,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Store is an on-disk incremental analysis cache.
 //
 // Layout:
 //
-//	<codehound-cache>/
+//	<goslop-cache>/
 //	  manifest.json
 //	  files/<sha256(path)>.json
 //
@@ -495,7 +495,7 @@ func validatePurgePath(dir string) error {
 	if err != nil {
 		return &Error{Op: "abs", Path: dir, Err: err}
 	}
-	// Must look like a CodeHound cache (conventional name or manifest+files).
+	// Must look like a goslop cache (conventional name or manifest+files).
 	base := filepath.Base(abs)
 	manifest := filepath.Join(abs, manifestName)
 	files := filepath.Join(abs, filesSubdir)
@@ -523,5 +523,5 @@ func (e simpleError) Error() string { return string(e) }
 
 const (
 	errSymlink  simpleError = "refusing to purge a symlinked cache path"
-	errNotCache simpleError = "path is not a CodeHound cache directory"
+	errNotCache simpleError = "path is not a goslop cache directory"
 )

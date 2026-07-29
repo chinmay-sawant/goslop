@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/goslop/internal/core"
 )
 
 // packageTypeFacts holds same-package method sets and exported interfaces

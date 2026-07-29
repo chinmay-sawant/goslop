@@ -1,4 +1,4 @@
-// Package config loads and merges codehound.toml with CLI options.
+// Package config loads and merges goslop.toml with CLI options.
 //
 // Schema mirrors the Rust product subset used by goslop: only/skip, fail_on,
 // include/exclude, exclude_tests, baseline, cache, taint, bad_practices.
@@ -10,20 +10,20 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 	toml "github.com/pelletier/go-toml/v2"
 )
 
 // FileName is the default project config file name.
-const FileName = "codehound.toml"
+const FileName = "goslop.toml"
 
 // Document is the root TOML document.
 type Document struct {
-	Codehound Section `toml:"codehound"`
+	Goslop Section `toml:"goslop"`
 }
 
-// Section is the [codehound] table.
+// Section is the [goslop] table.
 type Section struct {
 	Languages    []string           `toml:"languages"`
 	FailOn       *string            `toml:"fail_on"`
@@ -39,13 +39,13 @@ type Section struct {
 	BadPractices BadPracticesConfig `toml:"bad_practices"`
 }
 
-// BaselineConfig is [codehound.baseline].
+// BaselineConfig is [goslop.baseline].
 type BaselineConfig struct {
 	Enabled *bool   `toml:"enabled"`
 	Path    *string `toml:"path"`
 }
 
-// CacheConfig is [codehound.cache].
+// CacheConfig is [goslop.cache].
 type CacheConfig struct {
 	Enabled          *bool    `toml:"enabled"`
 	Path             *string  `toml:"path"`
@@ -54,18 +54,18 @@ type CacheConfig struct {
 	MaxFileSizeMB    *uint64  `toml:"max_file_size_mb"`
 }
 
-// TaintConfig is [codehound.taint].
+// TaintConfig is [goslop.taint].
 type TaintConfig struct {
 	Enabled   *bool `toml:"enabled"`
 	ShowPaths *bool `toml:"show_paths"`
 }
 
-// TypedConfig is [codehound.typed].
+// TypedConfig is [goslop.typed].
 type TypedConfig struct {
 	Enabled *bool `toml:"enabled"`
 }
 
-// BadPracticesConfig is [codehound.bad_practices].
+// BadPracticesConfig is [goslop.bad_practices].
 type BadPracticesConfig struct {
 	Enabled           *bool             `toml:"enabled"`
 	Severity          *string           `toml:"severity"`
@@ -88,15 +88,15 @@ func Load(path string) (*Document, error) {
 func Parse(data []byte) (*Document, error) {
 	var doc Document
 	// Defaults for nested tables when partially specified.
-	doc.Codehound.Baseline.Enabled = boolPtr(true)
-	doc.Codehound.Cache.Enabled = boolPtr(true)
+	doc.Goslop.Baseline.Enabled = boolPtr(true)
+	doc.Goslop.Cache.Enabled = boolPtr(true)
 
 	dec := toml.NewDecoder(strings.NewReader(string(data)))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&doc); err != nil {
-		return nil, fmt.Errorf("parse codehound.toml: %w", err)
+		return nil, fmt.Errorf("parse goslop.toml: %w", err)
 	}
-	if err := validate(&doc.Codehound); err != nil {
+	if err := validate(&doc.Goslop); err != nil {
 		return nil, err
 	}
 	return &doc, nil
@@ -105,23 +105,23 @@ func Parse(data []byte) (*Document, error) {
 func validate(s *Section) error {
 	if s.FailOn != nil {
 		if _, err := core.ParseFailPolicy(*s.FailOn); err != nil {
-			return fmt.Errorf("codehound.fail_on: %w", err)
+			return fmt.Errorf("goslop.fail_on: %w", err)
 		}
 	}
 	if s.BadPractices.Severity != nil {
 		if _, err := rules.ParseSeverity(*s.BadPractices.Severity); err != nil {
-			return fmt.Errorf("codehound.bad_practices.severity: %w", err)
+			return fmt.Errorf("goslop.bad_practices.severity: %w", err)
 		}
 	}
 	for id, sev := range s.BadPractices.SeverityOverrides {
 		if _, err := rules.ParseSeverity(sev); err != nil {
-			return fmt.Errorf("codehound.bad_practices.severity_overrides[%q]: %w", id, err)
+			return fmt.Errorf("goslop.bad_practices.severity_overrides[%q]: %w", id, err)
 		}
 	}
 	return nil
 }
 
-// Discover walks upward from start looking for codehound.toml.
+// Discover walks upward from start looking for goslop.toml.
 // Returns "" when none found.
 func Discover(start string) string {
 	if start == "" {
@@ -197,7 +197,7 @@ type Merged struct {
 	CacheMaxFileSizeMB *uint64
 }
 
-// LoadAndMerge discovers/loads codehound.toml and merges with CLI input.
+// LoadAndMerge discovers/loads goslop.toml and merges with CLI input.
 func LoadAndMerge(in MergeInput) (*Merged, error) {
 	path := in.ConfigPath
 	if path == "" {
@@ -231,7 +231,7 @@ func LoadAndMerge(in MergeInput) (*Merged, error) {
 	}
 	out.Doc = doc
 	out.ConfigPath = path
-	s := doc.Codehound
+	s := doc.Goslop
 
 	// only / skip are additive (union of config + CLI).
 	out.Only = unionStable(s.Only, in.Only)
@@ -248,7 +248,7 @@ func LoadAndMerge(in MergeInput) (*Merged, error) {
 	if !in.NoFail && s.FailOn != nil {
 		p, err := core.ParseFailPolicy(*s.FailOn)
 		if err != nil {
-			return nil, fmt.Errorf("codehound.fail_on: %w", err)
+			return nil, fmt.Errorf("goslop.fail_on: %w", err)
 		}
 		out.FailPolicy = &p
 	}

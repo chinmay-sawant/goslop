@@ -1,4 +1,4 @@
-# CodeHound text fixture (.txt) — materialized to .py at test/runtime
+# goslop text fixture (.txt) — materialized to .py at test/runtime
 lang: python
 file: sample.py
 ---

@@ -4,14 +4,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/engine/ignore"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/engine/ignore"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestParseInlineNextLine(t *testing.T) {
 	src := `package main
 
-// codehound-ignore: CWE-78
+// goslop-ignore: CWE-78
 exec.Command("sh", "-c", cmd)
 `
 	m := ignore.ParseInlineIgnores(src)
@@ -37,7 +37,7 @@ func TestApplySuppressesFinding(t *testing.T) {
 import "os/exec"
 
 func handler() {
-	// codehound-ignore: CWE-78
+	// goslop-ignore: CWE-78
 	exec.Command("sh", "-c", "x")
 }
 `
@@ -65,7 +65,7 @@ func handler() {
 
 func TestApplyShowIgnored(t *testing.T) {
 	src := `package main
-// codehound-ignore: CWE-78
+// goslop-ignore: CWE-78
 exec.Command("x")
 `
 	findings := []rules.Finding{
@@ -81,7 +81,7 @@ exec.Command("x")
 }
 
 func TestFileIgnoreAll(t *testing.T) {
-	src := `// codehound-ignore-file
+	src := `// goslop-ignore-file
 package main
 func f() {}
 `
@@ -98,7 +98,7 @@ func f() {}
 
 func TestIgnoreNotInString(t *testing.T) {
 	src := `package main
-const s = "// codehound-ignore: CWE-78"
+const s = "// goslop-ignore: CWE-78"
 exec.Command("x")
 `
 	m := ignore.ParseInlineIgnores(src)
@@ -120,7 +120,7 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	cmd := r.URL.Query().Get("cmd")
-	// codehound-ignore: CWE-78
+	// goslop-ignore: CWE-78
 	exec.Command("sh", "-c", cmd).Run()
 }
 `

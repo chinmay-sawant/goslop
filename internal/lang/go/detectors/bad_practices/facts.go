@@ -4,9 +4,9 @@ import (
 	goast "go/ast"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/ast"
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/goparse"
+	"github.com/chinmay/goslop/internal/ast"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
 // Shared needle table for BP fast-paths (Rust parity intent).

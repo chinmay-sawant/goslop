@@ -1,4 +1,4 @@
-// Package app orchestrates the CodeHound CLI.
+// Package app orchestrates the goslop CLI.
 package app
 
 import (
@@ -12,18 +12,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chinmay/codehound/internal/cli"
-	"github.com/chinmay/codehound/internal/config"
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/engine"
-	"github.com/chinmay/codehound/internal/engine/baseline"
-	"github.com/chinmay/codehound/internal/engine/cache"
-	"github.com/chinmay/codehound/internal/export"
-	"github.com/chinmay/codehound/internal/reporting"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/cli"
+	"github.com/chinmay/goslop/internal/config"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/engine"
+	"github.com/chinmay/goslop/internal/engine/baseline"
+	"github.com/chinmay/goslop/internal/engine/cache"
+	"github.com/chinmay/goslop/internal/export"
+	"github.com/chinmay/goslop/internal/reporting"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
-// Run is the CLI entry used by cmd/codehound.
+// Run is the CLI entry used by cmd/goslop.
 func Run(args []string) error {
 	return run(args, os.Stdout, os.Stderr)
 }
@@ -66,7 +66,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		}
 	}
 
-	// Load codehound.toml (discover or --config) and merge with CLI.
+	// Load goslop.toml (discover or --config) and merge with CLI.
 	merged, merr := config.LoadAndMerge(config.MergeInput{
 		Only:           opts.Only,
 		Skip:           opts.Skip,

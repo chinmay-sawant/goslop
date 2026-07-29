@@ -16,7 +16,7 @@ type GinCtx struct {
 }
 
 func RunUserScript(c *GinCtx) error {
-	secret, err := os.Open("/etc/codehound/master.key")
+	secret, err := os.Open("/etc/goslop/master.key")
 	if err != nil {
 		return err
 	}

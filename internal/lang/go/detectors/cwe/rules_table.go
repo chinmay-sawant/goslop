@@ -3,8 +3,8 @@ package cwe
 import (
 	"strings"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 type needleGroup []string
@@ -929,9 +929,9 @@ var cweNeedleRules = []cweNeedleRule{
 	{
 		id: "CWE-403",
 		groups: []needleGroup{
-			{"os.Open(\"/etc/codehound/master.key\")", "exec.Command(\"/bin/sh\", \"-c\", script)", "_ = secret"},
-			{"os.Open(\"/etc/codehound/master.key\")", "c.Request.PostFormValue(\"script\")", "_ = secret"},
-			{"os.Open(\"/etc/codehound/master.key\")", "PostFormValue(\"script\")", "_ = secret"},
+			{"os.Open(\"/etc/goslop/master.key\")", "exec.Command(\"/bin/sh\", \"-c\", script)", "_ = secret"},
+			{"os.Open(\"/etc/goslop/master.key\")", "c.Request.PostFormValue(\"script\")", "_ = secret"},
+			{"os.Open(\"/etc/goslop/master.key\")", "PostFormValue(\"script\")", "_ = secret"},
 		},
 		forbid: []string{"syscall.Close", "SysProcAttr"},
 		span:   "master.key",
@@ -1162,7 +1162,7 @@ var cweNeedleRules = []cweNeedleRule{
 			{"/var/www/"},
 			{"/var/www/html/public/"},
 		},
-		forbid: []string{"/var/lib/codehound/private", "0o600"},
+		forbid: []string{"/var/lib/goslop/private", "0o600"},
 		span:   "/var/www/",
 		msg:    "database configuration secrets are exported to a public world-readable file path",
 		meta:   &MetaCWE538,

@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-const fixedJobLock = "/var/run/codehound/job.lock"
+const fixedJobLock = "/var/run/goslop/job.lock"
 
 var jobGate sync.Mutex
 

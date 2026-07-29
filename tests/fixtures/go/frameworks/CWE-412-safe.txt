@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const jobLockPath = "/var/run/codehound/job.lock"
+const jobLockPath = "/var/run/goslop/job.lock"
 
 var gate sync.Mutex
 

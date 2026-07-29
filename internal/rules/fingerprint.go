@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	fingerprintTool    = "codehound"
+	fingerprintTool    = "goslop"
 	fingerprintVersion = 2
 )
 
-// FingerprintV2 returns codehound:2:{rule}:{file}:{msg_hash16}.
+// FingerprintV2 returns goslop:2:{rule}:{file}:{msg_hash16}.
 // The file path is normalized to forward slashes.
 func FingerprintV2(ruleID, file, message string) string {
 	sum := sha256.Sum256([]byte(message))

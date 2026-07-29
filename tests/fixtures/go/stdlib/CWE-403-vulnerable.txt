@@ -17,7 +17,7 @@ func LaunchUserJob(w http.ResponseWriter, r *http.Request) error {
 		http.Error(w, "script required", http.StatusBadRequest)
 		return http.ErrMissingFile
 	}
-	secret, err := os.Open("/etc/codehound/master.key")
+	secret, err := os.Open("/etc/goslop/master.key")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err

@@ -10,9 +10,9 @@ import (
 //go:embed init_template.toml
 var initTemplate []byte
 
-// runInit writes templates/codehound.toml content to ./codehound.toml when absent.
+// runInit writes templates/goslop.toml content to ./goslop.toml when absent.
 func runInit() error {
-	path := "codehound.toml"
+	path := "goslop.toml"
 	if st, err := os.Stat(path); err == nil && !st.IsDir() {
 		return &ExitCodeError{
 			Code: ExitConfig,
@@ -33,6 +33,6 @@ func runInit() error {
 	if err != nil {
 		abs = path
 	}
-	fmt.Printf("wrote starter codehound.toml to %s\n", abs)
+	fmt.Printf("wrote starter goslop.toml to %s\n", abs)
 	return nil
 }

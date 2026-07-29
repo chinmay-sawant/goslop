@@ -3,6 +3,7 @@
 *.exe
 *.test
 *.out
+.goslop-cache/
 .codehound-cache/
 .target-materialize/
 /tmp/
@@ -11,5 +12,6 @@
 *.swp
 coverage.out
 
-scripts/chunks
-scripts/findings
+# Generated export artifacts (make run / make oracle)
+scripts/chunks/
+scripts/findings/

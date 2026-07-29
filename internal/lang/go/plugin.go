@@ -14,9 +14,9 @@
 package golang
 
 import (
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/detectors"
-	"github.com/chinmay/codehound/internal/lang/go/goparse"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/detectors"
+	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
 // Plugin is the Go language plugin.

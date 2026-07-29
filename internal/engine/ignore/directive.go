@@ -1,4 +1,4 @@
-// Package ignore parses and applies codehound-ignore suppression directives.
+// Package ignore parses and applies goslop-ignore suppression directives.
 package ignore
 
 // Directive is a rule allow-list or “all rules”.

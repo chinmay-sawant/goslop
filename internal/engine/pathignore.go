@@ -24,10 +24,10 @@ type ignorePattern struct {
 	hasSlash bool
 }
 
-// loadPathIgnores loads .gitignore, .codehoundignore, and .ignore from root.
+// loadPathIgnores loads .gitignore, .goslopignore, and .ignore from root.
 func loadPathIgnores(root string) *pathIgnoreMatcher {
 	m := &pathIgnoreMatcher{}
-	for _, name := range []string{".gitignore", ".codehoundignore", ".ignore"} {
+	for _, name := range []string{".gitignore", ".goslopignore", ".ignore"} {
 		path := filepath.Join(root, name)
 		f, err := os.Open(path)
 		if err != nil {

@@ -1,4 +1,4 @@
-// Package cli parses CodeHound command-line flags into Options.
+// Package cli parses goslop command-line flags into Options.
 package cli
 
 // OutputFormat is the reporter selection.
@@ -27,7 +27,7 @@ type Options struct {
 	IncludeTests bool
 	// NoCache disables the incremental analysis cache.
 	NoCache bool
-	// CacheDir overrides the default .codehound-cache directory.
+	// CacheDir overrides the default .goslop-cache directory.
 	CacheDir string
 	// RebuildCache purges the cache directory before the scan.
 	RebuildCache bool
@@ -37,7 +37,7 @@ type Options struct {
 	NoBaseline bool
 	// BaselineFile is an explicit baseline path (default: discover).
 	BaselineFile string
-	// ShowIgnored keeps findings suppressed by codehound-ignore directives.
+	// ShowIgnored keeps findings suppressed by goslop-ignore directives.
 	ShowIgnored bool
 	// ShowBaselined keeps findings present in the baseline.
 	ShowBaselined bool
@@ -69,7 +69,7 @@ type Options struct {
 	ExplainRule string
 	// Version requests version printing.
 	Version bool
-	// ConfigPath overrides codehound.toml discovery.
+	// ConfigPath overrides goslop.toml discovery.
 	ConfigPath string
 	// Command is a top-level subcommand when set ("init").
 	Command string

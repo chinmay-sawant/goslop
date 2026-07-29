@@ -5,15 +5,15 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/config"
-	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/goslop/internal/config"
+	"github.com/chinmay/goslop/internal/core"
 )
 
 func TestParseAndMergeAdditiveOnlySkip(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, "codehound.toml")
+	path := filepath.Join(dir, "goslop.toml")
 	body := `
-[codehound]
+[goslop]
 only = ["PERF-1"]
 skip = ["BP-1"]
 fail_on = "high"
@@ -21,10 +21,10 @@ exclude_tests = false
 include = ["**/*.go"]
 exclude = ["vendor/**"]
 
-[codehound.cache]
+[goslop.cache]
 enabled = false
 
-[codehound.taint]
+[goslop.taint]
 enabled = true
 show_paths = true
 `
@@ -66,8 +66,8 @@ show_paths = true
 
 func TestCLINoFailOverridesConfigFailOn(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, "codehound.toml")
-	if err := os.WriteFile(path, []byte(`[codehound]
+	path := filepath.Join(dir, "goslop.toml")
+	if err := os.WriteFile(path, []byte(`[goslop]
 fail_on = "high"
 `), 0o644); err != nil {
 		t.Fatal(err)
@@ -85,7 +85,7 @@ fail_on = "high"
 }
 
 func TestUnknownFieldRejected(t *testing.T) {
-	_, err := config.Parse([]byte(`[codehound]
+	_, err := config.Parse([]byte(`[goslop]
 not_a_real_field = true
 `))
 	if err == nil {
@@ -99,8 +99,8 @@ func TestDiscover(t *testing.T) {
 	if err := os.MkdirAll(sub, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	cfg := filepath.Join(root, "codehound.toml")
-	if err := os.WriteFile(cfg, []byte("[codehound]\n"), 0o644); err != nil {
+	cfg := filepath.Join(root, "goslop.toml")
+	if err := os.WriteFile(cfg, []byte("[goslop]\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	got := config.Discover(sub)

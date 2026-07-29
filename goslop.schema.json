@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "codehound.toml",
-  "description": "Configuration file for CodeHound. All fields are optional; unknown fields are rejected.",
+  "title": "goslop.toml",
+  "description": "Configuration file for goslop. All fields are optional; unknown fields are rejected.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "codehound": {
+    "goslop": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -58,7 +58,7 @@
               "default": true
             },
             "path": {
-              "description": "Custom path to a .codehound-baseline.json file.",
+              "description": "Custom path to a .goslop-baseline.json file.",
               "type": "string"
             }
           }
@@ -74,7 +74,7 @@
               "default": true
             },
             "path": {
-              "description": "Custom directory for the incremental analysis cache. Overrides auto-discovery of .codehound-cache/.",
+              "description": "Custom directory for the incremental analysis cache. Overrides auto-discovery of .goslop-cache/.",
               "type": "string"
             },
             "max_size_mb": {

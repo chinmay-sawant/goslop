@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/goslop/internal/core"
 )
 
 // bpProjectCaches memoizes project-level facts per scan root.
@@ -236,7 +236,7 @@ func projectSnapshotForRoot(root string) *ProjectSnapshot {
 
 var skipProjectDirs = map[string]struct{}{
 	"target": {}, "node_modules": {}, ".git": {}, "vendor": {},
-	".codehound-cache": {}, "codehound-fixtures": {}, "__pycache__": {},
+	".goslop-cache": {}, "goslop-fixtures": {}, "__pycache__": {},
 	".idea": {}, ".vscode": {}, "testdata": {},
 }
 

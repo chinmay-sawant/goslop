@@ -3,7 +3,7 @@ package ast_test
 import (
 	"testing"
 
-	"github.com/chinmay/codehound/internal/ast"
+	"github.com/chinmay/goslop/internal/ast"
 )
 
 func TestSourceIndex_Has(t *testing.T) {

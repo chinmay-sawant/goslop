@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/engine/cache"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/engine/cache"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestContentHashStable(t *testing.T) {

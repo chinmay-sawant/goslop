@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chinmay/codehound/tests/integration"
+	"github.com/chinmay/goslop/tests/integration"
 )
 
 // TestBPFixturesMatrix ports Rust go_bad_practice_fixtures_fire_vulnerable_and_silence_safe.

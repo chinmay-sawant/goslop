@@ -3,10 +3,10 @@ package golang_test
 import (
 	"testing"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/engine"
-	golang "github.com/chinmay/codehound/internal/lang/go"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/engine"
+	golang "github.com/chinmay/goslop/internal/lang/go"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestGoPluginRegistration(t *testing.T) {

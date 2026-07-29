@@ -1,4 +1,4 @@
-// Command codehound is the CodeHound static analyzer CLI (Go port).
+// Command goslop is the goslop static analysis tool (SAT) CLI.
 package main
 
 import (
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chinmay/codehound/internal/app"
+	"github.com/chinmay/goslop/internal/app"
 )
 
 func main() {

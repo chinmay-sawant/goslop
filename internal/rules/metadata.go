@@ -1,6 +1,6 @@
 package rules
 
-import "github.com/chinmay/codehound/internal/cwe"
+import "github.com/chinmay/goslop/internal/cwe"
 
 // Maturity is a catalogue trust / readiness tag for a rule.
 type Maturity string

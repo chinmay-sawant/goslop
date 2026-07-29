@@ -1,6 +1,6 @@
 package perf
 
-import "github.com/chinmay/codehound/internal/rules"
+import "github.com/chinmay/goslop/internal/rules"
 
 // Batch 5 metadata: PERF-215..242 (excluding PERF-230, which lives in seed).
 var (

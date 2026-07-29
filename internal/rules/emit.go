@@ -1,6 +1,6 @@
 package rules
 
-import "github.com/chinmay/codehound/internal/cwe"
+import "github.com/chinmay/goslop/internal/cwe"
 
 // PushFinding appends a finding built from metadata.
 func PushFinding(meta *RuleMetadata, file string, line, col int, message string, out *[]Finding) {
