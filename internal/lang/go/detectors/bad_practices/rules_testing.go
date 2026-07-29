@@ -1,6 +1,7 @@
 package badpractices
 
 import (
+	goast "go/ast"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/core"
@@ -56,30 +57,31 @@ func detectBP18(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !isTestFile(unit) {
 		return
 	}
-	// t.Error without return/t.FailNow in same if block — heuristic: t.Error then continues with use of failed value
+	// Rust parity: t.Error/f without an immediate terminating next statement.
 	lines := codeLines(unit.Source)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !(strings.HasPrefix(t, "t.Error(") || strings.HasPrefix(t, "t.Errorf(")) {
 			continue
 		}
-		// if next non-empty is not return/Fatal and not closing brace alone of empty block
-		hasExit := false
-		for j := i + 1; j < len(lines) && j < i+5; j++ {
-			n := strings.TrimSpace(lines[j].text)
-			if n == "}" {
-				break
-			}
-			if strings.HasPrefix(n, "return") || strings.HasPrefix(n, "t.FailNow") || strings.HasPrefix(n, "t.Fatal") {
-				hasExit = true
-				break
-			}
+		nextIdx := i + 1
+		for nextIdx < len(lines) && strings.TrimSpace(lines[nextIdx].text) == "" {
+			nextIdx++
 		}
-		if !hasExit {
-			// only flag when inside if err
-			if i > 0 && strings.Contains(strings.TrimSpace(lines[i-1].text), "err") {
-				pushAt(unit, meta, line.byte, "t.Error without early exit continues the test after a failure", out)
-			}
+		if nextIdx >= len(lines) {
+			continue
+		}
+		n := strings.TrimSpace(lines[nextIdx].text)
+		terminates := n == "return" ||
+			strings.HasPrefix(n, "return ") ||
+			strings.HasPrefix(n, "t.FailNow(") ||
+			strings.HasPrefix(n, "t.Fatal(") ||
+			strings.HasPrefix(n, "t.Fatalf(") ||
+			strings.HasPrefix(n, "t.Skip(") ||
+			strings.HasPrefix(n, "t.Skipf(") ||
+			strings.HasPrefix(n, "t.SkipNow(")
+		if !terminates {
+			pushAt(unit, meta, line.byte, "t.Error continues the test path; return or fail immediately after the error", out)
 		}
 	}
 }
@@ -147,18 +149,47 @@ func detectBP22(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP23(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP23(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-23")
 	if !isTestFile(unit) {
 		return
 	}
-	// long-looking tests: integration/slow markers without testing.Short
-	src := unit.Source
-	if (strings.Contains(src, "integration") || strings.Contains(src, "time.Sleep") || strings.Contains(src, "http.Get")) &&
-		!strings.Contains(src, "testing.Short") {
-		if pos := strings.Index(src, "func Test"); pos >= 0 {
-			pushAt(unit, meta, pos, "long-running test lacks testing.Short guard", out)
+	// Rust parity: Test* body spanning ≥20 lines without testing.Short().
+	msg := "long-running test should gate itself with testing.Short()"
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		for _, decl := range tree.File.Decls {
+			fd, ok := decl.(*goast.FuncDecl)
+			if !ok || fd.Name == nil || fd.Body == nil {
+				continue
+			}
+			if !strings.HasPrefix(fd.Name.Name, "Test") {
+				continue
+			}
+			startLine := tree.Fset.Position(fd.Pos()).Line
+			endLine := tree.Fset.Position(fd.End()).Line
+			if endLine-startLine < 20 {
+				continue
+			}
+			body := tree.NodeText(fd.Body)
+			if strings.Contains(body, "testing.Short") {
+				continue
+			}
+			pushAt(unit, meta, tree.Offset(fd.Pos()), msg, out)
 		}
+		return
+	}
+	// Text fallback: any Test* whose source span is long without Short.
+	src := unit.Source
+	if strings.Contains(src, "testing.Short") {
+		return
+	}
+	lines := strings.Split(src, "\n")
+	if len(lines) < 20 {
+		return
+	}
+	if pos := strings.Index(src, "func Test"); pos >= 0 {
+		pushAt(unit, meta, pos, msg, out)
 	}
 }
 
@@ -191,16 +222,61 @@ func detectBP161(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !isTestFile(unit) {
 		return
 	}
-	src := strings.ToLower(unit.Source)
-	prodHints := []string{"prod", "production", "live.", "rds.amazonaws", "azure.com"}
-	if strings.Contains(src, "sql.open") || strings.Contains(src, "postgres://") || strings.Contains(src, "mysql://") {
-		for _, h := range prodHints {
-			if strings.Contains(src, h) {
-				pushAt(unit, meta, 0, "test uses a production-looking DSN; point tests at local/ephemeral databases", out)
-				return
+	src := unit.Source
+	// sql.Open or gorm.Open with a literal production marker in the call text.
+	for _, line := range codeLines(src) {
+		t := line.text
+		if !(strings.Contains(t, "sql.Open") || strings.Contains(t, "gorm.Open") ||
+			strings.Contains(t, "postgres.Open") || strings.Contains(t, "mysql.")) {
+			// gorm may span lines: collect multi-line call roughly via full source later
+			continue
+		}
+		if containsLiteralProductionMarker(t) {
+			pushAt(unit, meta, line.byte, "test uses a production-looking DSN; point tests at local/ephemeral databases", out)
+			return
+		}
+	}
+	// Multi-line Open calls: check a window around Open.
+	if strings.Contains(src, "sql.Open") || strings.Contains(src, "gorm.Open") || strings.Contains(src, "postgres.Open") {
+		if containsLiteralProductionMarker(src) &&
+			(strings.Contains(src, "sql.Open") || strings.Contains(src, "gorm.Open") || strings.Contains(src, "postgres.Open")) {
+			// Avoid flagging local targets only when no prod marker — already gated.
+			// But exclude pure local: if only localhost/127.0.0.1 and no prod, skip.
+			if containsLiteralProductionMarker(src) {
+				pos := strings.Index(src, "Open(")
+				if pos < 0 {
+					pos = 0
+				}
+				pushAt(unit, meta, pos, "test uses a production-looking DSN; point tests at local/ephemeral databases", out)
 			}
 		}
 	}
+}
+
+func containsLiteralProductionMarker(s string) bool {
+	lower := strings.ToLower(s)
+	// Standalone prod / production markers in a string literal-ish context.
+	markers := []string{
+		"prod-", "-prod", ".prod.", "production", "orders-prod",
+		"prod-db", "prod_db", "prod.", "live.",
+		"rds.amazonaws", "azure.com",
+	}
+	for _, m := range markers {
+		if strings.Contains(lower, m) {
+			return true
+		}
+	}
+	// host=...prod...
+	if strings.Contains(lower, "host=") && strings.Contains(lower, "prod") {
+		return true
+	}
+	// postgres://...@prod...
+	if strings.Contains(lower, "postgres://") || strings.Contains(lower, "mysql://") {
+		if strings.Contains(lower, "prod") && !strings.Contains(lower, "localhost") {
+			return true
+		}
+	}
+	return false
 }
 
 func detectBP162(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -208,32 +284,61 @@ func detectBP162(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !isTestFile(unit) || !strings.Contains(unit.Source, "t.Parallel()") {
 		return
 	}
-	// package-level var mutated in parallel test
-	if strings.Contains(unit.Source, "var ") && strings.Contains(unit.Source, "t.Parallel()") {
-		// look for assignment to package level — weak
-		for _, line := range codeLines(unit.Source) {
-			t := strings.TrimSpace(line.text)
-			if strings.Contains(t, "=") && !strings.Contains(t, ":=") && !strings.HasPrefix(t, "var ") &&
-				!strings.HasPrefix(t, "const ") && !strings.HasPrefix(t, "type ") &&
-				!strings.Contains(t, "==") && !strings.Contains(t, "!=") {
-				// skip local-looking
-				if strings.HasPrefix(t, "t.") || strings.HasPrefix(t, "err ") {
-					continue
+	src := unit.Source
+	globals := packageLevelVarNames(src)
+	if len(globals) == 0 {
+		return
+	}
+	// Only fire when a parallel test body assigns to a package-level name.
+	lines := codeLines(src)
+	inParallelTest := false
+	depth := 0
+	testDepth := 0
+	for _, line := range lines {
+		t := strings.TrimSpace(line.text)
+		if strings.HasPrefix(t, "func Test") || strings.HasPrefix(t, "func Benchmark") || strings.HasPrefix(t, "func Fuzz") {
+			inParallelTest = false
+			testDepth = 0
+			depth = 0
+		}
+		for _, ch := range line.text {
+			if ch == '{' {
+				depth++
+				if testDepth == 0 && (strings.HasPrefix(t, "func Test") || strings.Contains(line.text, "func Test")) {
+					testDepth = depth
+				}
+			} else if ch == '}' {
+				if depth > 0 {
+					depth--
+				}
+				if testDepth > 0 && depth < testDepth {
+					inParallelTest = false
+					testDepth = 0
 				}
 			}
 		}
-		// if global var exists and Parallel
-		hasGlobal := false
-		for _, line := range codeLines(unit.Source) {
-			t := strings.TrimSpace(line.text)
-			if strings.HasPrefix(t, "var ") && !strings.Contains(t, "func") {
-				// at package level roughly if previous was not inside func — accept any top var
-				hasGlobal = true
-			}
+		if strings.Contains(t, "t.Parallel()") {
+			inParallelTest = true
 		}
-		if hasGlobal && strings.Contains(unit.Source, "t.Parallel()") {
-			if pos := strings.Index(unit.Source, "t.Parallel()"); pos >= 0 {
-				pushAt(unit, meta, pos, "parallel test may mutate shared package state", out)
+		if !inParallelTest {
+			continue
+		}
+		// assignment or index assign to global
+		if !strings.Contains(t, "=") && !strings.HasSuffix(t, "++") && !strings.HasSuffix(t, "--") {
+			continue
+		}
+		if strings.Contains(t, ":=") || strings.Contains(t, "==") || strings.Contains(t, "!=") {
+			continue
+		}
+		if strings.HasPrefix(t, "t.") || strings.HasPrefix(t, "var ") || strings.HasPrefix(t, "const ") {
+			continue
+		}
+		for g := range globals {
+			if strings.HasPrefix(t, g+" ") || strings.HasPrefix(t, g+"=") ||
+				strings.HasPrefix(t, g+".") || strings.HasPrefix(t, g+"[") ||
+				strings.HasPrefix(t, g+"++") || strings.HasPrefix(t, g+"--") {
+				pushAt(unit, meta, line.byte, "parallel test mutates package-level state; use an isolated per-test fixture", out)
+				return
 			}
 		}
 	}
@@ -244,11 +349,68 @@ func detectBP163(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !isTestFile(unit) {
 		return
 	}
-	if (strings.Contains(unit.Source, "update") || strings.Contains(unit.Source, "Update")) &&
-		(strings.Contains(unit.Source, "golden") || strings.Contains(unit.Source, "os.WriteFile") || strings.Contains(unit.Source, "ioutil.WriteFile")) {
-		if !strings.Contains(unit.Source, "testing.Short") && !strings.Contains(unit.Source, "*update") {
-			if pos := strings.Index(unit.Source, "WriteFile"); pos >= 0 {
-				pushAt(unit, meta, pos, "golden update path lacks a short-test or flag guard", out)
+	src := unit.Source
+	if strings.Contains(src, "testing.Short") {
+		return
+	}
+	// Require an update flag declaration.
+	hasUpdateFlag := strings.Contains(src, `flag.Bool("update"`) ||
+		strings.Contains(src, `flag.Bool("update-golden"`) ||
+		(strings.Contains(src, "flag.BoolVar(") && strings.Contains(src, `"update"`))
+	if !hasUpdateFlag {
+		return
+	}
+	// Update branch with WriteFile or Create.
+	lines := codeLines(src)
+	for i, line := range lines {
+		t := strings.TrimSpace(line.text)
+		// if *update / if *updateGolden
+		if !strings.HasPrefix(t, "if ") {
+			continue
+		}
+		cond := strings.TrimPrefix(t, "if ")
+		condNorm := strings.Map(func(r rune) rune {
+			if r == '*' || r == ' ' || r == '\t' {
+				return -1
+			}
+			return r
+		}, cond)
+		// strip trailing {
+		condNorm = strings.TrimSuffix(condNorm, "{")
+		if !(condNorm == "update" || condNorm == "updateGolden" ||
+			strings.HasPrefix(condNorm, "update&&") || strings.HasPrefix(condNorm, "updateGolden&&")) {
+			// also allow contains update as sole condition pieces
+			if !strings.Contains(cond, "update") && !strings.Contains(cond, "Update") {
+				continue
+			}
+			// require *update-style
+			if !strings.Contains(cond, "*update") && !strings.Contains(cond, "*updateGolden") {
+				continue
+			}
+		}
+		// Scan consequence for WriteFile/Create
+		depth := 0
+		started := false
+		for j := i; j < len(lines); j++ {
+			lt := lines[j].text
+			for _, ch := range lt {
+				if ch == '{' {
+					depth++
+					started = true
+				} else if ch == '}' {
+					if depth > 0 {
+						depth--
+					}
+				}
+			}
+			bt := strings.TrimSpace(lt)
+			if strings.Contains(bt, "os.WriteFile") || strings.Contains(bt, "ioutil.WriteFile") ||
+				strings.Contains(bt, "os.Create(") {
+				pushAt(unit, meta, lines[j].byte, "golden-file update path writes without a testing.Short() guard", out)
+				return
+			}
+			if started && depth == 0 && j > i {
+				break
 			}
 		}
 	}

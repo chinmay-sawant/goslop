@@ -434,14 +434,113 @@ func bp52HasOverflowGuard(scope string) bool {
 
 func detectBP53(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-53")
-	if isTestFile(unit) || !strings.Contains(unit.Source, "gob.Register(") {
+	src := unit.Source
+	if isTestFile(unit) || !strings.Contains(src, "gob.Register(") {
 		return
 	}
-	if !strings.Contains(unit.Source, ".Encode(") && !strings.Contains(unit.Source, ".Decode(") {
-		if pos := strings.Index(unit.Source, "gob.Register("); pos >= 0 {
-			pushAt(unit, meta, pos, "gob.Register without nearby Encode/Decode; registration may not match payloads", out)
+	msg := "gob.Register uses a type that does not line up with the nearby Encode/Decode payloads"
+	registered := collectCallTargets(src, "gob.Register(")
+	if len(registered) == 0 {
+		return
+	}
+	encoded := collectCallTargets(src, ".Encode(")
+	decoded := collectCallTargets(src, ".Decode(")
+	if len(encoded) == 0 && len(decoded) == 0 {
+		if pos := strings.Index(src, "gob.Register("); pos >= 0 {
+			pushAt(unit, meta, pos, msg, out)
+		}
+		return
+	}
+	knownTypes := collectLocalTypeHints(src)
+	matched := false
+	for _, value := range append(append([]string{}, encoded...), decoded...) {
+		normalized := normalizeIdentifier(value)
+		ty, ok := knownTypes[normalized]
+		if !ok {
+			// Encode may pass a composite literal type name directly
+			ty = normalizeTypeName(value)
+		}
+		for _, candidate := range registered {
+			if normalizeTypeName(candidate) == ty {
+				matched = true
+				break
+			}
+		}
+		if matched {
+			break
 		}
 	}
+	if !matched {
+		if pos := strings.Index(src, "gob.Register("); pos >= 0 {
+			pushAt(unit, meta, pos, msg, out)
+		}
+	}
+}
+
+func collectCallTargets(source, needle string) []string {
+	var values []string
+	start := 0
+	for {
+		offset := strings.Index(source[start:], needle)
+		if offset < 0 {
+			break
+		}
+		idx := start + offset + len(needle)
+		end := strings.IndexByte(source[idx:], ')')
+		if end < 0 {
+			break
+		}
+		values = append(values, strings.TrimSpace(source[idx:idx+end]))
+		start = idx + end + 1
+	}
+	return values
+}
+
+func collectLocalTypeHints(source string) map[string]string {
+	types := map[string]string{}
+	for _, line := range strings.Split(source, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if strings.Contains(trimmed, ":=") {
+			parts := strings.SplitN(trimmed, ":=", 2)
+			if len(parts) != 2 {
+				continue
+			}
+			name := strings.TrimSpace(parts[0])
+			rhs := strings.TrimSpace(parts[1])
+			if i := strings.IndexByte(rhs, '{'); i >= 0 {
+				ident := strings.TrimSpace(rhs[:i])
+				ident = strings.TrimPrefix(strings.TrimPrefix(ident, "&"), "*")
+				if ident != "" && isSimpleIdent(ident) {
+					types[name] = ident
+				}
+			}
+		} else if strings.HasPrefix(trimmed, "var ") {
+			rest := strings.TrimSpace(strings.TrimPrefix(trimmed, "var "))
+			fields := strings.Fields(rest)
+			if len(fields) >= 2 {
+				name := fields[0]
+				ty := strings.TrimPrefix(fields[1], "*")
+				types[name] = ty
+			}
+		}
+	}
+	return types
+}
+
+func normalizeIdentifier(value string) string {
+	v := strings.TrimSpace(value)
+	v = strings.TrimPrefix(v, "&")
+	v = strings.TrimPrefix(v, "*")
+	v = strings.Trim(v, "()")
+	return v
+}
+
+func normalizeTypeName(value string) string {
+	value = strings.TrimSpace(value)
+	if i := strings.IndexByte(value, '{'); i >= 0 {
+		return normalizeIdentifier(value[:i])
+	}
+	return normalizeIdentifier(value)
 }
 
 func detectBP54(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {

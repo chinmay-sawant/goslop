@@ -314,3 +314,144 @@ func findProjectFixture(t *testing.T, project string) string {
 	t.Fatalf("project fixture %s not found (cwd=%s); tried %s", project, cwd, strings.Join(candidates, ", "))
 	return ""
 }
+
+func TestBP15IndirectSafe(t *testing.T) {
+	runFixtureRule(t, "BP-15-indirect-safe.txt", "BP-15", false)
+}
+func TestBP15Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-15-vulnerable.txt", "BP-15", true)
+}
+func TestBP15IndirectVulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-15-indirect-vulnerable.txt", "BP-15", true)
+}
+func TestBP18Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-18-vulnerable.txt", "BP-18", true)
+}
+func TestBP18Safe(t *testing.T) {
+	runFixtureRule(t, "BP-18-safe.txt", "BP-18", false)
+}
+func TestBP23Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-23-vulnerable.txt", "BP-23", true)
+}
+func TestBP23Safe(t *testing.T) {
+	runFixtureRule(t, "BP-23-safe.txt", "BP-23", false)
+}
+func TestBP33Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-33-vulnerable.txt", "BP-33", true)
+}
+func TestBP33Safe(t *testing.T) {
+	runFixtureRule(t, "BP-33-safe.txt", "BP-33", false)
+}
+func TestBP37Safe(t *testing.T) {
+	runFixtureRule(t, "BP-37-safe.txt", "BP-37", false)
+}
+func TestBP37TypeSwitchVulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-37-type-switch-vulnerable.txt", "BP-37", true)
+}
+func TestBP37Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-37-vulnerable.txt", "BP-37", true)
+}
+func TestBP41Vulnerable(t *testing.T) {
+	// Nested package path; materialize so packageDoc snapshot can see the file.
+	data, path := readFixture(t, "bad_practices", "BP-41-vulnerable.txt")
+	fx, err := fixture.ParseFixture(string(data), path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	srcPath, err := fixture.MaterializeFixture(root, fx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src, err := os.ReadFile(srcPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := core.DefaultScanContext()
+	ctx.BadPracticesEnabled = true
+	ctx.Only = []string{"BP-41"}
+	d := badpractices.NewGoBadPracticeScan()
+	d.BeginScan(ctx)
+	defer d.EndScan()
+	unit := core.NewParsedUnit(core.LangGo, srcPath, string(src))
+	var out []rules.Finding
+	d.Run(ctx, unit, &out)
+	if !hasRule(out, "BP-41") {
+		t.Fatalf("expected BP-41 on nested package fixture, got %#v path=%s", out, srcPath)
+	}
+}
+func TestBP44Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-44-vulnerable.txt", "BP-44", true)
+}
+func TestBP44Safe(t *testing.T) {
+	runFixtureRule(t, "BP-44-safe.txt", "BP-44", false)
+}
+func TestBP45Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-45-vulnerable.txt", "BP-45", true)
+}
+func TestBP53Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-53-vulnerable.txt", "BP-53", true)
+}
+func TestBP53Safe(t *testing.T) {
+	runFixtureRule(t, "BP-53-safe.txt", "BP-53", false)
+}
+func TestBP73Safe(t *testing.T) {
+	runFixtureRule(t, "BP-73-safe.txt", "BP-73", false)
+}
+func TestBP73Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-73-vulnerable.txt", "BP-73", true)
+}
+func TestBP75VariantVulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-75-variant-vulnerable.txt", "BP-75", true)
+}
+func TestBP75Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-75-vulnerable.txt", "BP-75", true)
+}
+func TestBP76Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-76-vulnerable.txt", "BP-76", true)
+}
+func TestBP76VariantVulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-76-variant-vulnerable.txt", "BP-76", true)
+}
+func TestBP76Safe(t *testing.T) {
+	runFixtureRule(t, "BP-76-safe.txt", "BP-76", false)
+}
+func TestBP79VariantSafe(t *testing.T) {
+	runFixtureRule(t, "BP-79-variant-safe.txt", "BP-79", false)
+}
+func TestBP79Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-79-vulnerable.txt", "BP-79", true)
+}
+func TestBP81VariantSafe(t *testing.T) {
+	runFixtureRule(t, "BP-81-variant-safe.txt", "BP-81", false)
+}
+func TestBP81Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-81-vulnerable.txt", "BP-81", true)
+}
+func TestBP84Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-84-vulnerable.txt", "BP-84", true)
+}
+func TestBP84VariantVulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-84-variant-vulnerable.txt", "BP-84", true)
+}
+func TestBP84Safe(t *testing.T) {
+	runFixtureRule(t, "BP-84-safe.txt", "BP-84", false)
+}
+func TestBP87Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-87-vulnerable.txt", "BP-87", true)
+}
+func TestBP87VariantVulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-87-variant-vulnerable.txt", "BP-87", true)
+}
+func TestBP87Safe(t *testing.T) {
+	runFixtureRule(t, "BP-87-safe.txt", "BP-87", false)
+}
+func TestBP88Safe(t *testing.T) {
+	runFixtureRule(t, "BP-88-safe.txt", "BP-88", false)
+}
+func TestBP88VariantSafe(t *testing.T) {
+	runFixtureRule(t, "BP-88-variant-safe.txt", "BP-88", false)
+}
+func TestBP88Vulnerable(t *testing.T) {
+	runFixtureRule(t, "BP-88-vulnerable.txt", "BP-88", true)
+}

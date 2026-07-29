@@ -53,6 +53,21 @@ func isMaterializedFixture(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isFlatMaterializedFixture matches Rust is_flat_materialized_fixture: the unit
+// sits directly under the language root (…/go/file.go), not a nested package
+// dir. BP-41 must not skip nested package-doc fixtures (e.g. go/bp41/*.go).
+func isFlatMaterializedFixture(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, p := range []string{unit.Path, unit.DisplayPath} {
+		if p != "" && isFlatMaterializedFixturePath(p) {
+			return true
+		}
+	}
+	return false
+}
+
 // isFlatMaterializedFixturePath matches Rust: materialized under .../go/<file>.go
 // in a temp dir (not a real multi-package project tree).
 func isFlatMaterializedFixturePath(p string) bool {
@@ -65,7 +80,8 @@ func isFlatMaterializedFixturePath(p string) bool {
 		strings.Contains(p, `\Temp\`) || strings.Contains(p, `\AppData\Local\Temp\`) {
 		return true
 	}
-	return strings.Contains(p, "goslop-fixture-")
+	return strings.Contains(p, "goslop-fixture-") ||
+		strings.Contains(p, "codehound-fixtures")
 }
 
 func pushAt(unit *core.ParsedUnit, meta *rules.RuleMetadata, byteOffset int, message string, out *[]rules.Finding) {

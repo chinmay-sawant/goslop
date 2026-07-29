@@ -31,6 +31,7 @@ func init() {
 	RegisterRule("BP-83", detectBP83)
 	RegisterRule("BP-84", detectBP84)
 	RegisterRule("BP-86", detectBP86)
+	RegisterRule("BP-87", detectBP87)
 	RegisterRule("BP-88", detectBP88)
 	RegisterRule("BP-89", detectBP89)
 	RegisterRule("BP-90", detectBP90)
@@ -413,21 +414,63 @@ func detectBP14(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-// BP-15: recursive Once.Do — light heuristic.
-func detectBP15(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+// BP-15: recursive Once.Do — same receiver used with .Do more than once.
+// Different Once instances (indirect-safe) are not flagged.
+func detectBP15(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-15")
-	if !strings.Contains(unit.Source, ".Do(") || !strings.Contains(unit.Source, "sync.Once") {
+	if !strings.Contains(unit.Source, ".Do(") {
 		return
 	}
-	// Flag Once.Do that calls itself by name inside
-	// hard; skip unless obvious once.Do(func(){ once.Do
-	if strings.Contains(unit.Source, ".Do(func") {
-		// look for nested .Do(
-		src := unit.Source
-		if strings.Count(src, ".Do(") >= 2 {
-			if pos := strings.Index(src, ".Do("); pos >= 0 {
-				pushAt(unit, meta, pos, "sync.Once.Do appears nested/recursive; avoid re-entering the same Once", out)
+	if !strings.Contains(unit.Source, "Once") {
+		return
+	}
+	msg := "sync.Once.Do closure recursively calls the same Once"
+	receivers := map[string][]int{}
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		goast.Inspect(tree.File, func(n goast.Node) bool {
+			call, ok := n.(*goast.CallExpr)
+			if !ok {
+				return true
 			}
+			sel, ok := call.Fun.(*goast.SelectorExpr)
+			if !ok || sel.Sel == nil || sel.Sel.Name != "Do" {
+				return true
+			}
+			recv := strings.TrimSpace(tree.NodeText(sel.X))
+			recv = strings.TrimPrefix(strings.TrimPrefix(recv, "&"), "*")
+			if recv == "" {
+				return true
+			}
+			receivers[recv] = append(receivers[recv], tree.Offset(call.Pos()))
+			return true
+		})
+	} else {
+		// Text: collect identifiers before ".Do("
+		src := unit.Source
+		start := 0
+		for {
+			idx := strings.Index(src[start:], ".Do(")
+			if idx < 0 {
+				break
+			}
+			abs := start + idx
+			// walk back identifier
+			j := abs - 1
+			for j >= 0 && (src[j] == '_' || (src[j] >= 'a' && src[j] <= 'z') || (src[j] >= 'A' && src[j] <= 'Z') || (src[j] >= '0' && src[j] <= '9')) {
+				j--
+			}
+			recv := src[j+1 : abs]
+			if recv != "" {
+				receivers[recv] = append(receivers[recv], abs)
+			}
+			start = abs + 4
+		}
+	}
+	for _, offs := range receivers {
+		if len(offs) >= 2 {
+			pushAt(unit, meta, offs[0], msg, out)
+			return
 		}
 	}
 }
@@ -463,24 +506,40 @@ func detectBP72(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP73(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-73")
-	// m[k] = v without make — hard; flag var m map[...] then assignment
+	// Local var m map[...] written before make — clear when assigned make.
 	if !strings.Contains(unit.Source, "map[") {
 		return
 	}
-	varMaps := map[string]int{}
+	varMaps := map[string]int{} // name → decl offset
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
-		if strings.HasPrefix(t, "var ") && strings.Contains(t, "map[") && !strings.Contains(t, "make(") {
+		if strings.HasPrefix(t, "var ") && strings.Contains(t, "map[") && !strings.Contains(t, "=") {
 			parts := strings.Fields(t)
-			if len(parts) >= 2 {
+			if len(parts) >= 3 && strings.HasPrefix(parts[2], "map[") {
 				varMaps[parts[1]] = line.byte
 			}
 		}
-		// m[k] =
-		for name, pos := range varMaps {
-			if strings.Contains(t, name+"[") && strings.Contains(t, "=") && !strings.Contains(t, "==") {
-				pushAt(unit, meta, pos, "write to a nil map without initialization; make the map first", out)
+		// name = make(map...) or name := make(map...) clears nil risk
+		for name := range varMaps {
+			if strings.HasPrefix(t, name+" = make(map") || strings.HasPrefix(t, name+" := make(map") {
 				delete(varMaps, name)
+			}
+		}
+		// name[k] = write
+		for name := range varMaps {
+			if !strings.Contains(t, name+"[") {
+				continue
+			}
+			if idx := strings.Index(t, name+"["); idx >= 0 {
+				rest := t[idx+len(name):]
+				if close := strings.Index(rest, "]"); close >= 0 {
+					after := strings.TrimSpace(rest[close+1:])
+					if strings.HasPrefix(after, "=") && !strings.HasPrefix(after, "==") {
+						// Report at the write site (Rust parity).
+						pushAt(unit, meta, line.byte, "map is indexed before the local zero-value map is initialized with make", out)
+						delete(varMaps, name)
+					}
+				}
 			}
 		}
 	}
@@ -491,15 +550,55 @@ func detectBP75(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !strings.Contains(unit.Source, "copy(") {
 		return
 	}
+	msg := "copy into a zero-length slice does nothing; allocate with length or use append"
+	// Track zero-length destinations: var name []T or name := make([]T, 0…)
+	zero := map[string]struct{}{}
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
-		// copy(dst, src) where dst is make([]T, 0) or nil
-		if strings.Contains(t, "copy(") && (strings.Contains(unit.Source, "make([]") && strings.Contains(unit.Source, ", 0)")) {
-			// weak
-			if strings.Contains(t, "copy(") {
-				// look for zero-length destination nearby
-				pushAt(unit, meta, line.byte, "copy into a zero-length slice does nothing; allocate with length or use append", out)
-				return
+		if strings.HasPrefix(t, "var ") && strings.Contains(t, "[]") && !strings.Contains(t, "=") {
+			parts := strings.Fields(t)
+			if len(parts) >= 3 && strings.HasPrefix(parts[2], "[]") {
+				zero[parts[1]] = struct{}{}
+			}
+		}
+		// name := make([]T, 0) or name = make([]T, 0, cap)
+		if strings.Contains(t, "make([]") && (strings.Contains(t, ", 0)") || strings.Contains(t, ", 0,") || strings.Contains(t, ",0)") || strings.Contains(t, ",0,")) {
+			if i := strings.Index(t, ":="); i >= 0 {
+				name := strings.TrimSpace(t[:i])
+				if isSimpleIdent(name) {
+					zero[name] = struct{}{}
+				}
+			} else if i := strings.Index(t, "="); i >= 0 && !strings.Contains(t[:i], "==") {
+				name := strings.TrimSpace(t[:i])
+				if isSimpleIdent(name) {
+					zero[name] = struct{}{}
+				}
+			}
+		}
+		// name = make with positive length clears
+		if strings.Contains(t, "make([]") && !strings.Contains(t, ", 0)") && !strings.Contains(t, ", 0,") && !strings.Contains(t, ",0)") && !strings.Contains(t, ",0,") {
+			if i := strings.Index(t, ":="); i >= 0 {
+				name := strings.TrimSpace(t[:i])
+				delete(zero, name)
+			} else if i := strings.Index(t, "="); i >= 0 {
+				name := strings.TrimSpace(t[:i])
+				delete(zero, name)
+			}
+		}
+		if !strings.Contains(t, "copy(") {
+			continue
+		}
+		// copy(dst, src)
+		rest := t
+		if idx := strings.Index(rest, "copy("); idx >= 0 {
+			rest = rest[idx+len("copy("):]
+			end := strings.IndexAny(rest, ",)")
+			if end > 0 {
+				dst := strings.TrimSpace(rest[:end])
+				if _, ok := zero[dst]; ok {
+					pushAt(unit, meta, line.byte, msg, out)
+					return
+				}
 			}
 		}
 	}
@@ -507,23 +606,72 @@ func detectBP75(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP79(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-79")
-	if !strings.Contains(unit.Source, "context.WithCancel") && !strings.Contains(unit.Source, "context.WithTimeout") && !strings.Contains(unit.Source, "context.WithDeadline") {
+	if !strings.Contains(unit.Source, "context.WithCancel") &&
+		!strings.Contains(unit.Source, "context.WithTimeout") &&
+		!strings.Contains(unit.Source, "context.WithDeadline") {
 		return
 	}
-	// cancel not deferred
+	msg := "locally bound context cancel function has no visible call or defer; verify its ownership and release path"
+	constructors := []string{"context.WithCancel", "context.WithTimeout", "context.WithDeadline"}
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
-		if strings.Contains(t, "context.WithCancel") || strings.Contains(t, "context.WithTimeout") || strings.Contains(t, "context.WithDeadline") {
-			// if cancel assigned and no defer cancel nearby in function
-			if strings.Contains(t, "cancel") || strings.Contains(t, ",") {
-				// check whole source for defer cancel
-				if !strings.Contains(unit.Source, "defer cancel") && !strings.Contains(unit.Source, "defer cancel(") {
-					pushAt(unit, meta, line.byte, "context cancel function is not deferred; resource may leak", out)
-					return
-				}
+		var ctor string
+		for _, c := range constructors {
+			if strings.Contains(t, c+"(") {
+				ctor = c
+				break
 			}
 		}
+		if ctor == "" {
+			continue
+		}
+		// ctx, cancel := context.With…  (second LHS is cancel name)
+		lhs, rhs, ok := strings.Cut(t, ":=")
+		if !ok {
+			lhs, rhs, ok = strings.Cut(t, "=")
+		}
+		if !ok || !strings.Contains(rhs, ctor) {
+			continue
+		}
+		parts := strings.Split(lhs, ",")
+		if len(parts) < 2 {
+			continue
+		}
+		cancelName := strings.TrimSpace(parts[1])
+		if cancelName == "" || cancelName == "_" {
+			continue
+		}
+		if hasVisibleCancelRelease(unit.Source, cancelName) {
+			continue
+		}
+		// Point at the constructor in the line when possible.
+		off := line.byte
+		if i := strings.Index(line.text, ctor); i >= 0 {
+			off = line.byte + i
+		}
+		pushAt(unit, meta, off, msg, out)
+		return
 	}
+}
+
+func hasVisibleCancelRelease(source, cancelName string) bool {
+	// defer cancel() / defer cancel ( / bare cancel() call
+	needles := []string{
+		"defer " + cancelName + "()",
+		"defer " + cancelName + " (",
+		"defer " + cancelName + "\t(",
+		cancelName + "()",
+	}
+	for _, n := range needles {
+		if strings.Contains(source, n) {
+			return true
+		}
+	}
+	// defer cancel without parens is invalid Go; also accept multiline defer cancel\n()
+	if strings.Contains(source, "defer "+cancelName) {
+		return true
+	}
+	return false
 }
 
 func detectBP80(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
@@ -551,14 +699,25 @@ func detectBP80(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 func detectBP81(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-81")
-	if strings.Count(unit.Source, "time.Now()") >= 2 {
-		// in condition
-		for _, line := range codeLines(unit.Source) {
-			t := strings.TrimSpace(line.text)
-			if strings.Contains(t, "time.Now()") && (strings.Contains(t, "if ") || strings.Contains(t, "for ")) {
-				pushAt(unit, meta, line.byte, "time.Now() evaluated repeatedly in a condition; capture once", out)
-				return
-			}
+	// Rust parity: only when a single if condition contains ≥2 time.Now() calls.
+	// Separate if statements may each read the clock independently (variant-safe).
+	if strings.Count(unit.Source, "time.Now()") < 2 {
+		return
+	}
+	msg := "condition reads time.Now more than once; capture one now value before comparing"
+	for _, line := range codeLines(unit.Source) {
+		t := strings.TrimSpace(line.text)
+		if !strings.HasPrefix(t, "if ") && !strings.HasPrefix(t, "if(") {
+			continue
+		}
+		// Condition text: between if and {
+		cond := t
+		if i := strings.Index(cond, "{"); i >= 0 {
+			cond = cond[:i]
+		}
+		if strings.Count(cond, "time.Now()") >= 2 {
+			pushAt(unit, meta, line.byte, msg, out)
+			return
 		}
 	}
 }
@@ -727,13 +886,57 @@ func isBackoffOrRetryBP83(text string) bool {
 
 func detectBP84(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-84")
-	// x * 100 / y integer percentage
+	// Percentage-shaped: (a / b) * 100 with percent/pct/percentage context.
+	// Integer division truncates before scaling (1/3*100 == 0).
+	msg := "integer division truncates before percentage scaling; convert to a floating-point value before dividing"
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
-		if strings.Contains(t, "* 100 /") || strings.Contains(t, "*100/") || strings.Contains(t, "* 100/") {
-			pushAt(unit, meta, line.byte, "integer percentage truncation; multiply carefully or use floating math", out)
+		if strings.Contains(t, "float") {
+			continue
+		}
+		// Look for simple a / b * 100 (with flexible whitespace)
+		if !looksLikePercentageDivision(t) {
+			continue
+		}
+		// Percentage context: LHS/func name contains percent|percentage|pct
+		if !hasPercentageContext(unit.Source, line.byte, t) {
+			continue
+		}
+		pushAt(unit, meta, line.byte, msg, out)
+	}
+}
+
+func looksLikePercentageDivision(t string) bool {
+	// Match: ident_or_lit / ident_or_lit * 100
+	// Also accept *100 without space.
+	if strings.Contains(t, "* 100") || strings.Contains(t, "*100") {
+		// Must also have a division before the multiply
+		star := strings.Index(t, "* 100")
+		if star < 0 {
+			star = strings.Index(t, "*100")
+		}
+		if star < 0 {
+			return false
+		}
+		before := t[:star]
+		return strings.Contains(before, "/")
+	}
+	return false
+}
+
+func hasPercentageContext(source string, offset int, line string) bool {
+	lower := strings.ToLower(line)
+	if strings.Contains(lower, "percent") || strings.Contains(lower, "pct") {
+		return true
+	}
+	// Enclosing function name
+	if name, ok := enclosingFuncName(source, offset); ok {
+		nl := strings.ToLower(name)
+		if strings.Contains(nl, "percent") || strings.Contains(nl, "percentage") || strings.Contains(nl, "pct") {
+			return true
 		}
 	}
+	return false
 }
 
 func detectBP86(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -749,25 +952,134 @@ func detectBP86(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
+// BP-87: RWMutex.RLock held across a blocking call (Sleep) or channel receive.
+func detectBP87(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+	meta := MetadataForID("BP-87")
+	src := unit.Source
+	if !strings.Contains(src, "RLock") || !strings.Contains(src, "RWMutex") {
+		return
+	}
+	msg := "RLock is held across a blocking operation; copy protected state before waiting"
+	// Prefer per-function AST walk; fall back to whole-file window.
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		goast.Inspect(tree.File, func(n goast.Node) bool {
+			fd, ok := n.(*goast.FuncDecl)
+			if !ok || fd.Body == nil {
+				return true
+			}
+			body := tree.NodeText(fd.Body)
+			if !strings.Contains(body, "RLock") || !strings.Contains(body, "RWMutex") {
+				return true
+			}
+			if rlockAcrossBlocking(body) {
+				// Point at first RLock in the function body.
+				if i := strings.Index(body, ".RLock()"); i >= 0 {
+					pushAt(unit, meta, tree.Offset(fd.Body.Pos())+i, msg, out)
+				} else {
+					pushAt(unit, meta, tree.Offset(fd.Pos()), msg, out)
+				}
+			}
+			return true
+		})
+		return
+	}
+	if rlockAcrossBlocking(src) {
+		if pos := strings.Index(src, ".RLock()"); pos >= 0 {
+			pushAt(unit, meta, pos, msg, out)
+		}
+	}
+}
+
+func rlockAcrossBlocking(body string) bool {
+	// Find receiver.RLock() … same receiver.RUnlock() with blocking op in between.
+	// Simple approach: between any .RLock() and the next .RUnlock(), look for
+	// time.Sleep or a channel receive (<-).
+	start := 0
+	for {
+		idx := strings.Index(body[start:], ".RLock()")
+		if idx < 0 {
+			return false
+		}
+		abs := start + idx
+		// find matching RUnlock after this
+		rest := body[abs+len(".RLock()"):]
+		unlock := strings.Index(rest, ".RUnlock()")
+		if unlock < 0 {
+			start = abs + len(".RLock()")
+			continue
+		}
+		window := rest[:unlock]
+		if strings.Contains(window, "time.Sleep(") ||
+			strings.Contains(window, "<-") {
+			return true
+		}
+		start = abs + len(".RLock()")
+	}
+}
+
 func detectBP88(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-88")
-	// var ch chan T without make then send/recv
+	// var ch chan T without make then direct (non-select) send/recv.
+	if !strings.Contains(unit.Source, "chan ") && !strings.Contains(unit.Source, "chan\t") {
+		return
+	}
+	msg := "channel is used before make; a nil channel send or receive blocks forever"
 	varChans := map[string]int{}
+	// Brace depth after entering a select statement (0 = outside select).
+	selectDepth := 0
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
-		if strings.HasPrefix(t, "var ") && strings.Contains(t, "chan ") && !strings.Contains(t, "make(") {
+
+		if strings.HasPrefix(t, "var ") && strings.Contains(t, "chan ") && !strings.Contains(t, "make(") && !strings.Contains(t, "=") {
 			parts := strings.Fields(t)
-			if len(parts) >= 2 {
+			if len(parts) >= 3 {
 				varChans[parts[1]] = line.byte
 			}
 		}
-		for name, pos := range varChans {
-			if strings.Contains(t, "<-"+name) || strings.Contains(t, name+"<-") || strings.Contains(t, "<- "+name) || strings.Contains(t, name+" <-") {
-				pushAt(unit, meta, pos, "send/receive on a nil channel blocks forever", out)
+		// make initialization clears
+		for name := range varChans {
+			if strings.Contains(t, name+" = make(chan") || strings.Contains(t, name+" := make(chan") {
+				delete(varChans, name)
+			}
+		}
+
+		// Track select scopes so nil-channel disable patterns are not flagged.
+		isSelectLine := strings.HasPrefix(t, "select ") || t == "select {" || strings.HasPrefix(t, "select{")
+		if isSelectLine {
+			selectDepth = 1
+			selectDepth += strings.Count(t, "{") - strings.Count(t, "}")
+			if selectDepth < 0 {
+				selectDepth = 0
+			}
+		} else if selectDepth > 0 {
+			selectDepth += strings.Count(t, "{") - strings.Count(t, "}")
+			if selectDepth < 0 {
+				selectDepth = 0
+			}
+		}
+
+		if selectDepth > 0 {
+			continue
+		}
+		for name := range varChans {
+			if channelOpOn(t, name) {
+				pushAt(unit, meta, line.byte, msg, out)
 				delete(varChans, name)
 			}
 		}
 	}
+}
+
+func channelOpOn(line, name string) bool {
+	// send: name <-  receive: <-name  or return <-name
+	if strings.Contains(line, name+" <-") || strings.Contains(line, name+"<-") {
+		return true
+	}
+	if strings.Contains(line, "<-"+name) || strings.Contains(line, "<- "+name) {
+		return true
+	}
+	return false
 }
 
 func detectBP89(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -993,21 +1305,52 @@ func detectBP92(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP93(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-93")
-	if !strings.Contains(unit.Source, ".Go(func") {
+	src := unit.Source
+	if !strings.Contains(src, ".Go(") {
 		return
 	}
-	// g.Go(func() error { ... }) that doesn't return err
-	for _, line := range codeLines(unit.Source) {
-		t := strings.TrimSpace(line.text)
-		if strings.Contains(t, ".Go(func") && strings.Contains(t, "error") {
-			// check body discards — hard; flag if `_ =` inside next lines
-		}
+	if !strings.Contains(src, "errgroup") && !strings.Contains(src, "golang.org/x/sync/errgroup") {
+		return
 	}
-	if strings.Contains(unit.Source, ".Go(func") && strings.Contains(unit.Source, "return nil") {
-		// if also has err ignored
-		if strings.Contains(unit.Source, "_ =") && strings.Contains(unit.Source, ".Go(") {
-			if pos := strings.Index(unit.Source, ".Go("); pos >= 0 {
-				pushAt(unit, meta, pos, "errgroup closure may discard an error; return it from the Go func", out)
+	// Only blank-assign a call inside an errgroup.Go closure (not unrelated `_ = ctx`).
+	lines := codeLines(src)
+	for i, line := range lines {
+		t := strings.TrimSpace(line.text)
+		if !strings.Contains(t, ".Go(func") && !strings.Contains(t, ".Go(") {
+			continue
+		}
+		// Find Go call and scan its function-literal body for `_ = call(`.
+		// Text heuristic: from this line, track braces until the Go call closes.
+		depth := 0
+		started := false
+		for j := i; j < len(lines); j++ {
+			lt := lines[j].text
+			for _, ch := range lt {
+				if ch == '{' {
+					depth++
+					started = true
+				} else if ch == '}' {
+					if depth > 0 {
+						depth--
+					}
+				}
+			}
+			if !started {
+				continue
+			}
+			body := strings.TrimSpace(lt)
+			if strings.HasPrefix(body, "_ = ") && strings.Contains(body, "(") {
+				// `_ = doWork()` style inside the Go closure
+				pushAt(unit, meta, lines[j].byte, "errgroup.Go closure discards a call result instead of returning or handling the error", out)
+				return
+			}
+			if strings.HasPrefix(body, "_, _ = ") && strings.Contains(body, "(") {
+				pushAt(unit, meta, lines[j].byte, "errgroup.Go closure discards a call result instead of returning or handling the error", out)
+				return
+			}
+			// End of Go call's argument when depth returns to 0 after starting
+			if started && depth == 0 {
+				break
 			}
 		}
 	}
@@ -1034,15 +1377,23 @@ func detectBP100(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	msg := "unbounded goroutine fan-out; bound concurrency with a worker pool or semaphore"
+	if hasFanoutBoundBP100(unit.Source) {
+		return
+	}
 	// for range + go inside loop
-	if len(facts.goNodes) > 0 && len(facts.forRanges) > 0 {
+	if facts != nil && len(facts.goNodes) > 0 && len(facts.forRanges) > 0 {
 		for _, g := range facts.goNodes {
 			if facts.insideLoop(g.start) {
-				// skip if semaphore/errgroup/WaitGroup.Add with limited workers
-				if strings.Contains(unit.Source, "make(chan") && strings.Contains(unit.Source, "cap(") {
-					continue
+				// Confirm the enclosing loop is a range loop (not a plain for).
+				for _, r := range facts.forRanges {
+					if g.start >= r[0] && g.start < r[1] {
+						loopText := unit.Source[r[0]:r[1]]
+						if strings.Contains(loopText, " range ") || strings.Contains(loopText, "range ") {
+							pushAt(unit, meta, g.start, msg, out)
+							return
+						}
+					}
 				}
-				pushAt(unit, meta, g.start, msg, out)
 			}
 		}
 		return
@@ -1055,7 +1406,7 @@ func detectBP100(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if strings.HasPrefix(t, "for ") && strings.Contains(t, " range ") {
 			inFor = true
 		}
-		if inFor && strings.HasPrefix(t, "go ") {
+		if inFor && (strings.HasPrefix(t, "go ") || strings.HasPrefix(t, "go\t")) {
 			pushAt(unit, meta, line.byte, msg, out)
 			inFor = false
 		}
@@ -1063,4 +1414,50 @@ func detectBP100(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			inFor = false
 		}
 	}
+}
+
+func hasFanoutBoundBP100(src string) bool {
+	// WaitGroup still permits unbounded fan-out, but BP-6 owns that shape.
+	if strings.Contains(src, "WaitGroup") {
+		return true
+	}
+	if strings.Contains(src, "errgroup.WithContext(") &&
+		(strings.Contains(src, ".SetLimit(") || strings.Contains(src, ".TryGo(")) {
+		return true
+	}
+	if strings.Contains(src, "semaphore.NewWeighted(") {
+		return true
+	}
+	// Channel semaphore: acquire (sem <- struct{}{}) and release (<-sem).
+	if (strings.Contains(src, " <- struct{}{}") || strings.Contains(src, "<- struct{}{}") ||
+		strings.Contains(src, "<-struct{}{}")) &&
+		(strings.Contains(src, "<-sem") || strings.Contains(src, "<- tokens") ||
+			strings.Contains(src, "<-tokens") || strings.Contains(src, "make(chan struct{}")) {
+		return true
+	}
+	// Buffered make(chan T, N) used as a worker pool bound.
+	if strings.Contains(src, "make(chan") {
+		// make(chan ..., N) with N > 0 looks like a bound
+		for _, line := range codeLines(src) {
+			t := strings.TrimSpace(line.text)
+			if strings.Contains(t, "make(chan") && strings.Contains(t, ",") {
+				// make(chan struct{}, 4)
+				if idx := strings.LastIndex(t, ","); idx >= 0 {
+					rest := strings.TrimSpace(t[idx+1:])
+					rest = strings.TrimSuffix(rest, ")")
+					rest = strings.TrimSpace(rest)
+					if rest != "" && rest != "0" {
+						// and token send/receive present
+						if strings.Contains(src, "<-") {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+	if strings.Contains(src, "jobs <-") && strings.Contains(src, "worker") {
+		return true
+	}
+	return false
 }
