@@ -1,8 +1,8 @@
-# CodeHound documentation
+# goslop documentation
 
-User-facing documentation for the **Go** CodeHound static analyzer (`codehound-go`).
+User-facing documentation for the **goslop** static analysis tool (SAT) for Go.
 
-CodeHound scans Go source for **PERF** hot-path issues, structural **CWE** heuristics, experimental **taint** flows, and **bad-practice** (`BP-*`) style rules. Output formats: **text**, **JSON**, and **SARIF 2.1.0**. Optional exports write per-finding context under `scripts/findings/functions/` and batched chunks under `scripts/chunks/` for agent delegation.
+goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristics, experimental **taint** flows, and **bad-practice** (`BP-*`) style rules. Output formats: **text**, **JSON**, and **SARIF 2.1.0**. Optional exports write per-finding context under `scripts/findings/functions/` and batched chunks under `scripts/chunks/` for agent delegation.
 
 ## Start here
 
@@ -30,21 +30,21 @@ CodeHound scans Go source for **PERF** hot-path issues, structural **CWE** heuri
 make build
 
 # Everyday scan (default profile: recommended)
-./bin/codehound .
+./bin/goslop .
 
 # Full catalog + exports (product-style)
 make run SCAN_PATH=./your/project
 
 # Machine formats
-./bin/codehound --format json .
-./bin/codehound --format sarif . > codehound.sarif
+./bin/goslop --format json .
+./bin/goslop --format sarif . > goslop.sarif
 
 # List / explain rules
-./bin/codehound --list-rules
-./bin/codehound --explain PERF-6
+./bin/goslop --list-rules
+./bin/goslop --explain PERF-6
 
 # Starter config
-./bin/codehound init
+./bin/goslop init
 ```
 
 ## Related repo paths
@@ -52,8 +52,8 @@ make run SCAN_PATH=./your/project
 | Path | Role |
 |------|------|
 | [`README.md`](../README.md) | Project status and install |
-| [`templates/codehound.toml`](../templates/codehound.toml) | Config template |
-| [`codehound.schema.json`](../codehound.schema.json) | Config JSON Schema |
+| [`templates/goslop.toml`](../templates/goslop.toml) | Config template |
+| [`goslop.schema.json`](../goslop.schema.json) | Config JSON Schema |
 | [`plans/`](../plans/) | Port phase ledger and architecture notes |
 | [`scripts/findings/functions/`](../scripts/findings/functions/) | Generated per-finding context (after export) |
 | [`scripts/chunks/`](../scripts/chunks/) | Generated finding batches (after export) |

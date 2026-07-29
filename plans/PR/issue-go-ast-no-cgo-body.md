@@ -40,10 +40,10 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 
 ## Success criteria
 
-- [x] `CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound` succeeds
+- [x] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` succeeds
 - [x] `CGO_ENABLED=0 go test ./...` passes
 - [x] No `github.com/tree-sitter/*` deps in `go.mod`
-- [x] `make run` wall time **&lt; 400ms** (scan ~170–220ms; process ~0.23–0.30s warm; faster than documented **295.7ms ±50ms** band on this host)
+- [x] `make run` wall time **&lt; 400ms** (scan ~170-220ms; process ~0.23-0.30s warm; faster than documented **295.7ms ±50ms** band on this host)
 - [x] §12.4 hard metrics still hold: **915** findings; sev **10/197/312/396**; top-five exact; export **915+37**
 - [x] Language plugin interface documented for adding a second language without CGO
 - [x] README/checklist updated for pure-Go parse path

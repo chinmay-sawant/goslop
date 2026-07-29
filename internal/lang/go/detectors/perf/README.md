@@ -4,10 +4,10 @@ Performance heuristics for Go hot paths and stdlib misuse.
 
 ## Architecture
 
-- **`GoPerfScan`** (`scan.go`) — single `core.Detector`; builds facts once, dispatches enabled rules
-- **`RegisterRule`** (`register.go`) — `init()`-based registration so domain batches can land independently
-- **`BuildFacts`** (`facts.go`) — tree-sitter fused walk: calls, assignments, conversions, defer/go/for, var kinds
-- **`common.go`** — hot-path / handler-shaped / loop helpers
+- **`GoPerfScan`** (`scan.go`) - single `core.Detector`; builds facts once, dispatches enabled rules
+- **`RegisterRule`** (`register.go`) - `init()`-based registration so domain batches can land independently
+- **`BuildFacts`** (`facts.go`) - tree-sitter fused walk: calls, assignments, conversions, defer/go/for, var kinds
+- **`common.go`** - hot-path / handler-shaped / loop helpers
 
 ## Coverage
 
@@ -18,7 +18,7 @@ Performance heuristics for Go hot paths and stdlib misuse.
 
 ### Seed (Phase 6a)
 
-`PERF-1`…`8`, `PERF-32`, `PERF-50`, `PERF-116`, `PERF-230` — `rules_loop.go` / `rules_hot.go` / `seed_register.go`
+`PERF-1`…`8`, `PERF-32`, `PERF-50`, `PERF-116`, `PERF-230` - `rules_loop.go` / `rules_hot.go` / `seed_register.go`
 
 ### Batch ports (Phase 6b)
 
@@ -50,6 +50,6 @@ Batch ports are **behavioral heuristics** aligned with Rust detectors and fixtur
 
 ```bash
 go test ./internal/lang/go/detectors/perf/ ./...
-go build -o bin/codehound ./cmd/codehound
-./bin/codehound --list-rules | wc -l   # expect 239 PERF + CWE seeds
+go build -o bin/goslop ./cmd/goslop
+./bin/goslop --list-rules | wc -l   # expect 239 PERF + CWE seeds
 ```

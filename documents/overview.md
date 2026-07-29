@@ -1,6 +1,6 @@
-# CodeHound product overview
+# goslop product overview
 
-CodeHound is a **pure-Go** static analyzer for Go codebases. It reimplements the Rust CodeHound product with `go/parser` + `go/ast` (no CGO, no tree-sitter).
+goslop is a **pure-Go** static analysis tool (SAT) for Go codebases. It uses `go/parser` + `go/ast` (no CGO, no tree-sitter) to find performance issues, bad practices, and CWE-class security problems.
 
 ## What it does
 
@@ -10,16 +10,16 @@ CodeHound is a **pure-Go** static analyzer for Go codebases. It reimplements the
 | **CWE structural** | Catalogue of structural security heuristics. **175** registered. |
 | **Taint (experimental)** | Inter-procedural graph for **CWE-22 / 78 / 79 / 89** (path traversal, command injection, XSS, SQLi). |
 | **Bad practices (BP)** | Style / hygiene / project-level rules (`BP-*`). On for `style` and `all` profiles. |
-| **Profiles (packs)** | `recommended`, `perf`, `security`, `style`, `all` — curated rule surfaces and defaults. |
+| **Profiles (packs)** | `recommended`, `perf`, `security`, `style`, `all` - curated rule surfaces and defaults. |
 | **Reporters** | `text` (default), `json`, `sarif` (SARIF 2.1.0). Summary always on **stderr**. |
 | **Exports** | Per-finding context (`scripts/findings/functions`) and batched chunks (`scripts/chunks`) for agent work. |
-| **Cache** | Incremental per-file cache under `.codehound-cache/`. |
-| **Baseline** | Suppress known findings via `.codehound-baseline.json`. |
-| **Ignore** | Inline `// codehound-ignore` directives and path ignores. |
+| **Cache** | Incremental per-file cache under `.goslop-cache/`. |
+| **Baseline** | Suppress known findings via `.goslop-baseline.json`. |
+| **Ignore** | Inline `// goslop-ignore` directives and path ignores. |
 
 ## Status (shipped)
 
-Phases **0–12** landed. High-level status:
+Phases **0-12** landed. High-level status:
 
 | Area | Status |
 |------|--------|
@@ -37,7 +37,7 @@ Details: root [`README.md`](../README.md) and [`plans/port-phasewise-checklist.m
 ## Architecture (product view)
 
 ```text
-CLI flags + codehound.toml + profile
+CLI flags + goslop.toml + profile
         │
         ▼
   ScanContext (only/skip, fail policy, taint, BP, cache, baseline)
@@ -55,7 +55,7 @@ CLI flags + codehound.toml + profile
 
 | Layer | Path |
 |-------|------|
-| CLI entry | `cmd/codehound` |
+| CLI entry | `cmd/goslop` |
 | App orchestration | `internal/app` |
 | Core (profiles, fail, plugins) | `internal/core` |
 | Engine (walk, cache, baseline, ignore) | `internal/engine` |
@@ -95,7 +95,7 @@ Under default fail **high**, S-tier PERF is typically **medium** (visible, does 
 - **239** rules across loop allocations, HTTP, frameworks (Gin, etc.), parsing, data access.
 - Metadata chunks: `ruleset/golang/chunks/perf-*.json`
 - Human notes (partial): [perf-rules.md](./perf-rules.md)
-- List live: `./bin/codehound --list-rules` and filter for `PERF-`
+- List live: `./bin/goslop --list-rules` and filter for `PERF-`
 
 ### CWE (`CWE-*`)
 
@@ -113,13 +113,13 @@ Under default fail **high**, S-tier PERF is typically **medium** (visible, does 
 
 ```sh
 # Explicit
-./bin/codehound --taint --taint-depth 3 --taint-show-paths .
+./bin/goslop --taint --taint-depth 3 --taint-show-paths .
 
 # Security profile turns taint on (default depth 4)
-./bin/codehound --profile security .
+./bin/goslop --profile security .
 
 # Force off even under security
-./bin/codehound --profile security --no-taint .
+./bin/goslop --profile security --no-taint .
 ```
 
 Honesty bar and source/sink model: [taint.md](./taint.md).
@@ -131,18 +131,18 @@ Honesty bar and source/sink model: [taint.md](./taint.md).
 Comment-only (not inside strings):
 
 ```go
-// codehound-ignore: CWE-78
+// goslop-ignore: CWE-78
 exec.Command("sh", "-c", cmd)
 
-// codehound-ignore: PERF-101, PERF-190
+// goslop-ignore: PERF-101, PERF-190
 srv := &http.Server{Addr: ":8080"}
 
-// codehound-ignore-file
+// goslop-ignore-file
 package generated
 
-// codehound-ignore-start: BP-1
+// goslop-ignore-start: BP-1
 // … noisy region …
-// codehound-ignore-end
+// goslop-ignore-end
 ```
 
 - Default: suppressed findings are **dropped**.
@@ -150,11 +150,11 @@ package generated
 
 ### Path ignores
 
-Walk respects `.gitignore`, `.codehoundignore`, `.ignore`, plus config `include` / `exclude` globs. Test files (`*_test.*`) are excluded by default (`--include-tests` to include).
+Walk respects `.gitignore`, `.goslopignore`, `.ignore`, plus config `include` / `exclude` globs. Test files (`*_test.*`) are excluded by default (`--include-tests` to include).
 
 ## Baseline
 
-File: **`.codehound-baseline.json`** (discovered upward from cwd unless `--baseline-file` / config path).
+File: **`.goslop-baseline.json`** (discovered upward from cwd unless `--baseline-file` / config path).
 
 | Flag | Effect |
 |------|--------|
@@ -163,7 +163,7 @@ File: **`.codehound-baseline.json`** (discovered upward from cwd unless `--basel
 | `--baseline-file PATH` | Explicit baseline path |
 | `--show-baselined` | Keep baselined findings as info / suppressed |
 
-Match priority: fingerprint (`codehound:2:{rule}:{file}:{msgHash16}`), else file/line/column.
+Match priority: fingerprint (`goslop:2:{rule}:{file}:{msgHash16}`), else file/line/column.
 
 > **Note:** The Go CLI **loads and filters** baselines; a dedicated “save baseline” subcommand is not exposed yet. You can author the JSON from prior JSON findings / scripts. See brownfield notes in [go-recommended-pack.md](./go-recommended-pack.md).
 
@@ -171,7 +171,7 @@ Match priority: fingerprint (`codehound:2:{rule}:{file}:{msgHash16}`), else file
 
 | Item | Default |
 |------|---------|
-| Directory | `.codehound-cache/` |
+| Directory | `.goslop-cache/` |
 | Enabled | yes |
 | Disable | `--no-cache` or config `cache.enabled = false` |
 | Rebuild | `--rebuild-cache` |
@@ -191,11 +191,11 @@ Cache keys on content hash + tool/rule-config fingerprint. Pipeline details: [ar
 ## Configuration
 
 ```sh
-./bin/codehound init   # writes ./codehound.toml
+./bin/goslop init   # writes ./goslop.toml
 ```
 
-Template: [`templates/codehound.toml`](../templates/codehound.toml).  
-Schema: [`codehound.schema.json`](../codehound.schema.json).  
+Template: [`templates/goslop.toml`](../templates/goslop.toml).  
+Schema: [`goslop.schema.json`](../goslop.schema.json).  
 Merge rules: [cli-reference.md](./cli-reference.md#config-file-and-cli-merge).
 
 ## Outputs at a glance
@@ -213,15 +213,15 @@ Merge rules: [cli-reference.md](./cli-reference.md#config-file-and-cli-merge).
 
 ```sh
 # 1) CI gate (high-signal)
-./bin/codehound --profile recommended --format sarif . > codehound.sarif
+./bin/goslop --profile recommended --format sarif . > goslop.sarif
 
 # 2) Full triage + agent batches
-./bin/codehound --profile all --no-fail --export-context --export-chunks --no-cache .
+./bin/goslop --profile all --no-fail --export-context --export-chunks --no-cache .
 # then open scripts/chunks/Chunk_1_25.txt for a batch,
 # or scripts/findings/functions/42.txt for one finding
 
 # 3) Security-focused with taint
-./bin/codehound --profile security --taint-show-paths ./cmd
+./bin/goslop --profile security --taint-show-paths ./cmd
 
 # 4) Makefile product scan (summary + exports)
 make run SCAN_PATH=./your/go/project

@@ -1,6 +1,6 @@
 # Recommended pack
 
-Default CLI profile: `--profile recommended` (also `CODEHOUND_PROFILE=recommended`).
+Default CLI profile: `--profile recommended` (also `GOSLOP_PROFILE=recommended`).
 
 Aliases: `ci`, `default` → `recommended`.
 
@@ -20,18 +20,18 @@ Full CLI: [cli-reference.md](./cli-reference.md). Product overview: [overview.md
 
 | Finding class | Typical severity | Fails recommended default? |
 |---------------|------------------|----------------------------|
-| S-tier PERF | **medium** | **No** — visible only |
+| S-tier PERF | **medium** | **No** - visible only |
 | Taint-core CWE (when fired) | **high** | **Yes** |
-| BP | n/a (off) | — |
+| BP | n/a (off) | - |
 
 To fail CI on medium PERF (timeouts, body close, …):
 
 ```bash
-codehound --profile recommended --warnings-as-errors .
+goslop --profile recommended --warnings-as-errors .
 ```
 
 Taint is **off** under recommended. The CWE IDs stay allow-listed so
-`codehound --taint --profile recommended .` works without switching packs.
+`goslop --taint --profile recommended .` works without switching packs.
 Use `--profile security` to turn taint on by default.
 
 ---
@@ -72,7 +72,7 @@ See [perf-tiers.md](./perf-tiers.md) for S/A/B/C policy.
 | Profile | Aliases | Contents | Taint | BP | Default fail |
 |---------|---------|----------|-------|----|--------------|
 | `recommended` | `ci`, `default` | S PERF + taint-core CWE | off | off | strict |
-| `perf` | — | S+A PERF (`PERF_TIER_S` + `PERF_TIER_A`) | off | off | strict |
+| `perf` | - | S+A PERF (`PERF_TIER_S` + `PERF_TIER_A`) | off | off | strict |
 | `security` | `sec` | Security pack CWEs (below) | **on** | off | strict |
 | `style` | `bp`, `bad-practices` | `BP-*` | off | on | no-fail |
 | `all` | `full` | Full catalog | off | on | medium-as-errors |
@@ -89,9 +89,9 @@ Taint auto-enables under `--profile security`.
 
 - Allow pattern: all `BP-*`
 - Default skip (opinionated / noisy): **`BP-21`**, **`BP-28`**, **`BP-30`**
-  - BP-21: missing `t.Parallel` (policy)
-  - BP-28: single-method interfaces (API style)
-  - BP-30: external / capability interfaces
+ - BP-21: missing `t.Parallel` (policy)
+ - BP-28: single-method interfaces (API style)
+ - BP-30: external / capability interfaces
 - Opt back in with `--only BP-28` (etc.) under `--profile style`.
 
 ### Perf profile
@@ -109,7 +109,7 @@ that does **not** mean they are production-certified for CI hard-fail gates.
 Examples include long-tail CWE PRNG corpus patterns and other museum entries
 audited in
 [`plans/v0.0.5/cwe-catalog-trust-audit.md`](../plans/v0.0.5/cwe-catalog-trust-audit.md)
-(archive note — historical audit).
+(archive note - historical audit).
 
 Reserved rules (today: `BP-63`) follow the same quarantine: available under
 `--profile all`, not for production CI packs until completed.
@@ -121,10 +121,10 @@ See `src/rules/maturity.rs` and `src/core/profile.rs`.
 ## Rule explainability
 
 ```bash
-codehound rules --explain CWE-334
-codehound --explain CWE-89
-codehound rules --category security
-codehound --list-rules --rule-category performance
+goslop rules --explain CWE-334
+goslop --explain CWE-89
+goslop rules --category security
+goslop --list-rules --rule-category performance
 ```
 
 The explain surface reuses the single maturity registry (`RuleMaturity` /
@@ -135,25 +135,25 @@ The explain surface reuses the single maturity registry (`RuleMaturity` /
 ## CI one-liner
 
 ```bash
-codehound --profile recommended --format sarif . > codehound.sarif
+goslop --profile recommended --format sarif . > goslop.sarif
 ```
 
 Fail on medium PERF too:
 
 ```bash
-codehound --profile recommended --warnings-as-errors --format sarif . > codehound.sarif
+goslop --profile recommended --warnings-as-errors --format sarif . > goslop.sarif
 ```
 
 Sample workflow: [ci-integration.md](./ci-integration.md),
-[`.github/workflows/codehound.yml`](../.github/workflows/codehound.yml).
+[`.github/workflows/goslop.yml`](../.github/workflows/goslop.yml).
 
 ---
 
 ## Brownfield
 
 1. Start advisory: `--no-fail` or upload SARIF without blocking merge.
-2. Save a baseline: `codehound --profile recommended --baseline .`
-3. Suppress known local noise: `// codehound-ignore: PERF-101` (or file-level).
+2. Save a baseline: `goslop --profile recommended --baseline .`
+3. Suppress known local noise: `// goslop-ignore: PERF-101` (or file-level).
 4. Gate on new fingerprints; periodically `baseline diff|prune|update`.
 
 Full guide: [finding-identity.md](./finding-identity.md),

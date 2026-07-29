@@ -60,8 +60,8 @@ Many structural rows are **fixture-shaped SourceIndex museums** (parity with Rus
 go test ./internal/lang/go/detectors/cwe/ -count=1
 ```
 
-- `registry_test.go` — 175 IDs registered, metadata present, structural sample matrix, taint-lite fixtures
-- `cwe78_test.go` / `cwe89_test.go` — seed adapters
+- `registry_test.go` - 175 IDs registered, metadata present, structural sample matrix, taint-lite fixtures
+- `cwe78_test.go` / `cwe89_test.go` - seed adapters
 
 ## Regeneration
 

@@ -1,19 +1,19 @@
 # Export context and chunks
 
-After a scan, CodeHound can write **human-readable text dossiers** for every finding. There are two complementary export surfaces:
+After a scan, goslop can write **human-readable text dossiers** for every finding. There are two complementary export surfaces:
 
 | Export | CLI flag | Default directory | Unit of work |
 |--------|----------|-------------------|--------------|
 | **Function / context refs** | `--export-context` | `scripts/findings/functions` | **One finding → one file** |
 | **Chunks** | `--export-chunks` | `scripts/chunks` | **N findings → one file** (default N = **25**) |
 
-Implementation: `internal/export/export.go` (Rust product parity).
+Implementation: `internal/export/export.go`.
 
 ---
 
 ## When to use which
 
-### `scripts/findings/functions/` — individual finding refs
+### `scripts/findings/functions/` - individual finding refs
 
 Use for:
 
@@ -26,7 +26,7 @@ Files: `1.txt`, `2.txt`, … `N.txt` (1-based scan order).
 
 > The directory name is `functions` for historical product parity. Each file is a **finding block** with a small source window (not necessarily a whole function body).
 
-### `scripts/chunks/` — combined findings for delegation
+### `scripts/chunks/` - combined findings for delegation
 
 Use for:
 
@@ -51,16 +51,16 @@ A **chunk is the combined functions** (findings) for that range. Function files 
 
 ```text
 1. Scan (+ export flags)
-   ./bin/codehound --profile all --export-context --export-chunks --no-cache /path
+   ./bin/goslop --profile all --export-context --export-chunks --no-cache /path
 
 2. Artifacts on disk
    scripts/findings/functions/{1..N}.txt     # per-finding refs
    scripts/chunks/Chunk_{start}_{end}.txt   # batches of combined findings
 
 3. Delegate
-   - Assign Chunk_1_25.txt to agent A
-   - Assign Chunk_26_50.txt to agent B
-   - When an agent needs one issue, open functions/42.txt
+ - Assign Chunk_1_25.txt to agent A
+ - Assign Chunk_26_50.txt to agent B
+ - When an agent needs one issue, open functions/42.txt
 ```
 
 Product helpers:
@@ -93,16 +93,16 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 
 ```sh
 # Both surfaces (typical)
-./bin/codehound --profile all --export-context --export-chunks --no-cache .
+./bin/goslop --profile all --export-context --export-chunks --no-cache .
 
 # Only individual refs
-./bin/codehound --export-context .
+./bin/goslop --export-context .
 
 # Only batches for agents
-./bin/codehound --export-chunks --chunk-size 25 .
+./bin/goslop --export-chunks --chunk-size 25 .
 
 # Custom dirs / larger batches
-./bin/codehound --export-context --export-chunks \
+./bin/goslop --export-context --export-chunks \
   --context-dir /tmp/ch-ctx --chunks-dir /tmp/ch-chunks \
   --chunk-size 50 /path/to/project
 ```
@@ -137,11 +137,11 @@ scripts/chunks/Chunk_{start}_{end}.txt
 
 | File | Findings |
 |------|----------|
-| `Chunk_1_25.txt` | 1–25 |
-| `Chunk_26_50.txt` | 26–50 |
+| `Chunk_1_25.txt` | 1-25 |
+| `Chunk_26_50.txt` | 26-50 |
 | … | … |
-| `Chunk_876_900.txt` | 876–900 |
-| `Chunk_901_915.txt` | 901–915 (partial last batch) |
+| `Chunk_876_900.txt` | 876-900 |
+| `Chunk_901_915.txt` | 901-915 (partial last batch) |
 
 ### Cross-reference
 
@@ -180,7 +180,7 @@ Context:
 ### Context lines
 
 1. Prefer `Finding.Snippet` when present.  
-2. Else a window from source cache / disk: **line−2 … line+1**, with `>` on the hit line.  
+2. Else a window from source cache / disk: **line-2 … line+1**, with `>` on the hit line.  
 3. Missing source → `<context unavailable>`.
 
 ### Chunk wrapper
@@ -204,13 +204,13 @@ Separator is **100** `=` characters between findings.
 
 Examples below match the §12.4 **gopdfsuit** oracle export tree that may already exist under the repo after `make run` / `make oracle`.
 
-### Function ref — `scripts/findings/functions/1.txt`
+### Function ref - `scripts/findings/functions/1.txt`
 
 ```text
 Finding 1/915
 Source: /home/chinmay/.../gopdfsuit/bindings/python/cgo/exports.go:1:1
 Rule: BP-57
-Fingerprint: codehound:2:BP-57:.../exports.go:fe9363bf4dff0127
+Fingerprint: goslop:2:BP-57:.../exports.go:fe9363bf4dff0127
 Rule title: Stale Go Version In go.mod
 Severity: low
 Message: go.mod targets an out-of-support Go major release; update to a currently supported baseline
@@ -220,13 +220,13 @@ Context:
           2: package main
 ```
 
-### Function ref with multi-line window — `scripts/findings/functions/915.txt`
+### Function ref with multi-line window - `scripts/findings/functions/915.txt`
 
 ```text
 Finding 915/915
 Source: .../gopdfsuit/typstsyntax/renderer.go:1256:9
 Rule: PERF-35
-Fingerprint: codehound:2:PERF-35:.../renderer.go:619456b9f1ed1271
+Fingerprint: goslop:2:PERF-35:.../renderer.go:619456b9f1ed1271
 Rule title: Interface Boxing On Hot Path
 Severity: info
 Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
@@ -238,7 +238,7 @@ Context:
        1257: }
 ```
 
-### Chunk (abbreviated) — `scripts/chunks/Chunk_1_25.txt`
+### Chunk (abbreviated) - `scripts/chunks/Chunk_1_25.txt`
 
 ```text
 Findings 1-25 of 915
@@ -258,7 +258,7 @@ Rule: BP-60
 ...
 ====================================================================================================
 
-... Findings 3–24 ...
+... Findings 3-24 ...
 
 ====================================================================================================
 
@@ -266,7 +266,7 @@ Finding 25/915
 ...
 ```
 
-### Last partial chunk — `scripts/chunks/Chunk_901_915.txt`
+### Last partial chunk - `scripts/chunks/Chunk_901_915.txt`
 
 ```text
 Findings 901-915 of 915
@@ -310,7 +310,7 @@ make run SCAN_PATH=/path/to/project
 
 Prompt sketch:
 
-> You are reviewing CodeHound findings. The attached chunk contains up to 25 findings with source context. For each finding: confirm true/false positive, propose a minimal fix, and note the rule id and file:line. If you need a single finding alone, ask for `scripts/findings/functions/{i}.txt`.
+> You are reviewing goslop findings. The attached chunk contains up to 25 findings with source context. For each finding: confirm true/false positive, propose a minimal fix, and note the rule id and file:line. If you need a single finding alone, ask for `scripts/findings/functions/{i}.txt`.
 
 ### Single-finding deep dive
 
@@ -322,14 +322,14 @@ less scripts/findings/functions/42.txt
 ### Larger batches for fewer agents
 
 ```sh
-./bin/codehound --profile all --export-chunks --chunk-size 50 --no-cache /path
+./bin/goslop --profile all --export-chunks --chunk-size 50 --no-cache /path
 # → Chunk_1_50.txt, Chunk_51_100.txt, ...
 ```
 
 ### Keep JSON machine output + disk dossiers
 
 ```sh
-./bin/codehound --profile all --format json \
+./bin/goslop --profile all --format json \
   --export-context --export-chunks --no-cache \
   /path > findings.json
 ```
@@ -352,7 +352,7 @@ Paths are relative to the **process working directory** unless absolute paths ar
 
 ## Related docs
 
-- [make-run.md](./make-run.md) — product `make run` that generates these files  
-- [cli-reference.md](./cli-reference.md) — flag details  
-- [reporting-formats.md](./reporting-formats.md) — stdout formats (separate from disk export)  
-- [overview.md](./overview.md) — product surface  
+- [make-run.md](./make-run.md) - product `make run` that generates these files  
+- [cli-reference.md](./cli-reference.md) - flag details  
+- [reporting-formats.md](./reporting-formats.md) - stdout formats (separate from disk export)  
+- [overview.md](./overview.md) - product surface  

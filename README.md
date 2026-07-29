@@ -1,6 +1,6 @@
-# CodeHound
+# goslop
 
-**CodeHound** is a **static analysis tool (SAT)** for **Go**. It inspects source with pure Go parsing (`go/parser` + `go/ast`, no CGO) and reports issues across three main families:
+**goslop** is a **static analysis tool (SAT)** for **Go**. It inspects source with pure Go parsing (`go/parser` + `go/ast`, no CGO) and reports issues across three main families:
 
 | Family | What it finds | Examples |
 |--------|----------------|----------|
@@ -14,14 +14,14 @@ Use it as a local linter, a CI gate, or a triage pipeline that exports findings 
 
 ## Highlights
 
-- **Three detector catalogues** — **239** PERF, **175** CWE, plus a full bad-practice catalogue (`BP-*`)
-- **Product profiles** — `recommended`, `perf`, `security`, `style`, `all` (curated packs + fail policies)
-- **Reporters** — human **text**, machine **JSON**, and **SARIF 2.1.0** (GitHub Code Scanning–ready)
-- **Optional taint** — experimental inter-procedural graph for high-signal injection CWEs
-- **Incremental cache** — `.codehound-cache/` for fast re-scans
-- **Baseline & ignore** — ship with known debt; suppress with `// codehound-ignore`
-- **Export for agents** — per-finding refs under `scripts/findings/functions/`, batched **chunks** under `scripts/chunks/`
-- **Pure Go** — `CGO_ENABLED=0` by default; easy cross-compile
+- **Three detector catalogues** - **239** PERF, **175** CWE, plus a full bad-practice catalogue (`BP-*`)
+- **Product profiles** - `recommended`, `perf`, `security`, `style`, `all` (curated packs + fail policies)
+- **Reporters** - human **text**, machine **JSON**, and **SARIF 2.1.0** (GitHub Code Scanning-ready)
+- **Optional taint** - experimental inter-procedural graph for high-signal injection CWEs
+- **Incremental cache** - `.goslop-cache/` for fast re-scans
+- **Baseline & ignore** - ship with known debt; suppress with `// goslop-ignore`
+- **Export for agents** - per-finding refs under `scripts/findings/functions/`, batched **chunks** under `scripts/chunks/`
+- **Pure Go** - `CGO_ENABLED=0` by default; easy cross-compile
 
 ---
 
@@ -40,10 +40,10 @@ Use it as a local linter, a CI gate, or a triage pipeline that exports findings 
 make build
 
 # Or:
-CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound
+CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop
 ```
 
-Binary: `./bin/codehound`
+Binary: `./bin/goslop`
 
 Optional multi-arch packaging: [`.goreleaser.stub.yml`](./.goreleaser.stub.yml).
 
@@ -53,29 +53,29 @@ Optional multi-arch packaging: [`.goreleaser.stub.yml`](./.goreleaser.stub.yml).
 
 ```sh
 # Scan current directory (default profile: recommended)
-./bin/codehound .
+./bin/goslop .
 
 # Performance-focused pack
-./bin/codehound --profile perf .
+./bin/goslop --profile perf .
 
 # Security pack (taint on by default)
-./bin/codehound --profile security ./cmd
+./bin/goslop --profile security ./cmd
 
 # Bad practices / style
-./bin/codehound --profile style .
+./bin/goslop --profile style .
 
 # Full catalogue
-./bin/codehound --profile all .
+./bin/goslop --profile all .
 
 # Starter config
-./bin/codehound init
+./bin/goslop init
 ```
 
 ### Machine output
 
 ```sh
-./bin/codehound --format json .
-./bin/codehound --format sarif . > codehound.sarif
+./bin/goslop --format json .
+./bin/goslop --format sarif . > goslop.sarif
 ```
 
 ### Export findings for review / agent delegation
@@ -83,7 +83,7 @@ Optional multi-arch packaging: [`.goreleaser.stub.yml`](./.goreleaser.stub.yml).
 ```sh
 # Per-finding refs → scripts/findings/functions/N.txt
 # Combined batches → scripts/chunks/Chunk_START_END.txt (default 25 findings each)
-./bin/codehound --profile all --export-context --export-chunks --no-cache .
+./bin/goslop --profile all --export-context --export-chunks --no-cache .
 ```
 
 - **Chunks** = combined findings for **delegating** work to agents  
@@ -98,10 +98,10 @@ make run SCAN_PATH=./your/go/project
 ### Rule discovery
 
 ```sh
-./bin/codehound --list-rules
-./bin/codehound --explain PERF-6
-./bin/codehound --explain CWE-89
-./bin/codehound --version
+./bin/goslop --list-rules
+./bin/goslop --explain PERF-6
+./bin/goslop --explain CWE-89
+./bin/goslop --version
 ```
 
 ### Exit codes
@@ -115,7 +115,7 @@ make run SCAN_PATH=./your/go/project
 
 ---
 
-## What CodeHound analyzes
+## What goslop analyzes
 
 ### Performance (`PERF-*`)
 
@@ -132,9 +132,9 @@ Style and engineering hygiene: missing package docs, error handling habits, test
 **175** structural CWE heuristics. For injection-class issues, enable experimental **taint** tracking:
 
 ```sh
-./bin/codehound --taint --taint-depth 3 --taint-show-paths .
+./bin/goslop --taint --taint-depth 3 --taint-show-paths .
 # or
-./bin/codehound --profile security .
+./bin/goslop --profile security .
 ```
 
 Taint model and limits: [`documents/taint.md`](./documents/taint.md).
@@ -159,19 +159,19 @@ Full flag list: [`documents/cli-reference.md`](./documents/cli-reference.md).
 ## Configuration
 
 ```sh
-./bin/codehound init   # writes codehound.toml
+./bin/goslop init   # writes goslop.toml
 ```
 
-Optional `codehound.toml` supports rule filters (`only` / `skip`), `fail_on`, include/exclude globs, cache, baseline, taint, and bad-practice severity overrides.
+Optional `goslop.toml` supports rule filters (`only` / `skip`), `fail_on`, include/exclude globs, cache, baseline, taint, and bad-practice severity overrides.
 
-- Template: [`templates/codehound.toml`](./templates/codehound.toml)  
-- Schema: [`codehound.schema.json`](./codehound.schema.json)  
+- Template: [`templates/goslop.toml`](./templates/goslop.toml)  
+- Schema: [`goslop.schema.json`](./goslop.schema.json)  
 - Merge rules: [`documents/cli-reference.md`](./documents/cli-reference.md#config-file-and-cli-merge)
 
 Suppress inline with:
 
 ```go
-// codehound-ignore: PERF-101
+// goslop-ignore: PERF-101
 srv := &http.Server{Addr: ":8080"}
 ```
 
@@ -231,11 +231,11 @@ Detailed guides live under [`documents/`](./documents/):
 
 | Path | Role |
 |------|------|
-| `cmd/codehound` | CLI entrypoint |
+| `cmd/goslop` | CLI entrypoint |
 | `internal/` | Core engine, detectors, reporting, export |
 | `documents/` | User-facing documentation |
 | `ruleset/` | Rule metadata (PERF / CWE chunks, BP catalogue) |
-| `templates/` | Starter `codehound.toml` |
+| `templates/` | Starter `goslop.toml` |
 | `tests/fixtures` | Detector fixtures |
 | `tests/integration` | Integration harness |
 | `scripts/findings/functions` | Per-finding export (`--export-context`) |

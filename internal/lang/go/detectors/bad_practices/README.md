@@ -6,7 +6,7 @@ Phase 8 implementation of Go bad-practice heuristics.
 
 | File | Role |
 |------|------|
-| `scan.go` | `GoBadPracticeScan` runner — per-rule enable via `ScanContext.Allows`, severity overrides |
+| `scan.go` | `GoBadPracticeScan` runner - per-rule enable via `ScanContext.Allows`, severity overrides |
 | `register.go` | `RegisterRule` catalogue (init-time registration) |
 | `facts.go` | Shared AST/source facts (tree-sitter when available) |
 | `project.go` | Project snapshot + caches for server/module rules (BP-47/50/54/55, BP-57+) |
@@ -34,16 +34,16 @@ Phase 8 implementation of Go bad-practice heuristics.
 
 Server-policy rules emit **once** on the server entrypoint (`requiresServerAnchor`):
 
-- **BP-47** — missing graceful shutdown
-- **BP-50** — missing signal handling
-- **BP-54** — public endpoint without rate limiting
-- **BP-55** — missing request-id propagation
+- **BP-47** - missing graceful shutdown
+- **BP-50** - missing signal handling
+- **BP-54** - public endpoint without rate limiting
+- **BP-55** - missing request-id propagation
 
 Module-hygiene rules emit on the project anchor (`requiresProjectAnchor`): BP-57…BP-65 (subset implemented with go.mod heuristics).
 
 ## Coverage notes
 
-Heuristic ports of the Rust modules under `codehound/src/lang/go/detectors/bad_practices/`.
+Heuristic ports of the Rust modules under `goslop/src/lang/go/detectors/bad_practices/`.
 Priority fidelity: **BP-1**, **BP-5** (top oracle frequency), then broad catalogue registration.
 
 Not every fixture is expected to pass; AST-precise rules from Rust may still need tightening. Gaps are listed in the Phase 8 PR body.

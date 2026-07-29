@@ -1,6 +1,6 @@
 # Product run guide (`make run`)
 
-This document is the **markdown run guide**: how to run CodeHound in the product style used for full-catalogue scans, export generation, and the §12.4 oracle gate.
+This document is the **markdown run guide**: how to run goslop in the product style used for full-catalogue scans, export generation, and the §12.4 oracle gate.
 
 > There is **no** `--format markdown`. Machine formats are `text` | `json` | `sarif`.  
 > “Markdown run” here means **documenting and operating the product run** (Makefile + CLI).
@@ -10,7 +10,7 @@ This document is the **markdown run guide**: how to run CodeHound in the product
 ## Quick start
 
 ```sh
-# From the codehound-go repo root
+# From the goslop-go repo root
 make build
 make run SCAN_PATH=/path/to/your/go/project
 ```
@@ -26,7 +26,7 @@ From the root [`Makefile`](../Makefile):
 ```make
 run: build
 	@mkdir -p scripts/findings/functions scripts/chunks
-	./bin/codehound --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
+	./bin/goslop --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
 ```
 
 ### Defaults
@@ -40,9 +40,9 @@ run: build
 ### Expanded equivalent
 
 ```sh
-CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound
+CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop
 mkdir -p scripts/findings/functions scripts/chunks
-./bin/codehound \
+./bin/goslop \
   --profile all \
   --no-fail \
   --no-terminal \
@@ -84,7 +84,7 @@ make run SCAN_PATH=. RUN_ARGS="--export-context --export-chunks --chunk-size 50 
 
 ## What you see
 
-### Stderr — product summary (always)
+### Stderr - product summary (always)
 
 Example shape:
 
@@ -99,7 +99,7 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 
 With `--no-terminal` and default `text` format, **no per-finding lines** are printed to stdout.
 
-### Disk — exports (when `RUN_ARGS` includes export flags)
+### Disk - exports (when `RUN_ARGS` includes export flags)
 
 | Artifact | Path | Count (gopdfsuit oracle) |
 |----------|------|---------------------------|
@@ -115,7 +115,7 @@ See [export-context-and-chunks.md](./export-context-and-chunks.md).
 
 ---
 
-## `make oracle` — hard metrics gate
+## `make oracle` - hard metrics gate
 
 The oracle target rebuilds exports, writes JSON, and prints count checks used for §12.4 parity:
 
@@ -123,10 +123,10 @@ The oracle target rebuilds exports, writes JSON, and prints count checks used fo
 oracle: build
 	@rm -rf scripts/findings/functions scripts/chunks
 	@mkdir -p scripts/findings/functions scripts/chunks
-	-./bin/codehound --profile $(ORACLE_PROFILE) --format json \
+	-./bin/goslop --profile $(ORACLE_PROFILE) --format json \
 		--export-context --export-chunks --no-cache \
 		--context-dir scripts/findings/functions --chunks-dir scripts/chunks \
-		$(ORACLE_PATH) > /tmp/codehound-oracle.json
+		$(ORACLE_PATH) > /tmp/goslop-oracle.json
 	# Python: findings count, severity histogram, top-5 rules
 	# Also: context file count, chunk file count
 ```
@@ -154,12 +154,12 @@ The leading `-` on the scan command allows non-zero exit under fail policy so th
 
 | Target | Purpose |
 |--------|---------|
-| `build` | `go build -o bin/codehound ./cmd/codehound` |
+| `build` | `go build -o bin/goslop ./cmd/goslop` |
 | `test` | `go test ./...` |
 | `integration` | Fixture harness under `tests/integration` |
 | `vet` / `fmt` / `lint` / `lint-all` | Static checks |
 | `ci` | `lint` + `test` + `build` (local CI parity) |
-| `version` | Build + `./bin/codehound --version` |
+| `version` | Build + `./bin/goslop --version` |
 | `help` | Print targets and current `SCAN_PATH` / `RUN_ARGS` |
 
 ```sh
@@ -188,23 +188,23 @@ make run SCAN_PATH=/path/to/project
 ### B. Summary-only without wiping your head
 
 ```sh
-./bin/codehound --profile all --no-fail --no-terminal --no-cache /path/to/project
+./bin/goslop --profile all --no-fail --no-terminal --no-cache /path/to/project
 ```
 
 ### C. JSON + exports (oracle-like, custom path)
 
 ```sh
-./bin/codehound --profile all --format json \
+./bin/goslop --profile all --format json \
   --export-context --export-chunks --no-cache \
   --context-dir scripts/findings/functions \
   --chunks-dir scripts/chunks \
-  /path/to/project > /tmp/codehound.json
+  /path/to/project > /tmp/goslop.json
 ```
 
 ### D. SARIF for CI (not the same as `make run`)
 
 ```sh
-./bin/codehound --profile recommended --no-fail --format sarif . > codehound.sarif
+./bin/goslop --profile recommended --no-fail --format sarif . > goslop.sarif
 ```
 
 See [reporting-formats.md](./reporting-formats.md).
@@ -213,7 +213,7 @@ See [reporting-formats.md](./reporting-formats.md).
 
 ```sh
 make lint && make test && make build
-./bin/codehound --profile recommended .
+./bin/goslop --profile recommended .
 ```
 
 ---
@@ -226,7 +226,7 @@ GitHub Actions (`.github/workflows/ci.yml`) runs **vet / test / build** and smok
 
 ## Related docs
 
-- [cli-reference.md](./cli-reference.md) — every flag  
-- [export-context-and-chunks.md](./export-context-and-chunks.md) — using generated snippets  
-- [reporting-formats.md](./reporting-formats.md) — text / JSON / SARIF  
-- [overview.md](./overview.md) — product surface  
+- [cli-reference.md](./cli-reference.md) - every flag  
+- [export-context-and-chunks.md](./export-context-and-chunks.md) - using generated snippets  
+- [reporting-formats.md](./reporting-formats.md) - text / JSON / SARIF  
+- [overview.md](./overview.md) - product surface  

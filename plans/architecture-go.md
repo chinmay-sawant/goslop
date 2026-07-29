@@ -1,7 +1,7 @@
-# Architecture — CodeHound Go Port
+# Architecture - goslop Go Port
 
 > **Parent:** `plans/port-phasewise-checklist.md`
-> **Status:** scaffold target (Phase 0–1)
+> **Status:** scaffold target (Phase 0-1)
 
 ---
 
@@ -11,19 +11,19 @@
 2. Same **fixture-backed** rule oracle: `tests/fixtures/**/*.txt` materialize → scan → expected rule IDs.
 3. Offline, no network; optional typed path via `go list` later (`--typed`).
 4. Profiles: `recommended` / `security` / `all` (+ only/skip, baseline, cache, SARIF/JSON).
-5. Complements golangci-lint — does not replace it.
+5. Complements golangci-lint - does not replace it.
 
 ## Non-goals (v0 of port)
 
-- Python plugin / `SLOP101` (Rust opt-in only) — defer until Go core is green.
+- Python plugin / `SLOP101` (Rust opt-in only) - defer until Go core is green.
 - Perfect binary-identical JSON field ordering vs Rust (semantic wire parity is enough).
-- Criterion-class microbenches day one — wall-time smoke budgets first.
+- Criterion-class microbenches day one - wall-time smoke budgets first.
 
 ## Package layout
 
 ```
-codehound-go/
-  cmd/codehound/          # main
+goslop-go/
+  cmd/goslop/          # main
   internal/
     app/                  # run orchestration (mirrors src/app)
     cli/                  # flags / enums
@@ -56,7 +56,7 @@ codehound-go/
 
 | Choice | Decision |
 |--------|----------|
-| Parser | **Pure Go** — stdlib `go/parser` + `go/ast` via `internal/lang/go/goparse` (**no CGO**, no tree-sitter) |
+| Parser | **Pure Go** - stdlib `go/parser` + `go/ast` via `internal/lang/go/goparse` (**no CGO**, no tree-sitter) |
 | Multi-language | `core.LanguagePlugin` + opaque `ParsedUnit.Tree`; second languages should prefer pure-Go parsers (see package doc on `LanguagePlugin`) |
 | Typed (later) | optional `go/types` / `go list` for a subset of rules (`--typed`) |
 | Parallelism | worker pool over files (`errgroup` / channel workers); parse is per-file in `ParseSource` |
@@ -94,11 +94,11 @@ CLI/config/profile
 
 1. **Do not rewrite fixture bodies** under `tests/fixtures/**` unless fixing a documented Rust bug.
 2. Materializer must honor Rust header format:
-   - `# comment`
-   - `lang: go`
-   - `file: name.go`
-   - optional `variant:`, `expect:`, etc.
-   - `---` then source
+ - `# comment`
+ - `lang: go`
+ - `file: name.go`
+ - optional `variant:`, `expect:`, etc.
+ - `---` then source
 3. Integration tests assert **rule ID presence/absence** per fixture (same oracle as Rust).
 4. Prefer table-driven Go tests under `tests/integration/` rather than porting every Rust `#[test]` file 1:1; keep **oracle fidelity**.
 

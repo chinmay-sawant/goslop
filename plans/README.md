@@ -1,6 +1,6 @@
-# CodeHound Go Port — Plans
+# goslop Go Port - Plans
 
-Canonical execution ledger for porting the Rust CodeHound application to Go.
+Canonical execution ledger for porting the Rust goslop application to Go.
 
 | Document | Role |
 |----------|------|
@@ -10,8 +10,8 @@ Canonical execution ledger for porting the Rust CodeHound application to Go.
 
 ## Source of truth
 
-- **Rust product:** `/home/chinmay/ChinmayPersonalProjects/codehound`
-- **Go port:** `/home/chinmay/ChinmayPersonalProjects/codehound-go`
+- **Rust product:** `/home/chinmay/ChinmayPersonalProjects/goslop`
+- **Go port:** `/home/chinmay/ChinmayPersonalProjects/goslop-go`
 - **Fixtures / heuristics text:** copied **as-is** under `tests/fixtures/` and `ruleset/`
 - **Detector logic:** rewritten in Go (not a mechanical transpile)
 
@@ -19,4 +19,4 @@ Canonical execution ledger for porting the Rust CodeHound application to Go.
 
 - `[ ]` not started / not proven
 - `[x]` implemented and validated with evidence
-- `[~]` deferred/partial — reason + next gate required
+- `[~]` deferred/partial - reason + next gate required

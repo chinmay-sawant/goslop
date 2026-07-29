@@ -1,6 +1,6 @@
 # Reporting formats (text · JSON · SARIF)
 
-CodeHound writes finding reports to **stdout** and the product **scan summary** to **stderr**. Choose a format with `--format`:
+goslop writes finding reports to **stdout** and the product **scan summary** to **stderr**. Choose a format with `--format`:
 
 | Format | Flag | Primary use |
 |--------|------|-------------|
@@ -9,9 +9,9 @@ CodeHound writes finding reports to **stdout** and the product **scan summary** 
 | **sarif** | `--format sarif` | GitHub Code Scanning, SARIF viewers, IDEs |
 
 ```sh
-./bin/codehound .
-./bin/codehound --format json .
-./bin/codehound --format sarif . > codehound.sarif
+./bin/goslop .
+./bin/goslop --format json .
+./bin/goslop --format sarif . > goslop.sarif
 ```
 
 Invalid formats are rejected (exit 2): only `text` | `json` | `sarif`.
@@ -29,10 +29,10 @@ This keeps JSON/SARIF **pipe-clean**:
 
 ```sh
 # Pure SARIF file (discard summary)
-./bin/codehound --format sarif . > codehound.sarif 2>/dev/null
+./bin/goslop --format sarif . > goslop.sarif 2>/dev/null
 
 # Keep summary visible while writing SARIF
-./bin/codehound --format sarif . > codehound.sarif
+./bin/goslop --format sarif . > goslop.sarif
 ```
 
 ### `--no-terminal`
@@ -41,8 +41,8 @@ With **text** format, `--no-terminal` prints **summary only** (no per-finding du
 With **json** / **sarif**, machine output still goes to stdout:
 
 ```sh
-./bin/codehound --no-terminal .                         # summary only
-./bin/codehound --no-terminal --format json .           # summary + JSON findings
+./bin/goslop --no-terminal .                         # summary only
+./bin/goslop --no-terminal --format json .           # summary + JSON findings
 ```
 
 `make run` uses `--no-terminal` for product summary scans. See [make-run.md](./make-run.md).
@@ -133,7 +133,7 @@ Stable machine envelope for scripts, custom gates, and tooling that needs full f
 ### Fingerprint (v2)
 
 ```text
-codehound:2:{ruleID}:{file-with-forward-slashes}:{first-16-hex-of-sha256(message)}
+goslop:2:{ruleID}:{file-with-forward-slashes}:{first-16-hex-of-sha256(message)}
 ```
 
 Content-stable across line shifts when rule + file + message stay the same. Used by baseline matching and SARIF `partialFingerprints`.
@@ -157,7 +157,7 @@ Content-stable across line shifts when rule + file + message stay the same. Used
           "url": "https://cwe.mitre.org/data/definitions/89.html"
         }
       ],
-      "fingerprint": "codehound:2:CWE-89:main.go:a1b2c3d4e5f67890",
+      "fingerprint": "goslop:2:CWE-89:main.go:a1b2c3d4e5f67890",
       "fix": "Use parameterized queries or a query builder."
     },
     {
@@ -169,7 +169,7 @@ Content-stable across line shifts when rule + file + message stay the same. Used
       "message": "fmt in loop",
       "severity": "medium",
       "cwe": [],
-      "fingerprint": "codehound:2:PERF-6:loop.go:1122334455667788"
+      "fingerprint": "goslop:2:PERF-6:loop.go:1122334455667788"
     }
   ],
   "version": "0.1.0-dev"
@@ -185,9 +185,9 @@ Content-stable across line shifts when rule + file + message stay the same. Used
 ### Usage
 
 ```sh
-./bin/codehound --format json . > findings.json
-./bin/codehound --profile all --format json --no-cache . | jq '.findings | length'
-./bin/codehound --format json . | jq '[.findings[] | select(.severity=="high")]'
+./bin/goslop --format json . > findings.json
+./bin/goslop --profile all --format json --no-cache . | jq '.findings | length'
+./bin/goslop --format json . | jq '[.findings[] | select(.severity=="high")]'
 ```
 
 ---
@@ -202,7 +202,7 @@ Industry-standard static-analysis log for:
 - VS Code / IDE **SARIF Viewer** extensions
 - Azure DevOps and other SARIF 2.1.0 consumers
 
-Implementation: `internal/reporting/sarif.go` — **minimal valid** SARIF 2.1.0 subset.
+Implementation: `internal/reporting/sarif.go` - **minimal valid** SARIF 2.1.0 subset.
 
 ### Schema metadata
 
@@ -210,13 +210,13 @@ Implementation: `internal/reporting/sarif.go` — **minimal valid** SARIF 2.1.0 
 |----------|--------|
 | `$schema` | `https://json.schemastore.org/sarif-2.1.0.json` |
 | `version` | `2.1.0` |
-| `runs[0].tool.driver.name` | `codehound` |
-| `informationUri` | `https://github.com/chinmay/codehound` |
+| `runs[0].tool.driver.name` | `goslop` |
+| `informationUri` | `https://github.com/chinmay/goslop` |
 | `version` (driver) | tool version, e.g. `0.1.0-dev` |
 
 ### Severity → SARIF `level`
 
-| CodeHound severity | SARIF level |
+| goslop severity | SARIF level |
 |--------------------|-------------|
 | `info` | `note` |
 | `low` | `warning` |
@@ -257,8 +257,8 @@ For richest fields, use **`--format json`** in parallel.
     {
       "tool": {
         "driver": {
-          "name": "codehound",
-          "informationUri": "https://github.com/chinmay/codehound",
+          "name": "goslop",
+          "informationUri": "https://github.com/chinmay/goslop",
           "version": "0.1.0-dev",
           "rules": [
             {
@@ -299,7 +299,7 @@ For richest fields, use **`--format json`** in parallel.
             }
           ],
           "partialFingerprints": {
-            "primaryLocationLineHash": "codehound:2:CWE-78:cmd.go:abcdef0123456789"
+            "primaryLocationLineHash": "goslop:2:CWE-78:cmd.go:abcdef0123456789"
           }
         },
         {
@@ -322,7 +322,7 @@ For richest fields, use **`--format json`** in parallel.
             }
           ],
           "partialFingerprints": {
-            "primaryLocationLineHash": "codehound:2:PERF-6:loop.go:1122334455667788"
+            "primaryLocationLineHash": "goslop:2:PERF-6:loop.go:1122334455667788"
           }
         }
       ]
@@ -338,25 +338,25 @@ Still emits one `run` with driver metadata; `results` is `[]`. Rule array may be
 ### Generate SARIF
 
 ```sh
-./bin/codehound --profile recommended --format sarif . > codehound.sarif
+./bin/goslop --profile recommended --format sarif . > goslop.sarif
 
 # Advisory CI (do not fail the job before upload)
-./bin/codehound --profile recommended --no-fail --format sarif . > codehound.sarif
+./bin/goslop --profile recommended --no-fail --format sarif . > goslop.sarif
 ```
 
 ### GitHub Code Scanning (example workflow step)
 
 ```yaml
-- name: Build CodeHound
-  run: CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound
+- name: Build goslop
+  run: CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop
 
-- name: Run CodeHound (SARIF)
-  run: ./bin/codehound --profile recommended --no-fail --format sarif . > codehound.sarif
+- name: Run goslop (SARIF)
+  run: ./bin/goslop --profile recommended --no-fail --format sarif . > goslop.sarif
 
 - name: Upload SARIF
   uses: github/codeql-action/upload-sarif@v3
   with:
-    sarif_file: codehound.sarif
+    sarif_file: goslop.sarif
   # permissions: security-events: write
 ```
 
@@ -365,14 +365,14 @@ Still emits one `run` with driver metadata; `results` is `[]`. Rule array may be
 1. Prefer scanning from the **repo root** so `uri` paths match the GitHub workspace.  
 2. Driver `rules` only lists rules that **fired** (not the full pack).  
 3. Low and medium both map to SARIF `warning`.  
-4. `partialFingerprints` use CodeHound’s content fingerprint (stable when message/path/rule hold).  
+4. `partialFingerprints` use goslop’s content fingerprint (stable when message/path/rule hold).  
 5. Exit codes are orthogonal to format: use `--no-fail` for advisory generation.
 
 ### VS Code / other tools
 
 | Tool | How |
 |------|-----|
-| SARIF Viewer (VS Code) | Open `codehound.sarif`; resolve paths against the workspace |
+| SARIF Viewer (VS Code) | Open `goslop.sarif`; resolve paths against the workspace |
 | GitHub Security tab | After `upload-sarif` |
 | `jq` / scripts | Prefer **JSON** for field-rich automation |
 | Problem matchers | Prefer **text** (`RULE file:line:col message`) |
@@ -407,4 +407,4 @@ Still emits one `run` with driver metadata; `results` is `[]`. Rule array may be
 
 - [cli-reference.md](./cli-reference.md)  
 - [make-run.md](./make-run.md)  
-- [export-context-and-chunks.md](./export-context-and-chunks.md) — disk exports are **independent** of `--format`  
+- [export-context-and-chunks.md](./export-context-and-chunks.md) - disk exports are **independent** of `--format`  

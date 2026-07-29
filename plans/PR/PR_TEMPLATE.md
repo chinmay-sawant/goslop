@@ -1,4 +1,4 @@
-# goslop — Pull Request Template
+# goslop - Pull Request Template
 
 Use this document as the base when authoring GitHub pull requests for [chinmay-sawant/goslop](https://github.com/chinmay-sawant/goslop). Copy the sections below into the PR description and fill in each section. Delete guidance comments before submitting.
 
@@ -7,8 +7,8 @@ Use this document as the base when authoring GitHub pull requests for [chinmay-s
 ## How to use this template
 
 1. **Pick a title** using the convention in [PR title](#pr-title).
-2. **Write a 1–3 sentence summary** — what changed and why (not a file list).
-3. **Fill in each section** — keep `Summary`, `Changes`, `Test plan`, and `Related issues`.
+2. **Write a 1-3 sentence summary** - what changed and why (not a file list).
+3. **Fill in each section** - keep `Summary`, `Changes`, `Test plan`, and `Related issues`.
 4. **Link related tickets** in the body **and** in `gh pr create` metadata.
 5. **Choose labels** and **self-assign**.
 6. Save a filled copy under `plans/PR/pr-<short-slug>.md` **before** opening the PR when process-gated.
@@ -16,7 +16,7 @@ Use this document as the base when authoring GitHub pull requests for [chinmay-s
 
 ---
 
-## Open the PR (`gh`) — required metadata
+## Open the PR (`gh`) - required metadata
 
 ```sh
 # From the feature branch (already pushed):
@@ -106,7 +106,7 @@ Copy everything below this line into the GitHub PR body (and into `plans/PR/pr-<
 
 ## Summary
 
-<!-- 1–3 sentences: WHAT changed and WHY. -->
+<!-- 1-3 sentences: WHAT changed and WHY. -->
 
 -
 
@@ -148,7 +148,7 @@ Copy everything below this line into the GitHub PR body (and into `plans/PR/pr-<
 
 | Item | Migration |
 |------|-----------|
-| None | — |
+| None | - |
 
 ---
 
@@ -156,7 +156,7 @@ Copy everything below this line into the GitHub PR body (and into `plans/PR/pr-<
 
 - [ ] `make test`
 - [ ] `make lint` / `go vet`
-- [ ] `CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound` (when pure-Go is required)
+- [ ] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` (when pure-Go is required)
 - [ ] `make run` wall time vs baseline (hard &lt; 400ms; soft ±50ms of reference)
 - [ ] `make oracle` / gopdfsuit hard metrics if detector surface changed
 

@@ -1,23 +1,23 @@
 # Go Performance Rules (PERF)
 
 This document is a **partial human-notes catalog** for Go performance (`PERF-*`)
-detectors — not a complete listing of all **239** shipped rules.
+detectors - not a complete listing of all **239** shipped rules.
 
 | Truth source | How to use |
 |--------------|------------|
-| Live inventory | `codehound --list-rules --rule-category performance` |
-| Titles / detection notes | `ruleset/golang/chunks/perf-*.json` + `codehound --explain PERF-N` |
+| Live inventory | `goslop --list-rules --rule-category performance` |
+| Titles / detection notes | `ruleset/golang/chunks/perf-*.json` + `goslop --explain PERF-N` |
 | Pack / tier policy | [perf-tiers.md](./perf-tiers.md), [go-recommended-pack.md](./go-recommended-pack.md) |
 | Catalog hub | [rule-catalog.md](./rule-catalog.md) |
 
 Canonical CLI IDs are unpadded (`PERF-1`, not `PERF-001`). Prefer the CLI and
 ruleset JSON when prose here conflicts.
 
-## 1 — Idiomatic Usage
+## 1 - Idiomatic Usage
 
 - **PERF-101** flags `http.Server` values without `ReadTimeout` or `WriteTimeout` because unbounded connections can exhaust server resources. *Fix:* set both timeout fields to a reasonable duration (e.g. `5s` / `10s`).
 - **PERF-102** flags HTTP `Transport` not shared across requests (new `http.Client` / transport per call thrash). *Fix:* reuse a shared `http.Client` / `http.Transport`.
-- **PERF-103** flags HTTP response bodies that are never closed (resource leak). *Fix:* `defer resp.Body.Close()` (and drain when required — see PERF-189).
+- **PERF-103** flags HTTP response bodies that are never closed (resource leak). *Fix:* `defer resp.Body.Close()` (and drain when required - see PERF-189).
 - **PERF-104** flags multiple calls to `w.WriteHeader` in the same handler because only the first call sets the status code. *Fix:* call `WriteHeader` once.
 - **PERF-105** flags `runtime.SetFinalizer` on hot-path objects because finalizers add GC cost and surprising lifetime semantics. *Fix:* avoid finalizers on request-scoped objects; prefer explicit cleanup.
 - **PERF-107** flags `encoding/binary.Read` or `binary.Write` inside a loop because the reflection-based API allocates per call. *Fix:* call `binary.Read`/`Write` once or batch the data outside the loop.
@@ -80,7 +80,7 @@ ruleset JSON when prose here conflicts.
 - **PERF-209** flags `json.Decoder` use without `DisallowUnknownFields` or `UseNumber` when the input schema is strictly controlled, because silent unknown fields mask data quality issues. *Fix:* enable strict decoding options.
 - **PERF-211** flags `Request.ParseForm` called implicitly by `r.Form` / `r.PostForm` without checking the returned error, because parse errors can silently produce partial results. *Fix:* call `r.ParseForm` explicitly and check the error.
 
-## 2 — Cache & Memory
+## 2 - Cache & Memory
 
 - **PERF-213** flags package-level caches (maps) with reads and writes but no eviction bound, because unbounded caches grow until memory exhaustion. *Fix:* add an eviction policy (LRU, TTL, or size cap).
 - **PERF-214** flags volatile or dynamic keys used in caching maps, because keys that include request-scoped values (pointers, timestamps) prevent cache hits. *Fix:* use stable, comparable keys.
@@ -95,7 +95,7 @@ ruleset JSON when prose here conflicts.
 - **PERF-223** flags pool backing-array discard where a pooled `[]byte` is truncated and re-grown instead of reused, because the backing array is thrown away. *Fix:* `Reset()` the slice length without discarding the capacity.
 - **PERF-224** flags recursive tree walks on hot paths that can overflow the stack on deep inputs. *Fix:* convert recursion to iterative traversal with an explicit stack.
 
-## 3 — Concurrency & Goroutines
+## 3 - Concurrency & Goroutines
 
 - PERF-131, PERF-158, PERF-170, PERF-181, PERF-182, PERF-195, PERF-198 above also cover concurrency patterns.
 
