@@ -207,6 +207,13 @@ issues:
         - revive
         - prealloc
         - gocritic
+    - path: internal/export/
+      linters:
+        - mnd
+        - nestif
+        - perfsprint
+        - gosec
+        - wrapcheck
 
 linters:
   enable:

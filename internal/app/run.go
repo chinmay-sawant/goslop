@@ -14,6 +14,7 @@ import (
 	"github.com/chinmay/codehound/internal/engine"
 	"github.com/chinmay/codehound/internal/engine/baseline"
 	"github.com/chinmay/codehound/internal/engine/cache"
+	"github.com/chinmay/codehound/internal/export"
 	"github.com/chinmay/codehound/internal/reporting"
 	"github.com/chinmay/codehound/internal/rules"
 )
@@ -49,6 +50,9 @@ func run(args []string, stdout, stderr io.Writer) error {
 	if opts.ListRules {
 		return listRules(stdout)
 	}
+	if opts.ExplainRule != "" {
+		return explainRule(stdout, opts.ExplainRule)
+	}
 
 	profile, ok := core.ParseProfile(opts.Profile)
 	if !ok {
@@ -73,7 +77,10 @@ func run(args []string, stdout, stderr io.Writer) error {
 		ctx.TaintMaxDepth = opts.TaintDepth
 	}
 	ctx.TaintShowPaths = opts.TaintShowPaths
-
+	// Retain sources only when export needs them (Rust parity).
+	if opts.ExportContext || opts.ExportChunks {
+		ctx.RetainSources = true
+	}
 	reg := engine.DefaultRegistry()
 
 	// Cache open / rebuild / prune.
@@ -172,6 +179,37 @@ func run(args []string, stdout, stderr io.Writer) error {
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}
 
+	if opts.ExportContext || opts.ExportChunks {
+		sum, xerr := export.ExportFindings(findings, export.Options{
+			ExportContext:    opts.ExportContext,
+			ExportChunks:     opts.ExportChunks,
+			ChunkSize:        opts.ChunkSize,
+			ContextOutputDir: opts.ContextDir,
+			ChunksOutputDir:  opts.ChunksDir,
+		}, res.SourceCache)
+		if xerr != nil {
+			return &ExitCodeError{Code: ExitInternal, Err: xerr}
+		}
+		if opts.ExportContext {
+			_, _ = fmt.Fprintf(stderr, "exported %d context file(s) to %s",
+				sum.ContextFilesWritten, export.Options{
+					ContextOutputDir: opts.ContextDir,
+				}.Normalize().ContextOutputDir)
+			if opts.ExportChunks {
+				_, _ = fmt.Fprintf(stderr, "; exported %d chunk file(s) to %s",
+					sum.ChunkFilesWritten, export.Options{
+						ChunksOutputDir: opts.ChunksDir,
+					}.Normalize().ChunksOutputDir)
+			}
+			_, _ = fmt.Fprintln(stderr)
+		} else if opts.ExportChunks {
+			_, _ = fmt.Fprintf(stderr, "exported %d chunk file(s) to %s\n",
+				sum.ChunkFilesWritten, export.Options{
+					ChunksOutputDir: opts.ChunksDir,
+				}.Normalize().ChunksOutputDir)
+		}
+	}
+
 	if res.ShouldFail(ctx.FailPolicy) {
 		return &ExitCodeError{Code: ExitFailing}
 	}
@@ -239,18 +277,62 @@ func listRules(w io.Writer) error {
 		_, _ = fmt.Fprintln(w, "no rules registered")
 		return nil
 	}
+	// Stable sort already in AllRuleIDs; print once per id via detectors.
+	seen := map[string]struct{}{}
 	for _, d := range reg.Detectors() {
 		for _, id := range d.RuleIDs() {
+			if _, ok := seen[id]; ok {
+				continue
+			}
+			seen[id] = struct{}{}
+			mat := rules.InferMaturity(id)
 			title := ""
 			if meta := d.MetadataFor(id); meta != nil {
 				title = meta.Title
+				mat = meta.EffectiveMaturity()
 			}
 			if title != "" {
-				_, _ = fmt.Fprintf(w, "%s\t%s\n", id, title)
+				_, _ = fmt.Fprintf(w, "[%s]\t%s\t%s\n", mat, id, title)
 			} else {
-				_, _ = fmt.Fprintln(w, id)
+				_, _ = fmt.Fprintf(w, "[%s]\t%s\n", mat, id)
 			}
 		}
 	}
 	return nil
+}
+
+func explainRule(w io.Writer, ruleID string) error {
+	reg := engine.DefaultRegistry()
+	for _, d := range reg.Detectors() {
+		meta := d.MetadataFor(ruleID)
+		if meta == nil {
+			continue
+		}
+		mat := meta.EffectiveMaturity()
+		_, _ = fmt.Fprintf(w, "rule: %s\n", meta.ID)
+		_, _ = fmt.Fprintf(w, "title: %s\n", meta.Title)
+		_, _ = fmt.Fprintf(w, "severity: %s\n", meta.Severity.String())
+		_, _ = fmt.Fprintf(w, "pack: %s\n", meta.Pack.String())
+		_, _ = fmt.Fprintf(w, "maturity: %s\n", mat)
+		if meta.QuarantineReason != "" {
+			_, _ = fmt.Fprintf(w, "quarantine: %s\n", meta.QuarantineReason)
+		}
+		if meta.Description != "" {
+			_, _ = fmt.Fprintf(w, "description: %s\n", meta.Description)
+		}
+		if meta.Fix != "" {
+			_, _ = fmt.Fprintf(w, "fix: %s\n", meta.Fix)
+		}
+		// Pack eligibility hints
+		rec := core.BuildScanContext(core.ProfileRecommended, nil, nil)
+		sec := core.BuildScanContext(core.ProfileSecurity, nil, nil)
+		_, _ = fmt.Fprintf(w, "recommended_pack: %v\n", rec.Allows(ruleID))
+		_, _ = fmt.Fprintf(w, "security_pack: %v\n", sec.Allows(ruleID))
+		_, _ = fmt.Fprintf(w, "all_pack: true\n")
+		return nil
+	}
+	return &ExitCodeError{
+		Code: ExitConfig,
+		Err:  fmt.Errorf("unknown rule %q", ruleID),
+	}
 }

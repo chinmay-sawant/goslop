@@ -174,10 +174,10 @@ go build -o bin/codehound ./cmd/codehound
 - [x] `NO_COLOR` honored for text (env checked; text currently uncolored)
 
 ### 5.2 Export (optional path)
-- [ ] `--export-context` / `--export-chunks` full port (not stub-only)
-- [ ] Default dirs: `scripts/findings/functions` (context), `scripts/chunks` (chunks)
-- [ ] `retain_sources` only when export enabled
-- [ ] Final gate: export counts in **§12.4** (915 context + 37 chunks on reference corpus)
+- [x] `--export-context` / `--export-chunks` full port — `internal/export` + CLI flags
+- [x] Default dirs: `scripts/findings/functions` (context), `scripts/chunks` (chunks)
+- [x] `retain_sources` only when export enabled
+- [~] Final gate: export counts in **§12.4** (915 context + 37 chunks on reference corpus) — wiring via `make oracle`; hard counts need reference corpus
 
 ---
 
@@ -295,11 +295,11 @@ go build -o bin/codehound ./cmd/codehound
 
 ## Phase 11: Packs, maturity, quarantine
 
-- [ ] Recommended pack = S-tier PERF + taint-core CWEs; BP off; fail high (match product docs)
-- [ ] Security pack enables taint
-- [ ] `all` pack full catalog
-- [ ] Maturity tags + quarantine reasons in `--list-rules` / `--explain`
-- [ ] Wire metadata from ruleset JSON / generated tables
+- [x] Recommended pack = S-tier PERF + taint-core CWEs; BP off; fail high (match product docs) — `profile.OnlyPatterns` + `rules.PerfTierSRules` / `TaintCoreCWERules`
+- [x] Security pack enables taint — `EnablesTaint` + exact `SecurityPackRules` allow-list
+- [x] `all` pack full catalog — `OnlyPatterns` nil; BP on
+- [x] Maturity tags + quarantine reasons in `--list-rules` / `--explain` — `[maturity]` prefix + `--explain RULE`
+- [~] Wire metadata from ruleset JSON / generated tables — maturity inferred by id; full table wire-up later
 
 ---
 

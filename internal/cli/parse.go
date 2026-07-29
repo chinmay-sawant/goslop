@@ -59,6 +59,12 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.NoTaint, "no-taint", false, "disable taint tracking even under security profile")
 	fs.IntVar(&opts.TaintDepth, "taint-depth", 0, "inter-procedural taint depth 1–4 (0 = profile default)")
 	fs.BoolVar(&opts.TaintShowPaths, "taint-show-paths", false, "attach taint hop evidence to findings")
+	fs.BoolVar(&opts.ExportContext, "export-context", false, "write per-finding context files (default scripts/findings/functions)")
+	fs.BoolVar(&opts.ExportChunks, "export-chunks", false, "write chunked finding files (default scripts/chunks)")
+	fs.StringVar(&opts.ContextDir, "context-dir", "", "export-context output directory")
+	fs.StringVar(&opts.ChunksDir, "chunks-dir", "", "export-chunks output directory")
+	fs.IntVar(&opts.ChunkSize, "chunk-size", 0, "findings per chunk file (default 25)")
+	fs.StringVar(&opts.ExplainRule, "explain", "", "print catalogue metadata for a rule id and exit")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {

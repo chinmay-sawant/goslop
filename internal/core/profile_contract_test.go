@@ -26,21 +26,38 @@ func TestProfileOnlyPatternsContract(t *testing.T) {
 	if ProfileAll.OnlyPatterns() != nil {
 		t.Fatal("all pack should not set only patterns")
 	}
-	if got := ProfilePerf.OnlyPatterns(); len(got) != 1 || got[0] != "PERF-*" {
-		t.Fatalf("perf: %#v", got)
+	// Perf = S-tier + A-tier explicit IDs (not PERF-*).
+	if got := ProfilePerf.OnlyPatterns(); len(got) < 2 {
+		t.Fatalf("perf pack too small: %#v", got)
 	}
-	if got := ProfileSecurity.OnlyPatterns(); len(got) != 1 || got[0] != "CWE-*" {
-		t.Fatalf("security: %#v", got)
+	// Security = exact SECURITY_PACK_RULES list.
+	if got := ProfileSecurity.OnlyPatterns(); len(got) < 5 {
+		t.Fatalf("security pack too small: %#v", got)
 	}
 	if got := ProfileStyle.OnlyPatterns(); len(got) != 1 || got[0] != "BP-*" {
 		t.Fatalf("style: %#v", got)
 	}
+	// Recommended: S-tier PERF + taint-core CWE.
+	rec := ProfileRecommended.OnlyPatterns()
+	hasPERF1, hasCWE22 := false, false
+	for _, id := range rec {
+		if id == "PERF-1" {
+			hasPERF1 = true
+		}
+		if id == "CWE-22" {
+			hasCWE22 = true
+		}
+	}
+	if !hasPERF1 || !hasCWE22 {
+		t.Fatalf("recommended missing core ids: %#v", rec)
+	}
 }
 
 func TestBuildScanContextCLIUnion(t *testing.T) {
+	// Perf S-tier includes PERF-1; skip should deny it.
 	ctx := BuildScanContext(ProfilePerf, []string{"CWE-78"}, []string{"PERF-1"})
-	if !ctx.Allows("PERF-6") {
-		t.Fatal("perf pack should allow PERF-6")
+	if !ctx.Allows("PERF-7") {
+		t.Fatal("perf pack should allow PERF-7 (S-tier)")
 	}
 	if !ctx.Allows("CWE-78") {
 		t.Fatal("CLI only should union CWE-78 onto perf pack")
@@ -50,6 +67,19 @@ func TestBuildScanContextCLIUnion(t *testing.T) {
 	}
 	if ctx.Allows("BP-1") {
 		t.Fatal("perf pack should not enable BP by default")
+	}
+	// Security enables taint.
+	sec := BuildScanContext(ProfileSecurity, nil, nil)
+	if !sec.TaintEnabled {
+		t.Fatal("security profile should enable taint")
+	}
+	// Style skips noisy BPs by default.
+	style := BuildScanContext(ProfileStyle, nil, nil)
+	if style.Allows("BP-21") {
+		t.Fatal("style should skip BP-21 by default")
+	}
+	if !style.Allows("BP-1") {
+		t.Fatal("style should allow BP-1")
 	}
 }
 

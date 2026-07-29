@@ -3,6 +3,8 @@ package core
 import (
 	"fmt"
 	"strings"
+
+	"github.com/chinmay/codehound/internal/rules"
 )
 
 // ScanProfile is a named product pack. CLI default is ProfileRecommended.
@@ -89,18 +91,21 @@ func (p ScanProfile) EnablesBadPractices() bool {
 
 // OnlyPatterns returns a coarse allow-list for the profile.
 // nil means no only filter (full catalog subject to skip/BP).
-func (p ScanProfile) OnlyPatterns() []string {
+func OnlyPatterns(p ScanProfile) []string {
 	switch p {
 	case ProfileRecommended:
-		// Curated CI pack placeholders until full rule tables land.
-		return []string{
-			"PERF-101",
-			"CWE-22", "CWE-78", "CWE-79", "CWE-89",
-		}
+		// S-tier PERF + taint-core CWE allow-list (product docs).
+		out := make([]string, 0, len(rules.PerfTierSRules)+len(rules.TaintCoreCWERules))
+		out = append(out, rules.PerfTierSRules...)
+		out = append(out, rules.TaintCoreCWERules...)
+		return out
 	case ProfilePerf:
-		return []string{"PERF-*"}
+		out := make([]string, 0, len(rules.PerfTierSRules)+len(rules.PerfTierARules))
+		out = append(out, rules.PerfTierSRules...)
+		out = append(out, rules.PerfTierARules...)
+		return out
 	case ProfileSecurity:
-		return []string{"CWE-*"}
+		return append([]string(nil), rules.SecurityPackRules...)
 	case ProfileStyle:
 		return []string{"BP-*"}
 	case ProfileAll:
@@ -110,8 +115,24 @@ func (p ScanProfile) OnlyPatterns() []string {
 	}
 }
 
+// OnlyPatterns method form (stable API).
+func (p ScanProfile) OnlyPatterns() []string { return OnlyPatterns(p) }
+
+// DefaultSkipPatterns returns profile-default skips (style pack noise).
+func (p ScanProfile) DefaultSkipPatterns() []string {
+	switch p {
+	case ProfileStyle:
+		// Opinionated / noisy BP defaults (product docs).
+		return []string{"BP-21", "BP-28", "BP-30"}
+	case ProfileRecommended, ProfilePerf, ProfileSecurity, ProfileAll:
+		return nil
+	default:
+		return nil
+	}
+}
+
 // BuildScanContext creates a ScanContext from a profile and CLI only/skip lists.
-// CLI only is unioned with pack patterns; CLI skip is appended.
+// CLI only is unioned with pack patterns; CLI skip is appended after profile skips.
 func BuildScanContext(profile ScanProfile, only, skip []string) *ScanContext {
 	ctx := DefaultScanContext()
 	ctx.Profile = profile
@@ -131,8 +152,12 @@ func BuildScanContext(profile ScanProfile, only, skip []string) *ScanContext {
 		merged = append(merged, only...)
 		ctx.Only = merged
 	}
-	if len(skip) > 0 {
-		ctx.Skip = append([]string(nil), skip...)
+	packSkip := profile.DefaultSkipPatterns()
+	if len(packSkip) > 0 || len(skip) > 0 {
+		merged := make([]string, 0, len(packSkip)+len(skip))
+		merged = append(merged, packSkip...)
+		merged = append(merged, skip...)
+		ctx.Skip = merged
 	}
 	return ctx
 }

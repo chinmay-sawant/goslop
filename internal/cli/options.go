@@ -49,6 +49,18 @@ type Options struct {
 	TaintDepth int
 	// TaintShowPaths attaches hop evidence to findings.
 	TaintShowPaths bool
+	// ExportContext writes per-finding context files.
+	ExportContext bool
+	// ExportChunks writes chunked finding files.
+	ExportChunks bool
+	// ContextDir overrides scripts/findings/functions.
+	ContextDir string
+	// ChunksDir overrides scripts/chunks.
+	ChunksDir string
+	// ChunkSize is findings per chunk file (default 25).
+	ChunkSize int
+	// ExplainRule prints catalogue details for one rule id and exits.
+	ExplainRule string
 	// Version requests version printing.
 	Version bool
 	// Command is a top-level subcommand when set ("init").
