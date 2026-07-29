@@ -13,24 +13,25 @@ main (0–6 done)
   6..11 ─► Phase 12 full parity / §12.4 oracle
 ```
 
-## Parallel wave 1 (unlocked)
+## Parallel wave 1 (unlocked) — PRs open, **not merged**
 
-| Phase | Issue | Branch | Unlocked? |
-|------:|------:|--------|-----------|
-| 7 | #3 | `feat/phase-7-cwe` | yes (deps 0–3) |
-| 8 | #4 | `feat/phase-8-bp` | yes (deps 0–3) |
-| 9 | #5 | `feat/phase-9-taint` | yes-ish (seed CWE + fixtures; full structural CWE optional) |
-| 10 | #6 | `feat/phase-10-cache` | yes (deps 3–5) |
-| 12a | #8 | `feat/phase-12-ci` | partial (CI/tests/docs only; not §12.4) |
+| Phase | Issue | Branch | PR | Status |
+|------:|------:|--------|-----|--------|
+| 7 | #3 | `feat/phase-7-cwe` | [#14](https://github.com/chinmay-sawant/goslop/pull/14) | OPEN — 175/175 CWE |
+| 8 | #4 | `feat/phase-8-bp` | [#13](https://github.com/chinmay-sawant/goslop/pull/13) | OPEN — ~127/135 BP |
+| 9 | #5 | `feat/phase-9-taint` | [#12](https://github.com/chinmay-sawant/goslop/pull/12) | OPEN — CWE-22/78/79/89 taint |
+| 10 | #6 | `feat/phase-10-cache` | [#11](https://github.com/chinmay-sawant/goslop/pull/11) | OPEN — cache/baseline/ignore |
+| 12a | #8 | `feat/phase-12-ci` | [#10](https://github.com/chinmay-sawant/goslop/pull/10) | OPEN — CI + harness (not §12.4) |
 
 ## Deferred
 
 | Phase | Issue | Why deferred |
 |------:|------:|--------------|
 | 11 | #7 | Needs integrated 6+7+8 detector surface for pack fidelity |
-| 12.4 | #8 | Needs 6–11 + export/cache full surface |
+| 12.4 | #8 | Needs 6–11 + export/cache full surface; PR #10 is scaffolding only |
 
 ## Integration rule
 
 - Child PRs stay **open / unmerged**
-- A later **integration PR** merges heads and runs full validation
+- A later **integration PR** merges heads (`feat/phase-7-cwe` … `feat/phase-12-ci`) and runs full validation
+- Preferred merge order into integration: **12a CI → 10 cache → 7 CWE → 8 BP → 9 taint → 11 packs** (then §12.4)
