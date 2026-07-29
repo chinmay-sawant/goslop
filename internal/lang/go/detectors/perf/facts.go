@@ -1,21 +1,22 @@
 package perf
 
 import (
+	goast "go/ast"
+	"go/token"
 	"strings"
 	"unicode"
 
 	"github.com/chinmay/codehound/internal/ast"
 	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/tsparse"
-	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/chinmay/codehound/internal/lang/go/goparse"
 )
 
-// CallFact is one call_expression site extracted for PERF rules.
+// CallFact is one call site extracted for PERF rules.
 type CallFact struct {
 	Callee        string
 	Arguments     []string
 	StartByte     int
-	EnclosingLoop *int // start byte of nearest for_statement, if any
+	EnclosingLoop *int
 }
 
 // AssignmentFact is one assignment / short-var declaration.
@@ -27,7 +28,7 @@ type AssignmentFact struct {
 	EnclosingLoop *int
 }
 
-// ConversionFact is a type conversion expression ([]byte(s) / string(b)).
+// ConversionFact is a type conversion expression.
 type ConversionFact struct {
 	Text      string
 	StartByte int
@@ -60,122 +61,137 @@ type GoPerfFacts struct {
 
 // BuildFacts walks the unit AST (parsing on demand when unit.Tree is unset).
 func BuildFacts(unit *core.ParsedUnit) *GoPerfFacts {
-	facts := &GoPerfFacts{
-		VarKinds: map[string]VarKind{},
-	}
+	facts := &GoPerfFacts{VarKinds: map[string]VarKind{}}
 	if unit == nil || unit.Source == "" {
 		return facts
 	}
 
 	src := []byte(unit.Source)
-	var tree *tsparse.Tree
-	owned := false
-	if t, ok := unit.Tree.(*tsparse.Tree); ok && t != nil {
+	var tree *goparse.Tree
+	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
 		tree = t
 	} else {
-		t, err := tsparse.Parse(src)
-		if err != nil || t == nil {
+		t, err := goparse.Parse(src)
+		if t == nil || t.File == nil {
+			_ = err
+			facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
 			return facts
 		}
 		tree = t
-		owned = true
-	}
-	if owned {
-		defer tree.Close()
 	}
 
-	root := tree.RootNode()
-	if root == nil {
-		return facts
-	}
-
-	kinds := map[string]struct{}{
-		"call_expression":            {},
-		"assignment_statement":       {},
-		"short_var_declaration":      {},
-		"defer_statement":            {},
-		"go_statement":               {},
-		"for_statement":              {},
-		"func_literal":               {},
-		"type_assertion_expression":  {},
-		"type_conversion_expression": {},
-		"conversion_expression":      {},
-	}
-	ast.WalkKinds(root, kinds, func(n *sitter.Node) {
-		switch n.Kind() {
-		case "call_expression":
-			recordCall(n, facts, src)
-		case "assignment_statement", "short_var_declaration":
-			recordAssignment(n, facts, src)
-		case "defer_statement":
-			facts.DeferStarts = append(facts.DeferStarts, [2]int{int(n.StartByte()), int(n.EndByte())})
-		case "go_statement":
-			facts.GoStarts = append(facts.GoStarts, [2]int{int(n.StartByte()), int(n.EndByte())})
-		case "for_statement":
-			facts.ForRanges = append(facts.ForRanges, [2]int{int(n.StartByte()), int(n.EndByte())})
-		case "func_literal":
-			facts.FunctionLiteralRanges = append(facts.FunctionLiteralRanges, [2]int{int(n.StartByte()), int(n.EndByte())})
-		case "type_assertion_expression":
-			facts.TypeAssertions = append(facts.TypeAssertions, [2]int{int(n.StartByte()), int(n.EndByte())})
-		case "type_conversion_expression", "conversion_expression":
-			recordConversion(n, facts, src)
+	// Pass 1: collect for/range spans (innermost wins via reverse search).
+	goast.Inspect(tree.File, func(n goast.Node) bool {
+		switch x := n.(type) {
+		case *goast.ForStmt, *goast.RangeStmt:
+			facts.ForRanges = append(facts.ForRanges, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
+		case *goast.FuncLit:
+			facts.FunctionLiteralRanges = append(facts.FunctionLiteralRanges, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
+		case *goast.DeferStmt:
+			facts.DeferStarts = append(facts.DeferStarts, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
+		case *goast.GoStmt:
+			facts.GoStarts = append(facts.GoStarts, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
+		case *goast.TypeAssertExpr:
+			facts.TypeAssertions = append(facts.TypeAssertions, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
+		case *goast.ValueSpec:
+			collectVarSpecAST(tree, x, facts)
 		}
+		return true
 	})
 
-	// var_spec kinds only when shapes used by PERF-2/32 appear.
-	needKinds := strings.Contains(unit.Source, "+=") ||
-		strings.Contains(unit.Source, "[]byte(") ||
-		strings.Contains(unit.Source, "[]uint8(") ||
-		strings.Contains(unit.Source, "string(")
-	if needKinds {
-		ast.WalkNodes(root, []string{"var_spec"}, func(n *sitter.Node) {
-			collectVarSpecKinds(n, facts, src)
-		})
-	}
+	// Pass 2: calls + assignments with enclosing loop lookup.
+	goast.Inspect(tree.File, func(n goast.Node) bool {
+		switch x := n.(type) {
+		case *goast.CallExpr:
+			start := tree.Offset(x.Pos())
+			loop := enclosingLoop(facts.ForRanges, start)
+			recordCallAST(tree, x, facts, loop)
+			// Only record string/[]byte conversions (former tree-sitter
+			// conversion_expression / type_conversion_expression subset).
+			if text := strings.TrimSpace(tree.NodeText(x)); isStringBytesConversion(text) {
+				facts.Conversions = append(facts.Conversions, ConversionFact{
+					Text:      text,
+					StartByte: start,
+					InLoop:    loop != nil,
+				})
+			}
+		case *goast.AssignStmt:
+			start := tree.Offset(x.Pos())
+			loop := enclosingLoop(facts.ForRanges, start)
+			recordAssignAST(tree, x, facts, loop)
+		}
+		return true
+	})
 
 	facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
 	return facts
 }
 
-func recordCall(n *sitter.Node, facts *GoPerfFacts, src []byte) {
-	fn := n.ChildByFieldName("function")
-	if fn == nil {
+func enclosingLoop(ranges [][2]int, byteOff int) *int {
+	// Prefer innermost: last range that contains byteOff.
+	best := -1
+	for i := range ranges {
+		if byteOff >= ranges[i][0] && byteOff < ranges[i][1] {
+			best = ranges[i][0]
+		}
+	}
+	if best < 0 {
+		return nil
+	}
+	s := best
+	return &s
+}
+
+func recordCallAST(tree *goparse.Tree, ce *goast.CallExpr, facts *GoPerfFacts, loop *int) {
+	if ce == nil {
 		return
 	}
-	callee := strings.TrimSpace(fn.Utf8Text(src))
+	callee := strings.TrimSpace(tree.NodeText(ce.Fun))
 	if callee == "" {
 		return
 	}
-	var args []string
-	if argNode := n.ChildByFieldName("arguments"); argNode != nil {
-		cursor := argNode.Walk()
-		for _, child := range argNode.NamedChildren(cursor) {
-			args = append(args, strings.TrimSpace(child.Utf8Text(src)))
-		}
-		cursor.Close()
+	args := make([]string, 0, len(ce.Args))
+	for _, a := range ce.Args {
+		args = append(args, strings.TrimSpace(tree.NodeText(a)))
 	}
 	facts.Calls = append(facts.Calls, CallFact{
 		Callee:        callee,
 		Arguments:     args,
-		StartByte:     int(n.StartByte()),
-		EnclosingLoop: enclosingLoopStart(n),
+		StartByte:     tree.Offset(ce.Pos()),
+		EnclosingLoop: loop,
 	})
 }
 
-func recordAssignment(n *sitter.Node, facts *GoPerfFacts, src []byte) {
-	text := n.Utf8Text(src)
+func recordAssignAST(tree *goparse.Tree, as *goast.AssignStmt, facts *GoPerfFacts, loop *int) {
+	if as == nil {
+		return
+	}
+	text := tree.NodeText(as)
 	lhs, rhs, ok := splitAssignment(text)
+	if !ok && len(as.Lhs) > 0 {
+		lhs = tree.NodeText(as.Lhs[0])
+		if len(as.Rhs) > 0 {
+			rhs = tree.NodeText(as.Rhs[0])
+		}
+		ok = true
+	}
 	if !ok {
 		return
 	}
-	isShort := strings.Contains(text, ":=")
-	loop := enclosingLoopStart(n)
-	for _, name := range extractIdents(lhs) {
+	start := tree.Offset(as.Pos())
+	isShort := as.Tok == token.DEFINE
+	names := extractIdents(lhs)
+	if len(names) == 0 {
+		for _, l := range as.Lhs {
+			names = append(names, extractIdents(tree.NodeText(l))...)
+		}
+	}
+	for _, name := range names {
 		facts.Assignments = append(facts.Assignments, AssignmentFact{
 			Name:          name,
 			Expr:          rhs,
 			Text:          text,
-			StartByte:     int(n.StartByte()),
+			StartByte:     start,
 			EnclosingLoop: loop,
 		})
 		if isShort {
@@ -188,29 +204,47 @@ func recordAssignment(n *sitter.Node, facts *GoPerfFacts, src []byte) {
 	}
 }
 
-func recordConversion(n *sitter.Node, facts *GoPerfFacts, src []byte) {
-	text := strings.TrimSpace(n.Utf8Text(src))
-	facts.Conversions = append(facts.Conversions, ConversionFact{
-		Text:      text,
-		StartByte: int(n.StartByte()),
-		InLoop:    enclosingLoopStart(n) != nil,
-	})
+func isStringBytesConversion(text string) bool {
+	t := strings.TrimSpace(text)
+	if strings.HasPrefix(t, "[]byte(") || strings.HasPrefix(t, "[]uint8(") {
+		return true
+	}
+	// string(x) but not string("literal")
+	if strings.HasPrefix(t, "string(") && !strings.HasPrefix(t, "string(\"") && !strings.HasPrefix(t, "string(`") {
+		return true
+	}
+	return false
 }
 
-func enclosingLoopStart(n *sitter.Node) *int {
-	cur := n
-	for cur != nil {
-		p := cur.Parent()
-		if p == nil {
-			return nil
-		}
-		if p.Kind() == "for_statement" {
-			s := int(p.StartByte())
-			return &s
-		}
-		cur = p
+func collectVarSpecAST(tree *goparse.Tree, vs *goast.ValueSpec, facts *GoPerfFacts) {
+	if vs == nil {
+		return
 	}
-	return nil
+	kind := VarUnknown
+	if vs.Type != nil {
+		typeText := tree.NodeText(vs.Type)
+		switch {
+		case strings.Contains(typeText, "[]byte") || strings.Contains(typeText, "[]uint8"):
+			kind = VarBytes
+		case typeText == "string":
+			kind = VarString
+		case typeText == "int" || typeText == "int64" || typeText == "float64" ||
+			typeText == "float32" || typeText == "uint" || typeText == "uint64" ||
+			typeText == "time.Duration":
+			kind = VarNumeric
+		}
+	}
+	if kind == VarUnknown {
+		return
+	}
+	for _, name := range vs.Names {
+		if name == nil {
+			continue
+		}
+		if _, ok := facts.VarKinds[name.Name]; !ok {
+			facts.VarKinds[name.Name] = kind
+		}
+	}
 }
 
 func splitAssignment(text string) (lhs, rhs string, ok bool) {
@@ -218,14 +252,12 @@ func splitAssignment(text string) (lhs, rhs string, ok bool) {
 	if i := strings.Index(text, ":="); i > 0 {
 		return strings.TrimSpace(text[:i]), strings.TrimSpace(text[i+2:]), true
 	}
-	// Prefer compound ops before bare '='.
 	for _, op := range []string{"+=", "-=", "*=", "/=", "%="} {
 		if i := strings.Index(text, op); i > 0 {
 			return strings.TrimSpace(text[:i]), strings.TrimSpace(text[i+len(op):]), true
 		}
 	}
 	if i := strings.Index(text, "="); i > 0 {
-		// skip ==
 		if i+1 < len(text) && text[i+1] == '=' {
 			return "", "", false
 		}
@@ -247,14 +279,11 @@ func extractIdents(lhs string) []string {
 	return out
 }
 
-// lhsPrimaryName extracts a usable identifier from an assignment LHS that may
-// be an index or selector expression (tables[k], font.UsedChars, lines[i].joined).
 func lhsPrimaryName(lhs string) string {
 	s := strings.TrimSpace(lhs)
 	if s == "" {
 		return ""
 	}
-	// Drop index expressions: lines[li].joined → lines.joined, tables[k] → tables
 	for {
 		i := strings.Index(s, "[")
 		if i < 0 {
@@ -267,7 +296,6 @@ func lhsPrimaryName(lhs string) string {
 		s = s[:i] + s[i+j+1:]
 	}
 	s = strings.TrimSpace(s)
-	// Prefer the rightmost selector field for field assigns.
 	if k := strings.LastIndex(s, "."); k >= 0 {
 		s = s[k+1:]
 	}
@@ -309,7 +337,6 @@ func classifyInit(rhs string) VarKind {
 	if (r[0] == '"' || r[0] == '`') && !strings.Contains(r, "+") {
 		return VarString
 	}
-	// numeric / duration-ish literals
 	if isNumericLiteral(r) {
 		return VarNumeric
 	}
@@ -321,7 +348,6 @@ func isNumericLiteral(s string) bool {
 	if s == "" {
 		return false
 	}
-	// strip trailing type suffixes like 0.0 or 1_000
 	dot := 0
 	for i, r := range s {
 		if r == '.' {
@@ -344,47 +370,6 @@ func isNumericLiteral(s string) bool {
 	return true
 }
 
-func collectVarSpecKinds(n *sitter.Node, facts *GoPerfFacts, src []byte) {
-	// var name T = expr  OR  var name = expr
-	// tree-sitter-go var_spec may have multiple names; collect identifier children.
-	cursor := n.Walk()
-	var names []string
-	for _, ch := range n.NamedChildren(cursor) {
-		if ch.Kind() == "identifier" {
-			names = append(names, ch.Utf8Text(src))
-		}
-	}
-	cursor.Close()
-	if len(names) == 0 {
-		return
-	}
-	typeNode := n.ChildByFieldName("type")
-	typeText := ""
-	if typeNode != nil {
-		typeText = typeNode.Utf8Text(src)
-	}
-	kind := VarUnknown
-	switch {
-	case strings.Contains(typeText, "[]byte") || strings.Contains(typeText, "[]uint8"):
-		kind = VarBytes
-	case typeText == "string":
-		kind = VarString
-	case typeText == "int" || typeText == "int64" || typeText == "float64" ||
-		typeText == "float32" || typeText == "uint" || typeText == "uint64" ||
-		typeText == "time.Duration":
-		kind = VarNumeric
-	}
-	if kind == VarUnknown {
-		return
-	}
-	for _, name := range names {
-		if _, ok := facts.VarKinds[name]; !ok {
-			facts.VarKinds[name] = kind
-		}
-	}
-}
-
-// Core needles for whole-file guards (subset of Rust NEEDLES).
 var perfNeedles = []string{
 	"fmt.Sprintf(",
 	"fmt.Fprintf(",
@@ -397,14 +382,4 @@ var perfNeedles = []string{
 	"json.Unmarshal",
 	"[]byte(",
 	"string(",
-	"http.ResponseWriter",
-	"*gin.Context",
-	"echo.Context",
-	"*fiber.Ctx",
-	"gin.HandlerFunc",
-	"http.HandlerFunc",
-	"defer ",
-	"strings.Index",
-	"strings.Builder",
-	"bytes.Buffer",
 }

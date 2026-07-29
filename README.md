@@ -21,7 +21,8 @@ This repository ports the Rust product at `../codehound` while keeping:
 | Cache / baseline / ignore | ✅ Phase 10 |
 | Packs / maturity | ✅ Phase 11 (recommended / security / style / all) |
 | CI + integration harness | ✅ Phase 12 |
-| §12.4 export/scan oracle (`gopdfsuit`) | ✅ **915** findings; severity **10h/197i/312l/396m**; top-five exact; export **915+37**; Go wall **sub-500ms** |
+| §12.4 export/scan oracle (`gopdfsuit`) | ✅ **915** findings; severity **10h/197i/312l/396m**; top-five exact; export **915+37**; pure-Go wall **&lt;400ms** (~170–220ms scan) |
+| Parse path | ✅ **Pure Go** (`go/parser` + `go/ast`); **no CGO** / no tree-sitter; `LanguagePlugin` seam for a second language |
 
 Residual (severity-neutral / soft): partial per-site rule swaps (e.g. PERF-119↔128); skipped-file absolute may differ from Rust **383**; pure-FP museums suppressed on real project scans only. Details: [`plans/port-phasewise-checklist.md`](./plans/port-phasewise-checklist.md) §12.4.
 
@@ -35,21 +36,21 @@ Canonical ledger:
 ## Requirements
 
 - **Go 1.22+** (module currently declares a newer toolchain — see `go.mod`)
-- **CGO enabled** — tree-sitter Go bindings need a C compiler (`build-essential` / Xcode CLT)
-- Linux / macOS (Windows CGO not validated yet)
+- **Pure Go** — parsing uses `go/parser` + `go/ast` (**no CGO**, no tree-sitter)
+- Linux / macOS / Windows
 
 ## Install / build
 
 ```sh
-# From repo root
+# From repo root (CGO_ENABLED=0 by default)
 make build
 # or:
-CGO_ENABLED=1 go build -o bin/codehound ./cmd/codehound
+CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound
 ```
 
 Binary: `./bin/codehound`
 
-Optional future multi-arch releases: see [`.goreleaser.stub.yml`](./.goreleaser.stub.yml) (not wired into CI yet). Prefer native runners with `CGO_ENABLED=1` over pure-Go cross-compile.
+Optional multi-arch releases: see [`.goreleaser.stub.yml`](./.goreleaser.stub.yml). Pure Go enables simple cross-compile without a C toolchain.
 
 ## Usage
 
@@ -93,7 +94,7 @@ make ci            # lint + test + build (local CI parity)
 make oracle        # gopdfsuit-scale §12.4 hard metrics (915 / sev / top-five)
 ```
 
-GitHub Actions: [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs `go vet`, `go test ./...`, and `go build` with CGO + `build-essential`.
+GitHub Actions: [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs `go vet`, `go test ./...`, and `go build` (pure Go / `CGO_ENABLED=0`).
 
 Integration harness: `tests/integration` materializes a small fixture seed and asserts fire/silent behavior. Full fixture matrix is optional polish; **§12.4** hard counts are locked on the `gopdfsuit` corpus via `make oracle`.
 

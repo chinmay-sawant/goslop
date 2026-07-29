@@ -1,12 +1,12 @@
 package badpractices
 
 import (
+	goast "go/ast"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/ast"
 	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/tsparse"
-	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/chinmay/codehound/internal/lang/go/goparse"
 )
 
 // Shared needle table for BP fast-paths (Rust parity intent).
@@ -21,12 +21,11 @@ var bpNeedles = []string{
 
 // bpFacts is the fused fact bag for BP detectors.
 type bpFacts struct {
-	Source    string
-	Index     ast.SourceIndex
-	tree      *tsparse.Tree
-	ownedTree bool
-	// AST-derived ranges
-	assignNodes []nodeSpan // assignment_statement / short_var_declaration
+	Source      string
+	Index       ast.SourceIndex
+	tree        *goparse.Tree
+	ownedTree   bool
+	assignNodes []nodeSpan
 	callNodes   []callSpan
 	deferNodes  []nodeSpan
 	goNodes     []nodeSpan
@@ -45,7 +44,7 @@ type callSpan struct {
 	end    int
 	callee string
 	text   string
-	parent string // parent kind when known
+	parent string
 }
 
 type funcSpan struct {
@@ -67,93 +66,70 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 	f.Index = ast.Build(unit.Source, bpNeedles)
 
 	src := []byte(unit.Source)
-	var tree *tsparse.Tree
-	if t, ok := unit.Tree.(*tsparse.Tree); ok && t != nil {
+	var tree *goparse.Tree
+	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
 		tree = t
 	} else if unit.Source != "" {
-		t, err := tsparse.Parse(src)
-		if err == nil && t != nil {
+		t, err := goparse.Parse(src)
+		if err == nil && t != nil && t.File != nil {
+			tree = t
+			f.ownedTree = true
+		} else if t != nil && t.File != nil {
 			tree = t
 			f.ownedTree = true
 		}
 	}
-	if tree == nil {
+	if tree == nil || tree.File == nil {
 		return f
 	}
 	f.tree = tree
-	root := tree.RootNode()
-	if root == nil {
-		return f
-	}
 
-	kinds := map[string]struct{}{
-		"assignment_statement":  {},
-		"short_var_declaration": {},
-		"call_expression":       {},
-		"defer_statement":       {},
-		"go_statement":          {},
-		"for_statement":         {},
-		"function_declaration":  {},
-		"method_declaration":    {},
-	}
-	ast.WalkKinds(root, kinds, func(n *sitter.Node) {
-		start := int(n.StartByte())
-		end := int(n.EndByte())
-		if end > len(src) {
-			end = len(src)
+	goast.Inspect(tree.File, func(n goast.Node) bool {
+		if n == nil {
+			return true
 		}
-		if start < 0 {
-			start = 0
-		}
-		text := string(src[start:end])
-		switch n.Kind() {
-		case "assignment_statement", "short_var_declaration":
+		start := tree.Offset(n.Pos())
+		end := tree.Offset(n.End())
+		text := tree.NodeText(n)
+		switch x := n.(type) {
+		case *goast.AssignStmt:
 			f.assignNodes = append(f.assignNodes, nodeSpan{start: start, end: end, text: text})
-		case "call_expression":
-			callee := ""
-			if fn := n.ChildByFieldName("function"); fn != nil {
-				fs, fe := int(fn.StartByte()), int(fn.EndByte())
-				if fe <= len(src) && fs >= 0 {
-					callee = string(src[fs:fe])
-				}
-			}
-			parentKind := ""
-			if p := n.Parent(); p != nil {
-				parentKind = p.Kind()
-			}
+		case *goast.CallExpr:
+			callee := strings.TrimSpace(tree.NodeText(x.Fun))
 			f.callNodes = append(f.callNodes, callSpan{
-				start: start, end: end, callee: callee, text: text, parent: parentKind,
+				start: start, end: end, callee: callee, text: text,
 			})
-		case "defer_statement":
+		case *goast.DeferStmt:
 			f.deferNodes = append(f.deferNodes, nodeSpan{start: start, end: end, text: text})
-		case "go_statement":
+		case *goast.GoStmt:
 			f.goNodes = append(f.goNodes, nodeSpan{start: start, end: end, text: text})
-		case "for_statement":
+		case *goast.ForStmt, *goast.RangeStmt:
 			f.forRanges = append(f.forRanges, [2]int{start, end})
-		case "function_declaration", "method_declaration":
+		case *goast.FuncDecl:
 			name := ""
-			if nm := n.ChildByFieldName("name"); nm != nil {
-				ns, ne := int(nm.StartByte()), int(nm.EndByte())
-				if ne <= len(src) && ns >= 0 {
-					name = string(src[ns:ne])
-				}
-			}
-			params := ""
-			if pl := n.ChildByFieldName("parameters"); pl != nil {
-				ps, pe := int(pl.StartByte()), int(pl.EndByte())
-				if pe <= len(src) && ps >= 0 {
-					params = string(src[ps:pe])
-				}
+			if x.Name != nil {
+				name = x.Name.Name
 			}
 			bodyS, bodyE := start, end
-			if body := n.ChildByFieldName("body"); body != nil {
-				bodyS, bodyE = int(body.StartByte()), int(body.EndByte())
+			if x.Body != nil {
+				bodyS = tree.Offset(x.Body.Pos())
+				bodyE = tree.Offset(x.Body.End())
+			}
+			params := ""
+			if x.Type != nil && x.Type.Params != nil {
+				params = tree.NodeText(x.Type.Params)
 			}
 			f.funcDecls = append(f.funcDecls, funcSpan{
-				name: name, start: start, end: end, bodyS: bodyS, bodyE: bodyE,
-				isMain: name == "main", params: params,
+				name:   name,
+				start:  start,
+				end:    end,
+				bodyS:  bodyS,
+				bodyE:  bodyE,
+				isMain: name == "main",
+				params: params,
 			})
 		}
+		return true
 	})
 	return f
 }

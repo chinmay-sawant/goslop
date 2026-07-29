@@ -7,7 +7,8 @@ type ParsedUnit struct {
 	DisplayPath string
 	Source      string
 	LineStarts  []int
-	// Tree is an opaque tree-sitter handle; nil when source-only.
+	// Tree is an opaque language-specific AST handle (e.g. *goparse.Tree for Go);
+	// nil when source-only.
 	Tree any
 }
 

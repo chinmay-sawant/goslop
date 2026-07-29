@@ -1,7 +1,6 @@
-# CodeHound Go — continuous integration
+# goslop — continuous integration
 #
-# tree-sitter Go bindings require CGO. Ubuntu runners need a C toolchain
-# (build-essential provides gcc + libc headers).
+# Pure Go build (go/parser + go/ast). CGO is not required.
 name: CI
 
 on:
@@ -30,28 +29,22 @@ jobs:
           go-version-file: go.mod
           cache: true
 
-      # CGO is required for github.com/tree-sitter/go-tree-sitter + tree-sitter-go.
-      - name: Install C build toolchain (CGO / tree-sitter)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential
-
       - name: go mod download
         run: go mod download
 
       - name: go vet
         env:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: "0"
         run: go vet ./...
 
       - name: go test
         env:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: "0"
         run: go test ./...
 
       - name: go build
         env:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: "0"
         run: go build -o bin/codehound ./cmd/codehound
 
       - name: smoke --version / --list-rules

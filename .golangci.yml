@@ -100,10 +100,12 @@ linters-settings:
       - os\.(Mkdir|MkdirAll|WriteFile|ReadFile|Open|Create|Remove|RemoveAll|Chdir|Stat)
       - fmt\.(Print|Fprint|Sprint)
       - json\.(Marshal|Unmarshal)
-      - tsparse\.Parse
+      - goparse\.Parse
+      - parser\.ParseFile
+      - parser\.ParseExprFrom
     ignorePackageGlobs:
       - encoding/*
-      - github.com/chinmay/codehound/internal/lang/go/tsparse
+      - github.com/chinmay/codehound/internal/lang/go/goparse
 
 issues:
   exclude-use-default: false
@@ -160,6 +162,7 @@ issues:
     - path: internal/app/run\.go
       linters:
         - gocyclo
+        - gocognit
         - cyclop
         - nestif
         - mnd
@@ -185,7 +188,7 @@ issues:
         - cyclop
         - funlen
     # Line/col helpers use conventional named returns.
-    - path: internal/(ast/location|core/unit|lang/go/tsparse/parse|fixture/format)\.go
+    - path: internal/(ast/location|core/unit|lang/go/goparse/parse|fixture/format)\.go
       linters:
         - nonamedreturns
     # Fixture materializer is trusted local paths.

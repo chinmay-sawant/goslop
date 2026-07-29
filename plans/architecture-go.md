@@ -30,8 +30,9 @@ codehound-go/
     core/                 # Detector, ScanContext, LanguagePlugin, ParsedUnit, profiles
     rules/                # Finding, Severity, emit, maturity, packs
     engine/               # Analyzer, walk, parse pool, registry, cache, baseline, ignore
-    ast/                  # tree-sitter walk helpers, function spans, line/col
-    lang/go/              # Go plugin
+    ast/                  # line/col helpers (language-agnostic)
+    lang/go/              # Go LanguagePlugin (pure Go)
+      goparse/            # go/parser + go/ast (no CGO)
       detectors/
         perf/             # facts + domains (logic in Go)
         cwe/              # structural domains + taint
@@ -55,10 +56,11 @@ codehound-go/
 
 | Choice | Decision |
 |--------|----------|
-| Parser | **tree-sitter Go** via `github.com/tree-sitter/go-tree-sitter` + `tree-sitter-go` grammar (behavioral parity with Rust CST heuristics) |
-| Alternative (later) | `go/parser` + `go/types` for typed accuracy on a subset of rules |
-| Parallelism | worker pool over files (`errgroup` / channel workers), one parser per worker |
-| Facts | One fused AST walk per file → `GoPerfFacts` / `GoCweFacts` + `SourceIndex` (Aho-Corasick or multi-string index) |
+| Parser | **Pure Go** — stdlib `go/parser` + `go/ast` via `internal/lang/go/goparse` (**no CGO**, no tree-sitter) |
+| Multi-language | `core.LanguagePlugin` + opaque `ParsedUnit.Tree`; second languages should prefer pure-Go parsers (see package doc on `LanguagePlugin`) |
+| Typed (later) | optional `go/types` / `go list` for a subset of rules (`--typed`) |
+| Parallelism | worker pool over files (`errgroup` / channel workers); parse is per-file in `ParseSource` |
+| Facts | One fused `go/ast` walk per file → PERF/BP facts + `SourceIndex` |
 
 ## Core contracts (mirrors Rust traits)
 
@@ -109,7 +111,7 @@ Keep the module lean:
 | CLI | `github.com/spf13/cobra` or std `flag` (prefer cobra if subcommands grow) |
 | Config TOML | `github.com/pelletier/go-toml/v2` |
 | JSON/SARIF | `encoding/json` |
-| Tree-sitter | go-tree-sitter + grammar |
+| Go parse | stdlib `go/parser` + `go/ast` only (no tree-sitter / CGO) |
 | Parallel walk | `golang.org/x/sync/errgroup` |
 | Ignore globs | `github.com/sabhiram/go-gitignore` or reimplementation of gitignore rules |
 | Hash | `crypto/sha256` |

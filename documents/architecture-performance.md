@@ -36,20 +36,21 @@ stays bounded on large repos. Details: [incremental-cache.md](./incremental-cach
 - **Eviction**: oldest-by-`cached_at` on flush when over `max_size_mb`.
 - **Locking**: `.manifest.lock` advisory exclusive lock during flush.
 
-## Multi-language (Go-first)
+## Multi-language (Go-first, pure Go)
 
-- **Cargo `default` features**: `go` + `cli` + `terminal-output` (**Python not default**).
-- **Python**: opt-in `--features python` (one experimental rule). See ADR 0005.
-- **`--lang auto`**: only languages compiled into the binary are scanned.
-- TypeScript: **not supported** (no empty feature stub).
+- **Go port default:** only the Go `LanguagePlugin` is registered (`internal/lang/go`).
+- **Parse:** pure Go (`go/parser` + `go/ast` via `goparse`) — **no CGO / tree-sitter**.
+- **Second language:** implement `core.LanguagePlugin` (see package doc on `internal/core/plugin.go`); attach a pure-Go AST as opaque `ParsedUnit.Tree`; register next to `golang.Register`. Prefer parsers without CGO.
+- **Python / others:** reserved `LanguageID`s exist; plugins not shipped yet.
+- TypeScript: **not supported**.
 
 ## Performance choices
 
 | Area | Approach |
 |------|----------|
-| Parser | `ParsePool`: one parser per `LanguageId` per Rayon worker |
-| Detectors | `Registry.by_language`: only matching rules per file |
-| Go AST | One fused facts walk + `SourceIndex` flags per file |
+| Parser | Per-file `LanguagePlugin.ParseSource` (Go: stdlib `go/parser`, no CGO) |
+| Detectors | `Registry` by language / extension: only matching rules per file |
+| Go AST | One fused `go/ast` facts walk + `SourceIndex` flags per file |
 | Go rules | Multi-file `registry/*.toml` drives `build.rs` (PERF and CWE) |
 | CWE catalog | `src/cwe/{consts,description,reference,mod}.rs` |
 | File pipeline | Chunked parallel read → parse → detect (`rayon`). Cache hits usually skip parse+detect (except taint `requires_cache_state`) |
@@ -91,7 +92,7 @@ Run `scripts/check_module_size.sh` in CI or locally to catch module growth.
 
 - Walk: O(files)
 - Parse + detect: O(files / cores) wall time with rayon
-- Per Go file: one tree-sitter parse + one fused AST walk + one `SourceIndex` build
+- Per Go file: one pure-Go parse (`go/parser`) + one fused `go/ast` walk + one `SourceIndex` build
 - Detect: O(enabled_rules × facts); `--only` skips disabled rule bodies early
 - Source cache memory: O(total UTF-8 bytes scanned successfully). The cache holds one shared `Arc<str>` per successful file; a 10 MiB file therefore keeps about 10 MiB of source text alive until the `AnalysisResult` is dropped. Files that cannot be read or decoded as UTF-8 are reported as `ScanError` and omitted from the cache. Use `AnalysisResult::source_cache_bytes()` to report the retained source-text byte count for a scan.
 
