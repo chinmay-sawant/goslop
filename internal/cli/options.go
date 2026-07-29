@@ -59,6 +59,12 @@ type Options struct {
 	ChunksDir string
 	// ChunkSize is findings per chunk file (default 25).
 	ChunkSize int
+	// NoTerminal prints product scan summary only (no per-finding text dump).
+	// Rust: --no-terminal (used by make run).
+	NoTerminal bool
+	// NoFail always exits 0 on findings (still prints summary / exports).
+	// Rust: --no-fail (used by make run).
+	NoFail bool
 	// ExplainRule prints catalogue details for one rule id and exits.
 	ExplainRule string
 	// Version requests version printing.
