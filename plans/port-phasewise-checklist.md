@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Phase 6 PERF catalogue **239/239 registered** (heuristic ports + fixtures); Phase 7 still seed-only
+> **Status:** Phase 6 PERF catalogue **239/239 registered**; Phase 10 cache/baseline/ignore landed; Phase 7 still seed-only
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -126,7 +126,7 @@ go build -o bin/codehound ./cmd/codehound
 
 ### 3.1 Walk + collect
 - [x] Walk project roots; include `*.go` — `engine.CollectFiles` / `CollectGoFiles`
-- [ ] Honor `.gitignore` / `.codehoundignore` / `.ignore` (minimal) — vendor/VCS skipped; gitignore later
+- [x] Honor `.gitignore` / `.codehoundignore` / `.ignore` (minimal) — vendor/VCS skipped; Phase 10 pathignore matcher
 - [x] Exclude `*_test.go` by default; `--include-tests` override — `WalkOptions.IncludeTests` + CLI
 - [ ] Include/exclude globs from config (stub OK if wired)
 
@@ -274,17 +274,17 @@ go build -o bin/codehound ./cmd/codehound
 ## Phase 10: Cache, baseline, ignore
 
 ### 10.1 Incremental cache
-- [ ] `.codehound-cache/` layout: `manifest.json`, `files/<sha>.json`
-- [ ] Content hash + tool version + rule-config fingerprint invalidation
-- [ ] Warm hit skips parse+detect (except taint accumulate)
-- [ ] `--no-cache`, `--cache-dir`, `--rebuild-cache`, `--prune-cache`
-- [ ] Eviction by `max_size_mb`
+- [x] `.codehound-cache/` layout: `manifest.json`, `files/<sha>.json` — `internal/engine/cache`
+- [x] Content hash + tool version + rule-config fingerprint invalidation — `ContentHash`, tool version mass-stale, `ScanContext.RuleConfigFingerprint`
+- [x] Warm hit skips parse+detect (except taint accumulate) — `Analyzer.scanOne` cache hit path (taint accumulate still deferred)
+- [x] `--no-cache`, `--cache-dir`, `--rebuild-cache`, `--prune-cache` — CLI + `app.run`
+- [x] Eviction by `max_size_mb` — `Store.evictLocked` on flush (default 500 MiB via app open)
 
 ### 10.2 Baseline + ignore
-- [ ] Inline `// codehound-ignore: RULE` (comment-only)
-- [ ] File / config ignores
-- [ ] Baseline store + filter (new vs baselined)
-- [ ] Fixture: `tests/fixtures/go/baseline/suppressed_inline.txt`
+- [x] Inline `// codehound-ignore: RULE` (comment-only) — `internal/engine/ignore` (+ file/block directives)
+- [x] File / config ignores — `codehound-ignore-file`; walk honors `.gitignore` / `.codehoundignore` / `.ignore` (minimal)
+- [x] Baseline store + filter (new vs baselined) — `internal/engine/baseline` + `--no-baseline` / `--baseline-file` / `--show-baselined`
+- [x] Fixture: `tests/fixtures/go/baseline/suppressed_inline.txt` — present; covered by ignore unit + analyzer integration tests
 
 ---
 

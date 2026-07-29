@@ -34,6 +34,11 @@ func TestParseFlagsDoubleAndSingleDash(t *testing.T) {
 		"--list-rules",
 		"--include-tests",
 		"--no-cache",
+		"--cache-dir", "/tmp/ch-cache",
+		"--rebuild-cache",
+		"--prune-cache",
+		"--no-baseline",
+		"--show-ignored",
 		"./cmd", "pkg/",
 	})
 	if err != nil {
@@ -47,6 +52,12 @@ func TestParseFlagsDoubleAndSingleDash(t *testing.T) {
 	}
 	if !opts.ListRules || !opts.IncludeTests || !opts.NoCache {
 		t.Fatalf("bools: list=%v tests=%v nocache=%v", opts.ListRules, opts.IncludeTests, opts.NoCache)
+	}
+	if opts.CacheDir != "/tmp/ch-cache" || !opts.RebuildCache || !opts.PruneCache {
+		t.Fatalf("cache flags: dir=%q rebuild=%v prune=%v", opts.CacheDir, opts.RebuildCache, opts.PruneCache)
+	}
+	if !opts.NoBaseline || !opts.ShowIgnored {
+		t.Fatalf("baseline/ignore flags: nobase=%v showign=%v", opts.NoBaseline, opts.ShowIgnored)
 	}
 	wantOnly := []string{"CWE-22", "CWE-89"}
 	if !stringSlicesEqual(opts.Only, wantOnly) {

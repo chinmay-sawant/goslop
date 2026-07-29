@@ -46,6 +46,13 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.ListRules, "list-rules", false, "list registered rules and exit")
 	fs.BoolVar(&opts.IncludeTests, "include-tests", false, "include test files (*_test.*) in analysis")
 	fs.BoolVar(&opts.NoCache, "no-cache", false, "disable the incremental analysis cache")
+	fs.StringVar(&opts.CacheDir, "cache-dir", "", "incremental cache directory (default .codehound-cache)")
+	fs.BoolVar(&opts.RebuildCache, "rebuild-cache", false, "purge the cache directory before scanning")
+	fs.BoolVar(&opts.PruneCache, "prune-cache", false, "prune stale cache entries for PATHS and exit")
+	fs.BoolVar(&opts.NoBaseline, "no-baseline", false, "ignore any existing .codehound-baseline.json")
+	fs.StringVar(&opts.BaselineFile, "baseline-file", "", "path to baseline file (default: discover)")
+	fs.BoolVar(&opts.ShowIgnored, "show-ignored", false, "report findings suppressed by codehound-ignore")
+	fs.BoolVar(&opts.ShowBaselined, "show-baselined", false, "report findings present in the baseline")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {

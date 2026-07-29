@@ -51,8 +51,8 @@ Update counts from `codehound --list-rules` when Rust binary available; registri
 | `--format text\|json\|sarif` | 5 | [ ] |
 | `--list-rules` / `--explain` | 4 | [ ] |
 | `--include-tests` | 3 | [ ] |
-| `--no-cache` / `--cache-dir` / `--rebuild-cache` / `--prune-cache` | 10 | [ ] |
-| baseline / ignore | 10 | [ ] |
+| `--no-cache` / `--cache-dir` / `--rebuild-cache` / `--prune-cache` | 10 | [x] |
+| baseline / ignore | 10 | [x] |
 | `--taint` / taint depth | 9 | [ ] |
 | `--typed` | 9+ | [~] after core |
 | `init` | 4 | [ ] |

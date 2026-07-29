@@ -24,21 +24,27 @@ type WalkOptions struct {
 	SkipVendor bool
 	// Extensions restricts extensions (without dot). Empty means use registry plugins.
 	Extensions []string
+	// HonorIgnoreFiles applies .gitignore / .codehoundignore / .ignore (default true).
+	HonorIgnoreFiles bool
+	// SkipCacheDir skips .codehound-cache directories (default true).
+	SkipCacheDir bool
 }
 
 // DefaultWalkOptions returns production walk defaults.
 func DefaultWalkOptions() WalkOptions {
 	return WalkOptions{
-		IncludeTests: false,
-		SkipVendor:   true,
-		Extensions:   []string{"go"},
+		IncludeTests:     false,
+		SkipVendor:       true,
+		Extensions:       []string{"go"},
+		HonorIgnoreFiles: true,
+		SkipCacheDir:     true,
 	}
 }
 
 // CollectGoFiles walks roots and returns .go files suitable for analysis.
 //
 // Skips *_test.go unless opts.IncludeTests; skips vendor/ when opts.SkipVendor.
-// Basic .gitignore is not applied yet (optional stub).
+// Honors .gitignore / .codehoundignore / .ignore when opts.HonorIgnoreFiles.
 func CollectGoFiles(roots []string, opts WalkOptions) ([]string, error) {
 	opts.Extensions = []string{"go"}
 	entries, err := CollectFiles(roots, opts, nil)
@@ -57,7 +63,9 @@ func CollectGoFiles(roots []string, opts WalkOptions) ([]string, error) {
 // pluginExt maps extension (no dot) → language. When nil, opts.Extensions are
 // treated as Go (LangGo) for MVP simplicity.
 //
-// .gitignore / .codehoundignore respect is a future hook (Phase 10 / walk polish).
+// Honors .gitignore / .codehoundignore / .ignore when opts.HonorIgnoreFiles
+// (default true via DefaultWalkOptions). Vendor and VCS dirs are always skipped
+// when SkipVendor is set.
 func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.LanguageID) ([]ScanEntry, error) {
 	if pluginExt == nil {
 		pluginExt = map[string]core.LanguageID{}
@@ -71,8 +79,6 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 	}
 
 	skipVendor := opts.SkipVendor
-	// Default SkipVendor true when using DefaultWalkOptions; zero-value leaves it false.
-	// Callers that want vendor skipped should set SkipVendor or use DefaultWalkOptions.
 
 	var entries []ScanEntry
 	seen := make(map[string]struct{})
@@ -100,10 +106,25 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 			continue
 		}
 
+		var matcher *pathIgnoreMatcher
+		if opts.HonorIgnoreFiles {
+			matcher = loadPathIgnores(root)
+		}
+		rootAbs, rerr := filepath.Abs(root)
+		if rerr != nil {
+			rootAbs = root
+		}
+
 		err = filepath.WalkDir(root, func(path string, d fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
 				return walkErr
 			}
+			rel, relErr := filepath.Rel(rootAbs, path)
+			if relErr != nil {
+				rel = path
+			}
+			rel = filepath.ToSlash(rel)
+
 			if d.IsDir() {
 				name := d.Name()
 				if name == ".git" || name == ".hg" || name == ".svn" {
@@ -112,6 +133,16 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 				if skipVendor && name == "vendor" {
 					return filepath.SkipDir
 				}
+				if opts.SkipCacheDir && name == ".codehound-cache" {
+					return filepath.SkipDir
+				}
+				// Do not apply ignore to the walk root itself.
+				if rel != "." && matcher != nil && matcher.ignored(rel, true) {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if matcher != nil && rel != "." && matcher.ignored(rel, false) {
 				return nil
 			}
 			e, ok := acceptFile(path, opts, pluginExt)
