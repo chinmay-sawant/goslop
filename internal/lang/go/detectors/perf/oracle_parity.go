@@ -45,8 +45,12 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 			strings.Contains(p, "-safe") {
 			return false
 		}
-		// Absolute path → product scan (e.g. gopdfsuit oracle).
+		// Absolute path → product scan (e.g. gopdfsuit oracle), but never
+		// go-test temp materializations (fixture matrix harness).
 		if filepath.IsAbs(p) {
+			if isTempMaterializePath(p) {
+				return false
+			}
 			return true
 		}
 		// Multi-segment relative project path.
@@ -56,4 +60,14 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 	}
 	// Bare names like "sample.go" are unit-test units.
 	return false
+}
+
+func isTempMaterializePath(p string) bool {
+	if strings.Contains(p, "/tmp/") || strings.Contains(p, "/var/folders/") {
+		return true
+	}
+	if strings.Contains(p, `\Temp\`) || strings.Contains(p, `\AppData\Local\Temp\`) {
+		return true
+	}
+	return strings.Contains(p, "goslop-fixture-")
 }

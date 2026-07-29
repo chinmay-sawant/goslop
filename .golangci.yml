@@ -179,6 +179,20 @@ issues:
         - gosec
         - nilnil
         - wrapcheck
+    # Fixture matrix harness: discovery tables + quarantine I/O noise.
+    - path: tests/integration/
+      linters:
+        - goconst
+        - gosec
+        - errname
+        - errcheck
+        - unused
+        - wrapcheck
+        - nonamedreturns
+        - prealloc
+        - funlen
+        - gocognit
+        - nestif
     - path: internal/engine/(analyzer|walk|pathignore)\.go
       linters:
         - gocyclo
