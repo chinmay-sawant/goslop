@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Phase 6 PERF catalogue **239/239 registered** (heuristic ports + fixtures); Phase 7 still seed-only
+> **Status:** Phase 6 PERF **239/239**; Phase 7 CWE structural **175/175 registered** (SI museums + taint-lite); Phase 9 full taint still open
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -218,27 +218,31 @@ go build -o bin/codehound ./cmd/codehound
 > Rust: `codehound/src/lang/go/detectors/cwe/domains/`
 
 ### 7.0 CWE infrastructure
-- [ ] `GoCweFacts` / shared guards / sink tables (`sinks`)
-- [ ] Domain modules mirroring Rust layout
-- [x] Seed metadata for **CWE-78** / **CWE-89** (`detectors/cwe/metadata.go`); full tables later
+- [x] `GoCweFacts` + `cweNeedles` SourceIndex (`detectors/cwe/facts.go`, `needles.go`)
+- [x] Unified `GoCweScan` + `RegisterRule` (`scan.go`) — PERF-style catalogue
+- [x] Full metadata table from ruleset chunks (`metadata_generated.go`) — all 175 IDs
 - [x] Skeleton + registry inventory README — `detectors/cwe/README.md` (175 rows)
 - [x] Shared source heuristics — `detectors/sourceutil` (tainted idents, call scan)
+- [~] Domain packages as separate Go pkgs — **deferred**; single `cwe` package with table + taint-lite (same API surface)
 
 ### 7.1 Domains
-- [ ] `access_control`
-- [ ] `credentials_and_secrets`
-- [ ] `cryptography`
-- [~] `injection` — **seed: CWE-78** (exec.Command + request/shell), **CWE-89** (dynamic Query/Exec SQL)
-- [ ] `information_exposure`
-- [ ] `input_validation` (+ redos)
-- [ ] `configuration`
-- [ ] `concurrency`
-- [ ] `deserialization`
-- [ ] `general_security` clusters
-- [ ] file/path/network/request registry rows
+- [x] `access_control` — SI needle ports (30)
+- [x] `credentials_and_secrets` — SI needle ports (15)
+- [x] `cryptography` — SI needle ports (9)
+- [x] `injection` — **CWE-78/89/90/91** taint-lite; **93/619/917** structural SI
+- [x] `information_exposure` — SI needle ports (12)
+- [x] `input_validation` (+ redos) — SI needle ports (5+2)
+- [x] `configuration` — SI needle ports (6)
+- [x] `concurrency` — SI needle ports (6)
+- [x] `deserialization` — SI needle ports (3)
+- [x] `general_security` clusters — SI needle ports (75)
+- [x] file/path/network/request registry rows — 434, 22 (taint-lite), 1327, 601/918
 
 ### 7.2 CWE closure gate
-- [ ] Registry complete; fixture suite for structural CWE green or explicitly quarantined
+- [x] Registry complete: **175/175** IDs registered via `RegisterRule`
+- [x] Unit + sample fixture suite green (`go test ./internal/lang/go/detectors/cwe/`)
+- [~] Full 350-fixture matrix / call-fact structural parity — optional CI; many rules remain fixture-shaped museums (Rust trust freezes)
+- [ ] Phase 9 full taint graph upgrades 22/78/79/89/90/91 beyond taint-lite
 
 ---
 
@@ -418,13 +422,14 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | 2026-07-29 | Integrate | `go test ./...` PASS; smoke scan fires CWE-78 (exit 1) |
 | 2026-07-29 | Phase 6a | PERF infra (`GoPerfFacts`, `GoPerfScan`); loop_allocations 1–8; PERF-32/50/116/230; plugin tsparse |
 | 2026-07-29 | Phase 6b | 5 parallel batches → **239/239** PERF rules registered; `go test ./...` PASS |
+| 2026-07-29 | Phase 7 | CWE infra + **175/175** structural/taint-lite registered; `go test ./...` PASS |
 
 ---
 
 ## Next actions (immediate)
 
 1. **Phase 6 polish** — residual FN/FP vs Rust; expand `perfNeedles`; full fixture matrix optional CI.
-2. **Phase 7** — remaining CWE structural domains (beyond injection seed).
+2. **Phase 7 polish** — full stdlib CWE fixture matrix in CI; promote high-signal SI museums toward call-facts.
 3. **Phase 8** — bad-practice modules.
-4. **Phase 9** — full taint graph (upgrade seed CWE-78/89 toward Rust oracle).
+4. **Phase 9** — full taint graph (upgrade CWE-22/78/79/89/90/91 toward Rust oracle).
 5. **Phase 10–12** — cache/baseline/ignore, pack fidelity, fixture suite, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).
