@@ -262,16 +262,17 @@ go build -o bin/codehound ./cmd/codehound
 ## Phase 9: Taint tracking
 
 > Docs: `documents/taint.md`  
-> Rust: `codehound/src/lang/go/detectors/cwe/taint/`
+> Rust: `codehound/src/lang/go/detectors/cwe/taint/`  
+> Go: `internal/lang/go/detectors/cwe/taint/`
 
-- [ ] Taint graph extract (assignments, calls, returns)
-- [ ] Sources / sinks / sanitizers tables
-- [ ] Intra-procedural BFS path finding
-- [ ] Bounded inter-procedural hops (`taint_max_depth`)
-- [ ] Rules: CWE-22, CWE-78, CWE-79, CWE-89 (name-string model honesty preserved)
-- [ ] `requires_cache_state` + accumulate/finalize lifecycle
-- [ ] Fixture suite under `tests/fixtures/go/taint/` (including quarantined honest FNs)
-- [ ] CLI `--taint` / config `[codehound.taint]`
+- [x] Taint graph extract (assignments, calls, returns) — `extract.go` / `callgraph.go` / tree-sitter
+- [x] Sources / sinks / sanitizers tables — `classify.go` (name-string honesty)
+- [x] Intra-procedural BFS path finding — `build.go` + `query.go`
+- [x] Bounded inter-procedural hops (`taint_max_depth`) — `summary.go` / `interproc.go` (1–4)
+- [x] Rules: CWE-22, CWE-78, CWE-79, CWE-89 (name-string model honesty preserved) — `rules.go`; seed CWE-78/89 gated when taint on
+- [x] `requires_cache_state` + accumulate/finalize lifecycle — `detector.go`
+- [x] Fixture suite under `tests/fixtures/go/taint/` (including quarantined honest FNs) — `fixtures_test.go` + `taint_projects/`
+- [x] CLI `--taint` / `--no-taint` / `--taint-depth` / `--taint-show-paths` (config `[codehound.taint]` stub deferred)
 
 ---
 

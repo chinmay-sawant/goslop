@@ -64,6 +64,15 @@ func run(args []string, stdout, stderr io.Writer) error {
 	ctx.ShowIgnored = opts.ShowIgnored
 	ctx.ShowBaselined = opts.ShowBaselined
 	ctx.NoBaseline = opts.NoBaseline
+	if opts.NoTaint {
+		ctx.TaintEnabled = false
+	} else if opts.Taint {
+		ctx.TaintEnabled = true
+	}
+	if opts.TaintDepth > 0 {
+		ctx.TaintMaxDepth = opts.TaintDepth
+	}
+	ctx.TaintShowPaths = opts.TaintShowPaths
 
 	reg := engine.DefaultRegistry()
 

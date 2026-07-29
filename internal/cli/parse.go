@@ -53,6 +53,10 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.StringVar(&opts.BaselineFile, "baseline-file", "", "path to baseline file (default: discover)")
 	fs.BoolVar(&opts.ShowIgnored, "show-ignored", false, "report findings suppressed by codehound-ignore")
 	fs.BoolVar(&opts.ShowBaselined, "show-baselined", false, "report findings present in the baseline")
+	fs.BoolVar(&opts.Taint, "taint", false, "enable experimental taint tracking (CWE-22/78/79/89)")
+	fs.BoolVar(&opts.NoTaint, "no-taint", false, "disable taint tracking even under security profile")
+	fs.IntVar(&opts.TaintDepth, "taint-depth", 0, "inter-procedural taint depth 1–4 (0 = profile default)")
+	fs.BoolVar(&opts.TaintShowPaths, "taint-show-paths", false, "attach taint hop evidence to findings")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {

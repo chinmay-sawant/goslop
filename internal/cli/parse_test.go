@@ -82,6 +82,35 @@ func TestParseVersion(t *testing.T) {
 	}
 }
 
+func TestParseTaintFlags(t *testing.T) {
+	opts, err := Parse([]string{
+		"--taint",
+		"--taint-depth", "3",
+		"--taint-show-paths",
+		".",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !opts.Taint {
+		t.Fatal("expected Taint")
+	}
+	if opts.TaintDepth != 3 {
+		t.Fatalf("depth: %d", opts.TaintDepth)
+	}
+	if !opts.TaintShowPaths {
+		t.Fatal("expected TaintShowPaths")
+	}
+
+	opts2, err := Parse([]string{"--no-taint", "."})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !opts2.NoTaint {
+		t.Fatal("expected NoTaint")
+	}
+}
+
 func TestParseInit(t *testing.T) {
 	opts, err := Parse([]string{"init"})
 	if err != nil {

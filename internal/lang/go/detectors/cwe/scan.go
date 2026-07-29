@@ -111,7 +111,20 @@ func (d *GoCweScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rul
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
+		// Full taint package owns these when enabled (avoid double findings).
+		if ctx != nil && ctx.TaintEnabled && isTaintCoreRule(e.id) {
+			continue
+		}
 		e.fn(unit, facts, out)
+	}
+}
+
+func isTaintCoreRule(id string) bool {
+	switch id {
+	case "CWE-22", "CWE-78", "CWE-79", "CWE-89":
+		return true
+	default:
+		return false
 	}
 }
 

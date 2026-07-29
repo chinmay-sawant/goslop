@@ -27,9 +27,9 @@
 | Pack | Approximate count | Go port target | Status |
 |------|------------------:|----------------|--------|
 | PERF | ~239 | all domains | [x] Phase 6 — **239/239** registered (heuristic batch ports) |
-| CWE structural | ~175 | all domains | [ ] Phase 7 |
+| CWE structural | ~175 | all domains | [x] Phase 7 — **175/175** (integration) |
 | BP | ~135 (rules files ~39 modules) | all | [x] Phase 8 (127 detectors registered, heuristic) |
-| Taint CWE-22/78/79/89 | experimental | port graph + rules | [ ] Phase 9 |
+| Taint CWE-22/78/79/89 | experimental | port graph + rules | [x] Phase 9 (integration) |
 
 Update counts from `codehound --list-rules` when Rust binary available; registries under `internal/lang/go/detectors/*/registry/` are source for wiring.
 
@@ -53,7 +53,7 @@ Update counts from `codehound --list-rules` when Rust binary available; registri
 | `--include-tests` | 3 | [ ] |
 | `--no-cache` / `--cache-dir` / `--rebuild-cache` / `--prune-cache` | 10 | [x] |
 | baseline / ignore | 10 | [x] |
-| `--taint` / taint depth | 9 | [ ] |
+| `--taint` / taint depth | 9 | [x] |
 | `--typed` | 9+ | [~] after core |
 | `init` | 4 | [ ] |
 | `--export-context` / `--export-chunks` | 5, **12.4** | [ ] |

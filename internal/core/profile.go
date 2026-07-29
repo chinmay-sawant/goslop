@@ -117,6 +117,11 @@ func BuildScanContext(profile ScanProfile, only, skip []string) *ScanContext {
 	ctx.Profile = profile
 	ctx.FailPolicy = profile.DefaultFailPolicy()
 	ctx.TaintEnabled = profile.EnablesTaint()
+	ctx.TaintMaxDepth = 1
+	if profile.EnablesTaint() {
+		// Security profile uses deeper same-package hops by default.
+		ctx.TaintMaxDepth = 4
+	}
 	ctx.BadPracticesEnabled = profile.EnablesBadPractices()
 
 	pack := profile.OnlyPatterns()
