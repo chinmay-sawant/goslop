@@ -1516,4 +1516,3 @@ func detectPERF60(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findin
 		"render.Render is allocated directly in a Gin handler; use c.JSON / c.HTML which manage a renderer pool", out,
 	)
 }
-

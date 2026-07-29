@@ -43,7 +43,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		return runInit()
 	}
 	if opts.Version {
-		fmt.Fprintln(stdout, Version)
+		_, _ = fmt.Fprintln(stdout, Version)
 		return nil
 	}
 	if opts.ListRules {
@@ -91,13 +91,13 @@ func run(args []string, stdout, stderr io.Writer) error {
 		if opts.RebuildCache {
 			store, err = cache.Rebuild(cacheDir, openOpts)
 			if err != nil {
-				fmt.Fprintf(stderr, "warning: could not rebuild cache: %v\n", err)
+				_, _ = fmt.Fprintf(stderr, "warning: could not rebuild cache: %v\n", err)
 				store = nil
 			}
 		} else {
 			store, err = cache.Open(cacheDir, openOpts)
 			if err != nil {
-				fmt.Fprintf(stderr, "warning: could not open cache: %v\n", err)
+				_, _ = fmt.Fprintf(stderr, "warning: could not open cache: %v\n", err)
 				store = nil
 			}
 		}
@@ -116,7 +116,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		}
 		if path != "" {
 			if loaded, lerr := baseline.Load(path); lerr != nil {
-				fmt.Fprintf(stderr, "warning: could not load baseline %s: %v\n", path, lerr)
+				_, _ = fmt.Fprintf(stderr, "warning: could not load baseline %s: %v\n", path, lerr)
 			} else {
 				bl = loaded
 			}
@@ -180,7 +180,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 
 func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, stdout, stderr io.Writer) error {
 	if store == nil {
-		fmt.Fprintln(stdout, "cache disabled; nothing to prune")
+		_, _ = fmt.Fprintln(stdout, "cache disabled; nothing to prune")
 		return nil
 	}
 	walkOpts := engine.DefaultWalkOptions()
@@ -223,10 +223,10 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}
 	if pruned > 0 || orphaned > 0 {
-		fmt.Fprintf(stdout, "Pruned %d stale manifest entries and removed %d orphaned cache files from %s\n",
+		_, _ = fmt.Fprintf(stdout, "Pruned %d stale manifest entries and removed %d orphaned cache files from %s\n",
 			pruned, orphaned, store.Dir())
 	} else {
-		fmt.Fprintf(stdout, "Cache at %s is clean (0 stale entries, 0 orphans)\n", store.Dir())
+		_, _ = fmt.Fprintf(stdout, "Cache at %s is clean (0 stale entries, 0 orphans)\n", store.Dir())
 	}
 	_ = stderr
 	return nil
@@ -236,7 +236,7 @@ func listRules(w io.Writer) error {
 	reg := engine.DefaultRegistry()
 	ids := reg.AllRuleIDs()
 	if len(ids) == 0 {
-		fmt.Fprintln(w, "no rules registered")
+		_, _ = fmt.Fprintln(w, "no rules registered")
 		return nil
 	}
 	for _, d := range reg.Detectors() {
@@ -246,9 +246,9 @@ func listRules(w io.Writer) error {
 				title = meta.Title
 			}
 			if title != "" {
-				fmt.Fprintf(w, "%s\t%s\n", id, title)
+				_, _ = fmt.Fprintf(w, "%s\t%s\n", id, title)
 			} else {
-				fmt.Fprintln(w, id)
+				_, _ = fmt.Fprintln(w, id)
 			}
 		}
 	}

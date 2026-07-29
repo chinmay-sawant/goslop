@@ -64,7 +64,7 @@ func (p *goTestPlugin) Detectors() []core.Detector {
 	return []core.Detector{&execCommandDetector{}}
 }
 
-func writeFile(t *testing.T, dir, name, body string) string {
+func writeFile(t *testing.T, dir, name, body string) {
 	t.Helper()
 	path := filepath.Join(dir, name)
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -73,7 +73,6 @@ func writeFile(t *testing.T, dir, name, body string) string {
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	return path
 }
 
 func TestAnalyzePaths_ExecCommandDetector(t *testing.T) {

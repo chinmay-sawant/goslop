@@ -22,7 +22,8 @@ func runInit() error {
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}
 
-	if err := os.WriteFile(path, initTemplate, 0o644); err != nil {
+	const fileMode = 0o644
+	if err := os.WriteFile(path, initTemplate, fileMode); err != nil {
 		return &ExitCodeError{
 			Code: ExitInternal,
 			Err:  fmt.Errorf("failed to write %s: %w", path, err),

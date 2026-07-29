@@ -148,12 +148,12 @@ func (c *ScanContext) RuleConfigFingerprint() string {
 	sort.Strings(only)
 	sort.Strings(skip)
 
-	var overrideKeys []string
+	overrideKeys := make([]string, 0, len(c.SeverityOverrides))
 	for k := range c.SeverityOverrides {
 		overrideKeys = append(overrideKeys, k)
 	}
 	sort.Strings(overrideKeys)
-	var overrides []string
+	overrides := make([]string, 0, len(overrideKeys))
 	for _, k := range overrideKeys {
 		overrides = append(overrides, fmt.Sprintf("%s=%s", k, c.SeverityOverrides[k]))
 	}

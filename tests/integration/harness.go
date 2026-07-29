@@ -4,6 +4,7 @@
 package integration
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ import (
 func RepoRoot() (string, error) {
 	_, thisFile, _, ok := runtime.Caller(0)
 	if !ok {
-		return "", fmt.Errorf("runtime.Caller failed")
+		return "", errors.New("runtime.Caller failed")
 	}
 	// tests/integration/harness.go → repo root is ../..
 	root := filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", ".."))
@@ -159,7 +160,7 @@ func SeedCases() []Case {
 // RuleIDsFromFindings returns a sorted, de-duplicated list of rule IDs (stable for tests).
 func RuleIDsFromFindings(findings []rules.Finding) []string {
 	seen := make(map[string]struct{}, len(findings))
-	var ids []string
+	ids := make([]string, 0, len(findings))
 	for _, f := range findings {
 		if _, ok := seen[f.RuleID]; ok {
 			continue

@@ -3,7 +3,7 @@ package detectors
 
 import (
 	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/detectors/bad_practices"
+	badpractices "github.com/chinmay/codehound/internal/lang/go/detectors/bad_practices"
 	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe"
 	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe/taint"
 	"github.com/chinmay/codehound/internal/lang/go/detectors/perf"

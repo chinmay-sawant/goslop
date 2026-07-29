@@ -19,10 +19,10 @@ const (
 
 // Manifest is the cheap O(1) lookup index for per-file cache state.
 type Manifest struct {
-	SchemaVersion  uint32                    `json:"schema_version"`
-	ToolVersion    string                    `json:"tool_version"`
-	RuleConfigHash string                    `json:"rule_config_hash"`
-	Files          map[string]FileCacheMeta  `json:"files"`
+	SchemaVersion  uint32                   `json:"schema_version"`
+	ToolVersion    string                   `json:"tool_version"`
+	RuleConfigHash string                   `json:"rule_config_hash"`
+	Files          map[string]FileCacheMeta `json:"files"`
 }
 
 // FileCacheMeta is per-file metadata stored in the manifest (no findings).
@@ -62,6 +62,8 @@ func (l Lookup) String() string {
 		return "hit"
 	case LookupStale:
 		return "stale"
+	case LookupMiss:
+		return "miss"
 	default:
 		return "miss"
 	}
@@ -69,9 +71,9 @@ func (l Lookup) String() string {
 
 // Error is a cache-layer failure (never panics on corrupt entries).
 type Error struct {
-	Op  string
+	Op   string
 	Path string
-	Err error
+	Err  error
 }
 
 func (e *Error) Error() string {

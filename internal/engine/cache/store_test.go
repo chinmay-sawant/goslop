@@ -75,11 +75,11 @@ func TestDiskCacheRoundTrip(t *testing.T) {
 	s.EnsureRuleConfigHash("abc")
 	src := "package p\n"
 	hash := cache.ContentHash(src)
-	if err := s.Put("pkg/a.go", hash, nil, 0); err != nil {
-		t.Fatal(err)
+	if putErr := s.Put("pkg/a.go", hash, nil, 0); putErr != nil {
+		t.Fatal(putErr)
 	}
-	if err := s.Flush(); err != nil {
-		t.Fatal(err)
+	if flushErr := s.Flush(); flushErr != nil {
+		t.Fatal(flushErr)
 	}
 
 	// Reopen

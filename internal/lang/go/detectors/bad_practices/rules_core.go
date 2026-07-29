@@ -406,7 +406,7 @@ func detectBP73(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 				varMaps[parts[1]] = line.byte
 			}
 		}
-		// m[k] = 
+		// m[k] =
 		for name, pos := range varMaps {
 			if strings.Contains(t, name+"[") && strings.Contains(t, "=") && !strings.Contains(t, "==") {
 				pushAt(unit, meta, pos, "write to a nil map without initialization; make the map first", out)

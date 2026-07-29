@@ -54,9 +54,11 @@ func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
 // ParseSource parses Go source with tree-sitter and attaches the CST to the unit.
 // On parse failure, falls back to a source-only unit so text-level detectors still run.
 func (p *Plugin) ParseSource(path, source string) (*core.ParsedUnit, error) {
-	tree, err := tsparse.Parse([]byte(source))
-	if err != nil {
-		return core.NewParsedUnit(core.LangGo, path, source), nil
+	tree, parseErr := tsparse.Parse([]byte(source))
+	if parseErr != nil {
+		// Fall back to source-only unit so text-level detectors still run.
+		// parseErr is intentionally discarded: analysis continues without a CST.
+		return core.NewParsedUnit(core.LangGo, path, source), nil //nolint:nilerr // intentional fallback
 	}
 	return core.NewParsedUnitWithTree(core.LangGo, path, source, tree), nil
 }

@@ -21,10 +21,10 @@ var bpNeedles = []string{
 
 // bpFacts is the fused fact bag for BP detectors.
 type bpFacts struct {
-	Source      string
-	Index       ast.SourceIndex
-	tree        *tsparse.Tree
-	ownedTree   bool
+	Source    string
+	Index     ast.SourceIndex
+	tree      *tsparse.Tree
+	ownedTree bool
 	// AST-derived ranges
 	assignNodes []nodeSpan // assignment_statement / short_var_declaration
 	callNodes   []callSpan
@@ -49,11 +49,11 @@ type callSpan struct {
 }
 
 type funcSpan struct {
-	name  string
-	start int
-	end   int
-	bodyS int
-	bodyE int
+	name   string
+	start  int
+	end    int
+	bodyS  int
+	bodyE  int
 	isMain bool
 	params string
 }

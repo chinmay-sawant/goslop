@@ -1,7 +1,7 @@
 package engine
 
 import (
-	"fmt"
+	"errors"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -18,12 +18,12 @@ import (
 
 // Analyzer is the language-agnostic static analysis orchestrator.
 type Analyzer struct {
-	registry  *Registry
-	ctx       *core.ScanContext
-	workers   int
-	walkOpts  *WalkOptions
-	cache     *cache.Store
-	baseline  *baseline.Baseline
+	registry *Registry
+	ctx      *core.ScanContext
+	workers  int
+	walkOpts *WalkOptions
+	cache    *cache.Store
+	baseline *baseline.Baseline
 	// projectRoot is used for cache-relative paths (first scan root).
 	projectRoot string
 }
@@ -137,10 +137,10 @@ func (a *Analyzer) SetBaseline(bl *baseline.Baseline) {
 // AnalyzePaths walks paths, runs matching detectors in parallel, finalizes, and returns results.
 func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 	if a == nil {
-		return nil, fmt.Errorf("nil analyzer")
+		return nil, errors.New("nil analyzer")
 	}
 	if a.registry == nil {
-		return nil, fmt.Errorf("analyzer has no registry")
+		return nil, errors.New("analyzer has no registry")
 	}
 	if len(paths) == 0 {
 		paths = []string{"."}
@@ -233,7 +233,8 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 
 	for _, fr := range results {
 		if fr.err != nil {
-			if se, ok := fr.err.(*ScanError); ok {
+			var se *ScanError
+			if errors.As(fr.err, &se) {
 				scanErrors = append(scanErrors, *se)
 			} else {
 				scanErrors = append(scanErrors, ScanError{

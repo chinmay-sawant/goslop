@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const cmdInit = "init"
+
 // Parse parses args (typically os.Args[1:]) into Options.
 // Supports both -flag and --flag forms via the stdlib flag package.
 func Parse(args []string) (*Options, error) {
@@ -21,8 +23,8 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	}
 
 	// Subcommand: init (must be the first token).
-	if len(args) > 0 && args[0] == "init" {
-		opts.Command = "init"
+	if len(args) > 0 && args[0] == cmdInit {
+		opts.Command = cmdInit
 		return opts, nil
 	}
 
@@ -61,9 +63,9 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 
 	fs.Usage = func() {
 		out := fs.Output()
-		fmt.Fprintf(out, "Usage: codehound [flags] [PATH...]\n")
-		fmt.Fprintf(out, "       codehound init\n\n")
-		fmt.Fprintf(out, "Flags:\n")
+		_, _ = fmt.Fprintf(out, "Usage: codehound [flags] [PATH...]\n")
+		_, _ = fmt.Fprintf(out, "       codehound init\n\n")
+		_, _ = fmt.Fprintf(out, "Flags:\n")
 		fs.PrintDefaults()
 	}
 

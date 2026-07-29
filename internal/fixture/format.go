@@ -3,13 +3,17 @@
 package fixture
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
 )
 
-// FIXTURE_EXTENSION is the file extension for text fixtures (without the leading dot).
-const FIXTURE_EXTENSION = "txt"
+// FixtureExtension is the file extension for text fixtures (without the leading dot).
+const FixtureExtension = "txt"
+
+// FIXTURE_EXTENSION is a compatibility alias for FixtureExtension.
+const FIXTURE_EXTENSION = FixtureExtension
 
 // Separator between header metadata and source body.
 const Separator = "---"
@@ -106,7 +110,7 @@ func ParseFixture(text string, txtPath string) (TextFixture, error) {
 	}
 
 	if language == nil {
-		return TextFixture{}, fmt.Errorf("fixture header missing `lang:` (go | python)")
+		return TextFixture{}, errors.New("fixture header missing `lang:` (go | python)")
 	}
 	if filename == "" {
 		filename = DefaultFilename(txtPath, *language)
@@ -124,12 +128,12 @@ func ParseFixture(text string, txtPath string) (TextFixture, error) {
 	}, nil
 }
 
-func splitHeaderBody(text string) (header, body string, err error) {
+func splitHeaderBody(text string) (string, string, error) {
 	idx := strings.Index(text, Separator)
 	if idx < 0 {
 		return "", "", fmt.Errorf("fixture must contain a `%s` separator between header and source", Separator)
 	}
-	header = strings.TrimSpace(text[:idx])
-	body = text[idx+len(Separator):]
+	header := strings.TrimSpace(text[:idx])
+	body := text[idx+len(Separator):]
 	return header, body, nil
 }

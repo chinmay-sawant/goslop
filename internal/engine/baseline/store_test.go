@@ -62,5 +62,3 @@ func TestDiscover(t *testing.T) {
 		}
 	}
 }
-
-

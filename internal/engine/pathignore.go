@@ -16,12 +16,12 @@ type pathIgnoreMatcher struct {
 }
 
 type ignorePattern struct {
-	raw       string
-	negated   bool
-	dirOnly   bool
-	matchAll  bool // "**" or empty-ish
-	segments  []string
-	hasSlash  bool
+	raw      string
+	negated  bool
+	dirOnly  bool
+	matchAll bool // "**" or empty-ish
+	segments []string
+	hasSlash bool
 }
 
 // loadPathIgnores loads .gitignore, .codehoundignore, and .ignore from root.
