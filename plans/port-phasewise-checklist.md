@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Integration branch — 6 PERF + 7 CWE + 10 cache + 12a CI; merging 8/9; §12.4 still open
+> **Status:** Integration PR — 6 PERF + 7 CWE + 8 BP + 9 taint + 10 cache + 12a CI composed; Phase 11 + §12.4 still open
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
