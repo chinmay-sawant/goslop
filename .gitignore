@@ -4,6 +4,7 @@
 *.test
 *.out
 .goslop-cache/
+.codehound-cache/
 .target-materialize/
 /tmp/
 .idea/
@@ -11,8 +12,6 @@
 *.swp
 coverage.out
 
-scripts/chunks
-scripts/findings.codehound-cache/
-
+# Generated export artifacts (make run / make oracle)
 scripts/chunks/
 scripts/findings/
