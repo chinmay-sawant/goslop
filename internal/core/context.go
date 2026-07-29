@@ -2,6 +2,10 @@
 package core
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/rules"
@@ -17,8 +21,14 @@ type ScanContext struct {
 	FailPolicy FailPolicy
 	// IncludeTests includes *_test.go files when walking.
 	IncludeTests bool
-	// NoCache disables the incremental analysis cache (stored for later wiring).
+	// NoCache disables the incremental analysis cache.
 	NoCache bool
+	// ShowIgnored keeps findings suppressed by codehound-ignore directives.
+	ShowIgnored bool
+	// ShowBaselined keeps findings present in the baseline (marked suppressed).
+	ShowBaselined bool
+	// NoBaseline disables loading/filtering via .codehound-baseline.json.
+	NoBaseline bool
 	// BadPracticesEnabled controls BP-* rules (default true for raw engine).
 	BadPracticesEnabled bool
 	// BadPracticeSeverity optionally overrides severity for all BP findings.
@@ -108,6 +118,41 @@ func (c *ScanContext) ApplyFindingOverrides(f *rules.Finding) {
 	if sev, ok := c.SeverityOverrides[f.RuleID]; ok {
 		f.Severity = sev
 	}
+}
+
+// RuleConfigFingerprint returns a stable 16-hex hash of settings that change
+// which detectors run / which findings are stored. Used to mass-stale the
+// incremental cache when pack/filter sets change.
+func (c *ScanContext) RuleConfigFingerprint() string {
+	if c == nil {
+		return "nil"
+	}
+	only := append([]string(nil), c.Only...)
+	skip := append([]string(nil), c.Skip...)
+	sort.Strings(only)
+	sort.Strings(skip)
+
+	var overrideKeys []string
+	for k := range c.SeverityOverrides {
+		overrideKeys = append(overrideKeys, k)
+	}
+	sort.Strings(overrideKeys)
+	var overrides []string
+	for _, k := range overrideKeys {
+		overrides = append(overrides, fmt.Sprintf("%s=%s", k, c.SeverityOverrides[k]))
+	}
+
+	bpSev := ""
+	if c.BadPracticeSeverity != nil {
+		bpSev = c.BadPracticeSeverity.String()
+	}
+
+	payload := fmt.Sprintf(
+		"only=%v|skip=%v|taint=%v|typed=%v|bp=%v|bp_severity=%s|show_ignored=%v|severity_overrides=%v",
+		only, skip, c.TaintEnabled, c.TypedEnabled, c.BadPracticesEnabled, bpSev, c.ShowIgnored, overrides,
+	)
+	sum := sha256.Sum256([]byte(payload))
+	return hex.EncodeToString(sum[:])[:16]
 }
 
 func matchRulePattern(pattern, ruleID string) bool {

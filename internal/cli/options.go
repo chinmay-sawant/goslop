@@ -25,8 +25,22 @@ type Options struct {
 	ListRules bool
 	// IncludeTests includes *_test.* files (excluded by default).
 	IncludeTests bool
-	// NoCache disables the incremental cache (stored for later wiring).
+	// NoCache disables the incremental analysis cache.
 	NoCache bool
+	// CacheDir overrides the default .codehound-cache directory.
+	CacheDir string
+	// RebuildCache purges the cache directory before the scan.
+	RebuildCache bool
+	// PruneCache prunes stale cache entries for the given paths and exits.
+	PruneCache bool
+	// NoBaseline disables baseline loading/filtering.
+	NoBaseline bool
+	// BaselineFile is an explicit baseline path (default: discover).
+	BaselineFile string
+	// ShowIgnored keeps findings suppressed by codehound-ignore directives.
+	ShowIgnored bool
+	// ShowBaselined keeps findings present in the baseline.
+	ShowBaselined bool
 	// Version requests version printing.
 	Version bool
 	// Command is a top-level subcommand when set ("init").
