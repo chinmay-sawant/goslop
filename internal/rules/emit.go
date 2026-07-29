@@ -9,6 +9,11 @@ func PushFinding(meta *RuleMetadata, file string, line, col int, message string,
 
 // PushFindingWithConfidence appends a finding with optional confidence (0 = omit).
 func PushFindingWithConfidence(meta *RuleMetadata, file string, line, col int, message string, confidence float32, out *[]Finding) {
+	PushFindingWithEvidence(meta, file, line, col, message, confidence, nil, out)
+}
+
+// PushFindingWithEvidence appends a finding with optional confidence and evidence.
+func PushFindingWithEvidence(meta *RuleMetadata, file string, line, col int, message string, confidence float32, evidence map[string]any, out *[]Finding) {
 	if meta == nil || out == nil {
 		return
 	}
@@ -35,6 +40,7 @@ func PushFindingWithConfidence(meta *RuleMetadata, file string, line, col int, m
 		CWE:        cwes,
 		Fix:        meta.Fix,
 		Confidence: confidence,
+		Evidence:   evidence,
 	}
 	f.EnsureFingerprint()
 	*out = append(*out, f)

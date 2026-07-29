@@ -46,6 +46,10 @@ func ParseWithOutput(args []string, w io.Writer) (*Options, error) {
 	fs.BoolVar(&opts.ListRules, "list-rules", false, "list registered rules and exit")
 	fs.BoolVar(&opts.IncludeTests, "include-tests", false, "include test files (*_test.*) in analysis")
 	fs.BoolVar(&opts.NoCache, "no-cache", false, "disable the incremental analysis cache")
+	fs.BoolVar(&opts.Taint, "taint", false, "enable experimental taint tracking (CWE-22/78/79/89)")
+	fs.BoolVar(&opts.NoTaint, "no-taint", false, "disable taint tracking even under security profile")
+	fs.IntVar(&opts.TaintDepth, "taint-depth", 0, "inter-procedural taint depth 1–4 (0 = profile default)")
+	fs.BoolVar(&opts.TaintShowPaths, "taint-show-paths", false, "attach taint hop evidence to findings")
 	fs.BoolVar(&opts.Version, "version", false, "print version and exit")
 
 	fs.Usage = func() {

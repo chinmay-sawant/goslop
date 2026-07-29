@@ -27,6 +27,10 @@ type ScanContext struct {
 	SeverityOverrides map[string]rules.Severity
 	// TaintEnabled enables experimental taint tracking.
 	TaintEnabled bool
+	// TaintMaxDepth bounds inter-procedural summary hops (1–4; default 1).
+	TaintMaxDepth int
+	// TaintShowPaths attaches hop evidence to taint findings when true.
+	TaintShowPaths bool
 	// TypedEnabled enables optional go list facts.
 	TypedEnabled bool
 	// RetainSources keeps per-file sources in AnalysisResult.
@@ -57,7 +61,19 @@ func DefaultScanContext() *ScanContext {
 		BadPracticesEnabled: true,
 		SeverityOverrides:   map[string]rules.Severity{},
 		Profile:             ProfileAll,
+		TaintMaxDepth:       1,
 	}
+}
+
+// EffectiveTaintMaxDepth returns the clamped inter-procedural depth (1–4).
+func (c *ScanContext) EffectiveTaintMaxDepth() int {
+	if c == nil || c.TaintMaxDepth < 1 {
+		return 1
+	}
+	if c.TaintMaxDepth > 4 {
+		return 4
+	}
+	return c.TaintMaxDepth
 }
 
 // NewScanContext builds a context from a profile and CLI only/skip lists.

@@ -58,6 +58,15 @@ func run(args []string, stdout, stderr io.Writer) error {
 	ctx := core.NewScanContext(profile, opts.Only, opts.Skip)
 	ctx.IncludeTests = opts.IncludeTests
 	ctx.NoCache = opts.NoCache
+	if opts.NoTaint {
+		ctx.TaintEnabled = false
+	} else if opts.Taint {
+		ctx.TaintEnabled = true
+	}
+	if opts.TaintDepth > 0 {
+		ctx.TaintMaxDepth = opts.TaintDepth
+	}
+	ctx.TaintShowPaths = opts.TaintShowPaths
 
 	reg := engine.DefaultRegistry()
 	analyzer := engine.NewAnalyzer(ctx, reg)

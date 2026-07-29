@@ -49,8 +49,12 @@ func (d *CWE89Detector) MetadataFor(ruleID string) *rules.RuleMetadata {
 }
 
 // Run implements core.Detector.
+// When taint is enabled, the taint detector owns CWE-89 (seed is the fallback).
 func (d *CWE89Detector) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if ctx != nil && ctx.TaintEnabled {
 		return
 	}
 	if ctx != nil && !ctx.Allows(ruleCWE89) {

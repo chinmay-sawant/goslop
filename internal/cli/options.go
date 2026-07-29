@@ -27,6 +27,14 @@ type Options struct {
 	IncludeTests bool
 	// NoCache disables the incremental cache (stored for later wiring).
 	NoCache bool
+	// Taint enables experimental taint tracking (overrides profile default when set).
+	Taint bool
+	// NoTaint disables taint even for security profile.
+	NoTaint bool
+	// TaintDepth is inter-procedural hop budget (1–4; 0 = use profile default).
+	TaintDepth int
+	// TaintShowPaths attaches hop evidence to findings.
+	TaintShowPaths bool
 	// Version requests version printing.
 	Version bool
 	// Command is a top-level subcommand when set ("init").
