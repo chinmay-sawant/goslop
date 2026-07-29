@@ -1,0 +1,13 @@
+Finding 23/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/benchmarktemplates/runner.go:98:8
+Rule: BP-6
+Fingerprint: codehound:2:BP-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/benchmarktemplates/runner.go:d30f2be2e8ca8f0d
+Rule title: WaitGroup Add Inside Goroutine
+Severity: medium
+Message: WaitGroup.Add inside the goroutine it tracks races with Wait; call Add before go
+Fix: Review-only AST match for `go func` bodies that call `.Add(`; nested goroutines are scoped independently, but receiver type is not proven and atomic counters can match.
+Context:
+         96: 				durations = append(durations, elapsedMs)
+         97: 				mu.Unlock()
+    >    98: 				ops.Add(1)
+         99: 				fmt.Printf("Run %d: %.2f ms\n", idx, elapsedMs)

@@ -1,0 +1,13 @@
+Finding 435/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:245:12
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        243: 	out := make([][]byte, len(in))
+        244: 	for i, s := range in {
+    >   245: 		out[i] = []byte(s)
+        246: 	}

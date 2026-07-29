@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func fileDisplayPath(unit *core.ParsedUnit) string {
@@ -38,9 +38,9 @@ func isMaterializedFixture(unit *core.ParsedUnit) bool {
 		if p == "" {
 			continue
 		}
-		if strings.Contains(p, "target/codehound-fixtures/") ||
-			strings.Contains(p, `target\codehound-fixtures\`) ||
-			strings.Contains(p, "codehound-fixtures") ||
+		if strings.Contains(p, "target/goslop-fixtures/") ||
+			strings.Contains(p, `target\goslop-fixtures\`) ||
+			strings.Contains(p, "goslop-fixtures") ||
 			strings.Contains(p, "goslop-fixture-") {
 			return true
 		}
@@ -81,7 +81,7 @@ func isFlatMaterializedFixturePath(p string) bool {
 		return true
 	}
 	return strings.Contains(p, "goslop-fixture-") ||
-		strings.Contains(p, "codehound-fixtures")
+		strings.Contains(p, "goslop-fixtures")
 }
 
 func pushAt(unit *core.ParsedUnit, meta *rules.RuleMetadata, byteOffset int, message string, out *[]rules.Finding) {

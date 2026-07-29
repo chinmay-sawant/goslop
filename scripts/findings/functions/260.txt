@@ -1,0 +1,13 @@
+Finding 260/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:366:14
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        364: 					keyRe := regexp.MustCompile(`/([A-Za-z0-9_+-]+)\s*(?:/|stream|<<|\()`)
+        365: 					if kr := keyRe.FindSubmatch(nm[1]); kr != nil {
+    >   366: 						return string(kr[1]), true
+        367: 					}

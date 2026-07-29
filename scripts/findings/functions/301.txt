@@ -1,0 +1,13 @@
+Finding 301/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:913:77
+Rule: PERF-112
+Fingerprint: codehound:2:PERF-112:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1f266739abdfbe59
+Rule title: strings.ToLower Before Comparison Instead Of EqualFold
+Severity: medium
+Message: case conversion before comparison allocates; use strings.EqualFold
+Fix: Prefer strings.EqualFold for case-insensitive equality instead of ToLower/ToUpper comparisons.
+Context:
+        911: 			case typeButton, typeRadio:
+        912: 				newState := "/Off"
+    >   913: 				if job.fieldType == typeButton && (strings.ToLower(job.val) == "yes" || strings.ToLower(job.val) == "on") {
+        914: 					apDictRe := regexp.MustCompile(`/AP\s*<<.*?/N\s*<<\s*/\s*([A-Za-z0-9_]+)\s*`)

@@ -45,9 +45,9 @@ jobs:
       - name: go build
         env:
           CGO_ENABLED: "0"
-        run: go build -o bin/codehound ./cmd/codehound
+        run: go build -o bin/goslop ./cmd/goslop
 
       - name: smoke --version / --list-rules
         run: |
-          ./bin/codehound --version
-          ./bin/codehound --list-rules | head -n 5
+          ./bin/goslop --version
+          ./bin/goslop --list-rules | head -n 5

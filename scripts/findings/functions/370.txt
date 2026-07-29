@@ -1,0 +1,13 @@
+Finding 370/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:1367:14
+Rule: PERF-225
+Fingerprint: codehound:2:PERF-225:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:76f1a3ad85016d6d
+Rule title: Redundant Large Slice Clone
+Severity: medium
+Message: large slice is fully cloned more than once; keep a single owned buffer
+Fix: Keep a single owned buffer: clone once, or mutate in place when the source is exclusive. Avoid chaining slices.Clone / append([]T(nil), â¦) on the same data.
+Context:
+       1365: 		// Signing writes into a dedicated buffer inside UpdatePDFWithSignature — clone once more
+       1366: 		// so callers never retain pooled or shared scratch space.
+    >  1367: 		finalPDF = slices.Clone(signedPDF)
+       1368: 	}

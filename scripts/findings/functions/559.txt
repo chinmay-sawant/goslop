@@ -1,0 +1,13 @@
+Finding 559/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pdfa.go:361:2
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pdfa.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+        359: 		return nil
+        360: 	}
+    >   361: 	_ = zw.Close()
+        362: 	font.PutZlibWriter(zw)

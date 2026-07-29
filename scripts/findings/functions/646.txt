@@ -1,0 +1,13 @@
+Finding 646/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:93:9
+Rule: BP-52
+Fingerprint: codehound:2:BP-52:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:dd631680005b34b8
+Rule title: Unchecked Integer Multiplication
+Severity: low
+Message: multiplication used in an allocation path without an obvious overflow guard
+Fix: Heuristic for multiplication-heavy code with no guard or size validation.
+Context:
+         91: 
+         92: 	seenTerms := make(map[string]struct{}, len(searchTexts))
+    >    93: 	all := make([]models.RedactionRect, 0, len(searchTexts)*4)
+         94: 	for _, raw := range searchTexts {

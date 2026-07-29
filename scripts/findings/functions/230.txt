@@ -1,0 +1,13 @@
+Finding 230/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:485:1
+Rule: BP-38
+Fingerprint: codehound:2:BP-38:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:9a98396e7b45a7e5
+Rule title: Unused Unexported Helper
+Severity: low
+Message: unexported helper has no same-file callers
+Fix: Match unexported helper functions with zero internal call sites.
+Context:
+        483: 
+        484: // parseCmapFormat12 parses a format 12 cmap subtable (full Unicode)
+    >   485: func (f *TTFFont) parseCmapFormat12(data []byte, offset uint32) error {
+        486: 	r := bytes.NewReader(data[offset:])

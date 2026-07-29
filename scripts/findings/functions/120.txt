@@ -1,0 +1,13 @@
+Finding 120/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/compression.go:55:2
+Rule: PERF-219
+Fingerprint: codehound:2:PERF-219:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/compression.go:1275d03cbc9590f1
+Rule title: Oversized Object Returned to sync.Pool
+Severity: medium
+Message: object is returned to sync.Pool without a capacity guard, so oversized buffers stay retained
+Fix: Guard the Put call: if cap(obj) > maxSize { return } to discard oversized buffers instead of returning them to the pool.
+Context:
+         53: 	}
+         54: 	buf.Reset()
+    >    55: 	CompressBufPool.Put(buf)
+         56: }

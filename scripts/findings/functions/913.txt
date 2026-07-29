@@ -1,0 +1,13 @@
+Finding 913/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/typstsyntax/renderer.go:941:14
+Rule: PERF-123
+Fingerprint: codehound:2:PERF-123:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/typstsyntax/renderer.go:bd947ba8ddb14a0c
+Rule title: Redundant make Argument With Zero Value
+Severity: medium
+Message: make with explicit zero length/capacity is redundant; omit the zero argument
+Fix: Omit redundant zero length/capacity arguments to make.
+Context:
+        939: 	totalW := delimW*2 + innerLay.Width
+        940: 
+    >   941: 	elements := make([]MathElement, 0)
+        942: 

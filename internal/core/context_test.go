@@ -3,7 +3,7 @@ package core
 import (
 	"testing"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestAllowsMatrix(t *testing.T) {

@@ -1,0 +1,13 @@
+Finding 725/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:110:5
+Rule: PERF-4
+Fingerprint: codehound:2:PERF-4:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:286783f147ce0d75
+Rule title: Map Allocated Inside Loop
+Severity: info
+Message: map is allocated with make inside a loop body
+Fix: Hoist the map allocation outside the loop or pre-size with make(map[K]V, n).
+Context:
+        108: 				b.WriteString("q\n")
+        109: 
+    >   110: 				attrs := make(map[string]string)
+        111: 				for _, a := range se.Attr {

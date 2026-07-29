@@ -1,0 +1,15 @@
+Finding 862/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/load_from_json/main.go:26:15
+Rule: CWE-367
+Fingerprint: codehound:2:CWE-367:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/load_from_json/main.go:c25b7f7e485166c8
+Rule title: Time-of-check Time-of-use (TOCTOU) Race Condition
+Severity: high
+Message: the code checks a file path with Stat before later using it, creating a TOCTOU race window
+CWEs: CWE-367 (Time-of-check Time-of-use (TOCTOU) Race Condition)
+Fix: Review and harden code against Time-of-check Time-of-use (TOCTOU) Race Condition (CWE-367); validate inputs, use safe APIs, and follow secure defaults.
+Confidence: 0.55
+Context:
+         24: 
+         25: 	// Check if file exists
+    >    26: 	if _, err := os.Stat(jsonPath); os.IsNotExist(err) {
+         27: 		fmt.Printf("Could not find JSON file at: %s\n", jsonPath)

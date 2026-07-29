@@ -1,0 +1,11 @@
+Finding 2/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/bindings/python/cgo/exports.go:1:1
+Rule: BP-60
+Fingerprint: codehound:2:BP-60:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/bindings/python/cgo/exports.go:0bac21384b9383aa
+Rule title: Test Dependency In Main Module
+Severity: low
+Message: dependency is only used by tests but lives in the main go.mod requirements
+Fix: Project-level analysis of go.mod usage versus test-only imports.
+Context:
+    >     1: // Package main provides CGO exports for the Python bindings.
+          2: package main

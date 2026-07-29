@@ -1,0 +1,13 @@
+Finding 476/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/merger.go:415:4
+Rule: PERF-229
+Fingerprint: codehound:2:PERF-229:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/merger.go:615923e0c0a3ef29
+Rule title: Intermediate String On Byte Append Path
+Severity: medium
+Message: temporary string is built then appended to bytes; use AppendInt/append-style APIs
+Fix: Write numbers/text into the destination with strconv.AppendInt / AppendUint / AppendFloat (or Builder) instead of Itoa/Sprintf then append([]byte(s)).
+Context:
+        413: 			xrefBuf = xrefBuf[:0]
+        414: 			// Format as 10-digit zero-padded number
+    >   415: 			offStr := strconv.FormatInt(int64(off), 10)
+        416: 			for j := 0; j < 10-len(offStr); j++ {

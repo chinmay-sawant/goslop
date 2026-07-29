@@ -1,0 +1,15 @@
+Finding 109/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/encryption/encrypt.go:79:10
+Rule: CWE-916
+Fingerprint: codehound:2:CWE-916:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/encryption/encrypt.go:dbfffec6fe0daf71
+Rule title: Use of Password Hash With Insufficient Computational Effort
+Severity: high
+Message: password storage uses a fast MD5 hash with insufficient computational effort
+CWEs: CWE-916 (Use of Password Hash With Insufficient Computational Effort)
+Fix: Review and harden code against Use of Password Hash With Insufficient Computational Effort (CWE-916); validate inputs, use safe APIs, and follow secure defaults.
+Confidence: 0.55
+Context:
+         77: 
+         78: 	// Step 2: MD5 hash the padded owner password
+    >    79: 	hash := md5.Sum(ownerPwd)
+         80: 

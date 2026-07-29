@@ -1,0 +1,13 @@
+Finding 724/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:88:2
+Rule: PERF-109
+Fingerprint: codehound:2:PERF-109:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:aa3faf32886b3bc4
+Rule title: Map Key Recomputed In Loop Without Caching
+Severity: medium
+Message: expensive map-key computation inside the loop; cache or simplify the key
+Fix: Cache expensive map keys outside or once per iteration instead of recomputing them.
+Context:
+         86: 	// Iterate children
+         87: 	decoder := xml.NewDecoder(bytes.NewReader(data))
+    >    88: 	for {
+         89: 		t, err := decoder.Token()

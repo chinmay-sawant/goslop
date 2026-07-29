@@ -1,0 +1,13 @@
+Finding 781/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:539:4
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+        537: 			y, _ := strconv.ParseFloat(tokens[i], 64)
+        538: 			i++
+    >   539: 			fmt.Fprintf(b, "%.2f %.2f %.2f %.2f %.2f %.2f c ", x1, y1, x2, y2, x, y)
+        540: 			cx, cy = x, y

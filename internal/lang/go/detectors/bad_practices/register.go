@@ -3,8 +3,8 @@ package badpractices
 import (
 	"sync"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // ruleFn is one BP detector over a prebuilt fact bag.

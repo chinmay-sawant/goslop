@@ -1,0 +1,13 @@
+Finding 711/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:453:19
+Rule: PERF-241
+Fingerprint: codehound:2:PERF-241:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:5ed6404109f6c6c8
+Rule title: ASN1 Remarshal With Fresh Time On Sign Path
+Severity: medium
+Message: signing path re-marshals ASN.1 with a fresh time.Now; cache immutable DER and only re-marshal time-varying attributes
+Fix: Pre-marshal immutable ASN.1/CMS components; only re-marshal time-varying authenticated attributes each sign.
+Context:
+        451: 	// Go defaults to SEQUENCE for slice, but we need SET for Attributes
+        452: 	// Attributes are already in DER-sorted order (ContentType < MessageDigest < SigningTime by OID)
+    >   453: 	seqBytes, err := asn1.Marshal(authenticatedAttrs)
+        454: 	if err != nil {

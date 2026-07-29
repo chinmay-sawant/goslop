@@ -1,0 +1,13 @@
+Finding 28/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:36:1
+Rule: PERF-151
+Fingerprint: codehound:2:PERF-151:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:4709dd9e6f10fea8
+Rule title: Non-Inlinable Function On Hot Path Due To Complexity
+Severity: medium
+Message: non-inlinable handler function: too complex for the Go compiler to inline; reduce body size or split into smaller functions
+Fix: Simplify hot-path handlers to stay within the compiler inlining budget.
+Context:
+         34: // omitted JSON fields do not leak from prior requests. Zeroing the shell also
+         35: // drops large slice backing arrays from the pooled value after each use.
+    >    36: func resetTemplate(t *models.PDFTemplate) {
+         37: 	if t == nil {

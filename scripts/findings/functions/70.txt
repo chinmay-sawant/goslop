@@ -1,0 +1,13 @@
+Finding 70/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/redact.go:263:21
+Rule: BP-5
+Fingerprint: codehound:2:BP-5:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/redact.go:def7db7cd65cae35
+Rule title: Ignored Close Error
+Severity: low
+Message: Close() return value is ignored; check the close error where it can affect correctness
+Fix: Match `.Close()` calls whose error result is ignored.
+Context:
+        261: 		return
+        262: 	}
+    >   263: 	defer func() { _ = f.Close() }()
+        264: 

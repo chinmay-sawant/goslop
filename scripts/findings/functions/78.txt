@@ -1,0 +1,13 @@
+Finding 78/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/models/models.go:62:1
+Rule: BP-156
+Fingerprint: codehound:2:BP-156:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/models/models.go:86ffab1a0a41be2c
+Rule title: Security-Sensitive JSON Omitempty
+Severity: medium
+Message: security-sensitive JSON field uses omitempty
+Fix: Match sensitive struct fields with json omitempty tags in request or security-shaped types.
+Context:
+         60: type SecurityConfig struct {
+         61: 	Enabled       bool   `json:"enabled,omitempty"`      // Enable/disable encryption
+    >    62: 	UserPassword  string `json:"userPassword,omitempty"` // Password to open document (empty = no password to open)
+         63: 	OwnerPassword string `json:"ownerPassword"`          // Password for full access (required for encryption)

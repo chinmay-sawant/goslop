@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // JSONReporter writes a simple envelope:

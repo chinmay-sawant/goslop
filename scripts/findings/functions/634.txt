@@ -1,0 +1,13 @@
+Finding 634/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:805:3
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+        803: 
+        804: 		body := objMap[obj.id]
+    >   805: 		fmt.Fprintf(&out, "%d %d obj\n", obj.id, obj.gen)
+        806: 		out.Write(body)

@@ -1,0 +1,13 @@
+Finding 343/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:511:3
+Rule: PERF-215
+Fingerprint: codehound:2:PERF-215:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:3e7984eef70b4a6f
+Rule title: bytes.Buffer or strings.Builder Without Pre-Sizing
+Severity: medium
+Message: bytes.Buffer or strings.Builder does many writes without Grow; pre-size when output size is estimable
+Fix: Pre-size the bytes.Buffer or strings.Builder by calling Grow(expectedSize) when the final content size is known or can be estimated from input parameters.
+Context:
+        509: 
+        510: 		var fieldsRef strings.Builder
+    >   511: 		fieldsRef.WriteString("[")
+        512: 		for _, id := range allWidgetIDs {

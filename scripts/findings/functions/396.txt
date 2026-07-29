@@ -1,0 +1,13 @@
+Finding 396/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:150:1
+Rule: BP-34
+Fingerprint: codehound:2:BP-34:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:9302390ef0842c73
+Rule title: Error Wrapping Without Percent-W
+Severity: low
+Message: error wrapping without %w loses the error chain
+Fix: Match `fmt.Errorf` calls that mention an error argument without `%w`.
+Context:
+        148: 	img, format, err := image.Decode(bytes.NewReader(imageBytes))
+        149: 	if err != nil {
+    >   150: 		return nil, fmt.Errorf("failed to decode image: %v", err)
+        151: 	}

@@ -1,0 +1,13 @@
+Finding 327/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1262:7
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+       1260: 					singleKidsRe := regexp.MustCompile(`/Kids\s+(\d+)\s+(\d+)\s+R`)
+       1261: 					if m := singleKidsRe.FindSubmatch(objContent); m != nil {
+    >  1262: 						kidNum, _ := strconv.Atoi(string(m[1]))
+       1263: 						kidsToRemoveAP[kidNum] = true

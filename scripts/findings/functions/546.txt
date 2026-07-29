@@ -1,0 +1,13 @@
+Finding 546/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pagemanager.go:118:2
+Rule: PERF-229
+Fingerprint: codehound:2:PERF-229:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pagemanager.go:615923e0c0a3ef29
+Rule title: Intermediate String On Byte Append Path
+Severity: medium
+Message: temporary string is built then appended to bytes; use AppendInt/append-style APIs
+Fix: Write numbers/text into the destination with strconv.AppendInt / AppendUint / AppendFloat (or Builder) instead of Itoa/Sprintf then append([]byte(s)).
+Context:
+        116: 	}
+        117: 
+    >   118: 	content = fmt.Sprintf("<< /Type /Annot /Subtype /Link /Rect %s /Border [0 0 0] /F 4 /A << /Type /Action /S /URI /URI (%s) >> >>",
+        119: 		rect, validURL)

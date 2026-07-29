@@ -5,9 +5,9 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/detectors/sourceutil"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/sourceutil"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Phase 7 taint-lite ports for registry taint-core IDs.

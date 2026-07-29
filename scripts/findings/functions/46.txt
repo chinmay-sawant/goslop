@@ -1,0 +1,13 @@
+Finding 46/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:398:4
+Rule: PERF-56
+Fingerprint: codehound:2:PERF-56:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:751a3ed105e71e98
+Rule title: Gin c.JSON With Marshal In Loop
+Severity: medium
+Message: c.JSON is called inside a loop body; marshal once and stream or batch the response
+Fix: Collect the response items into a slice and call c.JSON once, or stream with c.Stream.
+Context:
+        396: 		f, err := fh.Open()
+        397: 		if err != nil {
+    >   398: 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read uploaded file: " + err.Error()})
+        399: 			return

@@ -1,0 +1,13 @@
+Finding 478/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/merger.go:417:15
+Rule: PERF-119
+Fingerprint: codehound:2:PERF-119:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/merger.go:30eaf094d732b41d
+Rule title: Multiple Separate Appends Instead Of Spread Concatenation
+Severity: medium
+Message: consecutive append calls to the same slice can be merged into one variadic append
+Fix: Merge the consecutive append calls into a single variadic append, e.g. s = appen
+Context:
+        415: 			offStr := strconv.FormatInt(int64(off), 10)
+        416: 			for j := 0; j < 10-len(offStr); j++ {
+    >   417: 				xrefBuf = append(xrefBuf, '0')
+        418: 			}

@@ -1,0 +1,11 @@
+Finding 5/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:1:1
+Rule: BP-47
+Fingerprint: codehound:2:BP-47:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:8c1ed27c003c054f
+Rule title: Missing Graceful Shutdown
+Severity: low
+Message: server startup should include a graceful shutdown path
+Fix: Match server startup code with no `Shutdown` handling.
+Context:
+    >     1: //nolint:revive // package comment
+          2: package main

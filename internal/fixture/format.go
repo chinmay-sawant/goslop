@@ -1,5 +1,5 @@
-// Package fixture parses and materializes CodeHound .txt text fixtures.
-// Format matches the Rust codehound fixture module (header + "---" + body).
+// Package fixture parses and materializes goslop .txt text fixtures.
+// Format matches the Rust goslop fixture module (header + "---" + body).
 package fixture
 
 import (

@@ -1,8 +1,8 @@
 package cwe
 
 import (
-	"github.com/chinmay/codehound/internal/ast"
-	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/goslop/internal/ast"
+	"github.com/chinmay/goslop/internal/core"
 )
 
 // GoCweFacts is the per-file fact bag for structural CWE detectors.

@@ -1,0 +1,13 @@
+Finding 83/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/draw.go:34:9
+Rule: PERF-119
+Fingerprint: codehound:2:PERF-119:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/draw.go:30eaf094d732b41d
+Rule title: Multiple Separate Appends Instead Of Spread Concatenation
+Severity: medium
+Message: consecutive append calls to the same slice can be merged into one variadic append
+Fix: Merge the consecutive append calls into a single variadic append, e.g. s = appen
+Context:
+         32: 	dst = strconv.AppendInt(dst, intPart, 10)
+         33: 	if fracPart > 0 {
+    >    34: 		dst = append(dst, '.')
+         35: 		if fracPart < 10 {

@@ -1,0 +1,13 @@
+Finding 734/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:218:10
+Rule: PERF-47
+Fingerprint: codehound:2:PERF-47:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:be4b0737124b1ff5
+Rule title: strings.Split Allocation In Loop
+Severity: medium
+Message: strings.Split allocates a slice; consider a streaming scanner
+Fix: Use strings.SplitSeq or a manual index loop over strings.IndexByte to avoid the []string allocation.
+Context:
+        216: 				continue
+        217: 			}
+    >   218: 			kv := strings.SplitN(part, ":", 2)
+        219: 			if len(kv) == 2 {

@@ -1,0 +1,13 @@
+Finding 804/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:83:1
+Rule: PERF-213
+Fingerprint: codehound:2:PERF-213:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:028705f1a0ee1609
+Rule title: Cache Without Eviction or Bounding
+Severity: medium
+Message: package-level cache has writes but no eviction or entry bound in the same compilation unit
+Fix: Add an eviction boundary to the cache: limit entries (max N), limit retained bytes (max M), or add TTL-based expiry so the cache cannot grow unbounded under load.
+Context:
+         81: 
+         82: // propsCache memoizes parseProps results since the same prop strings are parsed repeatedly.
+    >    83: var propsCache sync.Map // string -> models.Props
+         84: 

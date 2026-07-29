@@ -1,0 +1,13 @@
+Finding 121/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/metrics.go:552:27
+Rule: PERF-15
+Fingerprint: codehound:2:PERF-15:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/metrics.go:da392d094f669ae2
+Rule title: strconv Formatting Inside Loop
+Severity: info
+Message: strconv formatting is performed inside a loop body
+Fix: Use a strings.Builder or strconv.Append* to avoid repeated allocations.
+Context:
+        550: 			widthsArray.WriteString(" ")
+        551: 		}
+    >   552: 		widthsArray.WriteString(strconv.Itoa(w))
+        553: 	}

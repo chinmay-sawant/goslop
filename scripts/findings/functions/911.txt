@@ -1,0 +1,13 @@
+Finding 911/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/typstsyntax/renderer.go:477:3
+Rule: PERF-3
+Fingerprint: codehound:2:PERF-3:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/typstsyntax/renderer.go:130f1f005a2f12ef
+Rule title: Slice Rebuilt Inside Loop
+Severity: info
+Message: working slice is rebuilt with make inside a loop body
+Fix: Hoist the make outside the loop or preallocate once with a capacity hint.
+Context:
+        475: 	idx := 0
+        476: 	for r := 0; r < rowCount; r++ {
+    >   477: 		gridCells[r] = make([]*MathLayout, cols)
+        478: 		for c := 0; c < cols; c++ {

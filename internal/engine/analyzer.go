@@ -9,11 +9,11 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/engine/baseline"
-	"github.com/chinmay/codehound/internal/engine/cache"
-	"github.com/chinmay/codehound/internal/engine/ignore"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/engine/baseline"
+	"github.com/chinmay/goslop/internal/engine/cache"
+	"github.com/chinmay/goslop/internal/engine/ignore"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Analyzer is the language-agnostic static analysis orchestrator.

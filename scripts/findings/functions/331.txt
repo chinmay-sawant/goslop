@@ -1,0 +1,13 @@
+Finding 331/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1362:29
+Rule: PERF-15
+Fingerprint: codehound:2:PERF-15:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:da392d094f669ae2
+Rule title: strconv Formatting Inside Loop
+Severity: info
+Message: strconv formatting is performed inside a loop body
+Fix: Use a strings.Builder or strconv.Append* to avoid repeated allocations.
+Context:
+       1360: 		headerBuilder.WriteString(strconv.Itoa(member.objNum))
+       1361: 		headerBuilder.WriteByte(' ')
+    >  1362: 		headerBuilder.WriteString(strconv.Itoa(currentOffset))
+       1363: 		if i != len(members)-1 {

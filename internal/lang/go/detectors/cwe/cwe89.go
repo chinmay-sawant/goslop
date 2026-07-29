@@ -1,8 +1,8 @@
 package cwe
 
 import (
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // CWE89Detector is a single-rule adapter retained for seed unit tests.

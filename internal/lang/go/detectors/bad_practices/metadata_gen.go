@@ -1,7 +1,7 @@
 // Code generated from ruleset/golang/bad-practices.json. DO NOT EDIT BY HAND.
 package badpractices
 
-import "github.com/chinmay/codehound/internal/rules"
+import "github.com/chinmay/goslop/internal/rules"
 
 // metaByID is the BP catalogue loaded from bad-practices.json at init.
 var metaByID = map[string]*rules.RuleMetadata{}

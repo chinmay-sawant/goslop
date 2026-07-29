@@ -1,0 +1,13 @@
+Finding 419/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:70:3
+Rule: PERF-230
+Fingerprint: codehound:2:PERF-230:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:84138f9a40c9e1fd
+Rule title: Loop-Invariant Pure Call
+Severity: medium
+Message: pure/helper call in loop has stable args; hoist or cache per distinct key
+Fix: Hoist the pure call before the loop or cache its result when arguments do not change across iterations.
+Context:
+         68: 		// Allow parseXRefStreams to augment object map (it operates on raw bytes in this package)
+         69: 		tempObjMap := make(map[string][]byte)
+    >    70: 		parseXRefStreams(f, tempObjMap)
+         71: 		// merge tempObjMap into objMap (keys are like "<num> <gen>")

@@ -1,0 +1,13 @@
+Finding 883/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/zerodha/main.go:741:3
+Rule: PERF-36
+Fingerprint: codehound:2:PERF-36:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/zerodha/main.go:39e0efd9f875b45c
+Rule title: Loop Variable Capture In Goroutine
+Severity: medium
+Message: goroutine captures a loop variable by reference; copy it per iteration
+Fix: Copy the loop variable into a per-iteration local (v := v) before launching the goroutine.
+Context:
+        739: 	for range numWorkers {
+        740: 		wg.Add(1)
+    >   741: 		go func() {
+        742: 			defer wg.Done()

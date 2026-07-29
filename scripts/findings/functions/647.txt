@@ -1,0 +1,13 @@
+Finding 647/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:94:2
+Rule: PERF-109
+Fingerprint: codehound:2:PERF-109:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:aa3faf32886b3bc4
+Rule title: Map Key Recomputed In Loop Without Caching
+Severity: medium
+Message: expensive map-key computation inside the loop; cache or simplify the key
+Fix: Cache expensive map keys outside or once per iteration instead of recomputing them.
+Context:
+         92: 	seenTerms := make(map[string]struct{}, len(searchTexts))
+         93: 	all := make([]models.RedactionRect, 0, len(searchTexts)*4)
+    >    94: 	for _, raw := range searchTexts {
+         95: 		term := strings.TrimSpace(raw)

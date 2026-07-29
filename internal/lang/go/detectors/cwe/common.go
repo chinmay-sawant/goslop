@@ -1,6 +1,6 @@
 package cwe
 
-import "github.com/chinmay/codehound/internal/core"
+import "github.com/chinmay/goslop/internal/core"
 
 // unitFile returns the display path for findings.
 func unitFile(unit *core.ParsedUnit) string {

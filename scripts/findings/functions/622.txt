@@ -1,0 +1,13 @@
+Finding 622/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:389:24
+Rule: PERF-230
+Fingerprint: codehound:2:PERF-230:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:84138f9a40c9e1fd
+Rule title: Loop-Invariant Pure Call
+Severity: medium
+Message: pure/helper call in loop has stable args; hoist or cache per distinct key
+Fix: Hoist the pure call before the loop or cache its result when arguments do not change across iterations.
+Context:
+        387: 		return
+        388: 	}
+    >   389: 	for _, child := range resolveUsedXObjectRefs(dec, res) {
+        390: 		appendXObjectContentRecursive(out, child, objMap, visited)

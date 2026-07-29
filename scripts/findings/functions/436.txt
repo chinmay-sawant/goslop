@@ -1,0 +1,13 @@
+Finding 436/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:264:4
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+        262: 				return b
+        263: 			}
+    >   264: 			on, _ := strconv.Atoi(string(sm2[1]))
+        265: 			gen := string(sm2[2])

@@ -1,0 +1,13 @@
+Finding 606/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:63:1
+Rule: BP-2
+Fingerprint: codehound:2:BP-2:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:6fb307e88f5b1f7b
+Rule title: Naked Error Return
+Severity: low
+Message: naked return err loses operation context; wrap it before returning
+Fix: Match `return err` sites that lose operation-specific context.
+Context:
+         61: 		for _, kidNum := range extractKidsRefs(body) {
+         62: 			if err := traversePages(kidNum, objMap, dims); err != nil {
+    >    63: 				return err
+         64: 			}

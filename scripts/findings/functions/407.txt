@@ -1,0 +1,13 @@
+Finding 407/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:469:6
+Rule: PERF-119
+Fingerprint: codehound:2:PERF-119:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:30eaf094d732b41d
+Rule title: Multiple Separate Appends Instead Of Spread Concatenation
+Severity: medium
+Message: consecutive append calls to the same slice can be merged into one variadic append
+Fix: Merge the consecutive append calls into a single variadic append, e.g. s = appen
+Context:
+        467: 	b = append(b, "\n   /Height "...)
+        468: 	b = strconv.AppendInt(b, int64(imgObj.Height), 10)
+    >   469: 	b = append(b, "\n   /ColorSpace "...)
+        470: 	b = append(b, imgObj.ColorSpace...)

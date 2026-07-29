@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // FailPolicy controls when the process should exit non-zero based on finding severity.

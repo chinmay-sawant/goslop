@@ -1,6 +1,6 @@
 package rules
 
-import "github.com/chinmay/codehound/internal/cwe"
+import "github.com/chinmay/goslop/internal/cwe"
 
 // LineCol is a 1-indexed line and column in a source file.
 type LineCol struct {

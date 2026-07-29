@@ -1,0 +1,11 @@
+Finding 7/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:1:1
+Rule: BP-55
+Fingerprint: codehound:2:BP-55:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:d953ad1e1d237d63
+Rule title: Missing Request ID Propagation
+Severity: low
+Message: request-handling code logs traffic without a visible request-id propagation path
+Fix: Match middleware stacks that log or branch on requests without request-id propagation.
+Context:
+    >     1: //nolint:revive // package comment
+          2: package main

@@ -1,0 +1,13 @@
+Finding 677/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:235:3
+Rule: PERF-215
+Fingerprint: codehound:2:PERF-215:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:3e7984eef70b4a6f
+Rule title: bytes.Buffer or strings.Builder Without Pre-Sizing
+Severity: medium
+Message: bytes.Buffer or strings.Builder does many writes without Grow; pre-size when output size is estimable
+Fix: Pre-size the bytes.Buffer or strings.Builder by calling Grow(expectedSize) when the final content size is known or can be estimated from input parameters.
+Context:
+        233: 
+        234: 	for _, m := range matches {
+    >   235: 		out.WriteString(src[last:m[0]])
+        236: 		op := src[m[0]:m[1]]

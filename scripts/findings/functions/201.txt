@@ -1,0 +1,13 @@
+Finding 201/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/subset.go:631:13
+Rule: PERF-107
+Fingerprint: codehound:2:PERF-107:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/subset.go:dcdb734d9805f3e1
+Rule title: encoding/binary Write Or Read Inside Loop
+Severity: medium
+Message: encoding/binary Read/Write inside a loop uses reflection; reuse a pre-encoded buffer or hand-roll the byte order
+Fix: Hoist encoding/binary out of the loop or hand-encode fixed-size types with binary.BigEndian.
+Context:
+        629: 			return nil
+        630: 		}
+    >   631: 		if err := binary.Write(&buf, binary.BigEndian, rec.nameID); err != nil {
+        632: 			return nil

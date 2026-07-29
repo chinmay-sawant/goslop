@@ -1,0 +1,13 @@
+Finding 31/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:110:9
+Rule: PERF-88
+Fingerprint: codehound:2:PERF-88:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:c0c50a864fd94aed
+Rule title: Echo Static Handler Missing Cache
+Severity: medium
+Message: Static handler is missing cache headers; set explicit Cache-Control for static assets
+Fix: Add Cache-Control / ETag headers to e.Static or the static middleware.
+Context:
+        108: 
+        109: 	// Serve static assets from Vite build (matching the base path in vite.config.js)
+    >   110: 	router.Static("/gopdfsuit/assets", filepath.Join(base, "docs", "assets"))
+        111: 	router.Static("/assets", filepath.Join(base, "docs", "assets")) // Fallback for backward compatibility

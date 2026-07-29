@@ -1,0 +1,12 @@
+Finding 274/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:519:16
+Rule: PERF-186
+Fingerprint: codehound:2:PERF-186:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:fd68a88e82f94776
+Rule title: strings.Fields In Hot Parsing Path
+Severity: medium
+Message: strings.Fields in a hot path; use strings.IndexByte to walk whitespace and slice once per token
+Context:
+        517: 						// parse header portion up to first
+        518: 						header := strings.TrimSpace(string(dec[:first]))
+    >   519: 						parts := strings.Fields(header)
+        520: 						// header should be pairs of (objnum offset)

@@ -9,7 +9,7 @@ SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
 RUN_ARGS ?= --export-context --export-chunks --no-cache
 
 build:
-	go build -o bin/codehound ./cmd/codehound
+	go build -o bin/goslop ./cmd/goslop
 
 test:
 	go test ./...
@@ -31,7 +31,7 @@ lint: vet
 ci: lint test build
 
 version: build
-	./bin/codehound --version
+	./bin/goslop --version
 
 help:
 	@echo "Targets: build test integration vet fmt lint lint-all ci version run oracle"
@@ -54,7 +54,7 @@ lint-all:
 #   make run SCAN_PATH=./some/project
 run: build
 	@mkdir -p scripts/findings/functions scripts/chunks
-	./bin/codehound --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
+	./bin/goslop --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
 
 # §12.4 export/scan oracle gate on SCAN_PATH (default: gopdfsuit).
 # Hard oracle (Rust 2026-07-29): 915 findings; 10/197/312/396 sev; top BP-1×181…
@@ -64,11 +64,11 @@ ORACLE_PROFILE ?= all
 oracle: build
 	@rm -rf scripts/findings/functions scripts/chunks
 	@mkdir -p scripts/findings/functions scripts/chunks
-	-./bin/codehound --profile $(ORACLE_PROFILE) --format json --export-context --export-chunks --no-cache \
+	-./bin/goslop --profile $(ORACLE_PROFILE) --format json --export-context --export-chunks --no-cache \
 		--context-dir scripts/findings/functions --chunks-dir scripts/chunks \
-		$(ORACLE_PATH) > /tmp/codehound-oracle.json
+		$(ORACLE_PATH) > /tmp/goslop-oracle.json
 	@echo "--- summary (stderr above) ---"
-	@python3 -c "import json,collections; fs=json.load(open('/tmp/codehound-oracle.json')).get('findings',[]); print('findings',len(fs)); print('severity',dict(collections.Counter(f['severity'] for f in fs))); print('top',collections.Counter(f['rule_id'] for f in fs).most_common(5))"
+	@python3 -c "import json,collections; fs=json.load(open('/tmp/goslop-oracle.json')).get('findings',[]); print('findings',len(fs)); print('severity',dict(collections.Counter(f['severity'] for f in fs))); print('top',collections.Counter(f['rule_id'] for f in fs).most_common(5))"
 	@echo -n "context files: "; ls scripts/findings/functions 2>/dev/null | wc -l
 	@echo -n "chunk files: "; ls scripts/chunks 2>/dev/null | wc -l
 	@echo "Oracle hard targets: findings=915 sev=10h/197i/312l/396m top=BP-1×181,PERF-6×94,PERF-32×59,BP-5×50,PERF-230×44 exports=915+37"

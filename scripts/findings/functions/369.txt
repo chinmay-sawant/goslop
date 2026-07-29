@@ -1,0 +1,13 @@
+Finding 369/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:1355:19
+Rule: PERF-226
+Fingerprint: codehound:2:PERF-226:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:181904745b694a8a
+Rule title: Post-Producer Buffer Re-Copy
+Severity: medium
+Message: buffer is re-copied immediately after production; take ownership instead of make+copy
+Fix: Return or use the producer buffer directly after Bytes()/Close(). Only copy when the source must go back to a pool, and copy before Put â not after an exclusive local.
+Context:
+       1353: 	finalScr := finalPDFSlicePool.Get().(*[]byte)
+       1354: 	*finalScr = append((*finalScr)[:0], pdfBuffer.Bytes()...)
+    >  1355: 	unsignedOwned := slices.Clone(*finalScr)
+       1356: 	finalPDFSlicePool.Put(finalScr)

@@ -1,0 +1,13 @@
+Finding 560/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pdfa.go:361:6
+Rule: BP-5
+Fingerprint: codehound:2:BP-5:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pdfa.go:def7db7cd65cae35
+Rule title: Ignored Close Error
+Severity: low
+Message: Close() return value is ignored; check the close error where it can affect correctness
+Fix: Match `.Close()` calls whose error result is ignored.
+Context:
+        359: 		return nil
+        360: 	}
+    >   361: 	_ = zw.Close()
+        362: 	font.PutZlibWriter(zw)

@@ -1,0 +1,13 @@
+Finding 332/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1404:2
+Rule: PERF-215
+Fingerprint: codehound:2:PERF-215:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:f0b2981eb76be89a
+Rule title: bytes.Buffer or strings.Builder Without Pre-Sizing
+Severity: medium
+Message: bytes.Buffer or strings.Builder writes without a preceding Grow(expectedSize)
+Fix: Pre-size the bytes.Buffer or strings.Builder by calling Grow(expectedSize) when the final content size is known or can be estimated from input parameters.
+Context:
+       1402: 	rebuilt.Write(newDict)
+       1403: 	rebuilt.WriteString("stream\n")
+    >  1404: 	rebuilt.Write(compressed)
+       1405: 	rebuilt.WriteString("\nendstream")

@@ -1,0 +1,13 @@
+Finding 388/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/helpers.go:149:15
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/helpers.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        147: 					reObj := regexp.MustCompile(`(?s)^(\s*)(\d+)\s+(\d+)\s+obj(.*?)endobj`)
+        148: 					if ro := reObj.FindSubmatch(tail); ro != nil {
+    >   149: 						onum := string(ro[2])
+        150: 						ogen := string(ro[3])

@@ -1,0 +1,13 @@
+Finding 161/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/pdfa.go:307:9
+Rule: BP-5
+Fingerprint: codehound:2:BP-5:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/pdfa.go:def7db7cd65cae35
+Rule title: Ignored Close Error
+Severity: low
+Message: Close() return value is ignored; check the close error where it can affect correctness
+Fix: Match `.Close()` calls whose error result is ignored.
+Context:
+        305: 
+        306: 			if _, err := io.Copy(outFile, tr); err != nil {
+    >   307: 				_ = outFile.Close()
+        308: 				return fmt.Errorf("failed to extract %s: %w", fileName, err)

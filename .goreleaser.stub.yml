@@ -4,18 +4,18 @@
 # Notes for Phase 12 delivery:
 # - tree-sitter requires CGO; cross-compiling needs a C cross-toolchain or
 #   native runners per GOOS/GOARCH.
-# - Prefer building on linux/amd64 and linux/arm64 runners with CGO_ENABLED=1
+# - Prefer building on linux/amd64 and linux/arm64 runners with CGO_ENABLED=0
 #   rather than pure Go cross-compile until a CGO matrix is validated.
 #
 # Example (future):
 # version: 2
-# project_name: codehound
+# project_name: goslop
 # builds:
-#   - id: codehound
-#     main: ./cmd/codehound
-#     binary: codehound
+#   - id: goslop
+#     main: ./cmd/goslop
+#     binary: goslop
 #     env:
-#       - CGO_ENABLED=1
+#       - CGO_ENABLED=0
 #     goos: [linux, darwin]
 #     goarch: [amd64, arm64]
 #     ignore:
@@ -31,16 +31,16 @@
 #   draft: true
 #
 # Multi-arch local build notes (no GoReleaser required):
-#   CGO_ENABLED=1 go build -o bin/codehound ./cmd/codehound
+#   CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop
 #   # Cross with zig or a sysroot is out of scope for this stub.
 version: 2
-project_name: codehound
+project_name: goslop
 builds:
-  - id: codehound
-    main: ./cmd/codehound
-    binary: codehound
+  - id: goslop
+    main: ./cmd/goslop
+    binary: goslop
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     goos:
       - linux
     goarch:

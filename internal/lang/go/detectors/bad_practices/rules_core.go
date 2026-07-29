@@ -5,8 +5,8 @@ import (
 	"go/token"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func init() {

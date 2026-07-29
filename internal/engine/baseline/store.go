@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // FileName is the default baseline filename discovered by walking up from cwd.
-const FileName = ".codehound-baseline.json"
+const FileName = ".goslop-baseline.json"
 
 // Version is the wire format version.
 const Version = "1"
@@ -87,7 +87,7 @@ func (b *Baseline) Save(path string) error {
 	return os.Rename(tmp, path)
 }
 
-// Discover walks up from start looking for .codehound-baseline.json (stops at .git).
+// Discover walks up from start looking for .goslop-baseline.json (stops at .git).
 func Discover(start string) string {
 	dir := start
 	if dir == "" {

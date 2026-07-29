@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/codehound/tests/integration"
+	"github.com/chinmay/goslop/tests/integration"
 )
 
 // TestGenerateFixtureQuarantine writes tests/integration/fixture_quarantine.txt.

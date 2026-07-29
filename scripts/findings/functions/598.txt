@@ -1,0 +1,13 @@
+Finding 598/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/ocr_adapter.go:116:1
+Rule: BP-34
+Fingerprint: codehound:2:BP-34:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/ocr_adapter.go:9302390ef0842c73
+Rule title: Error Wrapping Without Percent-W
+Severity: low
+Message: error wrapping without %w loses the error chain
+Fix: Match `fmt.Errorf` calls that mention an error argument without `%w`.
+Context:
+        114: 		pdftoppmCmd := exec.Command("pdftoppm", "-f", strconv.Itoa(page), "-l", strconv.Itoa(page), "-singlefile", "-png", pdfPath, imgBase)
+        115: 		if out, err := pdftoppmCmd.CombinedOutput(); err != nil {
+    >   116: 			return nil, fmt.Errorf("pdftoppm failed on page %d: %v (%s)", page, err, string(out))
+        117: 		}

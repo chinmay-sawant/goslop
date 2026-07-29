@@ -1,0 +1,13 @@
+Finding 664/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:42:2
+Rule: PERF-109
+Fingerprint: codehound:2:PERF-109:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:aa3faf32886b3bc4
+Rule title: Map Key Recomputed In Loop Without Caching
+Severity: medium
+Message: expensive map-key computation inside the loop; cache or simplify the key
+Fix: Cache expensive map keys outside or once per iteration instead of recomputing them.
+Context:
+         40: 	changedAny := false
+         41: 
+    >    42: 	for pageNum, rects := range redactionsByPage {
+         43: 		pageObjNum, err := findPageObject(objMap, r.pdfBytes, pageNum)

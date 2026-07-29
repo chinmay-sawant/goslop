@@ -1,0 +1,13 @@
+Finding 882/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/zerodha/main.go:733:13
+Rule: PERF-38
+Fingerprint: codehound:2:PERF-38:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/zerodha/main.go:c13fa1b2e5ea5a01
+Rule title: Unbuffered Channel In Producer Consumer
+Severity: medium
+Message: unbuffered channel blocks producers; consider a buffered channel or a worker pool
+Fix: Use make(chan T, N) with a buffer sized to expected concurrency.
+Context:
+        731: 
+        732: 	// Memory monitor
+    >   733: 	memDone := make(chan bool)
+        734: 	var memWg sync.WaitGroup

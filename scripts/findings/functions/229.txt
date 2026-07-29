@@ -1,0 +1,13 @@
+Finding 229/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:464:16
+Rule: PERF-107
+Fingerprint: codehound:2:PERF-107:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:dcdb734d9805f3e1
+Rule title: encoding/binary Write Or Read Inside Loop
+Severity: medium
+Message: encoding/binary Read/Write inside a loop uses reflection; reuse a pre-encoded buffer or hand-roll the byte order
+Fix: Hoist encoding/binary out of the loop or hand-encode fixed-size types with binary.BigEndian.
+Context:
+        462: 				if glyphIndexOffset+2 <= int64(len(data[offset:])) {
+        463: 					glyphReader := bytes.NewReader(data[offset+uint32(glyphIndexOffset):])
+    >   464: 					if err := binary.Read(glyphReader, binary.BigEndian, &glyphID); err != nil {
+        465: 						// Should probably handle error, but nested loop context, maybe break

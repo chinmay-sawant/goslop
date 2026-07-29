@@ -1,0 +1,13 @@
+Finding 654/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:286:6
+Rule: PERF-2
+Fingerprint: codehound:2:PERF-2:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:c28b57b212d7cb4e
+Rule title: String Concatenation In Loop
+Severity: info
+Message: string is built by repeated concatenation inside a loop body
+Fix: Use strings.Builder, bytes.Buffer, or strings.Join instead of repeated +=.
+Context:
+        284: 				} else {
+        285: 					startOff = len(lines[li].joined) + 1
+    >   286: 					lines[li].joined += " " + part
+        287: 				}

@@ -3,9 +3,9 @@ package cwe_test
 import (
 	"testing"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/cwe"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestCWE89VulnerableIdentifier(t *testing.T) {

@@ -1,0 +1,13 @@
+Finding 339/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:173:5
+Rule: PERF-221
+Fingerprint: codehound:2:PERF-221:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:67f38a4335cc11cf
+Rule title: map[int]T for Dense Sequential Integer Keys
+Severity: medium
+Message: map[int] is being filled with dense sequential keys; use a slice instead
+Fix: Replace map[int]T with []T when the integer keys are dense and sequential (e.g. indices, counters). Use make([]T, maxKey+1) and direct index access.
+Context:
+        171: 			if err == nil {
+        172: 				imgObj.ObjectID = nextImageObjectID
+    >   173: 				imageObjects[i] = imgObj
+        174: 				imageObjectIDs[i] = nextImageObjectID

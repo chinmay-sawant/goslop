@@ -1,5 +1,5 @@
 # Mandatory fixture manifest — paths are .txt text fixtures only.
-# Sources are materialized under target/codehound-fixtures/ before analysis.
+# Sources are materialized under target/goslop-fixtures/ before analysis.
 
 [[fixture]]
 lang = "python"

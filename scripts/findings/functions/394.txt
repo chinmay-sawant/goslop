@@ -1,0 +1,13 @@
+Finding 394/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:60:19
+Rule: BP-52
+Fingerprint: codehound:2:BP-52:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:dd631680005b34b8
+Rule title: Unchecked Integer Multiplication
+Severity: low
+Message: multiplication used in an allocation path without an obvious overflow guard
+Fix: Heuristic for multiplication-heavy code with no guard or size validation.
+Context:
+         58: func ResetImageCache() {
+         59: 	imgCache.mu.Lock()
+    >    60: 	imgCache.cache = make(map[uint64]*ImageObject)
+         61: 	imgCache.mu.Unlock()

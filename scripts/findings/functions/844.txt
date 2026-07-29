@@ -1,0 +1,13 @@
+Finding 844/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/benchmarks/gopdflib/databench_gopdflib.go:59:2
+Rule: PERF-109
+Fingerprint: codehound:2:PERF-109:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/benchmarks/gopdflib/databench_gopdflib.go:aa3faf32886b3bc4
+Rule title: Map Key Recomputed In Loop Without Caching
+Severity: medium
+Message: expensive map-key computation inside the loop; cache or simplify the key
+Fix: Cache expensive map keys outside or once per iteration instead of recomputing them.
+Context:
+         57: 	}}}
+         58: 
+    >    59: 	for index, record := range records {
+         60: 		bgColor := ""

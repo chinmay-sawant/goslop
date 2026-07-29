@@ -1,0 +1,13 @@
+Finding 802/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:37:1
+Rule: BP-38
+Fingerprint: codehound:2:BP-38:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:9a98396e7b45a7e5
+Rule title: Unused Unexported Helper
+Severity: low
+Message: unexported helper has no same-file callers
+Fix: Match unexported helper functions with zero internal call sites.
+Context:
+         35: // Returns r, g, b, a (alpha) and a boolean indicating if the color is valid and non-transparent
+         36: // Uses inline hex nibble lookup instead of strconv.ParseInt for speed.
+    >    37: func parseHexColor(hexColor string) (r, g, b, a float64, valid bool) {
+         38: 	if hexColor == "" {

@@ -1,0 +1,13 @@
+Finding 510/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/metadata.go:119:18
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/metadata.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+        117: 	xmp.WriteString(`    <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/" xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">`)
+        118: 	xmp.WriteString("\n")
+    >   119: 	xmp.WriteString(fmt.Sprintf(`      <pdfaid:part>%d</pdfaid:part>`, part))
+        120: 	xmp.WriteString("\n")

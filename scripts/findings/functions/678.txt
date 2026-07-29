@@ -1,0 +1,13 @@
+Finding 678/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:288:19
+Rule: PERF-235
+Fingerprint: codehound:2:PERF-235:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:2c810c5d6e57a300
+Rule title: Intermediate Strings Builder Bridge
+Severity: medium
+Message: temporary strings.Builder is flushed through .String() into a sink; write into the destination buffer directly
+Fix: Write into the destination *bytes.Buffer or []byte directly instead of building a temporary strings.Builder and flushing with .String().
+Context:
+        286: 		return decoded, false
+        287: 	}
+    >   288: 	return []byte(out.String()), true
+        289: }

@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // ScanContext holds per-run filters and flags passed to detectors.
@@ -23,11 +23,11 @@ type ScanContext struct {
 	IncludeTests bool
 	// NoCache disables the incremental analysis cache.
 	NoCache bool
-	// ShowIgnored keeps findings suppressed by codehound-ignore directives.
+	// ShowIgnored keeps findings suppressed by goslop-ignore directives.
 	ShowIgnored bool
 	// ShowBaselined keeps findings present in the baseline (marked suppressed).
 	ShowBaselined bool
-	// NoBaseline disables loading/filtering via .codehound-baseline.json.
+	// NoBaseline disables loading/filtering via .goslop-baseline.json.
 	NoBaseline bool
 	// BadPracticesEnabled controls BP-* rules (default true for raw engine).
 	BadPracticesEnabled bool

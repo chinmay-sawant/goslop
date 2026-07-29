@@ -1,0 +1,12 @@
+Finding 277/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:525:23
+Rule: PERF-188
+Fingerprint: codehound:2:PERF-188:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:20aa5f0b5d5303f2
+Rule title: fmt.Sscanf In Hot Path
+Severity: info
+Message: fmt.Sscanf in a hot path; use strconv.ParseInt / strconv.ParseFloat for the common conversions
+Context:
+        523: 							var objnum, off int
+        524: 							if _, err := fmt.Sscanf(parts[i], "%d", &objnum); err == nil {
+    >   525: 								if _, err2 := fmt.Sscanf(parts[i+1], "%d", &off); err2 == nil {
+        526: 									pairs = append(pairs, []int{objnum, off})

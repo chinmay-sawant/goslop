@@ -1,0 +1,13 @@
+Finding 534/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/outline.go:385:25
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/outline.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+        383: 			itemDict.WriteString(fmt.Sprintf(" /First %d 0 R", item.FirstID))
+        384: 			itemDict.WriteString(fmt.Sprintf(" /Last %d 0 R", item.LastID))
+    >   385: 			itemDict.WriteString(fmt.Sprintf(" /Count %d", item.Count))
+        386: 		}

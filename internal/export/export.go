@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/cwe"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/cwe"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Default dirs match the Rust product.

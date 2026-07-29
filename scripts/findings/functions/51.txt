@@ -1,0 +1,13 @@
+Finding 51/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:478:11
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+        476: 	zw := zip.NewWriter(&buf)
+        477: 	for i, b := range outs {
+    >   478: 		name := fmt.Sprintf("originalfile-part%d.pdf", i+1)
+        479: 		fw, err := zw.Create(name)

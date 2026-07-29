@@ -1,0 +1,13 @@
+Finding 39/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:291:8
+Rule: PERF-130
+Fingerprint: codehound:2:PERF-130:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:570757168f2a89c9
+Rule title: Unnecessary Function Wrapper Adding Call Overhead
+Severity: medium
+Message: unnecessary func() { f(args) }() wrapper; inline the call
+Fix: Inline the call: drop the `func() { ... }()` wrapper when the body is a single c
+Context:
+        289: 	template := templatePDFPool.Get().(*models.PDFTemplate)
+        290: 	resetTemplate(template)
+    >   291: 	defer func() {
+        292: 		resetTemplate(template)

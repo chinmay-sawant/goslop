@@ -1,0 +1,13 @@
+Finding 336/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:26:21
+Rule: PERF-110
+Fingerprint: codehound:2:PERF-110:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:195d98739b474932
+Rule title: sync.Pool Element Type Causes Allocation On Put
+Severity: medium
+Message: sync.Pool New returns a value type; return a pointer (e.g. *Foo) to avoid boxing on Put
+Fix: Return a pointer type from sync.Pool's New function (e.g. *Foo) so Put does not box the value back into the pool.
+Context:
+         24: 
+         25: // pdfBufferPool reuses bytes.Buffer across PDF generations to reduce GC pressure.
+    >    26: var pdfBufferPool = sync.Pool{
+         27: 	New: func() any {

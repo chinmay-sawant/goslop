@@ -1,0 +1,13 @@
+Finding 170/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/registry.go:185:11
+Rule: BP-52
+Fingerprint: codehound:2:BP-52:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/registry.go:dd631680005b34b8
+Rule title: Unchecked Integer Multiplication
+Severity: low
+Message: multiplication used in an allocation path without an obvious overflow guard
+Fix: Heuristic for multiplication-heavy code with no guard or size validation.
+Context:
+        183: 	defer r.mu.RUnlock()
+        184: 
+    >   185: 	fonts := make([]*RegisteredFont, 0)
+        186: 	for _, font := range r.fonts {

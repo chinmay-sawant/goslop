@@ -1,0 +1,13 @@
+Finding 713/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:608:3
+Rule: BP-3
+Fingerprint: codehound:2:BP-3:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:14823df01289f430
+Rule title: Panic Outside Main Or Test
+Severity: low
+Message: panic outside main() or test files; prefer returning errors up the call stack
+Fix: Match panic() outside main() and `_test.go` files.
+Context:
+        606: 	b, err := asn1.Marshal(v)
+        607: 	if err != nil {
+    >   608: 		panic(err)
+        609: 	}

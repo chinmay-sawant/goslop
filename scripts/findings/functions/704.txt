@@ -1,0 +1,13 @@
+Finding 704/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:84:25
+Rule: PERF-42
+Fingerprint: codehound:2:PERF-42:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:4a344c8d67be2d80
+Rule title: fmt.Errorf Without Format Verbs
+Severity: info
+Message: fmt.Errorf with a static string allocates a Sprintf; use errors.New instead
+Fix: Use errors.New or a sentinel error when the message has no format verbs.
+Context:
+         82: 	block, _ := pem.Decode([]byte(certPEM))
+         83: 	if block == nil {
+    >    84: 		return nil, nil, nil, fmt.Errorf("failed to parse certificate PEM")
+         85: 	}

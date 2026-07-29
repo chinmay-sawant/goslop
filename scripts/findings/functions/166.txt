@@ -1,0 +1,13 @@
+Finding 166/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/registry.go:51:10
+Rule: BP-52
+Fingerprint: codehound:2:BP-52:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/registry.go:dd631680005b34b8
+Rule title: Unchecked Integer Multiplication
+Severity: low
+Message: multiplication used in an allocation path without an obvious overflow guard
+Fix: Heuristic for multiplication-heavy code with no guard or size validation.
+Context:
+         49: func NewFontRegistry() *CustomFontRegistry {
+         50: 	return &CustomFontRegistry{
+    >    51: 		fonts: make(map[string]*RegisteredFont),
+         52: 	}

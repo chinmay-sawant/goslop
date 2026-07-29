@@ -1,0 +1,13 @@
+Finding 242/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:621:1
+Rule: BP-38
+Fingerprint: codehound:2:BP-38:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:9a98396e7b45a7e5
+Rule title: Unused Unexported Helper
+Severity: low
+Message: unexported helper has no same-file callers
+Fix: Match unexported helper functions with zero internal call sites.
+Context:
+        619: 
+        620: // parseOS2 parses the 'OS/2' table for additional metrics
+    >   621: func (f *TTFFont) parseOS2(data []byte) error {
+        622: 	table, ok := f.Tables["OS/2"]

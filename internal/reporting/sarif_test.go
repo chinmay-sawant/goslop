@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestSARIFReporterMinimalShape(t *testing.T) {
@@ -62,7 +62,7 @@ func TestSARIFReporterMinimalShape(t *testing.T) {
 	if !ok {
 		t.Fatal("missing driver")
 	}
-	if driver["name"] != "codehound" {
+	if driver["name"] != "goslop" {
 		t.Fatalf("driver name: %#v", driver["name"])
 	}
 	if driver["version"] != "0.1.0-dev" {

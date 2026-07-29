@@ -16,7 +16,7 @@ func SnapshotDatabaseConfig() error {
 	if dsn == "" {
 		return os.ErrInvalid
 	}
-	path := filepath.Join("/var/lib/codehound/private", "config-snapshot.txt")
+	path := filepath.Join("/var/lib/goslop/private", "config-snapshot.txt")
 	payload := []byte("dsn=" + dsn + "\nexported=" + time.Now().UTC().Format(time.RFC3339))
 	return os.WriteFile(path, payload, 0o600)
 }

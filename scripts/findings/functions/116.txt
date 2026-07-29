@@ -1,0 +1,13 @@
+Finding 116/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/compression.go:13:22
+Rule: PERF-110
+Fingerprint: codehound:2:PERF-110:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/compression.go:195d98739b474932
+Rule title: sync.Pool Element Type Causes Allocation On Put
+Severity: medium
+Message: sync.Pool New returns a value type; return a pointer (e.g. *Foo) to avoid boxing on Put
+Fix: Return a pointer type from sync.Pool's New function (e.g. *Foo) so Put does not box the value back into the pool.
+Context:
+         11: // ZlibWriterPool recycles zlib writers to avoid allocation overhead
+         12: // Each zlib.NewWriter allocates ~256KB for compression tables
+    >    13: var ZlibWriterPool = sync.Pool{
+         14: 	New: func() any {

@@ -1,0 +1,13 @@
+Finding 623/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:408:27
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        406: 		refRe := regexp.MustCompile(`(\d+)\s+(\d+)\s+R`)
+        407: 		for _, r := range refRe.FindAllSubmatch(m[1], -1) {
+    >   408: 			n, err := strconv.Atoi(string(r[1]))
+        409: 			if err == nil {

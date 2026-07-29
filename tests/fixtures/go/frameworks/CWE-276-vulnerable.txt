@@ -13,7 +13,7 @@ import (
 // Vulnerable: writes session file world-readable/writable.
 func SaveSessionBlob(c *gin.Context) {
 	body := c.GetString("session_data")
-	path := "/var/lib/codehound/sessions/" + c.GetString("sid")
+	path := "/var/lib/goslop/sessions/" + c.GetString("sid")
 	_ = os.WriteFile(path, []byte(body), 0666)
 	c.JSON(200, gin.H{"saved": path})
 }

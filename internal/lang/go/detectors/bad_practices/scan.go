@@ -3,8 +3,8 @@ package badpractices
 import (
 	"sort"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // GoBadPracticeScan is the unified Go bad-practice detector (one Detector, many rules).

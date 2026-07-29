@@ -1,0 +1,13 @@
+Finding 37/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:268:15
+Rule: PERF-57
+Fingerprint: codehound:2:PERF-57:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:2b5580f8e3ba7bc9
+Rule title: Gin Middleware Heavy Allocation
+Severity: medium
+Message: heavy work in a Gin middleware (io.ReadAll / json.Unmarshal) runs for every request
+Fix: Move heavy parsing (io.ReadAll/json.Unmarshal) out of middleware into the handler, or cache the result.
+Context:
+        266: 	}()
+        267: 
+    >   268: 	data, err := io.ReadAll(f)
+        269: 	if err != nil {

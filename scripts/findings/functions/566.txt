@@ -1,0 +1,15 @@
+Finding 566/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/encryption_inhouse.go:241:9
+Rule: CWE-328
+Fingerprint: codehound:2:CWE-328:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/encryption_inhouse.go:18e4a05f6044b760
+Rule title: Use of Weak Hash
+Severity: high
+Message: a password digest is derived with MD5, which is too weak for this security-sensitive use
+CWEs: CWE-328 (Use of Weak Hash)
+Fix: Review and harden code against Use of Weak Hash (CWE-328); validate inputs, use safe APIs, and follow secure defaults.
+Confidence: 0.55
+Context:
+        239: 	if d.R >= 3 {
+        240: 		for i := 0; i < 50; i++ {
+    >   241: 			x := md5.Sum(sum[:keyLen])
+        242: 			sum = x[:]

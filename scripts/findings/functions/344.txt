@@ -1,0 +1,13 @@
+Finding 344/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:530:4
+Rule: PERF-229
+Fingerprint: codehound:2:PERF-229:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:615923e0c0a3ef29
+Rule title: Intermediate String On Byte Append Path
+Severity: medium
+Message: temporary string is built then appended to bytes; use AppendInt/append-style APIs
+Fix: Write numbers/text into the destination with strconv.AppendInt / AppendUint / AppendFloat (or Builder) instead of Itoa/Sprintf then append([]byte(s)).
+Context:
+        528: 		} else {
+        529: 			// Note: /NeedAppearances removed (deprecated in PDF 2.0) - widget appearances are generated programmatically
+    >   530: 			acroFormContent = fmt.Sprintf("<< /Fields %s /DA (%s 0 Tf 0 g) >>", fieldsRef.String(), widgetFontRef)
+        531: 		}

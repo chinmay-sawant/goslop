@@ -1,0 +1,13 @@
+Finding 294/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:878:10
+Rule: PERF-1
+Fingerprint: codehound:2:PERF-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:5b97c4575452290b
+Rule title: Regexp Compiled Inside Loop
+Severity: medium
+Message: regular expression compiled inside loop body
+Fix: Hoist regexp.MustCompile outside the loop and reuse the *Regexp.
+Context:
+        876: 		}
+        877: 		for fieldName, value := range radioGroups {
+    >   878: 			re := regexp.MustCompile(fmt.Sprintf(`(?s)(<<.*?/T\s*\(\s*%s\s*\).*?/Kids.*?>>)`, regexp.QuoteMeta(fieldName)))
+        879: 			match := re.FindIndex(out)

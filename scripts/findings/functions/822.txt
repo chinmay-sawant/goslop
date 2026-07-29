@@ -1,0 +1,13 @@
+Finding 822/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/pkg/fontutils/fontutils.go:186:10
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/pkg/fontutils/fontutils.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+        184: func downloadFont(font MathFontInfo) error {
+        185: 	if font.DownloadURL == "" {
+    >   186: 		return fmt.Errorf("no download URL for font %s", font.Name)
+        187: 	}

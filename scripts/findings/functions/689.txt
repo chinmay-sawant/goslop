@@ -1,0 +1,13 @@
+Finding 689/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:464:13
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+        462: 				out.WriteString("<")
+        463: 				for _, r := range seg.text {
+    >   464: 					_, _ = fmt.Fprintf(&out, "%04X", uint16(r))
+        465: 				}

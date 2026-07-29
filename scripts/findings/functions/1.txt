@@ -1,0 +1,11 @@
+Finding 1/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/bindings/python/cgo/exports.go:1:1
+Rule: BP-57
+Fingerprint: codehound:2:BP-57:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/bindings/python/cgo/exports.go:fe9363bf4dff0127
+Rule title: Stale Go Version In go.mod
+Severity: low
+Message: go.mod targets an out-of-support Go major release; update to a currently supported baseline
+Fix: Project-level go.mod parse comparing the declared Go version with policy.
+Context:
+    >     1: // Package main provides CGO exports for the Python bindings.
+          2: package main

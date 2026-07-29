@@ -1,0 +1,13 @@
+Finding 568/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/encryption_inhouse.go:251:28
+Rule: PERF-48
+Fingerprint: codehound:2:PERF-48:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/encryption_inhouse.go:3bd6611e5140e921
+Rule title: Equality Without Length Precheck
+Severity: medium
+Message: byte / string equality on a hot path; add a length or prefix precheck
+Fix: Add an early length-mismatch or prefix check before the comparison.
+Context:
+        249: 	if d.R == 2 {
+        250: 		exp := rc4Crypt(fileKey, pdfPasswordPadding)
+    >   251: 		return len(d.U) >= 32 && bytes.Equal(exp, d.U[:32])
+        252: 	}

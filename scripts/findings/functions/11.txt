@@ -1,0 +1,13 @@
+Finding 11/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:28:1
+Rule: BP-70
+Fingerprint: codehound:2:BP-70:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:162d430e1f2cddb9
+Rule title: Logged Error Then Continued
+Severity: low
+Message: error is logged and execution continues; return, panic, or otherwise handle the failure
+Fix: Match a local `err != nil` branch containing an error logger and no bare return; do not infer the wider function contract.
+Context:
+         26: 		} else {
+         27: 			defer func() {
+    >    28: 				if err := f.Close(); err != nil {
+         29: 					log.Printf("could not close memory profile: %v", err)

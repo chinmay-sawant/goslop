@@ -1,0 +1,13 @@
+Finding 179/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/subset.go:18:14
+Rule: PERF-192
+Fingerprint: codehound:2:PERF-192:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/subset.go:86d8b34ee842830d
+Rule title: Map Without Size Hint
+Severity: medium
+Message: make(map[K]V) without a size hint; pass len(src) to avoid map growth
+Fix: Pass the expected size: make(map[K]V, len(src)) before the population loop to avoid map growth.
+Context:
+         16: 
+         17: 	// Ensure glyphs are sorted and include .notdef (glyph 0)
+    >    18: 	glyphSet := make(map[uint16]bool)
+         19: 	glyphSet[0] = true // Always include .notdef

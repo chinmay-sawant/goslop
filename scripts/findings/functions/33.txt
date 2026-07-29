@@ -1,0 +1,13 @@
+Finding 33/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:215:15
+Rule: PERF-22
+Fingerprint: codehound:2:PERF-22:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:72efc6fbd4c624af
+Rule title: os.ReadFile Inside Handler
+Severity: medium
+Message: os.ReadFile is invoked on a request path; load the file once at startup
+Fix: Load the file once at startup, or stream it, instead of reading on the request path.
+Context:
+        213: 
+        214: 	// Read the JSON file
+    >   215: 	data, err := os.ReadFile(filePath)
+        216: 	if err != nil {

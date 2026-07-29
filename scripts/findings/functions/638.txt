@@ -1,0 +1,13 @@
+Finding 638/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/redactor.go:97:29
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/redactor.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+         95: 	var pageDims []models.PageDetail
+         96: 	if err := traversePages(pagesNum, objMap, &pageDims); err != nil {
+    >    97: 		return models.PageInfo{}, fmt.Errorf("error traversing page tree: %w", err)
+         98: 	}

@@ -1,0 +1,13 @@
+Finding 310/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1013:18
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+       1011: 			job.fontSize, tx, y, streamText)
+       1012: 
+    >  1013: 		fontDescObj := fmt.Sprintf("\n%d 0 obj\n<</Type/FontDescriptor/FontName/%s/Flags 32/FontBBox[-558 -225 1000 931]/ItalicAngle 0/Ascent 905/Descent -212/CapHeight 905/StemV 88>>\nendobj\n",
+       1014: 			job.fontDescObjNum, job.fontResourceName)

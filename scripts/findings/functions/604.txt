@@ -1,0 +1,13 @@
+Finding 604/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:30:12
+Rule: PERF-192
+Fingerprint: codehound:2:PERF-192:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:86d8b34ee842830d
+Rule title: Map Without Size Hint
+Severity: medium
+Message: make(map[K]V) without a size hint; pass len(src) to avoid map growth
+Fix: Pass the expected size: make(map[K]V, len(src)) before the population loop to avoid map growth.
+Context:
+         28: // it with xref-stream and object-stream expansion via the merge helpers.
+         29: func buildObjectMap(pdfBytes []byte) (map[int][]byte, map[int]int, error) {
+    >    30: 	objMap := make(map[int][]byte)
+         31: 	objGen := make(map[int]int)

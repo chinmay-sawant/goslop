@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Reporter writes findings to an io.Writer.

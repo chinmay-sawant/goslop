@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/chinmay/codehound/internal/core"
+	"github.com/chinmay/goslop/internal/core"
 )
 
 // ScanEntry is a source file queued for analysis.
@@ -28,9 +28,9 @@ type WalkOptions struct {
 	SkipVendor bool
 	// Extensions restricts extensions (without dot). Empty means use registry plugins.
 	Extensions []string
-	// HonorIgnoreFiles applies .gitignore / .codehoundignore / .ignore (default true).
+	// HonorIgnoreFiles applies .gitignore / .goslopignore / .ignore (default true).
 	HonorIgnoreFiles bool
-	// SkipCacheDir skips .codehound-cache directories (default true).
+	// SkipCacheDir skips .goslop-cache directories (default true).
 	SkipCacheDir bool
 	// SkipHidden skips dotfiles and dot-directories (Rust standard_filters; default true).
 	SkipHidden bool
@@ -55,7 +55,7 @@ func DefaultWalkOptions() WalkOptions {
 // CollectGoFiles walks roots and returns .go files suitable for analysis.
 //
 // Skips *_test.go unless opts.IncludeTests; skips vendor/ when opts.SkipVendor.
-// Honors .gitignore / .codehoundignore / .ignore when opts.HonorIgnoreFiles.
+// Honors .gitignore / .goslopignore / .ignore when opts.HonorIgnoreFiles.
 func CollectGoFiles(roots []string, opts WalkOptions) ([]string, error) {
 	opts.Extensions = []string{"go"}
 	entries, _, err := CollectFiles(roots, opts, nil)
@@ -156,7 +156,7 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 				if skipVendor && name == "vendor" {
 					return filepath.SkipDir
 				}
-				if opts.SkipCacheDir && name == ".codehound-cache" {
+				if opts.SkipCacheDir && name == ".goslop-cache" {
 					return filepath.SkipDir
 				}
 				// Rust standard_filters: skip hidden directories entirely.
@@ -173,7 +173,7 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 			if opts.SkipHidden && strings.HasPrefix(name, ".") {
 				return nil
 			}
-			// Gitignored / codehound-ignored: omitted (not counted as skipped).
+			// Gitignored / goslop-ignored: omitted (not counted as skipped).
 			if matcher != nil && rel != "." && matcher.ignored(rel, false) {
 				return nil
 			}

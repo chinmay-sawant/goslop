@@ -1,0 +1,13 @@
+Finding 582/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/helpers.go:148:6
+Rule: PERF-230
+Fingerprint: codehound:2:PERF-230:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/helpers.go:84138f9a40c9e1fd
+Rule title: Loop-Invariant Pure Call
+Severity: medium
+Message: pure/helper call in loop has stable args; hoist or cache per distinct key
+Fix: Hoist the pure call before the loop or cache its result when arguments do not change across iterations.
+Context:
+        146: 			continue
+        147: 		}
+    >   148: 		if parseArrayInts(body, `/Index`) == nil {
+        149: 			continue

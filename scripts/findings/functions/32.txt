@@ -1,0 +1,12 @@
+Finding 32/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:115:20
+Rule: PERF-200
+Fingerprint: codehound:2:PERF-200:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:3f4f6eb5013656b7
+Rule title: Middleware Ordering Penalty
+Severity: medium
+Message: expensive middleware (Auth) registered before cheap preflight (CORS); move CORS first to short-circuit preflight requests
+Context:
+        113: 	// API endpoints - protected with Google OAuth when running on Cloud Run
+        114: 	v1 := router.Group("/api/v1")
+    >   115: 	v1.Use(middleware.CORSMiddleware())       // Add CORS middleware
+        116: 	v1.Use(middleware.GoogleAuthMiddleware()) // Only enforces auth on Cloud Run

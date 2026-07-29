@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // cweRuleFn is one CWE detector over a prebuilt fact bag.
@@ -147,7 +147,7 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 		}
 		if strings.Contains(p, "tests/fixtures") ||
 			strings.Contains(p, `tests\fixtures`) ||
-			strings.Contains(p, "codehound-fixtures") ||
+			strings.Contains(p, "goslop-fixtures") ||
 			strings.Contains(p, "-vulnerable") ||
 			strings.Contains(p, "-safe") {
 			return false

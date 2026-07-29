@@ -1,0 +1,13 @@
+Finding 337/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:37:8
+Rule: BP-52
+Fingerprint: codehound:2:BP-52:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:dd631680005b34b8
+Rule title: Unchecked Integer Multiplication
+Severity: low
+Message: multiplication used in an allocation path without an obvious overflow guard
+Fix: Heuristic for multiplication-heavy code with no guard or size validation.
+Context:
+         35: var finalPDFSlicePool = sync.Pool{
+         36: 	New: func() any {
+    >    37: 		s := make([]byte, 0, 256*1024)
+         38: 		return &s

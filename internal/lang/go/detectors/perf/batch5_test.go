@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/lang/go/detectors/perf"
+	"github.com/chinmay/goslop/internal/lang/go/detectors/perf"
 )
 
 // Batch 5 fixture matrix: every rule with fixtures (PERF-215..242 except 230).

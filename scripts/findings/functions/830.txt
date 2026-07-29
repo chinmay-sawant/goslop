@@ -1,0 +1,11 @@
+Finding 830/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/benchmarks/gen_data.go:1:1
+Rule: BP-64
+Fingerprint: codehound:2:BP-64:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/benchmarks/gen_data.go:4aeec81147ee4871
+Rule title: Local Filesystem Replace Directive
+Severity: low
+Message: replace directive points at a local filesystem path
+Fix: Project-level go.mod parse for `replace` directives with local paths.
+Context:
+    >     1: package main
+          2: 

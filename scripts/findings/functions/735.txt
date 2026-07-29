@@ -1,0 +1,13 @@
+Finding 735/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:247:8
+Rule: PERF-122
+Fingerprint: codehound:2:PERF-122:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:779b5e15a5765f00
+Rule title: HasPrefix Followed By Slice Instead Of TrimPrefix
+Severity: info
+Message: strings.HasPrefix + slice should be strings.TrimPrefix
+Fix: Use strings.TrimPrefix(s, p) instead of HasPrefix + s[len(p):].
+Context:
+        245: 	for i := range parts {
+        246: 		switch {
+    >   247: 		case strings.HasPrefix(parts[i], "translate("):
+        248: 			args := extractArgs(parts[i:])

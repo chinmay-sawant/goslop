@@ -1,0 +1,13 @@
+Finding 103/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/draw.go:1255:33
+Rule: PERF-15
+Fingerprint: codehound:2:PERF-15:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/draw.go:da392d094f669ae2
+Rule title: strconv Formatting Inside Loop
+Severity: info
+Message: strconv formatting is performed inside a loop body
+Fix: Use a strings.Builder or strconv.Append* to avoid repeated allocations.
+Context:
+       1253: 						contentStream.WriteString(getFontReference(cellProps, pageManager.FontRegistry))
+       1254: 						contentStream.WriteString(" ")
+    >  1255: 						contentStream.WriteString(strconv.Itoa(cellProps.FontSize))
+       1256: 						contentStream.WriteString(" Tf\n")

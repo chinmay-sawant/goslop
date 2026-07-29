@@ -255,7 +255,7 @@ func skipTriple(bytes []byte, i int, quote byte, line *int, lineHasCode *bool, c
 }
 
 func parseIgnoreBody(body string) (Directive, bool) {
-	const prefix = "codehound-ignore:"
+	const prefix = "goslop-ignore:"
 	if !strings.HasPrefix(body, prefix) {
 		return Directive{}, false
 	}
@@ -264,7 +264,7 @@ func parseIgnoreBody(body string) (Directive, bool) {
 }
 
 func parseBlockStartBody(body string) (Directive, bool) {
-	const prefix = "codehound-ignore-start"
+	const prefix = "goslop-ignore-start"
 	if !strings.HasPrefix(body, prefix) {
 		return Directive{}, false
 	}
@@ -283,11 +283,11 @@ func parseBlockStartBody(body string) (Directive, bool) {
 }
 
 func isBlockEndBody(body string) bool {
-	return strings.HasPrefix(body, "codehound-ignore-end")
+	return strings.HasPrefix(body, "goslop-ignore-end")
 }
 
 func parseFileIgnoreBody(body string) (Directive, bool) {
-	const prefix = "codehound-ignore-file"
+	const prefix = "goslop-ignore-file"
 	if !strings.HasPrefix(body, prefix) {
 		return Directive{}, false
 	}

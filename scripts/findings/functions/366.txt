@@ -1,0 +1,13 @@
+Finding 366/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:1206:23
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+       1204: 								pageObjID = pageManager.Pages[elem.PageID]
+       1205: 							}
+    >  1206: 							sb.WriteString(fmt.Sprintf(" << /Type /OBJR /Obj %d 0 R /Pg %d 0 R >>", annotObjID, pageObjID))
+       1207: 							break

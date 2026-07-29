@@ -1,0 +1,13 @@
+Finding 728/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:128:24
+Rule: PERF-230
+Fingerprint: codehound:2:PERF-230:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:84138f9a40c9e1fd
+Rule title: Loop-Invariant Pure Call
+Severity: medium
+Message: pure/helper call in loop has stable args; hoist or cache per distinct key
+Fix: Hoist the pure call before the loop or cache its result when arguments do not change across iterations.
+Context:
+        126: 				}
+        127: 				if stroke, ok := attrs["stroke"]; ok {
+    >   128: 					r, g, bVal, ok := parseColor(stroke)
+        129: 					if ok {

@@ -1,0 +1,13 @@
+Finding 674/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:208:12
+Rule: PERF-240
+Fingerprint: codehound:2:PERF-240:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:8589b4ae36e5a8a9
+Rule title: Unpooled Len-Sized Byte Scratch
+Severity: medium
+Message: large []byte scratch is allocated from len(source) without pool reuse; pool and reset a scratch buffer on hot paths
+Fix: Pool a []byte scratch (sync.Pool + Reset/[:0]) instead of make([]byte, len(src)) on every hot call.
+Context:
+        206: 	}
+        207: 
+    >   208: 	newObj := make([]byte, 0, len(streamObj)+64)
+        209: 	newObj = append(newObj, streamObj[:start]...)

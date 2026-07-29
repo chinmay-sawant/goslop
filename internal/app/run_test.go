@@ -80,7 +80,7 @@ func TestRunInit(t *testing.T) {
 	if initErr := run([]string{"init"}, ioDiscard{}, ioDiscard{}); initErr != nil {
 		t.Fatal(initErr)
 	}
-	if _, statErr := os.Stat(filepath.Join(dir, "codehound.toml")); statErr != nil {
+	if _, statErr := os.Stat(filepath.Join(dir, "goslop.toml")); statErr != nil {
 		t.Fatal(statErr)
 	}
 	// Second init should fail (already exists).

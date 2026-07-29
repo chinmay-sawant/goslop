@@ -17,7 +17,7 @@ type serviceConfig struct {
 
 // Safe: non-secret settings from disk; credential only from environment.
 func ConfigSecretHandler(w http.ResponseWriter, r *http.Request) {
-	raw, err := os.ReadFile("/etc/codehound/service.json")
+	raw, err := os.ReadFile("/etc/goslop/service.json")
 	if err != nil {
 		http.Error(w, "config", http.StatusInternalServerError)
 		return

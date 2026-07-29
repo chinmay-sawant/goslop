@@ -6,9 +6,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/codehound/internal/ast"
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/lang/go/goparse"
+	"github.com/chinmay/goslop/internal/ast"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
 // CallFact is one call site extracted for PERF rules.

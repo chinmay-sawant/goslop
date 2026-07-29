@@ -1,0 +1,13 @@
+Finding 9/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:24:1
+Rule: BP-70
+Fingerprint: codehound:2:BP-70:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:162d430e1f2cddb9
+Rule title: Logged Error Then Continued
+Severity: low
+Message: error is logged and execution continues; return, panic, or otherwise handle the failure
+Fix: Match a local `err != nil` branch containing an error logger and no bare return; do not infer the wider function contract.
+Context:
+         22: 	if os.Getenv("ENABLE_PROFILING") == "1" {
+         23: 		f, err := os.Create("/tmp/mem.prof")
+    >    24: 		if err != nil {
+         25: 			log.Printf("could not create memory profile: %v", err)

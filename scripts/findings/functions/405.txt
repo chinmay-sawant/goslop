@@ -1,0 +1,13 @@
+Finding 405/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:263:18
+Rule: PERF-44
+Fingerprint: codehound:2:PERF-44:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/image.go:e7898dab4ee99c43
+Rule title: Repeated Type Assertion On Same Interface
+Severity: medium
+Message: the same type assertion is repeated; cache the result in a local variable
+Fix: Bind the asserted value to a local once (v, ok := x.(T)) and reuse the binding.
+Context:
+        261: 
+        262: 	// Fast path for NRGBA (common for PNGs)
+    >   263: 	if nrgba, ok := img.(*image.NRGBA); ok {
+        264: 		for y := 0; y < height; y++ {

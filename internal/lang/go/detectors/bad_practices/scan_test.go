@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/fixture"
-	badpractices "github.com/chinmay/codehound/internal/lang/go/detectors/bad_practices"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/fixture"
+	badpractices "github.com/chinmay/goslop/internal/lang/go/detectors/bad_practices"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestBPRulesRegistered(t *testing.T) {

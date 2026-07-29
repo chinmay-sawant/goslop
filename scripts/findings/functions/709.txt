@@ -1,0 +1,13 @@
+Finding 709/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:191:2
+Rule: PERF-215
+Fingerprint: codehound:2:PERF-215:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:3e7984eef70b4a6f
+Rule title: bytes.Buffer or strings.Builder Without Pre-Sizing
+Severity: medium
+Message: bytes.Buffer or strings.Builder does many writes without Grow; pre-size when output size is estimable
+Fix: Pre-size the bytes.Buffer or strings.Builder by calling Grow(expectedSize) when the final content size is known or can be estimated from input parameters.
+Context:
+        189: 	// Build signature value dictionary
+        190: 	var sigValueDict strings.Builder
+    >   191: 	sigValueDict.WriteString("<< /Type /Sig")
+        192: 	sigValueDict.WriteString(" /Filter /Adobe.PPKLite")

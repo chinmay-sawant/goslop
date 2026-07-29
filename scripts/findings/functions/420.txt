@@ -1,0 +1,12 @@
+Finding 420/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:74:17
+Rule: PERF-188
+Fingerprint: codehound:2:PERF-188:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:20aa5f0b5d5303f2
+Rule title: fmt.Sscanf In Hot Path
+Severity: info
+Message: fmt.Sscanf in a hot path; use strconv.ParseInt / strconv.ParseFloat for the common conversions
+Context:
+         72: 		for k, v := range tempObjMap {
+         73: 			var onum int
+    >    74: 			if _, err := fmt.Sscanf(k, "%d", &onum); err == nil {
+         75: 				if _, exists := objMap[onum]; !exists {

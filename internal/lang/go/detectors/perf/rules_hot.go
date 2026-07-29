@@ -4,8 +4,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // detectPERF32: string <-> []byte conversion on a hot path.

@@ -1,0 +1,13 @@
+Finding 792/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:570:4
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/svg/svg.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+        568: 			x, _ := strconv.ParseFloat(tokens[i], 64)
+        569: 			i++
+    >   570: 			y, _ := strconv.ParseFloat(tokens[i], 64)
+        571: 			i++

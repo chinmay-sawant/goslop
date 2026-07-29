@@ -1,0 +1,13 @@
+Finding 434/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:229:20
+Rule: PERF-6
+Fingerprint: codehound:2:PERF-6:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:2f4d4a5161000df3
+Rule title: Fmt Formatting Inside Loop
+Severity: info
+Message: fmt-based formatting is performed inside a loop body
+Fix: Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.
+Context:
+        227: 	for i := 1; i <= maxObj; i++ {
+        228: 		if off, ok := offsets[i]; ok {
+    >   229: 			out.WriteString(fmt.Sprintf("%010d 00000 n \n", off))
+        230: 		} else {

@@ -1,0 +1,13 @@
+Finding 697/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/context.go:7:1
+Rule: BP-30
+Fingerprint: codehound:2:BP-30:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/context.go:e2509813b5d01b16
+Rule title: Exported Interface Without Documented Implementation
+Severity: info
+Message: exported interface has no evident same-package implementation
+Fix: Match exported interfaces whose implementing types are not evident in the package. Review external implementations and intentional capability boundaries manually.
+Context:
+          5: // breaking the circular dependency between the root pdf package and this subpackage.
+          6: //nolint:revive // exported
+    >     7: type SignaturePageContext interface {
+          8: 	// AllocObjectID allocates and returns a new PDF object ID.

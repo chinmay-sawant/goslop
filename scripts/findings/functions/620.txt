@@ -1,0 +1,13 @@
+Finding 620/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:354:27
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/pdf_utils.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        352: 	out := make([]int, 0, 4)
+        353: 	for _, d := range doRe.FindAllSubmatch(content, -1) {
+    >   354: 		if num, ok := nameToRef[string(d[1])]; ok && !seen[num] {
+        355: 			seen[num] = true

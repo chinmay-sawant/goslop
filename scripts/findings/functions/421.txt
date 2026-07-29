@@ -1,0 +1,12 @@
+Finding 421/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:89:17
+Rule: PERF-188
+Fingerprint: codehound:2:PERF-188:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:20aa5f0b5d5303f2
+Rule title: fmt.Sscanf In Hot Path
+Severity: info
+Message: fmt.Sscanf in a hot path; use strconv.ParseInt / strconv.ParseFloat for the common conversions
+Context:
+         87: 		if rootRef, ok := findRootRef(f); ok {
+         88: 			var rootNum, rootGen int
+    >    89: 			if _, err := fmt.Sscanf(rootRef, "%d %d", &rootNum, &rootGen); err == nil {
+         90: 				if rootBody, ok2 := objMap[rootNum]; ok2 {

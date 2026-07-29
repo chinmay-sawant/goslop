@@ -1,0 +1,13 @@
+Finding 675/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:209:11
+Rule: PERF-119
+Fingerprint: codehound:2:PERF-119:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/secure.go:30eaf094d732b41d
+Rule title: Multiple Separate Appends Instead Of Spread Concatenation
+Severity: medium
+Message: consecutive append calls to the same slice can be merged into one variadic append
+Fix: Merge the consecutive append calls into a single variadic append, e.g. s = appen
+Context:
+        207: 
+        208: 	newObj := make([]byte, 0, len(streamObj)+64)
+    >   209: 	newObj = append(newObj, streamObj[:start]...)
+        210: 	newObj = append(newObj, encoded...)

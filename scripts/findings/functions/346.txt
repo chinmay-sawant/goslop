@@ -1,0 +1,13 @@
+Finding 346/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:739:36
+Rule: PERF-235
+Fingerprint: codehound:2:PERF-235:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:2c810c5d6e57a300
+Rule title: Intermediate Strings Builder Bridge
+Severity: medium
+Message: temporary strings.Builder is flushed through .String() into a sink; write into the destination buffer directly
+Fix: Write into the destination *bytes.Buffer or []byte directly instead of building a temporary strings.Builder and flushing with .String().
+Context:
+        737: 		pdfBuffer.WriteString(colorSpaceRefs)
+        738: 		pdfBuffer.WriteString(" /Font <<")
+    >   739: 		pdfBuffer.WriteString(stdFontRefs.String())
+        740: 		pdfBuffer.WriteString(customFontRefs)

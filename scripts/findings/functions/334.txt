@@ -1,0 +1,13 @@
+Finding 334/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1454:20
+Rule: PERF-48
+Fingerprint: codehound:2:PERF-48:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:3bd6611e5140e921
+Rule title: Equality Without Length Precheck
+Severity: medium
+Message: byte / string equality on a hot path; add a length or prefix precheck
+Fix: Add an early length-mismatch or prefix check before the comparison.
+Context:
+       1452: 	if re.Match(dict) {
+       1453: 		newDict := re.ReplaceAll(dict, replacement)
+    >  1454: 		return newDict, !bytes.Equal(newDict, dict)
+       1455: 	}

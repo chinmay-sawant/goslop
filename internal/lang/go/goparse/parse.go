@@ -17,7 +17,7 @@ import (
 	"go/parser"
 	"go/token"
 
-	"github.com/chinmay/codehound/internal/ast"
+	"github.com/chinmay/goslop/internal/ast"
 )
 
 // Tree holds a parsed *ast.File, file set, source, and line-start table.

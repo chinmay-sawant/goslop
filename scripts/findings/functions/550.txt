@@ -1,0 +1,13 @@
+Finding 550/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pdfa.go:234:34
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pdfa.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        232: 
+        233: 	for _, tag := range tags {
+    >   234: 		copy(profile[offset:offset+4], []byte(tag.sig))
+        235: 		binary.BigEndian.PutUint32(profile[offset+4:offset+8], uint32(tag.offset))

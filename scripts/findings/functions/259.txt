@@ -1,0 +1,13 @@
+Finding 259/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:364:15
+Rule: PERF-1
+Fingerprint: codehound:2:PERF-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:5b97c4575452290b
+Rule title: Regexp Compiled Inside Loop
+Severity: medium
+Message: regular expression compiled inside loop body
+Fix: Hoist regexp.MustCompile outside the loop and reuse the *Regexp.
+Context:
+        362: 				nRe := regexp.MustCompile(`/N\s*<<(.*?)>>`)
+        363: 				if nm := nRe.FindSubmatch(am[1]); nm != nil {
+    >   364: 					keyRe := regexp.MustCompile(`/([A-Za-z0-9_+-]+)\s*(?:/|stream|<<|\()`)
+        365: 					if kr := keyRe.FindSubmatch(nm[1]); kr != nil {

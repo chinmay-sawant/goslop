@@ -1,0 +1,13 @@
+Finding 27/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/benchmarktemplates/zerodha_retail.go:235:9
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/benchmarktemplates/zerodha_retail.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+        233: // BenchmarkHeader formats a standard heading for benchmark output.
+        234: func BenchmarkHeader(name string) string {
+    >   235: 	return fmt.Sprintf("=== %s Single Zerodha Benchmark ===", name)
+        236: }

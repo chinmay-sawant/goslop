@@ -13,7 +13,7 @@ import (
 // Safe: owner-only permissions on sensitive session artifacts.
 func SaveSessionBlob(c *gin.Context) {
 	body := c.GetString("session_data")
-	path := "/var/lib/codehound/sessions/" + c.GetString("sid")
+	path := "/var/lib/goslop/sessions/" + c.GetString("sid")
 	_ = os.WriteFile(path, []byte(body), 0600)
 	c.JSON(200, gin.H{"saved": path})
 }

@@ -1,0 +1,15 @@
+Finding 857/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/financial_report/main.go:22:33
+Rule: CWE-497
+Fingerprint: codehound:2:CWE-497:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/financial_report/main.go:2a8f18793a6cf435
+Rule title: Exposure of Sensitive System Information to an Unauthorized Control Sphere
+Severity: high
+Message: the diagnostics endpoint exposes host environment details to callers
+CWEs: CWE-497 (Exposure of Sensitive System Information to an Unauthorized Control Sphere)
+Fix: Review and harden code against Exposure of Sensitive System Information to an Unauthorized Control Sphere (CWE-497); validate inputs, use safe APIs, and follow secure defaults.
+Confidence: 0.55
+Context:
+         20: 	runtime.ReadMemStats(&m)
+         21: 	return fmt.Sprintf("OS: %s, Arch: %s, NumCPU: %d, GoVersion: %s",
+    >    22: 		runtime.GOOS, runtime.GOARCH, runtime.NumCPU(), runtime.Version())
+         23: }

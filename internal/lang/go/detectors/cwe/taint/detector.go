@@ -3,8 +3,8 @@ package taint
 import (
 	"sync"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Detector is the taint-tracking detector for CWE-22/78/79/89.

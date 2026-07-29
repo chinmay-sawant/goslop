@@ -3,7 +3,7 @@
 *.exe
 *.test
 *.out
-.codehound-cache/
+.goslop-cache/
 .target-materialize/
 /tmp/
 .idea/
@@ -12,4 +12,4 @@
 coverage.out
 
 scripts/chunks
-scripts/findings
+scripts/findings.codehound-cache/

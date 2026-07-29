@@ -1,0 +1,13 @@
+Finding 708/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:110:31
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/signature/signature.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        108: 	var chain []*x509.Certificate
+        109: 	for _, chainPEM := range chainPEMs {
+    >   110: 		chainBlock, _ := pem.Decode([]byte(chainPEM))
+        111: 		if chainBlock == nil {

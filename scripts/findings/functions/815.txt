@@ -1,0 +1,13 @@
+Finding 815/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:554:1
+Rule: BP-27
+Fingerprint: codehound:2:BP-27:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:e82441e84ced241f
+Rule title: Exported Function Returns Unexported Type
+Severity: low
+Message: exported function returns an unexported type
+Fix: Match exported functions whose return types start with a lowercase identifier.
+Context:
+        552: // lineSpacing: multiplier for line height (e.g., 1.2 for 120% line height)
+        553: // Returns the total height in points
+    >   554: func CalculateWrappedTextHeight(lineCount int, fontSize float64, lineSpacing float64) float64 {
+        555: 	if lineCount <= 0 {

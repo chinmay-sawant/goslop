@@ -1,0 +1,13 @@
+Finding 893/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/typstsyntax/parser.go:126:13
+Rule: PERF-230
+Fingerprint: codehound:2:PERF-230:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/typstsyntax/parser.go:eb2d39fb324ced1a
+Rule title: Loop-Invariant Pure Call
+Severity: medium
+Message: pure function is re-evaluated every iteration; hoist or cache
+Fix: Hoist the pure call before the loop or cache its result when arguments do not change across iterations.
+Context:
+        124: 		case TokenSuperscript:
+        125: 			p.advance()
+    >   126: 			right := p.parseAtom()
+        127: 			// Unwrap paren grouping — parens after ^ are for grouping, not display

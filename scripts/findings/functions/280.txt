@@ -1,0 +1,13 @@
+Finding 280/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:711:1
+Rule: PERF-114
+Fingerprint: codehound:2:PERF-114:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:11addbd386e17287
+Rule title: Manual Loop Copy Instead Of copy() Builtin
+Severity: medium
+Message: manual for-range copy should be the copy() builtin (3-10x faster, handles overlap)
+Fix: Replace the manual for-range copy with the copy() builtin.
+Context:
+        709: 		mergedFields[name] = value
+        710: 	}
+    >   711: 	for name, value := range xfdfFields {
+        712: 		mergedFields[name] = value

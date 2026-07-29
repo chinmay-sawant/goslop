@@ -1,0 +1,13 @@
+Finding 588/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/ocr_adapter.go:29:18
+Rule: BP-28
+Fingerprint: codehound:2:BP-28:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/ocr_adapter.go:330f2fbf68e22950
+Rule title: Single Method Interface
+Severity: info
+Message: single-method interface; consider accepting a function type instead
+Fix: Match interface declarations with exactly one method.
+Context:
+         27: 
+         28: // OCRProvider is an adapter interface for OCR backends.
+    >    29: type OCRProvider interface {
+         30: 	ExtractWords(pdfBytes []byte, settings models.OCRSettings) ([]ocrWord, error)

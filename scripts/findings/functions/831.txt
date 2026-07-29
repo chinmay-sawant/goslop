@@ -1,0 +1,13 @@
+Finding 831/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/benchmarks/gen_data.go:24:11
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/benchmarks/gen_data.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+         22: 		data = append(data, Record{
+         23: 			ID:    i,
+    >    24: 			Name:  fmt.Sprintf("User %d", i),
+         25: 			Email: fmt.Sprintf("user%d@example.com", i),

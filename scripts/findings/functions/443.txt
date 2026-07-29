@@ -1,0 +1,13 @@
+Finding 443/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:343:16
+Rule: PERF-1
+Fingerprint: codehound:2:PERF-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:5b97c4575452290b
+Rule title: Regexp Compiled Inside Loop
+Severity: medium
+Message: regular expression compiled inside loop body
+Fix: Hoist regexp.MustCompile outside the loop and reuse the *Regexp.
+Context:
+        341: 	for _, body := range objMap {
+        342: 		if bytesIndex(body, []byte("/Type /Page")) >= 0 {
+    >   343: 			annotsRe := regexp.MustCompile(`/Annots\s*\[(.*?)\]`)
+        344: 			if annotsMatch := annotsRe.FindSubmatch(body); annotsMatch != nil {

@@ -1,0 +1,13 @@
+Finding 175/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/registry.go:341:10
+Rule: PERF-112
+Fingerprint: codehound:2:PERF-112:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/registry.go:1f266739abdfbe59
+Rule title: strings.ToLower Before Comparison Instead Of EqualFold
+Severity: medium
+Message: case conversion before comparison allocates; use strings.EqualFold
+Fix: Prefer strings.EqualFold for case-insensitive equality instead of ToLower/ToUpper comparisons.
+Context:
+        339: 
+        340: 		name := entry.Name()
+    >   341: 		ext := strings.ToLower(filepath.Ext(name))
+        342: 		if ext != ".ttf" && ext != ".otf" {

@@ -1,0 +1,13 @@
+Finding 244/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/types.go:5:1
+Rule: BP-30
+Fingerprint: codehound:2:BP-30:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/types.go:e2509813b5d01b16
+Rule title: Exported Interface Without Documented Implementation
+Severity: info
+Message: exported interface has no evident same-package implementation
+Fix: Match exported interfaces whose implementing types are not evident in the package. Review external implementations and intentional capability boundaries manually.
+Context:
+          3: // ObjectEncryptor defines the interface for encrypting PDF objects.
+          4: // This is defined here to avoid a circular dependency with the parent pdf package.
+    >     5: type ObjectEncryptor interface {
+          6: 	EncryptString(data []byte, objNum, genNum int) []byte

@@ -1,0 +1,13 @@
+Finding 483/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/parser.go:69:29
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/parser.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+         67: 		bodyStart := pos + loc[1]
+         68: 
+    >    69: 		objNum, _ := strconv.Atoi(string(data[pos+loc[2] : pos+loc[3]]))
+         70: 		genNum, _ := strconv.Atoi(string(data[pos+loc[4] : pos+loc[5]]))

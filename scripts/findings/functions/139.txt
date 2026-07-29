@@ -1,0 +1,13 @@
+Finding 139/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/metrics.go:920:2
+Rule: PERF-215
+Fingerprint: codehound:2:PERF-215:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/metrics.go:f0b2981eb76be89a
+Rule title: bytes.Buffer or strings.Builder Without Pre-Sizing
+Severity: medium
+Message: bytes.Buffer or strings.Builder writes without a preceding Grow(expectedSize)
+Fix: Pre-size the bytes.Buffer or strings.Builder by calling Grow(expectedSize) when the final content size is known or can be estimated from input parameters.
+Context:
+        918: 	sb.WriteString(strconv.Itoa(len(compressedData)))
+        919: 	sb.WriteString(" >>\nstream\n")
+    >   920: 	sb.Write(compressedData)
+        921: 	sb.WriteString("\nendstream")

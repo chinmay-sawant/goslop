@@ -1,0 +1,13 @@
+Finding 574/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/helpers.go:52:3
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/helpers.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+         50: 	r := flate.NewReader(bytes.NewReader(b))
+         51: 	defer func() {
+    >    52: 		_ = r.Close()
+         53: 	}()

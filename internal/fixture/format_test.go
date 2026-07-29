@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/fixture"
+	"github.com/chinmay/goslop/internal/fixture"
 )
 
 func TestParseFixture_CWE22Vulnerable(t *testing.T) {

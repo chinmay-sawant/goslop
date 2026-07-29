@@ -1,0 +1,13 @@
+Finding 269/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:455:12
+Rule: PERF-35
+Fingerprint: codehound:2:PERF-35:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:619456b9f1ed1271
+Rule title: Interface Boxing On Hot Path
+Severity: info
+Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
+Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
+Context:
+        453: 				index := f3
+        454: 				// look for objstm content we earlier extracted
+    >   455: 				key := fmt.Sprintf("%d 0", objstm)
+        456: 				if stm, ok := objMap[key]; ok {

@@ -1,4 +1,4 @@
-module github.com/chinmay/codehound
+module github.com/chinmay/goslop
 
 go 1.25.0
 

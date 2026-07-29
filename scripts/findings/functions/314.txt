@@ -1,0 +1,13 @@
+Finding 314/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1041:12
+Rule: PERF-227
+Fingerprint: codehound:2:PERF-227:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:4b435dcd3e91352d
+Rule title: Compress Writer Allocated Without Pool
+Severity: medium
+Message: compress writer is allocated without local pool/Reset reuse; pool writers on hot paths
+Fix: Pool flate/zlib/gzip writers and call Reset(dst) on each use instead of NewWriter on every encode.
+Context:
+       1039: 
+       1040: 		var compBuf bytes.Buffer
+    >  1041: 		zw, _ := zlib.NewWriterLevel(&compBuf, zlib.BestCompression)
+       1042: 		if _, err := zw.Write([]byte(streamBody)); err != nil {

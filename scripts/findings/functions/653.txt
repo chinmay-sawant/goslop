@@ -1,0 +1,13 @@
+Finding 653/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:195:37
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/search.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+        193: 		for j := 0; j < len(needle); j++ {
+        194: 			if i+j < len(origSrc) {
+    >   195: 				matchEst += estimateStringWidth(string(origSrc[i+j]), pos.Height)
+        196: 			}

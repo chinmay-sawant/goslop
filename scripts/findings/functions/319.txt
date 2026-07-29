@@ -1,0 +1,13 @@
+Finding 319/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:1082:2
+Rule: PERF-229
+Fingerprint: codehound:2:PERF-229:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/form/xfdf.go:615923e0c0a3ef29
+Rule title: Intermediate String On Byte Append Path
+Severity: medium
+Message: temporary string is built then appended to bytes; use AppendInt/append-style APIs
+Fix: Write numbers/text into the destination with strconv.AppendInt / AppendUint / AppendFloat (or Builder) instead of Itoa/Sprintf then append([]byte(s)).
+Context:
+       1080: 		}
+       1081: 	}
+    >  1082: 	trailer := fmt.Sprintf("trailer\n<</Size %d/Root %d 0 R>>\nstartxref\n%d\n%%%%EOF\n", maxObj+1, root, xrefStart)
+       1083: 	out = append(out, xrefBuf.Bytes()...)

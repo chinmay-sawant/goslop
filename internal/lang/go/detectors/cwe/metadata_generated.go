@@ -1,8 +1,8 @@
 package cwe
 
 import (
-	"github.com/chinmay/codehound/internal/cwe"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/cwe"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 // Generated catalogue metadata for registry CWE rules.

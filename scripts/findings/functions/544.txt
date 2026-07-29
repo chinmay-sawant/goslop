@@ -1,0 +1,13 @@
+Finding 544/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pagemanager.go:45:13
+Rule: PERF-234
+Fingerprint: codehound:2:PERF-234:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/pagemanager.go:b201abbfe20ced8d
+Rule title: Bulk Buffer Without Workload Sizing
+Severity: medium
+Message: bulk buffer uses a fixed Grow size; derive capacity from the input workload when it is known
+Fix: Grow bulk buffers from a workload estimate (payload length, item count), not a large fixed default or bare pool Reset.
+Context:
+         43: func NewPageManager(pageDims PageDimensions, margins PageMargins, arlingtonCompatible bool, fontRegistry *CustomFontRegistry, taggedPDF bool) *PageManager {
+         44: 	var firstStream bytes.Buffer
+    >    45: 	firstStream.Grow(65536)
+         46: 	pm := &PageManager{

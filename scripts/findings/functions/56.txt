@@ -1,0 +1,13 @@
+Finding 56/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:486:8
+Rule: BP-5
+Fingerprint: codehound:2:BP-5:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/handlers/handlers.go:def7db7cd65cae35
+Rule title: Ignored Close Error
+Severity: low
+Message: Close() return value is ignored; check the close error where it can affect correctness
+Fix: Match `.Close()` calls whose error result is ignored.
+Context:
+        484: 		}
+        485: 		if _, err := fw.Write(b); err != nil {
+    >   486: 			_ = zw.Close()
+        487: 			c.JSON(http.StatusInternalServerError, gin.H{"error": "zip write failed: " + err.Error()})

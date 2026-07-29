@@ -1,0 +1,13 @@
+Finding 571/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/encryption_inhouse.go:327:2
+Rule: PERF-18
+Fingerprint: codehound:2:PERF-18:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/redact/encryption_inhouse.go:45fabfe77bfa5f53
+Rule title: Unnecessary Slice Copy On Reslice
+Severity: info
+Message: large slice is copied via append(dst, src...) where ownership transfer or reslicing may suffice
+Fix: Pass a reslice of the original slice instead of copying when the callee does not mutate.
+Context:
+        325: func deriveObjectKey(fileKey []byte, objNum, genNum int) []byte {
+        326: 	b := make([]byte, 0, len(fileKey)+5)
+    >   327: 	b = append(b, fileKey...)
+        328: 	b = append(b, byte(objNum), byte(objNum>>8), byte(objNum>>16))

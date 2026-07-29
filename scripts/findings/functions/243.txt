@@ -1,0 +1,13 @@
+Finding 243/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:696:1
+Rule: BP-38
+Fingerprint: codehound:2:BP-38:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/font/ttf.go:9a98396e7b45a7e5
+Rule title: Unused Unexported Helper
+Severity: low
+Message: unexported helper has no same-file callers
+Fix: Match unexported helper functions with zero internal call sites.
+Context:
+        694: 
+        695: // parsePost parses the 'post' table for PostScript data
+    >   696: func (f *TTFFont) parsePost(data []byte) error {
+        697: 	table, ok := f.Tables["post"]

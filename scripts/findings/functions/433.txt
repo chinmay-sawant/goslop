@@ -1,0 +1,13 @@
+Finding 433/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:227:2
+Rule: PERF-109
+Fingerprint: codehound:2:PERF-109:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge.go:aa3faf32886b3bc4
+Rule title: Map Key Recomputed In Loop Without Caching
+Severity: medium
+Message: expensive map-key computation inside the loop; cache or simplify the key
+Fix: Cache expensive map keys outside or once per iteration instead of recomputing them.
+Context:
+        225: 	xrefStart := out.Len()
+        226: 	out.WriteString(fmt.Sprintf("xref\n0 %d\n0000000000 65535 f \n", maxObj+1))
+    >   227: 	for i := 1; i <= maxObj; i++ {
+        228: 		if off, ok := offsets[i]; ok {

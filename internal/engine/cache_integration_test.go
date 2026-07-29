@@ -6,11 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/core"
-	"github.com/chinmay/codehound/internal/engine"
-	"github.com/chinmay/codehound/internal/engine/cache"
-	"github.com/chinmay/codehound/internal/engine/ignore"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/engine"
+	"github.com/chinmay/goslop/internal/engine/cache"
+	"github.com/chinmay/goslop/internal/engine/ignore"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestAnalyzerCacheHitMiss(t *testing.T) {
@@ -93,7 +93,7 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	cmd := r.URL.Query().Get("cmd")
-	// codehound-ignore: TEST-EXEC-COMMAND
+	// goslop-ignore: TEST-EXEC-COMMAND
 	exec.Command("sh", "-c", cmd).Run()
 }
 `
@@ -119,11 +119,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func TestWalkHonorsCodehoundIgnore(t *testing.T) {
+func TestWalkHonorsGoslopIgnore(t *testing.T) {
 	dir := t.TempDir()
 	writeFile(t, dir, "keep.go", "package main\n")
 	writeFile(t, dir, "skip_me.go", "package main\n")
-	if err := os.WriteFile(filepath.Join(dir, ".codehoundignore"), []byte("skip_me.go\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, ".goslopignore"), []byte("skip_me.go\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	entries, err := engine.CollectGoFiles([]string{dir}, engine.DefaultWalkOptions())

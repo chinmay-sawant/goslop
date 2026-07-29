@@ -1,0 +1,13 @@
+Finding 450/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/annotations.go:70:41
+Rule: PERF-32
+Fingerprint: codehound:2:PERF-32:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/annotations.go:10aba91bf5ec71ef
+Rule title: String Byte Conversion On Hot Path
+Severity: medium
+Message: string <-> []byte conversion copies the underlying data on a hot path
+Fix: Use unsafe conversions only in measured hot paths, or hoist the conversion outside the loop with a pooled buffer.
+Context:
+         68: 				if objBody, exists := objMap[num]; exists {
+         69: 					for _, nestedRef := range refRe.FindAllSubmatch(objBody, -1) {
+    >    70: 						if nestedNum, err := strconv.Atoi(string(nestedRef[1])); err == nil && !seen[nestedNum] {
+         71: 							deps = append(deps, nestedNum)

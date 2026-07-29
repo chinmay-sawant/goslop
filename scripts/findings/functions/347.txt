@@ -1,0 +1,13 @@
+Finding 347/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:755:2
+Rule: PERF-232
+Fingerprint: codehound:2:PERF-232:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/generator.go:15fe46b543b92c1d
+Rule title: Unbounded Parallel Fan-Out
+Severity: medium
+Message: parallel work fan-out has no SetLimit or semaphore bound; cap concurrency before spawning per-item work
+Fix: Cap fan-out with errgroup.SetLimit or a semaphore before spawning per-item work.
+Context:
+        753: 	compressedPages := make([][]byte, nStreams)
+        754: 	var compGroup errgroup.Group
+    >   755: 	for si := range pageManager.ContentStreams {
+        756: 		si := si

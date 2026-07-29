@@ -11,6 +11,6 @@ import (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	cmd := r.URL.Query().Get("cmd")
-	// codehound-ignore: CWE-78
+	// goslop-ignore: CWE-78
 	exec.Command("sh", "-c", cmd).Run()
 }

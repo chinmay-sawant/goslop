@@ -1,6 +1,6 @@
 package perf
 
-import "github.com/chinmay/codehound/internal/rules"
+import "github.com/chinmay/goslop/internal/rules"
 
 // Catalogue metadata for the PERF rules implemented in this package.
 // Titles/descriptions align with Rust registry / product docs; fix strings

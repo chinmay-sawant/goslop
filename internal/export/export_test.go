@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/codehound/internal/export"
-	"github.com/chinmay/codehound/internal/rules"
+	"github.com/chinmay/goslop/internal/export"
+	"github.com/chinmay/goslop/internal/rules"
 )
 
 func TestExportContextAndChunks(t *testing.T) {
@@ -29,7 +29,7 @@ func TestExportContextAndChunks(t *testing.T) {
 			Column:      2,
 			Message:     "fmt in loop",
 			Severity:    rules.SeverityMedium,
-			Fingerprint: "codehound:2:PERF-6:sample.go:deadbeef",
+			Fingerprint: "goslop:2:PERF-6:sample.go:deadbeef",
 		},
 		{
 			RuleID:      "CWE-78",
@@ -39,7 +39,7 @@ func TestExportContextAndChunks(t *testing.T) {
 			Column:      1,
 			Message:     "shell",
 			Severity:    rules.SeverityHigh,
-			Fingerprint: "codehound:2:CWE-78:sample.go:cafebabe",
+			Fingerprint: "goslop:2:CWE-78:sample.go:cafebabe",
 		},
 	}
 	// Two findings → chunk size 1 → 2 chunk files; context → 2 files.

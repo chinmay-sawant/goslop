@@ -1,0 +1,13 @@
+Finding 885/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/zerodha/main.go:813:10
+Rule: PERF-42
+Fingerprint: codehound:2:PERF-42:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/sampledata/gopdflib/zerodha/main.go:4a344c8d67be2d80
+Rule title: fmt.Errorf Without Format Verbs
+Severity: info
+Message: fmt.Errorf with a static string allocates a Sprintf; use errors.New instead
+Fix: Use errors.New or a sentinel error when the message has no format verbs.
+Context:
+        811: 	if len(durations) == 0 {
+        812: 		fmt.Println("No results collected.")
+    >   813: 		return fmt.Errorf("no results collected")
+        814: 	}

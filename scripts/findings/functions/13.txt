@@ -1,0 +1,13 @@
+Finding 13/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:55:3
+Rule: PERF-43
+Fingerprint: codehound:2:PERF-43:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/cmd/gopdfsuit/main.go:543cab379a9400fe
+Rule title: Panic Recovery In Hot Path
+Severity: medium
+Message: defer-recover runs in a hot path; add the recover at a higher boundary
+Fix: Move recover() to a middleware boundary instead of a per-request defer.
+Context:
+         53: 	// (gin.Recovery() has per-request overhead from defer/stack-trace setup)
+         54: 	router.Use(func(c *gin.Context) {
+    >    55: 		defer func() {
+         56: 			if r := recover(); r != nil {

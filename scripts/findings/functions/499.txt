@@ -1,0 +1,13 @@
+Finding 499/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/split.go:36:4
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/split.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+         34: 			m := rngRe.FindStringSubmatch(p)
+         35: 			a, _ := strconv.Atoi(m[1])
+    >    36: 			b, _ := strconv.Atoi(m[2])
+         37: 			if a < 1 || b < a {

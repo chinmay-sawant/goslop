@@ -1,0 +1,13 @@
+Finding 516/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/metadata.go:291:6
+Rule: BP-5
+Fingerprint: codehound:2:BP-5:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/metadata.go:def7db7cd65cae35
+Rule title: Ignored Close Error
+Severity: low
+Message: Close() return value is ignored; check the close error where it can affect correctness
+Fix: Match `.Close()` calls whose error result is ignored.
+Context:
+        289: 		return 0, nil, nil
+        290: 	}
+    >   291: 	_ = zlibWriter.Close()
+        292: 	font.PutZlibWriter(zlibWriter)

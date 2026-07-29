@@ -1,0 +1,13 @@
+Finding 490/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/parser.go:439:1
+Rule: BP-27
+Fingerprint: codehound:2:BP-27:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/merge/parser.go:e82441e84ced241f
+Rule title: Exported Function Returns Unexported Type
+Severity: low
+Message: exported function returns an unexported type
+Fix: Match exported functions whose return types start with a lowercase identifier.
+Context:
+        437: //   - Header: pairs of "objnum offset" separated by whitespace
+        438: //   - Body: object bodies starting at /First offset
+    >   439: func ParseObjectStream(body []byte) map[int][]byte {
+        440: 	result := make(map[int][]byte)

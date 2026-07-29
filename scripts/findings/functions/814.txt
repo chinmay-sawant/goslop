@@ -1,0 +1,13 @@
+Finding 814/915
+Source: /home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:523:4
+Rule: BP-1
+Fingerprint: codehound:2:BP-1:/home/chinmay/ChinmayPersonalProjects/gopdfsuit/internal/pdf/utils.go:866745a0f7c83895
+Rule title: Discarded Error Return
+Severity: low
+Message: discarded error return; handle or explicitly ignore with a comment
+Fix: Match assignment_statement or short_var_declaration with `_ =` on an error-producing call.
+Context:
+        521: 
+        522: 		if lastGood == start {
+    >   523: 			_, rs := utf8.DecodeRune(ws.wordBuf[start:])
+        524: 			end = start + rs
