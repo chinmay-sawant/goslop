@@ -13,3 +13,6 @@ coverage.out
 
 scripts/chunks
 scripts/findings.codehound-cache/
+
+scripts/chunks/
+scripts/findings/
