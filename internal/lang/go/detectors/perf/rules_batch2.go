@@ -1188,7 +1188,6 @@ func detectPERF106(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-
 func detectPERF107(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	for _, call := range facts.Calls {
 		if !IsInLoop(call) {
