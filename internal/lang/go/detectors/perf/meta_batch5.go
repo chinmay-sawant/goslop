@@ -8,7 +8,7 @@ var (
 		"PERF-215",
 		"bytes.Buffer or strings.Builder Without Pre-Sizing",
 		"A bytes.Buffer or strings.Builder is created or reused without calling Grow() when the final content size is knowable or estimable upfront. Without pre-sizing, the underlying buffer grows geometrically via reallocation+copy (bytes.growSlice), causing excessive memory churn and CPU time in memmove. Pre-size with Grow(expectedSize) when the output size is known or can be bounded.",
-		rules.SeverityHigh,
+		rules.SeverityMedium, // unclassified PERF → Medium
 		nil,
 		"Pre-size the bytes.Buffer or strings.Builder by calling Grow(expectedSize) when the final content size is known or can be estimated from input parameters.",
 	)
@@ -56,7 +56,7 @@ var (
 		"PERF-221",
 		"map[int]T for Dense Sequential Integer Keys",
 		"A map[int]T or map[int64]T is used to store values keyed by dense sequential integers (e.g. array indices or counters). For sequential integer keys, a []T slice provides O(1) access with no hashing overhead, better cache locality, and no per-entry heap allocation for key/value pairs. Replace map[int]T with []T when keys are sequential or can be made sequential.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium
 		nil,
 		"Replace map[int]T with []T when the integer keys are dense and sequential (e.g. indices, counters). Use make([]T, maxKey+1) and direct index access.",
 	)
@@ -184,7 +184,7 @@ var (
 		"PERF-238",
 		"Rune Membership Map In Loop",
 		"Rune membership is tracked with map[rune]bool and updated inside a loop. For BMP-heavy text, a compact bitset or denser set reduces hashing and allocation overhead.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium
 		nil,
 		"Replace map[rune]bool membership on hot paths with a bitset or denser set when the code-point domain is bounded.",
 	)
@@ -192,7 +192,7 @@ var (
 		"PERF-239",
 		"Dense Integer Map Write Churn",
 		"An integer-keyed map is written many times (>=6) in one function after make(map[int]…). Dense integer keys are usually better served by a slice or append-only offset records with one final index pass.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium
 		nil,
 		"Prefer a slice (or append-only {id,offset} records + one index pass) instead of many map[int] writes for dense keys.",
 	)

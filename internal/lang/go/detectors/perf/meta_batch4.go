@@ -201,7 +201,7 @@ var (
 		"PERF-188",
 		"fmt.Sscanf In Hot Path",
 		"Uses fmt.Sscanf or fmt.Fscanf in performance-sensitive parsing paths. These functions use reflection to parse according to format strings and are orders of magnitude slower than direct strconv or manual parsing.",
-		rules.SeverityMedium,
+		rules.SeverityInfo, // B-tier
 		nil,
 		"",
 	)
@@ -233,7 +233,7 @@ var (
 		"PERF-192",
 		"Map Without Size Hint",
 		"Creates a map with make(map[K]V) without a capacity hint when the approximate number of entries is known at allocation time. Without a hint, the map resizes its hash table multiple times as entries are added, causing rehashing and allocation churn.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium
 		nil,
 		"Pass the expected size: make(map[K]V, len(src)) before the population loop to avoid map growth.",
 	)
@@ -257,7 +257,7 @@ var (
 		"PERF-195",
 		"log.Fatal Or log.Panic In Goroutine",
 		"Uses log.Fatal or log.Panic inside a goroutine that is not the main goroutine. log.Fatal calls os.Exit(1), terminating the entire process. log.Panic unwinds only the calling goroutine, leaving others in an undefined state.",
-		rules.SeverityHigh,
+		rules.SeverityMedium, // unclassified PERF → Medium
 		nil,
 		"Return the error from the goroutine instead of calling log.Fatal; the caller decides whether to terminate the process.",
 	)

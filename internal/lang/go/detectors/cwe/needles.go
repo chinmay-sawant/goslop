@@ -579,4 +579,10 @@ var cweNeedles = []string{
 	"xorCipherPure(",
 	"{\"deleted\":true}",
 	"{{.Title}} where ",
+	"os.Environ()",
+	"os.Hostname()",
+	"runtime.NumCPU()",
+	"gin.Context",
+	"*gin.Context",
+	"c.File(",
 }

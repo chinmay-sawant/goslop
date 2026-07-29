@@ -81,7 +81,7 @@ var (
 		"PERF-122",
 		"HasPrefix Followed By Slice Instead Of TrimPrefix",
 		"Checks strings.HasPrefix(s, prefix) and then slices s[len(prefix):] to extract the remainder. strings.TrimPrefix(s, prefix) returns the string with the prefix removed if present in a single call with clearer intent.",
-		rules.SeverityLow,
+		rules.SeverityInfo, // B-tier (Rust severity_for_tier)
 		nil,
 		"Use strings.TrimPrefix(s, p) instead of HasPrefix + s[len(p):].",
 	)
@@ -89,7 +89,7 @@ var (
 		"PERF-123",
 		"Redundant make Argument With Zero Value",
 		"Calls make([]T, 0, cap) or make(map[K]V, 0) with an explicit zero length or capacity argument. The zero value is the default; omitting it produces identical behavior with less code.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium (Rust)
 		nil,
 		"Omit redundant zero length/capacity arguments to make.",
 	)
@@ -281,7 +281,7 @@ var (
 		"PERF-148",
 		"Goroutine Leak Via Channel Send Without Guaranteed Receiver",
 		"Sends to an unbuffered channel from a goroutine without guaranteeing a corresponding receive on all code paths. If the receiver exits early via error return or context cancellation, the sender blocks forever on the unbuffered channel, leaking the goroutine.",
-		rules.SeverityHigh,
+		rules.SeverityMedium, // unclassified PERF → Medium (Rust)
 		nil,
 		"Ensure channel sends have a guaranteed receiver or use buffered/select with default.",
 	)
@@ -305,7 +305,7 @@ var (
 		"PERF-151",
 		"Non-Inlinable Function On Hot Path Due To Complexity",
 		"A hot-path function exceeds the Go compiler inlining budget (~80 cost units as of Go 1.22). Each defer, for loop, and select adds to the budget. Functions that cross the threshold add ~5-15ns call overhead per invocation.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium (Rust)
 		nil,
 		"Simplify hot-path handlers to stay within the compiler inlining budget.",
 	)

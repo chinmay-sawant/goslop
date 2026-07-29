@@ -12,12 +12,16 @@ import (
 
 // bpProjectCaches memoizes project-level facts per scan root.
 type bpProjectCaches struct {
-	mu        sync.Mutex
-	snapshots map[string]*ProjectSnapshot
+	mu          sync.Mutex
+	snapshots   map[string]*ProjectSnapshot
+	packageDocs map[string]*PackageDocSnapshot // key: directory path
 }
 
 func newProjectCaches() *bpProjectCaches {
-	return &bpProjectCaches{snapshots: map[string]*ProjectSnapshot{}}
+	return &bpProjectCaches{
+		snapshots:   map[string]*ProjectSnapshot{},
+		packageDocs: map[string]*PackageDocSnapshot{},
+	}
 }
 
 func (c *bpProjectCaches) clear() {
@@ -26,7 +30,127 @@ func (c *bpProjectCaches) clear() {
 	}
 	c.mu.Lock()
 	c.snapshots = map[string]*ProjectSnapshot{}
+	c.packageDocs = map[string]*PackageDocSnapshot{}
 	c.mu.Unlock()
+}
+
+// PackageDocSnapshot holds per-directory package doc anchors for BP-41.
+type PackageDocSnapshot struct {
+	// Anchors maps package name → lexicographically first non-test .go path.
+	Anchors map[string]string
+	// DocumentedPackages has packages with a package-level doc comment.
+	DocumentedPackages map[string]struct{}
+}
+
+func packageDocSnapshotForUnit(unit *core.ParsedUnit) *PackageDocSnapshot {
+	if unit == nil {
+		return &PackageDocSnapshot{}
+	}
+	dir := filepath.Dir(unit.Path)
+	if dir == "" || dir == "." {
+		dir = filepath.Dir(fileDisplayPath(unit))
+	}
+	return packageDocSnapshotForDir(dir)
+}
+
+func packageDocSnapshotForDir(dir string) *PackageDocSnapshot {
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		abs = dir
+	}
+	activeCachesMu.Lock()
+	caches := activeCaches
+	activeCachesMu.Unlock()
+	if caches != nil {
+		caches.mu.Lock()
+		if snap, ok := caches.packageDocs[abs]; ok {
+			caches.mu.Unlock()
+			return snap
+		}
+		caches.mu.Unlock()
+	}
+	snap := buildPackageDocSnapshot(abs)
+	if caches != nil {
+		caches.mu.Lock()
+		caches.packageDocs[abs] = snap
+		caches.mu.Unlock()
+	}
+	return snap
+}
+
+func buildPackageDocSnapshot(dir string) *PackageDocSnapshot {
+	snap := &PackageDocSnapshot{
+		Anchors:            map[string]string{},
+		DocumentedPackages: map[string]struct{}{},
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return snap
+	}
+	type fileText struct {
+		path string
+		text string
+	}
+	var files []fileText
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		p := filepath.Join(dir, name)
+		data, rerr := os.ReadFile(p)
+		if rerr != nil {
+			continue
+		}
+		files = append(files, fileText{path: p, text: string(data)})
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].path < files[j].path })
+	for _, f := range files {
+		pkg := packageName(f.text)
+		if pkg == "" {
+			continue
+		}
+		if _, ok := snap.Anchors[pkg]; !ok {
+			snap.Anchors[pkg] = f.path
+		}
+		if hasPackageDocComment(f.text, pkg) {
+			snap.DocumentedPackages[pkg] = struct{}{}
+		}
+	}
+	return snap
+}
+
+func hasPackageDocComment(source, pkg string) bool {
+	// Rust parity: only a contiguous // comment block immediately above
+	// `package <pkg>` whose first line is `Package <pkg>…` counts.
+	var comments []string
+	for _, line := range strings.Split(source, "\n") {
+		t := strings.TrimSpace(line)
+		if strings.HasPrefix(t, "//") {
+			comments = append(comments, strings.TrimSpace(strings.TrimPrefix(t, "//")))
+			continue
+		}
+		if strings.HasPrefix(t, "package ") {
+			rest := strings.TrimSpace(strings.TrimPrefix(t, "package "))
+			// package name may have trailing comment
+			if i := strings.IndexAny(rest, " \t/"); i >= 0 {
+				rest = rest[:i]
+			}
+			if rest != pkg || len(comments) == 0 {
+				return false
+			}
+			return strings.HasPrefix(comments[0], "Package "+pkg)
+		}
+		if t == "" {
+			comments = comments[:0]
+			continue
+		}
+		comments = comments[:0]
+	}
+	return false
 }
 
 // ProjectSnapshot holds project-level facts for server-policy and module-hygiene rules.
@@ -156,13 +280,15 @@ func buildProjectSnapshot(root string) *ProjectSnapshot {
 			return nil
 		}
 		if !strings.HasSuffix(path, ".go") {
-			if d.Name() == "go.mod" {
+			// Only the module root go.mod/go.sum — nested modules overwrite
+			// GoModText and erase root deps (BP-57/60/62).
+			if d.Name() == "go.mod" && filepath.Dir(path) == root {
 				snap.GoModPath = path
 				if b, err := os.ReadFile(path); err == nil {
 					snap.GoModText = string(b)
 				}
 			}
-			if d.Name() == "go.sum" {
+			if d.Name() == "go.sum" && filepath.Dir(path) == root {
 				snap.GoSumPath = path
 				snap.GoSumExists = true
 			}

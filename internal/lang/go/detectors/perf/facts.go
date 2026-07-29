@@ -238,18 +238,46 @@ func extractIdents(lhs string) []string {
 	parts := strings.Split(lhs, ",")
 	out := make([]string, 0, len(parts))
 	for _, p := range parts {
-		name := strings.TrimSpace(p)
+		name := lhsPrimaryName(p)
 		if name == "" || name == "_" {
 			continue
 		}
-		if i := strings.IndexAny(name, " \t"); i >= 0 {
-			name = name[:i]
-		}
-		if isSimpleIdent(name) {
-			out = append(out, name)
-		}
+		out = append(out, name)
 	}
 	return out
+}
+
+// lhsPrimaryName extracts a usable identifier from an assignment LHS that may
+// be an index or selector expression (tables[k], font.UsedChars, lines[i].joined).
+func lhsPrimaryName(lhs string) string {
+	s := strings.TrimSpace(lhs)
+	if s == "" {
+		return ""
+	}
+	// Drop index expressions: lines[li].joined → lines.joined, tables[k] → tables
+	for {
+		i := strings.Index(s, "[")
+		if i < 0 {
+			break
+		}
+		j := strings.Index(s[i:], "]")
+		if j < 0 {
+			break
+		}
+		s = s[:i] + s[i+j+1:]
+	}
+	s = strings.TrimSpace(s)
+	// Prefer the rightmost selector field for field assigns.
+	if k := strings.LastIndex(s, "."); k >= 0 {
+		s = s[k+1:]
+	}
+	if i := strings.IndexAny(s, " \t"); i >= 0 {
+		s = s[:i]
+	}
+	if !isSimpleIdent(s) {
+		return ""
+	}
+	return s
 }
 
 func isSimpleIdent(s string) bool {

@@ -19,7 +19,7 @@ var (
 		"PERF-2",
 		"String Concatenation In Loop",
 		"A string is built by repeated concatenation (+=) inside a loop body.",
-		rules.SeverityMedium,
+		rules.SeverityInfo, // C-tier (Rust severity_for_tier)
 		nil,
 		"Use strings.Builder, bytes.Buffer, or strings.Join instead of repeated +=.",
 	)
@@ -27,7 +27,7 @@ var (
 		"PERF-3",
 		"Slice Rebuilt Inside Loop",
 		"A working slice is reallocated with make inside a loop body.",
-		rules.SeverityLow,
+		rules.SeverityInfo, // C-tier
 		nil,
 		"Hoist the make outside the loop or preallocate once with a capacity hint.",
 	)
@@ -35,7 +35,7 @@ var (
 		"PERF-4",
 		"Map Allocated Inside Loop",
 		"A map is allocated with make inside a loop body without a size hint.",
-		rules.SeverityLow,
+		rules.SeverityInfo, // C-tier
 		nil,
 		"Hoist the map allocation outside the loop or pre-size with make(map[K]V, n).",
 	)
@@ -51,7 +51,7 @@ var (
 		"PERF-6",
 		"Fmt Formatting Inside Loop",
 		"fmt.Sprintf / fmt.Fprintf is used for string construction inside a loop body.",
-		rules.SeverityMedium,
+		rules.SeverityInfo, // C-tier (Rust severity_for_tier)
 		nil,
 		"Use a bytes.Buffer, strings.Builder, or pool of buffers to avoid repeated fmt allocations.",
 	)
@@ -99,7 +99,7 @@ var (
 		"PERF-230",
 		"Loop-Invariant Pure Call",
 		"A pure/helper function is re-evaluated every loop iteration with stable arguments.",
-		rules.SeverityLow,
+		rules.SeverityMedium, // unclassified PERF → Medium (Rust)
 		nil,
 		"Hoist the pure call before the loop or cache its result when arguments do not change across iterations.",
 	)

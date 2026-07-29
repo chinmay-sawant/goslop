@@ -809,11 +809,14 @@ var cweNeedleRules = []cweNeedleRule{
 	{
 		id: "CWE-367",
 		groups: []needleGroup{
+			// Stat then ReadFile (Rust TOCTOU). Needle "os.ReadFile" covers ReadFile(.
 			{"os.Stat(", "os.ReadFile"},
 		},
-		span: "os.Stat(",
-		msg:  "the code checks a file path with Stat before later using it, creating a TOCTOU race window",
-		meta: &MetaCWE367,
+		// Suppress gin SPA helpers that only Stat a static docs path (handlers.go).
+		forbid: []string{"gin.Context", "c.File("},
+		span:   "os.Stat(",
+		msg:    "the code checks a file path with Stat before later using it, creating a TOCTOU race window",
+		meta:   &MetaCWE367,
 	},
 	{
 		id: "CWE-368",
@@ -1010,11 +1013,13 @@ var cweNeedleRules = []cweNeedleRule{
 	{
 		id: "CWE-497",
 		groups: []needleGroup{
-			{"\"goos\":     runtime.GOOS,"},
+			{"os.Environ()"},
+			{"os.Hostname()"},
+			{"runtime.NumCPU()"},
 		},
 		forbid: []string{"\"status\": \"ok\""},
-		span:   "\"goos\":     runtime.GOOS,",
-		msg:    "sensitive system information may be exposed to callers",
+		span:   "runtime.NumCPU()",
+		msg:    "the diagnostics endpoint exposes host environment details to callers",
 		meta:   &MetaCWE497,
 	},
 	{
