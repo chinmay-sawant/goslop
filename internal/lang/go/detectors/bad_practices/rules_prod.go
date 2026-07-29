@@ -183,15 +183,253 @@ func detectBP52(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) || !strings.Contains(unit.Source, "make(") || !strings.Contains(unit.Source, "*") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
-		t := strings.TrimSpace(line.text)
-		if strings.Contains(t, "make(") && strings.Contains(t, "*") {
-			if !strings.Contains(unit.Source, "MaxInt") && !strings.Contains(unit.Source, "overflow") && !strings.Contains(unit.Source, "bits.Mul") {
-				pushAt(unit, meta, line.byte, "multiplication used in an allocation path without an obvious overflow guard", out)
-				return
+	// Rust parity (production_hardening.rs): every make(...) call whose text
+	// contains '*' and whose enclosing func/func-literal lacks an overflow guard.
+	// Guards are scope-local (not file-wide) and include "/' (naive, matches Rust).
+	src := unit.Source
+	for _, call := range findMakeCalls(src) {
+		if !strings.Contains(call.text, "*") {
+			continue
+		}
+		scope := enclosingFuncOrLiteralScope(src, call.start)
+		if scope == "" {
+			// Package-level make without enclosing func — Rust skips these.
+			continue
+		}
+		if bp52HasOverflowGuard(scope) {
+			continue
+		}
+		pushAt(unit, meta, call.start, "multiplication used in an allocation path without an obvious overflow guard", out)
+	}
+}
+
+type makeCall struct {
+	start int
+	text  string
+}
+
+func findMakeCalls(src string) []makeCall {
+	var out []makeCall
+	start := 0
+	for {
+		idx := strings.Index(src[start:], "make(")
+		if idx < 0 {
+			break
+		}
+		abs := start + idx
+		// avoid longer idents like remake(
+		if abs > 0 {
+			prev := src[abs-1]
+			if (prev >= 'a' && prev <= 'z') || (prev >= 'A' && prev <= 'Z') || (prev >= '0' && prev <= '9') || prev == '_' {
+				start = abs + 4
+				continue
+			}
+		}
+		open := abs + 4 // "make" is 4 chars; '(' follows
+		if open >= len(src) || src[open] != '(' {
+			start = abs + 4
+			continue
+		}
+		closeAt := scanBalancedCallEnd(src, open)
+		if closeAt < 0 {
+			start = abs + 4
+			continue
+		}
+		out = append(out, makeCall{start: abs, text: src[abs : closeAt+1]})
+		start = closeAt + 1
+	}
+	return out
+}
+
+// scanBalancedCallEnd starts at '(' and returns index of matching ')'.
+func scanBalancedCallEnd(src string, open int) int {
+	if open >= len(src) || src[open] != '(' {
+		return -1
+	}
+	depth := 0
+	inStr := byte(0)
+	escape := false
+	for i := open; i < len(src); i++ {
+		c := src[i]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if inStr == '"' || inStr == '\'' {
+				if c == '\\' {
+					escape = true
+					continue
+				}
+				if c == inStr {
+					inStr = 0
+				}
+				continue
+			}
+			if inStr == '`' && c == '`' {
+				inStr = 0
+			}
+			continue
+		}
+		switch c {
+		case '"', '`', '\'':
+			inStr = c
+		case '(':
+			depth++
+		case ')':
+			depth--
+			if depth == 0 {
+				return i
 			}
 		}
 	}
+	return -1
+}
+
+// enclosingFuncOrLiteralScope returns the source span of the innermost
+// func/func-literal whose body braces enclose pos. Empty if none.
+func enclosingFuncOrLiteralScope(src string, pos int) string {
+	type cand struct {
+		start int
+		brace int
+	}
+	var cands []cand
+	// Find "func " / "func(" occurrences before pos.
+	search := 0
+	for search < pos {
+		idx := strings.Index(src[search:], "func")
+		if idx < 0 {
+			break
+		}
+		abs := search + idx
+		if abs >= pos {
+			break
+		}
+		// word boundary after "func"
+		end := abs + 4
+		if end < len(src) {
+			n := src[end]
+			if (n >= 'a' && n <= 'z') || (n >= 'A' && n <= 'Z') || (n >= '0' && n <= '9') || n == '_' {
+				search = end
+				continue
+			}
+		}
+		if abs > 0 {
+			p := src[abs-1]
+			if (p >= 'a' && p <= 'z') || (p >= 'A' && p <= 'Z') || (p >= '0' && p <= '9') || p == '_' {
+				search = end
+				continue
+			}
+		}
+		// find opening brace of this func
+		brace := -1
+		inStr := byte(0)
+		escape := false
+		for i := end; i < len(src) && i < pos+1; i++ {
+			c := src[i]
+			if inStr != 0 {
+				if escape {
+					escape = false
+					continue
+				}
+				if inStr == '"' || inStr == '\'' {
+					if c == '\\' {
+						escape = true
+						continue
+					}
+					if c == inStr {
+						inStr = 0
+					}
+					continue
+				}
+				if inStr == '`' && c == '`' {
+					inStr = 0
+				}
+				continue
+			}
+			switch c {
+			case '"', '`', '\'':
+				inStr = c
+			case '{':
+				brace = i
+			}
+			if brace >= 0 {
+				break
+			}
+			// signature without body (interface) — skip
+			if c == '\n' && !strings.Contains(src[end:i], "(") {
+				// still could be multi-line; continue
+			}
+		}
+		if brace >= 0 && brace < pos {
+			cands = append(cands, cand{start: abs, brace: brace})
+		}
+		search = end
+	}
+	// Innermost cand whose braces enclose pos.
+	for i := len(cands) - 1; i >= 0; i-- {
+		c := cands[i]
+		end := matchBraceEnd(src, c.brace)
+		if end >= pos {
+			return src[c.start : end+1]
+		}
+	}
+	return ""
+}
+
+func matchBraceEnd(src string, openBrace int) int {
+	if openBrace < 0 || openBrace >= len(src) || src[openBrace] != '{' {
+		return -1
+	}
+	depth := 0
+	inStr := byte(0)
+	escape := false
+	for i := openBrace; i < len(src); i++ {
+		c := src[i]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if inStr == '"' || inStr == '\'' {
+				if c == '\\' {
+					escape = true
+					continue
+				}
+				if c == inStr {
+					inStr = 0
+				}
+				continue
+			}
+			if inStr == '`' && c == '`' {
+				inStr = 0
+			}
+			continue
+		}
+		switch c {
+		case '"', '`', '\'':
+			inStr = c
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return i
+			}
+		}
+	}
+	return -1
+}
+
+func bp52HasOverflowGuard(scope string) bool {
+	// Match Rust has_guard set exactly.
+	return strings.Contains(scope, "MaxInt") ||
+		strings.Contains(scope, "MaxUint") ||
+		strings.Contains(scope, "overflow") ||
+		strings.Contains(scope, "/") ||
+		strings.Contains(scope, "bits.Mul") ||
+		strings.Contains(scope, "checkedMul") ||
+		strings.Contains(scope, "checked_mul")
 }
 
 func detectBP53(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {

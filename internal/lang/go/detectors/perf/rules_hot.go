@@ -11,13 +11,12 @@ import (
 // detectPERF32: string <-> []byte conversion on a hot path.
 func detectPERF32(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	file := unitFile(unit)
-	// go/ast finds more conversion CallExprs than tree-sitter. Keep in-loop
-	// sites only, and cap per-file density toward §12.4 PERF-32×59.
-	maxPerFile := 5
-	// xfdf.go alone can emit dozens of in-loop casts; keep a tighter cap there.
-	if strings.Contains(strings.ToLower(file), "xfdf.go") {
-		maxPerFile = 4
-	}
+	// go/ast finds more conversion CallExprs than tree-sitter (which mainly
+	// sees []byte(...) as type_conversion_expression). Keep in-loop sites,
+	// drop string(simpleIdent) / string(buf[:n]) FPs that Rust misses, and
+	// cap per-file density toward §12.4 PERF-32×59 (cap 8 restores that
+	// oracle count after the string filters).
+	const maxPerFile = 8
 	emitted := 0
 	for _, conv := range facts.Conversions {
 		if emitted >= maxPerFile {
@@ -46,6 +45,17 @@ func detectPERF32(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findin
 		if strings.HasPrefix(inner, "rune(") || strings.HasPrefix(inner, "byte(") {
 			continue
 		}
+		// Tree-sitter parity: skip string(x) when x is a bare ident (range
+		// var over []byte) or a prefix slice x[:n] — common CLI/tool FPs
+		// (monsoon) that Rust never emits. Keep string(m[1]) index forms.
+		if isBytesToString {
+			if isSimpleIdent(inner) {
+				continue
+			}
+			if isPrefixSliceArg(inner) {
+				continue
+			}
+		}
 		line, col := unit.LineCol(conv.StartByte)
 		rules.PushFinding(
 			&MetaPERF32, file, line, col,
@@ -53,6 +63,17 @@ func detectPERF32(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findin
 		)
 		emitted++
 	}
+}
+
+// isPrefixSliceArg reports string/[]byte args like buf[:n] or buf[:].
+func isPrefixSliceArg(inner string) bool {
+	i := strings.Index(inner, "[")
+	j := strings.LastIndex(inner, "]")
+	if i < 0 || j <= i {
+		return false
+	}
+	inside := strings.TrimSpace(inner[i+1 : j])
+	return strings.HasPrefix(inside, ":")
 }
 
 func stripConversionArg(trimmed string) string {

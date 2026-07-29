@@ -1,6 +1,7 @@
 package badpractices
 
 import (
+	goast "go/ast"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/core"
@@ -92,29 +93,171 @@ func detectBP97(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP98(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+// BP-98: local os.Open/os.OpenFile result neither closed nor returned (Rust parity).
+// Per-function: only the assigned identifier is tracked; same-function Close or
+// a return that mentions the name is ownership transfer. os.Create is gated for
+// short-circuit only (Rust does not flag Create callees).
+func detectBP98(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-98")
-	opens := []string{"os.Open(", "os.OpenFile(", "os.Create("}
-	hasOpen := false
-	for _, o := range opens {
-		if strings.Contains(unit.Source, o) {
-			hasOpen = true
-			break
-		}
-	}
-	if !hasOpen {
+	src := unit.Source
+	if !(strings.Contains(src, "os.Open") || strings.Contains(src, "os.OpenFile") || strings.Contains(src, "os.Create")) {
 		return
 	}
-	if strings.Contains(unit.Source, ".Close(") || strings.Contains(unit.Source, "return f") || strings.Contains(unit.Source, "return file") {
+	msg := "opened file is neither closed nor transferred to the caller"
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		goast.Inspect(tree.File, func(n goast.Node) bool {
+			var body *goast.BlockStmt
+			switch x := n.(type) {
+			case *goast.FuncDecl:
+				body = x.Body
+			case *goast.FuncLit:
+				body = x.Body
+			default:
+				return true
+			}
+			if body == nil {
+				return true
+			}
+			bodyText := tree.NodeText(body)
+			// Collect assign statements that open files within this function body only
+			// (not nested function literals — those are visited separately).
+			goast.Inspect(body, func(inner goast.Node) bool {
+				// Do not descend into nested function bodies; they get their own visit.
+				switch inner.(type) {
+				case *goast.FuncLit:
+					return false
+				case *goast.FuncDecl:
+					return false
+				}
+				as, ok := inner.(*goast.AssignStmt)
+				if !ok {
+					return true
+				}
+				for _, rhs := range as.Rhs {
+					call, ok := rhs.(*goast.CallExpr)
+					if !ok {
+						continue
+					}
+					callee := tree.NodeText(call.Fun)
+					if callee != "os.Open" && callee != "os.OpenFile" {
+						continue
+					}
+					if len(as.Lhs) == 0 {
+						continue
+					}
+					id, ok := as.Lhs[0].(*goast.Ident)
+					if !ok || id.Name == "" || id.Name == "_" {
+						continue
+					}
+					if hasCloseOrTransferBP98(bodyText, id.Name) {
+						continue
+					}
+					pushAt(unit, meta, tree.Offset(call.Pos()), msg, out)
+				}
+				return true
+			})
+			return true
+		})
 		return
 	}
-	// opened and used but not closed/returned
-	for _, o := range opens {
-		if pos := strings.Index(unit.Source, o); pos >= 0 {
-			pushAt(unit, meta, pos, "opened file is never closed or transferred to the caller", out)
-			return
+	// Text fallback: function-scoped open without same-function close/return.
+	for _, fn := range splitTopLevelFuncs(src) {
+		if !strings.Contains(fn.body, "os.Open(") && !strings.Contains(fn.body, "os.OpenFile(") {
+			continue
+		}
+		for _, open := range []string{"os.Open(", "os.OpenFile("} {
+			pos := strings.Index(fn.body, open)
+			if pos < 0 {
+				continue
+			}
+			lineStart := strings.LastIndex(fn.body[:pos], "\n") + 1
+			line := fn.body[lineStart:pos]
+			name := ""
+			if i := strings.Index(line, ","); i >= 0 {
+				name = firstIdent(strings.TrimSpace(line[:i]))
+			} else if i := strings.Index(line, ":="); i >= 0 {
+				name = firstIdent(strings.TrimSpace(line[:i]))
+			} else if i := strings.Index(line, "="); i >= 0 {
+				name = firstIdent(strings.TrimSpace(line[:i]))
+			}
+			if name == "" || name == "_" {
+				continue
+			}
+			if hasCloseOrTransferBP98(fn.body, name) {
+				continue
+			}
+			pushAt(unit, meta, fn.start+pos, msg, out)
 		}
 	}
+}
+
+func hasCloseOrTransferBP98(body, name string) bool {
+	if strings.Contains(body, name+".Close(") {
+		return true
+	}
+	for _, line := range strings.Split(body, "\n") {
+		t := strings.TrimSpace(line)
+		if !strings.HasPrefix(t, "return ") {
+			continue
+		}
+		rest := strings.TrimPrefix(t, "return ")
+		for _, tok := range strings.FieldsFunc(rest, func(r rune) bool {
+			return !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_')
+		}) {
+			if tok == name {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+type funcChunk struct {
+	start int
+	body  string
+}
+
+func splitTopLevelFuncs(src string) []funcChunk {
+	var out []funcChunk
+	depth := 0
+	i := 0
+	for i < len(src) {
+		if src[i] == '{' {
+			depth++
+			i++
+			continue
+		}
+		if src[i] == '}' {
+			if depth > 0 {
+				depth--
+			}
+			i++
+			continue
+		}
+		if depth == 0 && strings.HasPrefix(src[i:], "func ") {
+			brace := strings.Index(src[i:], "{")
+			if brace < 0 {
+				break
+			}
+			start := i + brace
+			d := 1
+			j := start + 1
+			for j < len(src) && d > 0 {
+				if src[j] == '{' {
+					d++
+				} else if src[j] == '}' {
+					d--
+				}
+				j++
+			}
+			out = append(out, funcChunk{start: start, body: src[start:j]})
+			i = j
+			continue
+		}
+		i++
+	}
+	return out
 }
 
 func detectBP99(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {

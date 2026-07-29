@@ -1,6 +1,8 @@
 package badpractices
 
 import (
+	goast "go/ast"
+	"go/token"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -23,6 +25,7 @@ func init() {
 	RegisterRule("BP-37", detectBP37)
 	RegisterRule("BP-38", detectBP38)
 	RegisterRule("BP-39", detectBP39)
+	RegisterRule("BP-40", detectBP40)
 	RegisterRule("BP-41", detectBP41)
 	RegisterRule("BP-42", detectBP42)
 	RegisterRule("BP-43", detectBP43)
@@ -516,13 +519,21 @@ func detectBP36(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP37(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
-	// Rust parity: package-level var that is later written (assignment/index).
-	// Oracle-tight: only arrays written via name[i]=, or pointer/map caches.
+// BP-37: package-level var that receives a post-init write (Rust parity).
+// Flags the package var_declaration when any of its names is written via
+// assignment, index write, field write, send, or ++/--. Reads and method calls
+// are not writes. Shadowed locals (params, short decls) are excluded.
+func detectBP37(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) {
 		return
 	}
 	meta := MetadataForID("BP-37")
+	msg := "package-level mutable global state makes behavior harder to reason about"
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		detectBP37AST(unit, facts, meta, msg, out)
+		return
+	}
+	// Text fallback (no AST): package-level names later clearly assigned.
 	globals := packageLevelVarNames(unit.Source)
 	if len(globals) == 0 {
 		return
@@ -531,41 +542,451 @@ func detectBP37(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if len(written) == 0 {
 		return
 	}
-	// Tight oracle-aligned filter: only (1) fixed arrays written via index, or
-	// (2) pointer-to-struct package caches. Map/slice globals over-fire vs Rust.
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "var ") {
 			continue
 		}
 		for name := range written {
-			if !strings.Contains(t, name) || strings.HasPrefix(name, "Err") {
+			if strings.HasPrefix(name, "Err") {
 				continue
 			}
-			if strings.Contains(t, "sync.Pool") || strings.Contains(t, "map[") {
-				continue
-			}
-			// skip slice literals: var x = []T{...}
-			if strings.Contains(t, "[]") {
-				continue
-			}
-			isArray := false
-			// var name [N]T
 			rest := strings.TrimSpace(strings.TrimPrefix(t, "var "))
-			if strings.HasPrefix(rest, name) {
-				after := strings.TrimSpace(rest[len(name):])
-				if strings.HasPrefix(after, "[") && !strings.HasPrefix(after, "[]") {
-					isArray = true
+			if !strings.HasPrefix(rest, name) {
+				continue
+			}
+			afterName := rest[len(name):]
+			if afterName != "" {
+				c := afterName[0]
+				if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+					continue
 				}
 			}
-			isPtrCache := strings.Contains(t, " = &") || strings.Contains(t, "=&")
-			if !isArray && !isPtrCache {
-				continue
-			}
-			pushAt(unit, meta, line.byte, "package-level mutable global state makes behavior harder to reason about", out)
-			return // one per file
+			pushAt(unit, meta, line.byte, msg, out)
+			break
 		}
 	}
+}
+
+func detectBP37AST(unit *core.ParsedUnit, facts *bpFacts, meta *rules.RuleMetadata, msg string, out *[]rules.Finding) {
+	tree := facts.tree
+	type varDecl struct {
+		offset int
+		names  []string
+	}
+	var decls []varDecl
+	globals := map[string]struct{}{}
+	for _, decl := range tree.File.Decls {
+		gd, ok := decl.(*goast.GenDecl)
+		if !ok || gd.Tok != token.VAR {
+			continue
+		}
+		var names []string
+		for _, sp := range gd.Specs {
+			vs, ok := sp.(*goast.ValueSpec)
+			if !ok {
+				continue
+			}
+			for _, n := range vs.Names {
+				if n == nil || n.Name == "" || strings.HasPrefix(n.Name, "Err") {
+					continue
+				}
+				names = append(names, n.Name)
+				globals[n.Name] = struct{}{}
+			}
+		}
+		if len(names) > 0 {
+			decls = append(decls, varDecl{offset: tree.Offset(gd.Pos()), names: names})
+		}
+	}
+	if len(globals) == 0 {
+		return
+	}
+	written := collectWrittenGlobalsAST(tree.File, globals)
+	for _, d := range decls {
+		for _, name := range d.names {
+			if _, ok := written[name]; ok {
+				pushAt(unit, meta, d.offset, msg, out)
+				break
+			}
+		}
+	}
+}
+
+func collectWrittenGlobalsAST(file *goast.File, globals map[string]struct{}) map[string]struct{} {
+	written := map[string]struct{}{}
+	var walk func(n goast.Node, shadowed map[string]struct{})
+	walk = func(n goast.Node, shadowed map[string]struct{}) {
+		if n == nil {
+			return
+		}
+		switch x := n.(type) {
+		case *goast.FuncDecl:
+			sh := cloneShadowSet(shadowed)
+			if x.Recv != nil {
+				addFieldListNames(x.Recv, globals, sh)
+			}
+			if x.Type != nil {
+				if x.Type.Params != nil {
+					addFieldListNames(x.Type.Params, globals, sh)
+				}
+				if x.Type.Results != nil {
+					addFieldListNames(x.Type.Results, globals, sh)
+				}
+			}
+			if x.Body != nil {
+				walkBlock(x.Body, globals, sh, written)
+			}
+			return
+		case *goast.FuncLit:
+			sh := cloneShadowSet(shadowed)
+			if x.Type != nil {
+				if x.Type.Params != nil {
+					addFieldListNames(x.Type.Params, globals, sh)
+				}
+				if x.Type.Results != nil {
+					addFieldListNames(x.Type.Results, globals, sh)
+				}
+			}
+			if x.Body != nil {
+				walkBlock(x.Body, globals, sh, written)
+			}
+			return
+		}
+		// Top-level: only walk into func decls (handled above via File.Decls).
+		goast.Inspect(n, func(child goast.Node) bool {
+			if child == nil || child == n {
+				return true
+			}
+			switch child.(type) {
+			case *goast.FuncDecl, *goast.FuncLit:
+				walk(child, shadowed)
+				return false
+			}
+			return true
+		})
+	}
+	for _, decl := range file.Decls {
+		if fd, ok := decl.(*goast.FuncDecl); ok {
+			walk(fd, map[string]struct{}{})
+		}
+	}
+	return written
+}
+
+func walkBlock(block *goast.BlockStmt, globals, shadowed map[string]struct{}, written map[string]struct{}) {
+	if block == nil {
+		return
+	}
+	sh := cloneShadowSet(shadowed)
+	for _, stmt := range block.List {
+		walkStmt(stmt, globals, sh, written)
+		// Bindings from this statement shadow later siblings (Rust-like).
+		addStmtBindings(stmt, globals, sh)
+	}
+}
+
+func walkStmt(stmt goast.Stmt, globals, shadowed map[string]struct{}, written map[string]struct{}) {
+	if stmt == nil {
+		return
+	}
+	switch s := stmt.(type) {
+	case *goast.AssignStmt:
+		// Collect writes on LHS, then if := also bindings handled by caller.
+		for _, lhs := range s.Lhs {
+			collectWriteTargets(lhs, globals, shadowed, written)
+		}
+		// Walk RHS for nested func lits
+		for _, rhs := range s.Rhs {
+			walkExpr(rhs, globals, shadowed, written)
+		}
+	case *goast.IncDecStmt:
+		collectWriteTargets(s.X, globals, shadowed, written)
+	case *goast.SendStmt:
+		collectWriteTargets(s.Chan, globals, shadowed, written)
+		walkExpr(s.Value, globals, shadowed, written)
+	case *goast.DeclStmt:
+		// local var decl — not a package write; bindings added by addStmtBindings
+		if gd, ok := s.Decl.(*goast.GenDecl); ok {
+			for _, sp := range gd.Specs {
+				if vs, ok := sp.(*goast.ValueSpec); ok {
+					for _, v := range vs.Values {
+						walkExpr(v, globals, shadowed, written)
+					}
+				}
+			}
+		}
+	case *goast.BlockStmt:
+		walkBlock(s, globals, shadowed, written)
+	case *goast.IfStmt:
+		sh := cloneShadowSet(shadowed)
+		if s.Init != nil {
+			walkStmt(s.Init, globals, sh, written)
+			addStmtBindings(s.Init, globals, sh)
+		}
+		walkExpr(s.Cond, globals, sh, written)
+		walkBlock(s.Body, globals, sh, written)
+		if s.Else != nil {
+			walkStmt(s.Else, globals, sh, written)
+		}
+	case *goast.ForStmt:
+		sh := cloneShadowSet(shadowed)
+		if s.Init != nil {
+			walkStmt(s.Init, globals, sh, written)
+			addStmtBindings(s.Init, globals, sh)
+		}
+		walkExpr(s.Cond, globals, sh, written)
+		if s.Post != nil {
+			walkStmt(s.Post, globals, sh, written)
+		}
+		walkBlock(s.Body, globals, sh, written)
+	case *goast.RangeStmt:
+		sh := cloneShadowSet(shadowed)
+		// range binds key/value before body
+		if s.Tok == token.DEFINE {
+			collectBindingIdents(s.Key, globals, sh)
+			collectBindingIdents(s.Value, globals, sh)
+		} else {
+			collectWriteTargets(s.Key, globals, sh, written)
+			collectWriteTargets(s.Value, globals, sh, written)
+		}
+		walkExpr(s.X, globals, sh, written)
+		walkBlock(s.Body, globals, sh, written)
+	case *goast.SwitchStmt:
+		sh := cloneShadowSet(shadowed)
+		if s.Init != nil {
+			walkStmt(s.Init, globals, sh, written)
+			addStmtBindings(s.Init, globals, sh)
+		}
+		walkExpr(s.Tag, globals, sh, written)
+		if s.Body != nil {
+			for _, c := range s.Body.List {
+				cc, ok := c.(*goast.CaseClause)
+				if !ok {
+					continue
+				}
+				csh := cloneShadowSet(sh)
+				for _, e := range cc.List {
+					walkExpr(e, globals, csh, written)
+				}
+				for _, st := range cc.Body {
+					walkStmt(st, globals, csh, written)
+					addStmtBindings(st, globals, csh)
+				}
+			}
+		}
+	case *goast.TypeSwitchStmt:
+		sh := cloneShadowSet(shadowed)
+		if s.Init != nil {
+			walkStmt(s.Init, globals, sh, written)
+			addStmtBindings(s.Init, globals, sh)
+		}
+		// assign: v := x.(type)
+		if as, ok := s.Assign.(*goast.AssignStmt); ok {
+			if as.Tok == token.DEFINE {
+				for _, lhs := range as.Lhs {
+					collectBindingIdents(lhs, globals, sh)
+				}
+			}
+			for _, rhs := range as.Rhs {
+				walkExpr(rhs, globals, sh, written)
+			}
+		}
+		if s.Body != nil {
+			for _, c := range s.Body.List {
+				cc, ok := c.(*goast.CaseClause)
+				if !ok {
+					continue
+				}
+				csh := cloneShadowSet(sh)
+				for _, st := range cc.Body {
+					walkStmt(st, globals, csh, written)
+					addStmtBindings(st, globals, csh)
+				}
+			}
+		}
+	case *goast.SelectStmt:
+		if s.Body == nil {
+			return
+		}
+		for _, c := range s.Body.List {
+			cc, ok := c.(*goast.CommClause)
+			if !ok {
+				continue
+			}
+			csh := cloneShadowSet(shadowed)
+			if cc.Comm != nil {
+				if as, ok := cc.Comm.(*goast.AssignStmt); ok {
+					if as.Tok == token.DEFINE {
+						for _, lhs := range as.Lhs {
+							collectBindingIdents(lhs, globals, csh)
+						}
+					} else {
+						for _, lhs := range as.Lhs {
+							collectWriteTargets(lhs, globals, csh, written)
+						}
+					}
+					for _, rhs := range as.Rhs {
+						walkExpr(rhs, globals, csh, written)
+					}
+				} else if send, ok := cc.Comm.(*goast.SendStmt); ok {
+					collectWriteTargets(send.Chan, globals, csh, written)
+					walkExpr(send.Value, globals, csh, written)
+				} else if es, ok := cc.Comm.(*goast.ExprStmt); ok {
+					walkExpr(es.X, globals, csh, written)
+				}
+			}
+			for _, st := range cc.Body {
+				walkStmt(st, globals, csh, written)
+				addStmtBindings(st, globals, csh)
+			}
+		}
+	case *goast.GoStmt:
+		walkExpr(s.Call, globals, shadowed, written)
+	case *goast.DeferStmt:
+		walkExpr(s.Call, globals, shadowed, written)
+	case *goast.ExprStmt:
+		walkExpr(s.X, globals, shadowed, written)
+	case *goast.ReturnStmt:
+		for _, r := range s.Results {
+			walkExpr(r, globals, shadowed, written)
+		}
+	default:
+		// Best-effort: discover nested function literals under uncommon stmts.
+		goast.Inspect(stmt, func(n goast.Node) bool {
+			if fl, ok := n.(*goast.FuncLit); ok {
+				walkExpr(fl, globals, shadowed, written)
+				return false
+			}
+			return true
+		})
+	}
+}
+
+func walkExpr(e goast.Expr, globals, shadowed map[string]struct{}, written map[string]struct{}) {
+	if e == nil {
+		return
+	}
+	goast.Inspect(e, func(n goast.Node) bool {
+		fl, ok := n.(*goast.FuncLit)
+		if !ok {
+			return true
+		}
+		sh := cloneShadowSet(shadowed)
+		if fl.Type != nil {
+			if fl.Type.Params != nil {
+				addFieldListNames(fl.Type.Params, globals, sh)
+			}
+			if fl.Type.Results != nil {
+				addFieldListNames(fl.Type.Results, globals, sh)
+			}
+		}
+		if fl.Body != nil {
+			walkBlock(fl.Body, globals, sh, written)
+		}
+		return false
+	})
+}
+
+func collectWriteTargets(e goast.Expr, globals, shadowed map[string]struct{}, written map[string]struct{}) {
+	if e == nil {
+		return
+	}
+	switch x := e.(type) {
+	case *goast.Ident:
+		if _, ok := globals[x.Name]; ok {
+			if _, sh := shadowed[x.Name]; !sh {
+				written[x.Name] = struct{}{}
+			}
+		}
+	case *goast.SelectorExpr:
+		// opts.Field or imgCache.cache — base ident is the package global
+		if id, ok := x.X.(*goast.Ident); ok {
+			if _, g := globals[id.Name]; g {
+				if _, sh := shadowed[id.Name]; !sh {
+					written[id.Name] = struct{}{}
+				}
+			}
+		} else {
+			collectWriteTargets(x.X, globals, shadowed, written)
+		}
+	case *goast.IndexExpr:
+		// name[i] or name.field[i]
+		collectWriteTargets(x.X, globals, shadowed, written)
+	case *goast.IndexListExpr:
+		collectWriteTargets(x.X, globals, shadowed, written)
+	case *goast.StarExpr:
+		collectWriteTargets(x.X, globals, shadowed, written)
+	case *goast.ParenExpr:
+		collectWriteTargets(x.X, globals, shadowed, written)
+	}
+}
+
+func collectBindingIdents(e goast.Expr, globals, shadowed map[string]struct{}) {
+	if e == nil {
+		return
+	}
+	if id, ok := e.(*goast.Ident); ok && id.Name != "_" {
+		if _, g := globals[id.Name]; g {
+			shadowed[id.Name] = struct{}{}
+		}
+	}
+}
+
+func addFieldListNames(fl *goast.FieldList, globals, shadowed map[string]struct{}) {
+	if fl == nil {
+		return
+	}
+	for _, f := range fl.List {
+		for _, n := range f.Names {
+			if n != nil && n.Name != "_" {
+				if _, g := globals[n.Name]; g {
+					shadowed[n.Name] = struct{}{}
+				}
+			}
+		}
+	}
+}
+
+func addStmtBindings(stmt goast.Stmt, globals, shadowed map[string]struct{}) {
+	if stmt == nil {
+		return
+	}
+	switch s := stmt.(type) {
+	case *goast.AssignStmt:
+		if s.Tok != token.DEFINE {
+			return
+		}
+		for _, lhs := range s.Lhs {
+			collectBindingIdents(lhs, globals, shadowed)
+		}
+	case *goast.DeclStmt:
+		gd, ok := s.Decl.(*goast.GenDecl)
+		if !ok || gd.Tok != token.VAR {
+			return
+		}
+		for _, sp := range gd.Specs {
+			vs, ok := sp.(*goast.ValueSpec)
+			if !ok {
+				continue
+			}
+			for _, n := range vs.Names {
+				if n != nil && n.Name != "_" {
+					if _, g := globals[n.Name]; g {
+						shadowed[n.Name] = struct{}{}
+					}
+				}
+			}
+		}
+	}
+}
+
+func cloneShadowSet(in map[string]struct{}) map[string]struct{} {
+	out := make(map[string]struct{}, len(in))
+	for k := range in {
+		out[k] = struct{}{}
+	}
+	return out
 }
 
 func packageLevelVarNames(source string) map[string]struct{} {
@@ -576,15 +997,11 @@ func packageLevelVarNames(source string) map[string]struct{} {
 		if t == "" || strings.HasPrefix(t, "//") {
 			continue
 		}
-		// crude brace depth for top-level only
 		open := strings.Count(t, "{")
 		closeN := strings.Count(t, "}")
 		if inFunc == 0 && strings.HasPrefix(t, "var ") {
-			// var name T or var ( ... )
 			rest := strings.TrimSpace(strings.TrimPrefix(t, "var "))
-			if strings.HasPrefix(rest, "(") {
-				// multi-line block handled poorly — skip paren form for now
-			} else {
+			if !strings.HasPrefix(rest, "(") {
 				name := firstIdent(rest)
 				if name != "" && !strings.HasPrefix(name, "Err") {
 					out[name] = struct{}{}
@@ -601,8 +1018,6 @@ func packageLevelVarNames(source string) map[string]struct{} {
 
 func packageLevelVarsWritten(source string, globals map[string]struct{}) map[string]struct{} {
 	written := map[string]struct{}{}
-	// After first function starts, look for clear writes on the global or its fields.
-	// Do NOT treat name.Method() as a write.
 	inFunc := false
 	for _, line := range strings.Split(source, "\n") {
 		t := strings.TrimSpace(line)
@@ -612,35 +1027,46 @@ func packageLevelVarsWritten(source string, globals map[string]struct{}) map[str
 		if !inFunc {
 			continue
 		}
+		// Package-level vars declared after functions are not in-function writes.
+		if strings.HasPrefix(t, "var ") || strings.HasPrefix(t, "const ") || strings.HasPrefix(t, "type ") {
+			continue
+		}
 		for name := range globals {
 			if strings.Contains(t, name+" :=") || strings.Contains(t, name+":=") {
-				continue // shadowing short decl
+				continue
 			}
-			// name = / name += / name[
+			// Direct assign / compound assign (not bare index read).
 			if strings.Contains(t, name+" =") || strings.Contains(t, name+"=") ||
-				strings.Contains(t, name+"[") || strings.Contains(t, name+" +=") ||
-				strings.Contains(t, name+"+=") {
-				// Exclude method calls: name.Foo( without assignment after
+				strings.Contains(t, name+" +=") || strings.Contains(t, name+"+=") ||
+				strings.Contains(t, name+"++") || strings.Contains(t, name+"--") {
 				if isMethodCallOnly(t, name) {
 					continue
 				}
 				written[name] = struct{}{}
 				continue
 			}
-			// field write: name.field = or name.field[
+			// Index write: name[i] = ...
+			if strings.Contains(t, name+"[") && strings.Contains(t, "=") && !strings.Contains(t, ":=") {
+				// likely write if '=' after the index
+				idx := strings.Index(t, name+"[")
+				rest := t[idx:]
+				if eq := strings.Index(rest, "="); eq >= 0 && !strings.Contains(rest[:eq], ":=") {
+					written[name] = struct{}{}
+					continue
+				}
+			}
+			// Field write: name.field =
 			if strings.Contains(t, name+".") {
-				rest := t[strings.Index(t, name+".")+len(name)+1:]
-				if strings.Contains(rest, "=") || strings.Contains(rest, "[") {
-					// still exclude name.Method()
-					dot := strings.Index(t, name+".")
-					after := t[dot+len(name)+1:]
-					identEnd := 0
-					for identEnd < len(after) && (isIdentByteBP(after[identEnd])) {
-						identEnd++
-					}
-					if identEnd < len(after) && after[identEnd] == '(' {
-						continue
-					}
+				dot := strings.Index(t, name+".")
+				after := t[dot+len(name)+1:]
+				identEnd := 0
+				for identEnd < len(after) && isIdentByteBP(after[identEnd]) {
+					identEnd++
+				}
+				if identEnd < len(after) && after[identEnd] == '(' {
+					continue // method call
+				}
+				if strings.Contains(after, "=") {
 					written[name] = struct{}{}
 				}
 			}
@@ -650,7 +1076,6 @@ func packageLevelVarsWritten(source string, globals map[string]struct{}) map[str
 }
 
 func isMethodCallOnly(line, name string) bool {
-	// true if the only uses of name are name.Method( forms without assignment
 	if strings.Contains(line, name+" =") || strings.Contains(line, name+"=") ||
 		strings.Contains(line, name+"[") {
 		return false
@@ -871,6 +1296,160 @@ func detectBP39(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		}
 		byteOff += len(line) + 1
 	}
+}
+
+// detectBP40: package-level const block groups unrelated names (Rust
+// detect_bp_40_unrelated_constants_in_one_block). Requires ≥3 names whose
+// constant_prefix set has size > 2.
+func detectBP40(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+	if isTestFile(unit) {
+		return
+	}
+	meta := MetadataForID("BP-40")
+	msg := "const block groups unrelated constants together"
+
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		for _, decl := range facts.tree.File.Decls {
+			gd, ok := decl.(*goast.GenDecl)
+			if !ok || gd.Tok != token.CONST {
+				continue
+			}
+			names := constDeclNames(gd)
+			if len(names) < 3 {
+				continue
+			}
+			prefixes := make(map[string]struct{}, len(names))
+			for _, name := range names {
+				prefixes[constantPrefix(name)] = struct{}{}
+			}
+			if len(prefixes) > 2 {
+				pushAt(unit, meta, facts.tree.Offset(gd.Pos()), msg, out)
+			}
+		}
+		return
+	}
+
+	// Text fallback when AST is unavailable.
+	detectBP40Text(unit, meta, msg, out)
+}
+
+func constDeclNames(gd *goast.GenDecl) []string {
+	var names []string
+	for _, spec := range gd.Specs {
+		vs, ok := spec.(*goast.ValueSpec)
+		if !ok {
+			continue
+		}
+		for _, id := range vs.Names {
+			if id != nil && id.Name != "" {
+				names = append(names, id.Name)
+			}
+		}
+	}
+	return names
+}
+
+// constantPrefix mirrors Rust code_organization::constant_prefix:
+// underscore segment before first '_', else leading camelCase run until the
+// next ASCII uppercase letter.
+func constantPrefix(name string) string {
+	if i := strings.IndexByte(name, '_'); i >= 0 {
+		return name[:i]
+	}
+	var b strings.Builder
+	for _, ch := range name {
+		if ch >= 'A' && ch <= 'Z' && b.Len() > 0 {
+			break
+		}
+		b.WriteRune(ch)
+	}
+	if b.Len() == 0 {
+		return name
+	}
+	return b.String()
+}
+
+func detectBP40Text(unit *core.ParsedUnit, meta *rules.RuleMetadata, msg string, out *[]rules.Finding) {
+	src := unit.Source
+	lines := strings.Split(src, "\n")
+	byteOff := 0
+	i := 0
+	for i < len(lines) {
+		line := lines[i]
+		t := strings.TrimSpace(stripLineComment(line))
+		// const ( ... ) block only (Rust const_declaration with multiple specs)
+		if t == "const (" || strings.HasPrefix(t, "const(") {
+			blockStart := byteOff
+			var names []string
+			i++
+			byteOff += len(line) + 1
+			for i < len(lines) {
+				inner := lines[i]
+				it := strings.TrimSpace(stripLineComment(inner))
+				if it == ")" {
+					break
+				}
+				if it != "" && !strings.HasPrefix(it, "//") {
+					// left of '=' or whole line; first identifier per line (may be multi-name)
+					left := it
+					if eq := strings.Index(it, "="); eq >= 0 {
+						left = strings.TrimSpace(it[:eq])
+					}
+					for _, part := range strings.Split(left, ",") {
+						part = strings.TrimSpace(part)
+						if part == "" {
+							continue
+						}
+						// take first token (name [type])
+						name := strings.Fields(part)
+						if len(name) == 0 {
+							continue
+						}
+						ident := name[0]
+						if isSimpleIdent(ident) {
+							names = append(names, ident)
+						}
+					}
+				}
+				byteOff += len(inner) + 1
+				i++
+			}
+			if len(names) >= 3 {
+				prefixes := make(map[string]struct{}, len(names))
+				for _, name := range names {
+					prefixes[constantPrefix(name)] = struct{}{}
+				}
+				if len(prefixes) > 2 {
+					pushAt(unit, meta, blockStart, msg, out)
+				}
+			}
+			if i < len(lines) {
+				byteOff += len(lines[i]) + 1
+				i++
+			}
+			continue
+		}
+		byteOff += len(line) + 1
+		i++
+	}
+}
+
+func isSimpleIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i, r := range s {
+		if i == 0 {
+			if !unicode.IsLetter(r) && r != '_' {
+				return false
+			}
+			continue
+		}
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' {
+			return false
+		}
+	}
+	return true
 }
 
 // detectBP42: import alias used only once (Rust count_word_occurrences <= 2).

@@ -46,6 +46,12 @@ func IsHandlerShaped(source string, startByte int) bool {
 		strings.Contains(window, "c.HTML(")
 }
 
+// FileHasHandler is the whole-file handler-shape check (Rust file_has_handler).
+// Intentionally does NOT treat bare *http.Request as a handler (CLI/tools).
+func FileHasHandler(source string) bool {
+	return IsHandlerShaped(source, len(source))
+}
+
 func utf8Start(s string, i int) bool {
 	if i <= 0 || i >= len(s) {
 		return true

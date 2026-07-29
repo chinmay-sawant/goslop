@@ -78,9 +78,16 @@ func parseAssignments(source string) []assignment {
 			continue
 		}
 		// short var decl: name := <expr>
+		// Also handle if/for/switch init: `if xff := r.Header.Get(...); xff != "" {`
 		if idx := strings.Index(trimmed, ":="); idx > 0 {
 			lhs := strings.TrimSpace(trimmed[:idx])
 			rhs := trimmed[idx+2:]
+			// Strip leading control-flow keywords so "if xff" → "xff".
+			lhs = stripControlFlowLHS(lhs)
+			// Init form ends at first top-level ';' in the rhs.
+			if semi := indexTopLevelSemi(rhs); semi >= 0 {
+				rhs = rhs[:semi]
+			}
 			out = append(out, assignment{lhs: splitIdents(lhs), rhs: rhs})
 			continue
 		}
@@ -96,10 +103,67 @@ func parseAssignments(source string) []assignment {
 			}
 			lhs := strings.TrimSpace(trimmed[:idx])
 			rhs := trimmed[idx+1:]
+			lhs = stripControlFlowLHS(lhs)
 			out = append(out, assignment{lhs: splitIdents(lhs), rhs: rhs})
 		}
 	}
 	return out
+}
+
+// stripControlFlowLHS removes leading if/for/switch from short-decl left-hand sides.
+func stripControlFlowLHS(lhs string) string {
+	lhs = strings.TrimSpace(lhs)
+	for _, kw := range []string{"if ", "for ", "switch "} {
+		if strings.HasPrefix(lhs, kw) {
+			return strings.TrimSpace(lhs[len(kw):])
+		}
+	}
+	return lhs
+}
+
+// indexTopLevelSemi returns the index of the first ';' not inside strings/parens.
+func indexTopLevelSemi(s string) int {
+	depth := 0
+	inStr := byte(0)
+	escape := false
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if inStr == '"' || inStr == '\'' {
+				if c == '\\' {
+					escape = true
+					continue
+				}
+				if c == inStr {
+					inStr = 0
+				}
+				continue
+			}
+			if inStr == '`' && c == '`' {
+				inStr = 0
+			}
+			continue
+		}
+		switch c {
+		case '"', '`', '\'':
+			inStr = c
+		case '(', '[', '{':
+			depth++
+		case ')', ']', '}':
+			if depth > 0 {
+				depth--
+			}
+		case ';':
+			if depth == 0 {
+				return i
+			}
+		}
+	}
+	return -1
 }
 
 func rhsTouchesTaint(rhs string, tainted map[string]struct{}) bool {

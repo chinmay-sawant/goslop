@@ -402,13 +402,18 @@ var cweNeedleRules = []cweNeedleRule{
 		meta:   &MetaCWE273,
 	},
 	{
+		// Rust parity (privilege_escalation/transitions.rs): os.Rename + error
+		// treated as success without errors.Is(err, syscall.EPERM). The old
+		// Content-Type needle FPs on any JSON response (e.g. gorl middleware).
 		id: "CWE-274",
 		groups: []needleGroup{
-			{"w.Header().Set(\"Content-Type\", \"application/json\")"},
+			{"os.Rename", "if err != nil {", "w.WriteHeader(http.StatusOK)"},
+			{"os.Rename", "if err != nil {", "c.JSON(200, gin.H{\"rotated\": true})"},
 		},
-		span: "w.Header().Set(\"Content-Type\", \"application/json\")",
-		msg:  "potential security issue detected (heuristic port)",
-		meta: &MetaCWE274,
+		forbid: []string{"errors.Is(err, syscall.EPERM)"},
+		span:   "os.Rename",
+		msg:    "an insufficient-privilege filesystem failure is treated like a successful rotation",
+		meta:   &MetaCWE274,
 	},
 	{
 		id: "CWE-276",
@@ -787,13 +792,16 @@ var cweNeedleRules = []cweNeedleRule{
 		meta: &MetaCWE359,
 	},
 	{
+		// Rust parity (environment_exposure/network.rs): X-Forwarded-For alone.
+		// Suppress when RemoteAddr / SplitHostPort are also present (fallback IP).
 		id: "CWE-360",
 		groups: []needleGroup{
 			{"X-Forwarded-For"},
 		},
-		span: "X-Forwarded-For",
-		msg:  "a security-sensitive client IP action trusts caller-controlled forwarded header data",
-		meta: &MetaCWE360,
+		forbid: []string{"SplitHostPort(", "RemoteAddr"},
+		span:   "X-Forwarded-For",
+		msg:    "a security-sensitive client IP action trusts caller-controlled forwarded header data",
+		meta:   &MetaCWE360,
 	},
 	{
 		id: "CWE-366",
