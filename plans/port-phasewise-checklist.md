@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** §12.4 hard ship metrics locked (PR #16) — 915 findings, severity 10/197/312/396, top-five exact, export 915+37; residual site-level FN/FP and optional polish remain `[~]`
+> **Status:** §12.4 hard ship metrics locked (PR #16) — 915 findings, severity 10/197/312/396, top-five exact, export 915+37; pure-Go `go/ast` parse path (no CGO / tree-sitter) on PR #20; residual site-level FN/FP and optional polish remain `[~]`
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -25,7 +25,7 @@ Supporting docs: [`architecture-go.md`](./architecture-go.md), [`parity-matrix.m
 |------:|------|------|---------|
 | 0 | Bootstrap | Module, layout, copied assets, README | — |
 | 1 | Core contracts | Finding, Severity, Detector, ScanContext, profiles | 0 |
-| 2 | Fixture + parse | Materializer, tree-sitter Go, ParsedUnit, SourceIndex | 1 |
+| 2 | Fixture + parse | Materializer, pure-Go `go/ast` parse, ParsedUnit, SourceIndex | 1 |
 | 3 | Engine MVP | Walk, registry, parallel scan, one end-to-end rule | 1–2 |
 | 4 | CLI / app | Flags, profiles, exit codes, `init`, list/explain | 3 |
 | 5 | Reporting | text / JSON / SARIF (+ export stubs) | 3–4 |
@@ -107,13 +107,14 @@ go build -o bin/codehound ./cmd/codehound
 - [ ] Manifest support (`tests/fixtures/manifest.toml`) if required by integration tests
 - [x] Unit tests: round-trip sample fixtures (`CWE-22-vulnerable.txt`, PERF samples)
 
-### 2.2 Tree-sitter Go integration
-- [x] Add tree-sitter Go bindings + grammar dependency (`go-tree-sitter` + `tree-sitter-go`; **CGO required**)
-- [x] `ParsePool`: one parser per worker — `tsparse.NewParser` / `Parser.Parse` (pool wiring deferred to engine)
-- [x] Build `ParsedUnit` from path + source bytes — `core.NewParsedUnit` / `NewParsedUnitWithTree` ready; tsparse wiring in engine Phase 3
-- [x] Line/col from byte offset (UTF-8 safe byte offsets) — `internal/ast` + `tsparse.Tree.LineCol`
-- [x] Iterative tree walk helpers in `internal/ast`
-- [x] Smoke: parse a materialized fixture without panic
+### 2.2 Pure-Go parse path (`go/parser` + `go/ast`, no CGO)
+- [x] **Superseded tree-sitter/CGO** (removed on PR #20 / issue #19): no `github.com/tree-sitter/*` in `go.mod`; `CGO_ENABLED=0` default in Makefile + CI
+- [x] `internal/lang/go/goparse` — stdlib `go/parser` + `go/ast` (`Parse` → `*goparse.Tree`)
+- [x] Go `LanguagePlugin.ParseSource` attaches `*goparse.Tree`; source-only fallback on hard parse failure
+- [x] Build `ParsedUnit` from path + source — `core.NewParsedUnit` / `NewParsedUnitWithTree` (opaque `Tree any`)
+- [x] Line/col from byte offset (UTF-8 safe) — `ParsedUnit.LineCol` / `ComputeLineStarts` in `internal/core/unit.go` + `internal/ast`
+- [x] Language-plugin seam documented for a **second language without CGO** — package doc on `core.LanguagePlugin` (`internal/core/plugin.go`)
+- [x] Smoke: parse materialized fixtures; `CGO_ENABLED=0 go test ./...` + product scan
 
 ### 2.3 SourceIndex
 - [x] Multi-needle index (strings.Contains build; Aho-Corasick upgrade path documented in `source_index.go`)
@@ -193,7 +194,7 @@ go build -o bin/codehound ./cmd/codehound
 - [x] Metadata for implemented rules — `metadata.go` (12 rules; full catalogue later)
 - [x] Domain dispatcher: `GoPerfScan` runs enabled PERF rules only — `scan.go`
 - [x] Skeleton + registry inventory README — `detectors/perf/README.md` (239 rows; 12 implemented)
-- [x] Go plugin `ParseSource` wires tree-sitter; engine closes trees after scan
+- [x] Go plugin `ParseSource` wires `goparse` (pure Go); unit tree is opaque `any` (no CGO close path)
 
 ### 6.1 Domains (check off as ported + fixture-backed)
 - [x] `general_perf` (~164 registry rows) — batches 1/3/4/5 + seed (heuristic ports)
@@ -265,7 +266,7 @@ go build -o bin/codehound ./cmd/codehound
 > Rust: `codehound/src/lang/go/detectors/cwe/taint/`  
 > Go: `internal/lang/go/detectors/cwe/taint/`
 
-- [x] Taint graph extract (assignments, calls, returns) — `extract.go` / `callgraph.go` / tree-sitter
+- [x] Taint graph extract (assignments, calls, returns) — `extract.go` / `callgraph.go` / `go/ast`
 - [x] Sources / sinks / sanitizers tables — `classify.go` (name-string honesty)
 - [x] Intra-procedural BFS path finding — `build.go` + `query.go`
 - [x] Bounded inter-procedural hops (`taint_max_depth`) — `summary.go` / `interproc.go` (1–4)
@@ -317,8 +318,8 @@ go build -o bin/codehound ./cmd/codehound
 - [ ] Expand integration suite beyond seed (full fixture matrix as CI gate)
 
 ### 12.2 Delivery
-- [x] Multi-arch build notes (or GoReleaser config) — `.goreleaser.stub.yml` + README CGO multi-arch notes (not wired to release CI)
-- [x] CI workflow: `go test ./...`, `go vet`, build — `.github/workflows/ci.yml` (CGO + `build-essential`)
+- [x] Multi-arch build notes (or GoReleaser config) — `.goreleaser.stub.yml` + pure-Go cross-compile (no C toolchain)
+- [x] CI workflow: `go test ./...`, `go vet`, build — `.github/workflows/ci.yml` (`CGO_ENABLED=0`)
 - [~] Version / `--version` matches release process — `internal/app.Version = "0.1.0-dev"`; release tagging process TBD
 - [x] Update root README: install, usage, status of port — root `README.md` (2026-07-29)
 - [x] Makefile targets: `build`, `test`, `integration`, `vet`, `fmt`, `lint`, `ci`, `version`
@@ -364,7 +365,7 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | Top rules (order + counts) | **BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44** | [x] **exact match** |
 | Export context | **915** files under `scripts/findings/functions` | [x] **915** |
 | Export chunks | **37** files under `scripts/chunks` | [x] **37** (chunk-size 25) |
-| Wall time | ~**480 ms** class on reference host | [x] soft: Go **~0.33–0.41s** (sub-500ms; slightly faster than Rust ~0.44–0.57s on same host) |
+| Wall time | ~**480 ms** class on reference host; pure-Go soft target **295.7ms ±50ms**, hard **&lt;400ms** | [x] soft: scan summary **~170–220ms**, process **~0.23–0.30s** (warm binary); hard **&lt;400ms** (2026-07-30, pure-Go / PR #20) |
 
 **Residual FN/FP (tracked, severity-neutral):** pure FP/FN rule sets empty on `gopdfsuit`. Remaining **partial location swaps** cancel inside the same severity bucket, e.g. PERF-119↔PERF-128 (±1 medium), BP-70↔BP-52 (±1 low). Pure-FP museum rules (PERF-116/125/158, BP-100, CWE-918, …) remain suppressed on **real project tree** scans only (fixtures/unit tests still fire). Optional follow-ups: exact site-for-site identity, full fixture matrix CI, rewritten pure-FP museums.
 
@@ -383,7 +384,7 @@ make oracle
 - [x] **Finding oracle locked:** total **915**; severity **10 / 197 / 312 / 396**; top-five rules and counts exact
 - [x] **Export oracle locked:** **915** context files + **37** chunk files to the same default dirs (`scripts/findings/functions`, `scripts/chunks`)
 - [x] **Scan shape:** **78** files scanned; full re-analysis under `--no-cache`; skipped-file counter wired (`FilesSkipped` / summary line)
-- [x] Recorded Go wall time + host (soft): **~0.33–0.41s** wall on local Linux host (2026-07-30)
+- [x] Recorded Go wall time + host (soft): pure-Go scan **~170–220ms** / process **~0.23–0.30s** on local Linux host (2026-07-30, PR #20); hard **&lt;400ms**
 - [x] Residual FN/FP vs Rust recorded as explicit `[~]` rows above (do not silently change the oracle)
 
 **Hard vs soft**
@@ -424,7 +425,8 @@ make oracle
 |------|---------|---------|
 | 2026-07-29 | Init | Plans + asset copy; scaffold; 5 parallel subagents |
 | 2026-07-29 | Phase 1 | `internal/{cwe,rules,core}` — findings, fingerprint v2, Detector, profiles |
-| 2026-07-29 | Phase 2 | `fixture` materializer + `ast` + `tsparse` (CGO tree-sitter) |
+| 2026-07-29 | Phase 2 | `fixture` materializer + parse path (later pure-Go `goparse` on PR #20) |
+| 2026-07-30 | Pure-Go | PR #20: drop tree-sitter/CGO; `goparse` + `go/ast` facts/taint; `CGO_ENABLED=0`; §12.4 hard metrics hold; wall &lt;400ms |
 | 2026-07-29 | Phase 3 | Engine walk/registry/analyzer; seed **CWE-78 / CWE-89 / PERF-116** |
 | 2026-07-29 | Phase 4–5 | CLI + text/JSON/SARIF reporters + `init` |
 | 2026-07-29 | Integrate | `go test ./...` PASS; smoke scan fires CWE-78 (exit 1) |

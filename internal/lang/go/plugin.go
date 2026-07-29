@@ -6,6 +6,11 @@
 //	golang.NewPlugin() / golang.Register(reg)
 //
 // Parse path is pure Go (go/parser + go/ast via goparse) — no CGO.
+//
+// This package is the reference LanguagePlugin. To add another language without
+// CGO, implement core.LanguagePlugin the same way: pure-Go ParseSource, opaque
+// unit.Tree, detectors that type-assert only inside the language package.
+// See the package doc on core.LanguagePlugin.
 package golang
 
 import (

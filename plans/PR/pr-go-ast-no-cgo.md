@@ -15,6 +15,7 @@ Replace tree-sitter/CGO parsing with pure Go (`go/parser` + `go/ast`) behind a l
 - New `internal/lang/go/goparse` — stdlib `go/parser` + `go/ast` (no CGO)
 - Go `LanguagePlugin.ParseSource` attaches `*goparse.Tree`
 - Removed `internal/lang/go/tsparse` and `github.com/tree-sitter/*` deps
+- `core.LanguagePlugin` package doc: how to add a **second language without CGO**
 
 ### Detectors
 
@@ -25,17 +26,18 @@ Replace tree-sitter/CGO parsing with pure Go (`go/parser` + `go/ast`) behind a l
 ### Build / docs
 
 - `CGO_ENABLED=0` default in Makefile and CI
-- README + issue/PR templates updated for goslop / pure-Go
+- README + checklist + `architecture-go.md` + `architecture-performance.md` updated for pure-Go parse path
+- Issue/PR templates updated for goslop / pure-Go
 
 ## Impact
 
 | Area | Impact |
 |------|--------|
-| **Performance** | `make run` ~**190–270ms** wall (baseline **295.7ms ±50ms**, hard **&lt;400ms**) |
+| **Performance** | Scan summary **~170–220ms**; process wall **~0.23–0.30s** (warm binary). Soft baseline **295.7ms ±50ms**; hard **&lt;400ms** (holds) |
 | **Memory** | No tree-sitter C heap |
 | **Behavior / correctness** | §12.4: **915** findings; sev **10/197/312/396**; top-five exact; export **915+37** |
 | **API / CLI** | Unchanged product flags |
-| **Dependencies** | Dropped tree-sitter CGO modules |
+| **Dependencies** | Dropped tree-sitter CGO modules; `go.mod` only `golang.org/x/sync` |
 | **Binary size / build time** | Smaller; pure-Go cross-compile friendly |
 
 ## Breaking changes / migration
@@ -44,24 +46,30 @@ Replace tree-sitter/CGO parsing with pure Go (`go/parser` + `go/ast`) behind a l
 |------|-----------|
 | Builds that assumed CGO | Set `CGO_ENABLED=0` (default); remove C toolchain requirement |
 
-## Test plan
+## Test plan / success criteria
 
-- [x] `CGO_ENABLED=0 go test ./...`
-- [x] `CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound`
-- [x] `make run` wall &lt; 400ms and within ±50ms of 295.7ms
-- [x] §12.4 hard metrics: 915 / sev / top-five / export 915+37
+- [x] `CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound` succeeds
+- [x] `CGO_ENABLED=0 go test ./...` passes
+- [x] No `github.com/tree-sitter/*` deps in `go.mod`
+- [x] `make run` wall **&lt;400ms** (scan ~170–220ms; process ~0.23–0.30s warm) — under hard gate; faster than documented **295.7ms ±50ms** band on this host
+- [x] §12.4 hard metrics: **915** findings; sev **10/197/312/396**; top-five exact; export **915+37**
+- [x] Language plugin interface documented for adding a second language without CGO (`internal/core/plugin.go`)
+- [x] README / checklist / architecture docs updated for pure-Go parse path
 
 ### Commands
 
 ```sh
+CGO_ENABLED=0 go build -o bin/codehound ./cmd/codehound
 CGO_ENABLED=0 go test ./...
-make run
+make run   # SCAN_PATH defaults to gopdfsuit
 ```
 
 ## Screenshots / sample output
 
+Verified 2026-07-30 (warm binary, gopdfsuit):
+
 ```text
-scanned 78 files (28042 lines) in 270.1ms
+scanned 78 files (28042 lines) in 179.0ms
   cache: 0 hits, 78 misses (full re-analysis)
   skipped 551 files
 915 findings
