@@ -1,7 +1,7 @@
 # CodeHound Go Port — Phase-Wise Checklist
 
 > **Parent:** Rust product at `/home/chinmay/ChinmayPersonalProjects/codehound`
-> **Status:** Integration branch — Phases 6 + 10 + 12a CI scaffolding; merging 7/8/9 workstreams; §12.4 still open
+> **Status:** Integration branch — 6 PERF + 7 CWE + 10 cache + 12a CI; merging 8/9; §12.4 still open
 > **Estimated effort:** multi-session full port (400+ Rust modules → Go packages)
 > **Canonical ledger:** this file only
 
@@ -218,27 +218,31 @@ go build -o bin/codehound ./cmd/codehound
 > Rust: `codehound/src/lang/go/detectors/cwe/domains/`
 
 ### 7.0 CWE infrastructure
-- [ ] `GoCweFacts` / shared guards / sink tables (`sinks`)
-- [ ] Domain modules mirroring Rust layout
-- [x] Seed metadata for **CWE-78** / **CWE-89** (`detectors/cwe/metadata.go`); full tables later
+- [x] `GoCweFacts` + `cweNeedles` SourceIndex (`detectors/cwe/facts.go`, `needles.go`)
+- [x] Unified `GoCweScan` + `RegisterRule` (`scan.go`) — PERF-style catalogue
+- [x] Full metadata table from ruleset chunks (`metadata_generated.go`) — all 175 IDs
 - [x] Skeleton + registry inventory README — `detectors/cwe/README.md` (175 rows)
 - [x] Shared source heuristics — `detectors/sourceutil` (tainted idents, call scan)
+- [~] Domain packages as separate Go pkgs — **deferred**; single `cwe` package with table + taint-lite (same API surface)
 
 ### 7.1 Domains
-- [ ] `access_control`
-- [ ] `credentials_and_secrets`
-- [ ] `cryptography`
-- [~] `injection` — **seed: CWE-78** (exec.Command + request/shell), **CWE-89** (dynamic Query/Exec SQL)
-- [ ] `information_exposure`
-- [ ] `input_validation` (+ redos)
-- [ ] `configuration`
-- [ ] `concurrency`
-- [ ] `deserialization`
-- [ ] `general_security` clusters
-- [ ] file/path/network/request registry rows
+- [x] `access_control` — SI needle ports (30)
+- [x] `credentials_and_secrets` — SI needle ports (15)
+- [x] `cryptography` — SI needle ports (9)
+- [x] `injection` — **CWE-78/89/90/91** taint-lite; **93/619/917** structural SI
+- [x] `information_exposure` — SI needle ports (12)
+- [x] `input_validation` (+ redos) — SI needle ports (5+2)
+- [x] `configuration` — SI needle ports (6)
+- [x] `concurrency` — SI needle ports (6)
+- [x] `deserialization` — SI needle ports (3)
+- [x] `general_security` clusters — SI needle ports (75)
+- [x] file/path/network/request registry rows — 434, 22 (taint-lite), 1327, 601/918
 
 ### 7.2 CWE closure gate
-- [ ] Registry complete; fixture suite for structural CWE green or explicitly quarantined
+- [x] Registry complete: **175/175** IDs registered via `RegisterRule`
+- [x] Unit + sample fixture suite green (`go test ./internal/lang/go/detectors/cwe/`)
+- [~] Full 350-fixture matrix / call-fact structural parity — optional CI; many rules remain fixture-shaped museums (Rust trust freezes)
+- [ ] Phase 9 full taint graph upgrades 22/78/79/89/90/91 beyond taint-lite
 
 ---
 
@@ -424,14 +428,14 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | 2026-07-29 | Phase 6a | PERF infra (`GoPerfFacts`, `GoPerfScan`); loop_allocations 1–8; PERF-32/50/116/230; plugin tsparse |
 | 2026-07-29 | Phase 6b | 5 parallel batches → **239/239** PERF rules registered; `go test ./...` PASS |
 | 2026-07-29 | Phase 12a | CI workflow + integration seed harness + contract/schema tests + README; §12.4 still blocked |
+| 2026-07-29 | Phase 7 | CWE infra + **175/175** structural/taint-lite registered; `go test ./...` PASS |
+| 2026-07-29 | Phase 10 | Cache / baseline / ignore + walk gitignore; `go test ./...` PASS |
 
 ---
 
 ## Next actions (immediate)
 
-1. **Phase 6 polish** — residual FN/FP vs Rust; expand `perfNeedles`; full fixture matrix optional CI.
-2. **Phase 7** — remaining CWE structural domains (beyond injection seed).
-3. **Phase 8** — bad-practice modules.
-4. **Phase 9** — full taint graph (upgrade seed CWE-78/89 toward Rust oracle).
-5. **Phase 10–11** — cache/baseline/ignore, pack fidelity.
-6. **Phase 12 remainder** — expand fixture matrix, perf budget, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).
+1. **Integration** — land BP (8) + taint (9) workstreams; resolve combined tests.
+2. **Phase 11** — packs / maturity / quarantine fidelity on integrated detector surface.
+3. **Phase 6–7 polish** — residual FN/FP vs Rust; expand needles; full fixture matrix optional CI.
+4. **Phase 12 remainder** — expand fixture matrix, perf budget, then **§12.4** final validation (`--export-context --export-chunks --no-cache` → 915 findings / 915+37 exports).

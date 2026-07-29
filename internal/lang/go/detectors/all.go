@@ -10,8 +10,7 @@ import (
 // All returns the detector set registered with the Go language plugin.
 func All() []core.Detector {
 	return []core.Detector{
-		cwe.NewCWE78(),
-		cwe.NewCWE89(),
+		cwe.NewGoCweScan(),
 		perf.NewGoPerfScan(),
 	}
 }
