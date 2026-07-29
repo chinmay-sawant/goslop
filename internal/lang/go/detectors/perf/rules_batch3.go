@@ -556,25 +556,304 @@ func detectPERF120(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF121: struct literal field-by-field copy Options{ Host: src.Host, Port: src.Port }
+// detectPERF121: two consecutive same-shape struct literals where the second
+// builds field-by-field from the first. Direct conversion T(x) would suffice.
+// Rust parity: different type names, identical field sets, ≤2 newlines between
+// literals, and every keyed field in the later literal reads binding.Field.
 func detectPERF121(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	_ = facts
 	src := unit.Source
-	// look for Type{ Field: other.Field, Field2: other.Field2 }
-	// at least 2 fields from same source
+	if !strings.Contains(src, "{") {
+		return
+	}
 	file := unitFile(unit)
-	// simple: consecutive Field: x.Field patterns inside composite literal
-	re := regexp.MustCompile(`(\w+)\s*\{\s*(\w+)\s*:\s*(\w+)\.(\w+)\s*,\s*(\w+)\s*:\s*(\w+)\.(\w+)`)
-	if m := re.FindStringSubmatchIndex(src); m != nil {
-		// same source ident and field names match keys
-		sub := re.FindStringSubmatch(src)
-		if sub != nil && sub[2] == sub[4] && sub[5] == sub[7] && sub[3] == sub[6] {
-			lineN, col := unit.LineCol(m[0])
-			rules.PushFinding(&MetaPERF121, file, lineN, col,
-				"manual struct field copy; consider direct type conversion when layouts match", out)
-			return
+	lits := b3collectStructLiterals(src)
+	if len(lits) < 2 {
+		return
+	}
+	for i := 0; i+1 < len(lits); i++ {
+		a, b := lits[i], lits[i+1]
+		if a.typeName == b.typeName {
+			continue
+		}
+		if !b3stringSlicesEqual(a.fields, b.fields) {
+			continue
+		}
+		// Adjacent: at most 2 newlines between closing of a and opening of b.
+		if a.end > b.start || a.end > len(src) || b.start > len(src) {
+			continue
+		}
+		between := src[a.end:b.start]
+		if strings.Count(between, "\n") > 2 {
+			continue
+		}
+		binding, ok := b3literalBinding(src, a.start)
+		if !ok {
+			continue
+		}
+		if !b3literalFieldsReadFrom(src, b, binding) {
+			continue
+		}
+		lineN, col := unit.LineCol(a.start)
+		rules.PushFinding(&MetaPERF121, file, lineN, col,
+			"struct literal copies another literal of the same shape; use a direct type conversion (T(x))", out)
+		return
+	}
+}
+
+type b3structLiteral struct {
+	typeName string
+	fields   []string
+	start    int
+	end      int
+}
+
+func b3stringSlicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
 		}
 	}
+	return true
+}
+
+func b3collectStructLiterals(source string) []b3structLiteral {
+	var out []b3structLiteral
+	for i := 0; i < len(source); i++ {
+		if source[i] != '{' {
+			continue
+		}
+		if i == 0 {
+			continue
+		}
+		pre := strings.TrimRight(source[:i], " \t\n\r")
+		// Preceding token must be a simple type name.
+		j := len(pre)
+		for j > 0 {
+			r := rune(pre[j-1])
+			if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
+				j--
+				continue
+			}
+			break
+		}
+		name := pre[j:]
+		if !b3isSimpleIdent(name) {
+			continue
+		}
+		// Matching '}' (first close; fine for non-nested fixture literals).
+		closeRel := strings.IndexByte(source[i:], '}')
+		if closeRel < 0 {
+			continue
+		}
+		body := source[i+1 : i+closeRel]
+		fields := b3parseFieldList(body)
+		if len(fields) == 0 {
+			continue
+		}
+		out = append(out, b3structLiteral{
+			typeName: name,
+			fields:   fields,
+			start:    i,
+			end:      i + closeRel + 1,
+		})
+	}
+	return out
+}
+
+func b3parseFieldList(body string) []string {
+	var fields []string
+	var current strings.Builder
+	depth := 0
+	for _, c := range body {
+		switch c {
+		case '(', '[', '{':
+			depth++
+			current.WriteRune(c)
+		case ')', ']', '}':
+			depth--
+			current.WriteRune(c)
+		case ',':
+			if depth == 0 {
+				if name, ok := b3fieldName(current.String()); ok {
+					fields = append(fields, name)
+				}
+				current.Reset()
+				continue
+			}
+			current.WriteRune(c)
+		default:
+			current.WriteRune(c)
+		}
+	}
+	if name, ok := b3fieldName(current.String()); ok {
+		fields = append(fields, name)
+	}
+	return fields
+}
+
+func b3fieldName(text string) (string, bool) {
+	text = strings.TrimSpace(text)
+	name, _, ok := strings.Cut(text, ":")
+	if !ok {
+		return "", false
+	}
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return "", false
+	}
+	return name, true
+}
+
+// b3literalBinding returns the local name receiving a struct literal when it is
+// the complete RHS of a short declaration (name := Type{...}).
+func b3literalBinding(source string, literalStart int) (string, bool) {
+	if literalStart <= 0 || literalStart > len(source) {
+		return "", false
+	}
+	// Walk left over TypeName before '{'.
+	pre := strings.TrimRight(source[:literalStart], " \t\n\r")
+	// Drop type name.
+	j := len(pre)
+	for j > 0 {
+		r := rune(pre[j-1])
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
+			j--
+			continue
+		}
+		break
+	}
+	pre = strings.TrimRight(pre[:j], " \t\n\r")
+	// Expect ":="
+	if !strings.HasSuffix(pre, ":=") {
+		return "", false
+	}
+	pre = strings.TrimRight(pre[:len(pre)-2], " \t\n\r")
+	// Binding is last identifier on the line.
+	if nl := strings.LastIndexByte(pre, '\n'); nl >= 0 {
+		pre = pre[nl+1:]
+	}
+	pre = strings.TrimSpace(pre)
+	if !b3isSimpleIdent(pre) {
+		return "", false
+	}
+	return pre, true
+}
+
+// b3literalFieldsReadFrom requires every keyed field in the target literal to
+// read the corresponding field from binding (binding.Field).
+func b3literalFieldsReadFrom(source string, lit b3structLiteral, binding string) bool {
+	if lit.start+1 >= lit.end-1 || lit.end > len(source) {
+		return false
+	}
+	body := source[lit.start+1 : lit.end-1]
+	keyed := b3parseKeyedFieldValues(body)
+	for _, field := range lit.fields {
+		want := binding + "." + field
+		found := false
+		for _, kv := range keyed {
+			if kv.name == field && kv.value == want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return len(lit.fields) > 0
+}
+
+type b3keyedField struct {
+	name  string
+	value string
+}
+
+func b3parseKeyedFieldValues(body string) []b3keyedField {
+	var fields []b3keyedField
+	var current strings.Builder
+	depth := 0
+	var quote rune
+	runes := []rune(body)
+	for i := 0; i < len(runes); i++ {
+		ch := runes[i]
+		if quote != 0 {
+			current.WriteRune(ch)
+			if ch == '\\' && i+1 < len(runes) {
+				i++
+				current.WriteRune(runes[i])
+				continue
+			}
+			if ch == quote {
+				quote = 0
+			}
+			continue
+		}
+		switch ch {
+		case '"', '`':
+			quote = ch
+			current.WriteRune(ch)
+		case '/':
+			if i+1 < len(runes) && runes[i+1] == '/' {
+				// Line comment — skip to newline.
+				i++
+				for i+1 < len(runes) && runes[i+1] != '\n' {
+					i++
+				}
+				continue
+			}
+			if i+1 < len(runes) && runes[i+1] == '*' {
+				i++
+				for i+1 < len(runes) {
+					i++
+					if runes[i-1] == '*' && runes[i] == '/' {
+						break
+					}
+				}
+				continue
+			}
+			current.WriteRune(ch)
+		case '(', '[', '{':
+			depth++
+			current.WriteRune(ch)
+		case ')', ']', '}':
+			if depth > 0 {
+				depth--
+			}
+			current.WriteRune(ch)
+		case ',':
+			if depth == 0 {
+				if kf, ok := b3keyedFieldValue(current.String()); ok {
+					fields = append(fields, kf)
+				}
+				current.Reset()
+				continue
+			}
+			current.WriteRune(ch)
+		default:
+			current.WriteRune(ch)
+		}
+	}
+	if kf, ok := b3keyedFieldValue(current.String()); ok {
+		fields = append(fields, kf)
+	}
+	return fields
+}
+
+func b3keyedFieldValue(field string) (b3keyedField, bool) {
+	name, value, ok := strings.Cut(field, ":")
+	if !ok {
+		return b3keyedField{}, false
+	}
+	name = strings.TrimSpace(name)
+	value = strings.TrimSpace(value)
+	if name == "" || value == "" {
+		return b3keyedField{}, false
+	}
+	return b3keyedField{name: name, value: value}, true
 }
 
 // detectPERF122: HasPrefix + slice with len (Rust: window -64..+256, needle ":]")
@@ -1041,31 +1320,63 @@ func detectPERF131(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 }
 
 // detectPERF132: go func() { ... db.Query / http without ctx }
+// detectPERF132: go func() that does cancellable I/O without accepting a context.
+// Rust parity: parent has ctx context.Context; the go statement is go func()
+// (no params); body performs I/O. Do not scan comments for "ctx" — that caused
+// FNs when the vulnerable fixture documents missing context in a comment.
 func detectPERF132(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	src := unit.Source
-	if !strings.Contains(src, "go ") {
+	if !strings.Contains(src, "go func()") {
+		return
+	}
+	// Parent must have something to forward; without a ctx param the warning is moot.
+	if !strings.Contains(src, "ctx context.Context") {
 		return
 	}
 	file := unitFile(unit)
 	for _, gr := range facts.GoStarts {
+		if gr[0] < 0 || gr[1] > len(src) || gr[0] >= gr[1] {
+			continue
+		}
 		block := src[gr[0]:gr[1]]
-		// has I/O
-		hasIO := strings.Contains(block, "db.Query") || strings.Contains(block, "db.Exec") ||
-			strings.Contains(block, "http.") || strings.Contains(block, ".Do(") ||
-			strings.Contains(block, "Query(") || strings.Contains(block, "Exec(")
-		if !hasIO {
+		goText := block
+		if len(goText) > 256 {
+			goText = goText[:256]
+		}
+		// Accept only parameterless go func(); reject go func(ctx context.Context).
+		if !strings.Contains(goText, "go func()") {
 			continue
 		}
-		// context used?
-		if strings.Contains(block, "ctx") || strings.Contains(block, "Context") {
+		bodyStart := strings.Index(goText, "{")
+		if bodyStart < 0 {
 			continue
 		}
-		// go func() without params taking context
+		// Prefer full go-statement body for I/O (comments ignored for IO needles).
+		fullBodyStart := strings.Index(block, "{")
+		if fullBodyStart < 0 {
+			continue
+		}
+		body := block[fullBodyStart+1:]
+		if !b3bodyHasIO(body) {
+			continue
+		}
 		lineN, col := unit.LineCol(gr[0])
 		rules.PushFinding(&MetaPERF132, file, lineN, col,
-			"goroutine performs I/O without context propagation", out)
+			"go func() body makes I/O calls but the goroutine doesn't accept a context; cancellation cannot propagate", out)
 		return
 	}
+}
+
+func b3bodyHasIO(body string) bool {
+	// Common packages whose calls take a context as the first argument.
+	for _, p := range []string{
+		"http.", "db.", "sql.", "redis.", "rdb.", "client.", "store.", "queue.", "kafka.",
+	} {
+		if strings.Contains(body, p) {
+			return true
+		}
+	}
+	return false
 }
 
 // detectPERF133: sort.Slice inside loop
@@ -1127,7 +1438,10 @@ func detectPERF135(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF137: runtime.Caller on hot path
+// detectPERF137: runtime.Caller on a hot path / request handler.
+// Rust parity: only fire when the 1 KiB window before the call looks like a
+// request handler (or the call is in a loop). Whole-file handler presence
+// must not flag package-level caches like `var tag = func(){ runtime.Caller(0) }()`.
 func detectPERF137(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	file := unitFile(unit)
 	src := unit.Source
@@ -1135,7 +1449,7 @@ func detectPERF137(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 		if call.Callee != "runtime.Caller" {
 			continue
 		}
-		if IsInLoop(call) || IsHotPath(src, call.StartByte, IsInLoop(call)) || b3hasHandlerSig(src) {
+		if IsInLoop(call) || IsHandlerShaped(src, call.StartByte) {
 			lineN, col := unit.LineCol(call.StartByte)
 			rules.PushFinding(&MetaPERF137, file, lineN, col,
 				"runtime.Caller on hot path", out)
@@ -1702,19 +2016,34 @@ func detectPERF159(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 }
 
 // detectPERF160: sql.Open in handler
+// detectPERF160: sql.Open inside a request-handling file (not package-level var).
+// Rust parity: file has a handler; skip `var ... = sql.Open` at package scope.
 func detectPERF160(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	src := unit.Source
+	if !FileHasHandler(src) && !strings.Contains(src, "http.ResponseWriter") {
+		return
+	}
+	if !strings.Contains(src, "sql.Open(") {
+		return
+	}
 	file := unitFile(unit)
 	for _, call := range facts.Calls {
 		if call.Callee != "sql.Open" {
 			continue
 		}
-		if IsInLoop(call) || b3hasHandlerSig(src) || IsHotPath(src, call.StartByte, IsInLoop(call)) {
-			lineN, col := unit.LineCol(call.StartByte)
-			rules.PushFinding(&MetaPERF160, file, lineN, col,
-				"sql.Open inside handler/loop; reuse a shared *sql.DB", out)
-			return
+		// Package-level `var db = sql.Open(...)` is the safe pattern.
+		preStart := call.StartByte - 16
+		if preStart < 0 {
+			preStart = 0
 		}
+		pre := src[preStart:call.StartByte]
+		if strings.Contains(pre, "var ") && !strings.Contains(pre, "func ") {
+			continue
+		}
+		lineN, col := unit.LineCol(call.StartByte)
+		rules.PushFinding(&MetaPERF160, file, lineN, col,
+			"sql.Open in a request handler; open the *sql.DB once at startup and reuse it across requests", out)
+		return
 	}
 }
 
@@ -1745,21 +2074,37 @@ func detectPERF161(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 	}
 }
 
-// detectPERF162: db.Ping in handler
+// detectPERF162: db.Ping inside a request handler (not a health-check route).
+// Rust parity: file has a handler; skip calls under func Health / Healthz.
 func detectPERF162(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	src := unit.Source
+	if !FileHasHandler(src) && !strings.Contains(src, "http.ResponseWriter") {
+		return
+	}
+	if !strings.Contains(src, ".Ping(") && !strings.Contains(src, ".PingContext(") {
+		return
+	}
 	file := unitFile(unit)
 	for _, call := range facts.Calls {
 		if call.Callee != "db.Ping" && call.Callee != "db.PingContext" &&
 			!strings.HasSuffix(call.Callee, ".Ping") && !strings.HasSuffix(call.Callee, ".PingContext") {
 			continue
 		}
-		if b3hasHandlerSig(src) || IsHotPath(src, call.StartByte, IsInLoop(call)) {
-			lineN, col := unit.LineCol(call.StartByte)
-			rules.PushFinding(&MetaPERF162, file, lineN, col,
-				"db.Ping inside request handler", out)
-			return
+		// Health-check endpoints are the intended home for db.Ping.
+		preStart := call.StartByte - 256
+		if preStart < 0 {
+			preStart = 0
 		}
+		pre := src[preStart:call.StartByte]
+		if strings.Contains(pre, "func Health") ||
+			strings.Contains(pre, "func (h *Health") ||
+			strings.Contains(pre, "func Healthz") {
+			continue
+		}
+		lineN, col := unit.LineCol(call.StartByte)
+		rules.PushFinding(&MetaPERF162, file, lineN, col,
+			"db.Ping in a request handler; add a dedicated health-check endpoint or a periodic background ping instead", out)
+		return
 	}
 }
 

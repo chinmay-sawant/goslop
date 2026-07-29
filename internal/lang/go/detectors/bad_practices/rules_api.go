@@ -20,6 +20,7 @@ func init() {
 	RegisterRule("BP-30", detectBP30)
 	RegisterRule("BP-31", detectBP31)
 	RegisterRule("BP-32", detectBP32)
+	RegisterRule("BP-33", detectBP33)
 	RegisterRule("BP-34", detectBP34)
 	RegisterRule("BP-36", detectBP36)
 	RegisterRule("BP-37", detectBP37)
@@ -30,6 +31,7 @@ func init() {
 	RegisterRule("BP-42", detectBP42)
 	RegisterRule("BP-43", detectBP43)
 	RegisterRule("BP-44", detectBP44)
+	RegisterRule("BP-45", detectBP45)
 	RegisterRule("BP-66", detectBP66)
 	RegisterRule("BP-76", detectBP76)
 	RegisterRule("BP-85", detectBP85)
@@ -692,13 +694,16 @@ func walkStmt(stmt goast.Stmt, globals, shadowed map[string]struct{}, written ma
 	}
 	switch s := stmt.(type) {
 	case *goast.AssignStmt:
-		// Collect writes on LHS, then if := also bindings handled by caller.
-		for _, lhs := range s.Lhs {
-			collectWriteTargets(lhs, globals, shadowed, written)
-		}
-		// Walk RHS for nested func lits
+		// Short declarations bind locals — do not treat LHS idents as package writes.
+		// Walk RHS first so nested func lits can still write globals.
 		for _, rhs := range s.Rhs {
 			walkExpr(rhs, globals, shadowed, written)
+		}
+		if s.Tok == token.DEFINE {
+			return
+		}
+		for _, lhs := range s.Lhs {
+			collectWriteTargets(lhs, globals, shadowed, written)
 		}
 	case *goast.IncDecStmt:
 		collectWriteTargets(s.X, globals, shadowed, written)
@@ -781,15 +786,20 @@ func walkStmt(stmt goast.Stmt, globals, shadowed map[string]struct{}, written ma
 			walkStmt(s.Init, globals, sh, written)
 			addStmtBindings(s.Init, globals, sh)
 		}
-		// assign: v := x.(type)
+		// assign: v := x.(type) — walk RHS (and nested writes) before binding the alias,
+		// matching Rust type_switch_statement handling for guard RHS writes.
 		if as, ok := s.Assign.(*goast.AssignStmt); ok {
+			for _, rhs := range as.Rhs {
+				walkExpr(rhs, globals, sh, written)
+			}
 			if as.Tok == token.DEFINE {
 				for _, lhs := range as.Lhs {
 					collectBindingIdents(lhs, globals, sh)
 				}
-			}
-			for _, rhs := range as.Rhs {
-				walkExpr(rhs, globals, sh, written)
+			} else {
+				for _, lhs := range as.Lhs {
+					collectWriteTargets(lhs, globals, sh, written)
+				}
 			}
 		}
 		if s.Body != nil {
@@ -1518,7 +1528,9 @@ func isUsefulImportAlias(alias string) bool {
 
 func detectBP41(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	// Rust parity: only the package anchor file reports missing package doc.
-	if isTestFile(unit) || isMaterializedFixture(unit) {
+	// Skip flat materializations (…/go/file.go) to avoid noise, but still run
+	// on nested package fixtures such as go/bp41/*.go (BP-41-vulnerable).
+	if isTestFile(unit) || isFlatMaterializedFixture(unit) {
 		return
 	}
 	meta := MetadataForID("BP-41")
@@ -1573,25 +1585,236 @@ func detectBP43(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP44(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-44")
-	// blank import without comment
+	if isTestFile(unit) {
+		return
+	}
+	msg := "blank import should carry a justification or match a standard registration pattern"
 	lines := strings.Split(unit.Source, "\n")
 	byteOff := 0
 	for i, line := range lines {
 		t := strings.TrimSpace(line)
-		if strings.HasPrefix(t, "_ \"") || strings.HasPrefix(t, "_ \"") {
-			// comment on same line or previous?
-			if !strings.Contains(line, "//") {
-				prevOK := false
-				if i > 0 && strings.Contains(lines[i-1], "//") {
-					prevOK = true
-				}
-				if !prevOK {
-					pushAt(unit, meta, byteOff, "blank import without a justifying comment", out)
-				}
+		path, isBlank, pathOff := parseBlankImportLine(t)
+		if isBlank {
+			if !isAllowedBlankImport(path) && !hasBlankImportJustification(lines, i) {
+				pushAt(unit, meta, byteOff+pathOff, msg, out)
 			}
 		}
 		byteOff += len(line) + 1
 	}
+}
+
+// parseBlankImportLine recognizes `import _ "path"`, `_ "path"`, and backtick forms.
+// Returns (importPath, ok, byteOffsetOfBlankInLine).
+func parseBlankImportLine(t string) (path string, ok bool, off int) {
+	// import _ "path"
+	for _, prefix := range []string{`import _ "`, "import _ `", `import _"`, "import _`"} {
+		if strings.HasPrefix(t, prefix) {
+			rest := t[len(prefix):]
+			quote := byte('"')
+			if strings.Contains(prefix, "`") {
+				quote = '`'
+			}
+			end := strings.IndexByte(rest, quote)
+			if end < 0 {
+				return "", false, 0
+			}
+			return rest[:end], true, strings.Index(t, "_")
+		}
+	}
+	// _ "path" inside import block
+	for _, prefix := range []string{`_ "`, "_ `", `_"`, "_`"} {
+		if strings.HasPrefix(t, prefix) {
+			rest := t[len(prefix):]
+			quote := byte('"')
+			if strings.Contains(prefix, "`") {
+				quote = '`'
+			}
+			end := strings.IndexByte(rest, quote)
+			if end < 0 {
+				return "", false, 0
+			}
+			return rest[:end], true, 0
+		}
+	}
+	return "", false, 0
+}
+
+func isAllowedBlankImport(path string) bool {
+	return strings.HasPrefix(path, "image/") ||
+		strings.Contains(path, "driver") ||
+		strings.HasSuffix(path, "/pprof") ||
+		strings.Contains(path, "plugin")
+}
+
+func hasBlankImportJustification(lines []string, lineNo int) bool {
+	current := ""
+	if lineNo < len(lines) {
+		current = lines[lineNo]
+	}
+	previous := ""
+	if lineNo > 0 {
+		previous = lines[lineNo-1]
+	}
+	context := strings.ToLower(previous + "\n" + current)
+	return strings.Contains(context, "register") ||
+		strings.Contains(context, "side effect") ||
+		strings.Contains(context, "side-effect") ||
+		strings.Contains(context, "plugin") ||
+		strings.Contains(current, "//")
+}
+
+// BP-45: methods on the same type should use a consistent receiver name.
+func detectBP45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+	meta := MetadataForID("BP-45")
+	if isTestFile(unit) {
+		return
+	}
+	msg := "methods on the same receiver type should use a consistent receiver name"
+	byType := map[string]string{} // type → first receiver name
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		for _, decl := range tree.File.Decls {
+			fd, ok := decl.(*goast.FuncDecl)
+			if !ok || fd.Recv == nil || len(fd.Recv.List) == 0 {
+				continue
+			}
+			field := fd.Recv.List[0]
+			typeName := receiverTypeName(field.Type)
+			if typeName == "" {
+				continue
+			}
+			recvName := ""
+			if len(field.Names) > 0 && field.Names[0] != nil {
+				recvName = field.Names[0].Name
+			}
+			if recvName == "" || recvName == "_" {
+				continue
+			}
+			if prev, ok := byType[typeName]; ok {
+				if prev != recvName {
+					pushAt(unit, meta, tree.Offset(fd.Pos()), msg, out)
+				}
+			} else {
+				byType[typeName] = recvName
+			}
+		}
+		return
+	}
+	// Text fallback: func (name *Type) / func (name Type)
+	re := regexp.MustCompile(`func\s+\((\w+)\s+\*?(\w+)\)`)
+	for _, line := range codeLines(unit.Source) {
+		m := re.FindStringSubmatch(line.text)
+		if m == nil {
+			continue
+		}
+		recvName, typeName := m[1], m[2]
+		if prev, ok := byType[typeName]; ok {
+			if prev != recvName {
+				pushAt(unit, meta, line.byte, msg, out)
+			}
+		} else {
+			byType[typeName] = recvName
+		}
+	}
+}
+
+func receiverTypeName(expr goast.Expr) string {
+	switch e := expr.(type) {
+	case *goast.Ident:
+		return e.Name
+	case *goast.StarExpr:
+		return receiverTypeName(e.X)
+	case *goast.IndexExpr:
+		return receiverTypeName(e.X)
+	default:
+		return ""
+	}
+}
+
+// BP-33: sentinel-style error type (var ErrX = T{}) missing Is method.
+func detectBP33(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+	meta := MetadataForID("BP-33")
+	if isTestFile(unit) {
+		return
+	}
+	msg := "sentinel-style error type is missing an Is(error) bool method"
+	// Types that implement Error() string
+	errorTypes := map[string]struct{}{}
+	isTypes := map[string]struct{}{}
+	if facts != nil && facts.tree != nil && facts.tree.File != nil {
+		tree := facts.tree
+		for _, decl := range tree.File.Decls {
+			fd, ok := decl.(*goast.FuncDecl)
+			if !ok || fd.Recv == nil || fd.Name == nil || len(fd.Recv.List) == 0 {
+				continue
+			}
+			typeName := receiverTypeName(fd.Recv.List[0].Type)
+			if typeName == "" {
+				continue
+			}
+			switch fd.Name.Name {
+			case "Error":
+				errorTypes[typeName] = struct{}{}
+			case "Is":
+				isTypes[typeName] = struct{}{}
+			}
+		}
+	} else {
+		// Text: func (e T) Error() / Is(
+		for _, line := range codeLines(unit.Source) {
+			t := strings.TrimSpace(line.text)
+			if !strings.HasPrefix(t, "func (") {
+				continue
+			}
+			// func (e notFoundError) Error()
+			if strings.Contains(t, ") Error(") {
+				if name := methodReceiverTypeText(t); name != "" {
+					errorTypes[name] = struct{}{}
+				}
+			}
+			if strings.Contains(t, ") Is(") {
+				if name := methodReceiverTypeText(t); name != "" {
+					isTypes[name] = struct{}{}
+				}
+			}
+		}
+	}
+	if len(errorTypes) == 0 {
+		return
+	}
+	// Sentinel: var Err… = Type{} or Type()
+	for _, line := range codeLines(unit.Source) {
+		t := strings.TrimSpace(line.text)
+		if !strings.HasPrefix(t, "var Err") && !strings.HasPrefix(t, "const Err") {
+			continue
+		}
+		for typeName := range errorTypes {
+			if _, hasIs := isTypes[typeName]; hasIs {
+				continue
+			}
+			if strings.Contains(t, typeName+"{") || strings.Contains(t, typeName+"(") ||
+				strings.Contains(t, " "+typeName) || strings.HasSuffix(t, typeName) {
+				pushAt(unit, meta, line.byte, msg, out)
+				return
+			}
+		}
+	}
+}
+
+func methodReceiverTypeText(funcLine string) string {
+	// func (e *notFoundError) Error() string {
+	start := strings.Index(funcLine, "(")
+	end := strings.Index(funcLine, ")")
+	if start < 0 || end <= start {
+		return ""
+	}
+	inner := strings.TrimSpace(funcLine[start+1 : end])
+	parts := strings.Fields(inner)
+	if len(parts) == 0 {
+		return ""
+	}
+	ty := parts[len(parts)-1]
+	return strings.TrimPrefix(ty, "*")
 }
 
 func detectBP66(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -1611,20 +1834,27 @@ func detectBP66(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP76(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-76")
-	// for k, v := range map used to build ordered output
-	if strings.Contains(unit.Source, "range ") && strings.Contains(unit.Source, "map[") {
-		if strings.Contains(unit.Source, "sort.") || strings.Contains(unit.Source, "json.Marshal") || strings.Contains(unit.Source, "fmt.Print") {
-			// weak
-			if !strings.Contains(unit.Source, "sort.") {
-				for _, line := range codeLines(unit.Source) {
-					t := strings.TrimSpace(line.text)
-					if strings.HasPrefix(t, "for ") && strings.Contains(t, " range ") {
-						// check if ranging over map var
-						pushAt(unit, meta, line.byte, "map range used where ordered output may be expected", out)
-						return
-					}
-				}
-			}
+	// Map range feeds strings.Join (or similar ordered output) without sort.
+	src := unit.Source
+	if !strings.Contains(src, "range ") || !strings.Contains(src, "map[") {
+		return
+	}
+	if strings.Contains(src, "sort.") {
+		return
+	}
+	// Ordered-output sink: strings.Join is the fixture oracle; also fmt prints.
+	if !strings.Contains(src, "strings.Join") &&
+		!strings.Contains(src, "strings.Join(") &&
+		!strings.Contains(src, "fmt.Print") &&
+		!strings.Contains(src, "json.Marshal") {
+		return
+	}
+	msg := "map iteration feeds ordered output without sorting; collect keys or values and sort before strings.Join"
+	for _, line := range codeLines(src) {
+		t := strings.TrimSpace(line.text)
+		if strings.HasPrefix(t, "for ") && strings.Contains(t, " range ") {
+			pushAt(unit, meta, line.byte, msg, out)
+			return
 		}
 	}
 }
@@ -1642,31 +1872,136 @@ func detectBP85(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP91(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-91")
-	// chan struct{} for data-bearing? opposite: make(chan T) for notification
-	// flag make(chan bool) used as signal
-	if strings.Contains(unit.Source, "make(chan bool") || strings.Contains(unit.Source, "make(chan int") {
-		if strings.Contains(unit.Source, "<-") && !strings.Contains(unit.Source, "make(chan struct{}") {
-			if pos := strings.Index(unit.Source, "make(chan "); pos >= 0 {
-				pushAt(unit, meta, pos, "notification channel carries data; prefer chan struct{}", out)
+	src := unit.Source
+	// Notification-shaped bool/int channels: constant send + discarded receive.
+	// Prefer chan struct{} for pure signals.
+	channels := notificationChannelNamesBP91(src)
+	if len(channels) == 0 {
+		return
+	}
+	for _, ch := range channels {
+		if !hasConstantNotificationSendBP91(src, ch) {
+			continue
+		}
+		if !hasDiscardedReceiveBP91(src, ch) {
+			continue
+		}
+		pos := strings.Index(src, ch)
+		if pos < 0 {
+			pos = 0
+		}
+		pushAt(unit, meta, pos, "notification channel carries a boolean/integer payload; use chan struct{}", out)
+		return
+	}
+}
+
+func notificationChannelNamesBP91(src string) []string {
+	var names []string
+	seen := map[string]bool{}
+	for _, line := range codeLines(src) {
+		t := strings.TrimSpace(line.text)
+		// params or locals: name chan bool / name chan int / make(chan bool
+		if !strings.Contains(t, "chan bool") && !strings.Contains(t, "chan int") &&
+			!strings.Contains(t, "make(chan bool") && !strings.Contains(t, "make(chan int") {
+			continue
+		}
+		// extract identifiers before "chan"
+		for _, part := range strings.FieldsFunc(t, func(r rune) bool {
+			return !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_'
+		}) {
+			if part == "chan" || part == "bool" || part == "int" || part == "func" ||
+				part == "make" || part == "var" || part == "type" || part == "struct" {
+				continue
+			}
+			if len(part) == 0 {
+				continue
+			}
+			// rough: name appears near chan bool/int on this line
+			if strings.Contains(t, part+" chan") || strings.Contains(t, part+" := make(chan") ||
+				strings.Contains(t, part+"= make(chan") || strings.Contains(t, part+" = make(chan") {
+				if !seen[part] {
+					seen[part] = true
+					names = append(names, part)
+				}
 			}
 		}
 	}
+	return names
+}
+
+func hasConstantNotificationSendBP91(src, ch string) bool {
+	for _, line := range codeLines(src) {
+		t := strings.TrimSpace(line.text)
+		// ch <- true / ch <- 1
+		if !strings.Contains(t, "<-") {
+			continue
+		}
+		left, right, ok := strings.Cut(t, "<-")
+		if !ok {
+			continue
+		}
+		if strings.TrimSpace(left) != ch {
+			continue
+		}
+		val := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(right), ";"))
+		if val == "true" || val == "1" {
+			return true
+		}
+	}
+	return false
+}
+
+func hasDiscardedReceiveBP91(src, ch string) bool {
+	for _, line := range codeLines(src) {
+		t := strings.TrimSpace(line.text)
+		// bare receive statement or select case with discarded value
+		if t == "<-"+ch || t == "<- "+ch {
+			return true
+		}
+		if t == "case <-"+ch+":" || t == "case <- "+ch+":" {
+			return true
+		}
+		// select case with empty body line after is still discarded
+		if strings.HasPrefix(t, "case <-") && strings.Contains(t, ch) && strings.HasSuffix(t, ":") {
+			rest := strings.TrimPrefix(t, "case")
+			rest = strings.TrimSpace(rest)
+			if rest == "<-"+ch+":" || rest == "<- "+ch+":" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func detectBP138(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-138")
-	// GORM hook with http/external
-	if strings.Contains(unit.Source, "BeforeCreate") || strings.Contains(unit.Source, "AfterCreate") ||
-		strings.Contains(unit.Source, "BeforeSave") || strings.Contains(unit.Source, "AfterSave") {
-		if strings.Contains(unit.Source, "http.") || strings.Contains(unit.Source, "smtp") || strings.Contains(unit.Source, "Dial") {
-			pos := strings.Index(unit.Source, "Before")
-			if pos < 0 {
-				pos = strings.Index(unit.Source, "After")
-			}
-			if pos >= 0 {
-				pushAt(unit, meta, pos, "external I/O inside a GORM hook; keep hooks local and fast", out)
+	// GORM lifecycle hooks with direct external I/O (http/smtp).
+	hooks := []string{
+		"BeforeCreate", "AfterCreate", "BeforeSave", "AfterSave",
+		"BeforeUpdate", "AfterUpdate", "BeforeDelete", "AfterDelete",
+		"BeforeFind", "AfterFind",
+	}
+	hasHook := false
+	hookPos := -1
+	for _, h := range hooks {
+		if i := strings.Index(unit.Source, h); i >= 0 {
+			hasHook = true
+			if hookPos < 0 || i < hookPos {
+				hookPos = i
 			}
 		}
+	}
+	if !hasHook {
+		return
+	}
+	// Require gorm.DB-shaped param somewhere and direct external calls.
+	if !strings.Contains(unit.Source, "gorm.DB") && !strings.Contains(unit.Source, "*gorm.DB") {
+		return
+	}
+	if strings.Contains(unit.Source, "http.Get") || strings.Contains(unit.Source, "http.Post") ||
+		strings.Contains(unit.Source, "http.Head") || strings.Contains(unit.Source, "http.PostForm") ||
+		strings.Contains(unit.Source, "smtp.SendMail") {
+		pushAt(unit, meta, hookPos, "external I/O inside a GORM hook; keep hooks local and fast", out)
 	}
 }
 
@@ -1687,22 +2022,56 @@ func detectBP141(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP164(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-164")
-	// functional option mutates package default
-	if strings.Contains(unit.Source, "func ") && strings.Contains(unit.Source, "Option") {
-		// defaultOptions or Default
-		if strings.Contains(unit.Source, "default") && strings.Contains(unit.Source, "func With") {
-			for _, line := range codeLines(unit.Source) {
-				t := strings.TrimSpace(line.text)
-				if strings.HasPrefix(t, "func With") && strings.Contains(unit.Source, "default") {
-					// if assigns to package var
-					if strings.Contains(unit.Source, "default") && strings.Contains(t, "func With") {
-						// look for assignment to package-level in option body — weak
-						if strings.Contains(unit.Source, "defaultConfig") || strings.Contains(unit.Source, "defaultOptions") {
-							pushAt(unit, meta, line.byte, "functional option mutates a package-level default", out)
-							return
-						}
+	if isTestFile(unit) {
+		return
+	}
+	src := unit.Source
+	if !strings.Contains(src, "func With") || !strings.Contains(src, "Option") {
+		return
+	}
+	// Collect package-level var names.
+	globals := packageLevelVarNames(src)
+	if len(globals) == 0 {
+		return
+	}
+	// Walk With* functions that return Option; flag assignment to package globals.
+	lines := codeLines(src)
+	for i, line := range lines {
+		t := strings.TrimSpace(line.text)
+		if !strings.HasPrefix(t, "func With") || !strings.Contains(t, "Option") {
+			continue
+		}
+		// Scan body until next top-level func or end.
+		depth := 0
+		started := false
+		for j := i; j < len(lines); j++ {
+			lt := lines[j].text
+			for _, ch := range lt {
+				if ch == '{' {
+					depth++
+					started = true
+				} else if ch == '}' {
+					depth--
+				}
+			}
+			if !started {
+				continue
+			}
+			bodyLine := strings.TrimSpace(lt)
+			// assignment: globalX = or globalX[key] =
+			if strings.Contains(bodyLine, "=") && !strings.Contains(bodyLine, ":=") &&
+				!strings.Contains(bodyLine, "==") && !strings.Contains(bodyLine, "!=") &&
+				!strings.Contains(bodyLine, "<=") && !strings.Contains(bodyLine, ">=") {
+				for g := range globals {
+					if strings.HasPrefix(bodyLine, g+" ") || strings.HasPrefix(bodyLine, g+"=") ||
+						strings.HasPrefix(bodyLine, g+".") || strings.HasPrefix(bodyLine, g+"[") {
+						pushAt(unit, meta, lines[j].byte, "functional option mutates a package-level default", out)
+						return
 					}
 				}
+			}
+			if started && depth <= 0 {
+				break
 			}
 		}
 	}

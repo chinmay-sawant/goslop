@@ -85,11 +85,69 @@ func detectBP96(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP97(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-97")
-	// bufio.Writer without Flush before read
-	if strings.Contains(unit.Source, "bufio.NewWriter") && strings.Contains(unit.Source, ".Read") && !strings.Contains(unit.Source, ".Flush(") {
-		if pos := strings.Index(unit.Source, "bufio.NewWriter"); pos >= 0 {
-			pushAt(unit, meta, pos, "writer is read from without an intervening Flush", out)
+	src := unit.Source
+	// bufio/gzip writer writes into a buffer that is read before Flush/Close.
+	constructors := []string{
+		"bufio.NewWriter(", "bufio.NewWriterSize(",
+		"gzip.NewWriter(", "gzip.NewWriterLevel(",
+	}
+	var writer, target string
+	var bindPos int
+	for _, line := range codeLines(src) {
+		t := strings.TrimSpace(line.text)
+		for _, c := range constructors {
+			if !strings.Contains(t, c) {
+				continue
+			}
+			// writer := bufio.NewWriter(buf)
+			lhs, rhs, ok := strings.Cut(t, ":=")
+			if !ok {
+				lhs, rhs, ok = strings.Cut(t, "=")
+			}
+			if !ok {
+				continue
+			}
+			w := strings.TrimSpace(lhs)
+			w = strings.TrimPrefix(w, "var ")
+			if i := strings.IndexAny(w, " \t"); i >= 0 {
+				w = w[:i]
+			}
+			// extract constructor argument as target buffer name
+			argStart := strings.Index(rhs, c)
+			if argStart < 0 {
+				continue
+			}
+			rest := rhs[argStart+len(c):]
+			end := strings.Index(rest, ")")
+			if end < 0 {
+				continue
+			}
+			arg := strings.TrimSpace(rest[:end])
+			// strip & if present
+			arg = strings.TrimPrefix(arg, "&")
+			if w == "" || arg == "" {
+				continue
+			}
+			writer, target, bindPos = w, arg, line.byte
+			break
 		}
+		if writer != "" {
+			break
+		}
+	}
+	if writer == "" {
+		return
+	}
+	if !strings.Contains(src, writer+".Write") {
+		return
+	}
+	if strings.Contains(src, writer+".Flush(") || strings.Contains(src, writer+".Close(") {
+		return
+	}
+	// buffer read: target.String / .Bytes / .Len / .Read
+	if strings.Contains(src, target+".String(") || strings.Contains(src, target+".Bytes(") ||
+		strings.Contains(src, target+".Len(") || strings.Contains(src, target+".Read(") {
+		pushAt(unit, meta, bindPos, "buffer-backed writer is read before Flush or Close makes its data visible", out)
 	}
 }
 
@@ -262,13 +320,73 @@ func splitTopLevelFuncs(src string) []funcChunk {
 
 func detectBP99(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-99")
-	if strings.Contains(unit.Source, ".Wait()") && strings.Contains(unit.Source, "sync.Cond") {
-		// Cond.Wait without Locker held — hard; flag Wait without Lock nearby
-		if !strings.Contains(unit.Source, ".L.Lock") && !strings.Contains(unit.Source, ".Lock()") {
-			if pos := strings.Index(unit.Source, ".Wait()"); pos >= 0 {
-				pushAt(unit, meta, pos, "sync.Cond.Wait without holding the associated locker", out)
+	src := unit.Source
+	// Local sync.NewCond / Cond construction; Wait without visible Lock/RLock.
+	if !(strings.Contains(src, "NewCond") || strings.Contains(src, "sync.Cond") || strings.Contains(src, ".Wait(")) {
+		return
+	}
+	// Map condition name -> locker name from `cond := sync.NewCond(mu)`.
+	type condBind struct {
+		cond string
+		lock string
+		pos  int
+	}
+	var binds []condBind
+	for _, line := range codeLines(src) {
+		t := strings.TrimSpace(line.text)
+		if !strings.Contains(t, "NewCond(") {
+			continue
+		}
+		lhs, rhs, ok := strings.Cut(t, ":=")
+		if !ok {
+			lhs, rhs, ok = strings.Cut(t, "=")
+		}
+		if !ok {
+			continue
+		}
+		cond := firstIdent(strings.TrimSpace(lhs))
+		// NewCond(mu) or NewCond(&mu)
+		idx := strings.Index(rhs, "NewCond(")
+		if idx < 0 || cond == "" {
+			continue
+		}
+		arg := rhs[idx+len("NewCond("):]
+		end := strings.Index(arg, ")")
+		if end < 0 {
+			continue
+		}
+		lock := strings.TrimSpace(arg[:end])
+		lock = strings.TrimPrefix(lock, "&")
+		if lock == "" {
+			continue
+		}
+		binds = append(binds, condBind{cond: cond, lock: lock, pos: line.byte})
+	}
+	if len(binds) == 0 {
+		// Fallback: any .Wait() with NewCond and no Lock in function body.
+		if strings.Contains(src, "NewCond") && strings.Contains(src, ".Wait()") &&
+			!strings.Contains(src, ".Lock()") && !strings.Contains(src, ".RLock()") {
+			if pos := strings.Index(src, ".Wait()"); pos >= 0 {
+				pushAt(unit, meta, pos, "sync.Cond.Wait has no visible Lock/RLock acquisition for its associated locker", out)
 			}
 		}
+		return
+	}
+	for _, b := range binds {
+		// Wait on this condition?
+		waitNeedle := b.cond + ".Wait()"
+		if !strings.Contains(src, waitNeedle) {
+			continue
+		}
+		if strings.Contains(src, b.lock+".Lock()") || strings.Contains(src, b.lock+".RLock()") {
+			continue
+		}
+		pos := strings.Index(src, waitNeedle)
+		if pos < 0 {
+			pos = b.pos
+		}
+		pushAt(unit, meta, pos, "sync.Cond.Wait has no visible Lock/RLock acquisition for its associated locker", out)
+		return
 	}
 }
 
@@ -300,14 +418,20 @@ func detectBP128(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP131(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-131")
-	// Query used for INSERT/UPDATE/DELETE
+	// Query used for INSERT/UPDATE/DELETE without RETURNING.
 	for _, line := range codeLines(unit.Source) {
-		t := strings.ToUpper(line.text)
-		if strings.Contains(line.text, ".Query(") || strings.Contains(line.text, ".QueryContext(") {
-			if strings.Contains(t, "INSERT ") || strings.Contains(t, "UPDATE ") || strings.Contains(t, "DELETE ") {
-				pushAt(unit, meta, line.byte, "use Exec for DML statements that do not return rows", out)
-			}
+		if !strings.Contains(line.text, ".Query(") && !strings.Contains(line.text, ".QueryContext(") {
+			continue
 		}
+		t := strings.ToUpper(line.text)
+		if !(strings.Contains(t, "INSERT ") || strings.Contains(t, "UPDATE ") || strings.Contains(t, "DELETE ")) {
+			continue
+		}
+		// RETURNING means Query is intentional.
+		if strings.Contains(t, " RETURNING ") || strings.Contains(t, "RETURNING ") {
+			continue
+		}
+		pushAt(unit, meta, line.byte, "use Exec for DML statements that do not return rows", out)
 	}
 }
 
@@ -377,30 +501,91 @@ func detectBP135(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP136(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-136")
-	if !strings.Contains(unit.Source, "AutoMigrate") {
+	src := unit.Source
+	if !strings.Contains(src, "AutoMigrate") {
 		return
 	}
-	// in handler-shaped file
-	if strings.Contains(unit.Source, "http.ResponseWriter") || strings.Contains(unit.Source, "gin.Context") ||
-		strings.Contains(unit.Source, "echo.Context") || strings.Contains(unit.Source, "fiber.Ctx") {
-		if pos := strings.Index(unit.Source, "AutoMigrate"); pos >= 0 {
-			pushAt(unit, meta, pos, "GORM AutoMigrate on the request path; migrate at startup instead", out)
+	// Only fire when AutoMigrate is in the same function that has request params.
+	// File-level gin.Context + separate migrate helper must not fire.
+	requestHints := []string{
+		"http.ResponseWriter", "*http.Request", "http.Request",
+		"gin.Context", "*gin.Context", "echo.Context", "fiber.Ctx", "*fiber.Ctx",
+	}
+	for _, fn := range splitTopLevelFuncs(src) {
+		if !strings.Contains(fn.body, "AutoMigrate") {
+			continue
 		}
+		// function signature is before body; recover from source
+		// walk back to "func "
+		head := src[:fn.start]
+		funcKw := strings.LastIndex(head, "func ")
+		if funcKw < 0 {
+			continue
+		}
+		sig := src[funcKw:fn.start]
+		hasRequest := false
+		for _, h := range requestHints {
+			if strings.Contains(sig, h) {
+				hasRequest = true
+				break
+			}
+		}
+		if !hasRequest {
+			continue
+		}
+		// also require gorm DB somewhere in the function
+		if !strings.Contains(sig, "gorm.DB") && !strings.Contains(fn.body, "AutoMigrate") {
+			continue
+		}
+		pos := fn.start + strings.Index(fn.body, "AutoMigrate")
+		pushAt(unit, meta, pos, "GORM AutoMigrate on the request path; migrate at startup instead", out)
+		return
 	}
 }
 
 func detectBP140(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-140")
-	if !strings.Contains(unit.Source, "sqlx") && !strings.Contains(unit.Source, ".Get(") && !strings.Contains(unit.Source, ".Select(") {
+	src := unit.Source
+	if !strings.Contains(src, "sqlx") && !strings.Contains(src, "github.com/jmoiron/sqlx") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	methods := []string{".Get(", ".GetContext(", ".Select(", ".SelectContext(", ".StructScan(", ".NamedExec("}
+	for _, line := range codeLines(src) {
 		t := strings.TrimSpace(line.text)
-		if (strings.Contains(t, ".Get(") || strings.Contains(t, ".Select(") || strings.Contains(t, ".NamedExec(")) &&
-			!strings.Contains(t, "err") && !strings.Contains(t, ":=") {
-			if strings.HasPrefix(t, "_ =") || (!strings.Contains(t, "=") && strings.Contains(t, "(")) {
-				pushAt(unit, meta, line.byte, "sqlx retrieval error is ignored", out)
+		methodIdx := -1
+		for _, m := range methods {
+			if i := strings.Index(t, m); i >= 0 {
+				methodIdx = i
+				break
 			}
+		}
+		if methodIdx < 0 {
+			continue
+		}
+		// Prefix before the method call decides how the result is used.
+		beforeCall := t[:methodIdx]
+		// `_ = db.Get` is discarded
+		if strings.Contains(beforeCall, "_ =") || strings.HasPrefix(strings.TrimSpace(beforeCall), "_=") {
+			pushAt(unit, meta, line.byte, "sqlx retrieval error is ignored", out)
+			return
+		}
+		// `if err := db.Get` / `err := db.Get` / `err = db.Get` are checked
+		if strings.Contains(beforeCall, ":=") || strings.Contains(beforeCall, "err") {
+			continue
+		}
+		// Bare expression: receiver is the only thing before method, e.g. "db" or "rows"
+		// prefix like "db" or "rows" with no assignment
+		recv := strings.TrimSpace(beforeCall)
+		// may have leading "if " stripped already — bare call has no '=' in prefix
+		if !strings.Contains(beforeCall, "=") && recv != "" && !strings.HasPrefix(t, "if ") {
+			pushAt(unit, meta, line.byte, "sqlx retrieval error is ignored", out)
+			return
+		}
+		// `db.Get(...)` where prefix is just "db" — already handled. Also:
+		// line is entirely `db.Get(user, "id = ?")` — beforeCall is "db" without '='
+		if recv != "" && !strings.Contains(recv, " ") && !strings.Contains(beforeCall, "=") {
+			pushAt(unit, meta, line.byte, "sqlx retrieval error is ignored", out)
+			return
 		}
 	}
 }
