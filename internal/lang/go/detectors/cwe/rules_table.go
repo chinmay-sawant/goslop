@@ -809,11 +809,14 @@ var cweNeedleRules = []cweNeedleRule{
 	{
 		id: "CWE-367",
 		groups: []needleGroup{
+			// Stat then ReadFile (Rust TOCTOU). Needle "os.ReadFile" covers ReadFile(.
 			{"os.Stat(", "os.ReadFile"},
 		},
-		span: "os.Stat(",
-		msg:  "the code checks a file path with Stat before later using it, creating a TOCTOU race window",
-		meta: &MetaCWE367,
+		// Suppress gin SPA helpers that only Stat a static docs path (handlers.go).
+		forbid: []string{"gin.Context", "c.File("},
+		span:   "os.Stat(",
+		msg:    "the code checks a file path with Stat before later using it, creating a TOCTOU race window",
+		meta:   &MetaCWE367,
 	},
 	{
 		id: "CWE-368",

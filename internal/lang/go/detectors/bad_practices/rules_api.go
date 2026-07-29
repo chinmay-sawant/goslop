@@ -360,26 +360,66 @@ func detectBP32(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 func detectBP34(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-34")
-	// fmt.Errorf without %w when wrapping err — require err as an argument, not just present.
+	// fmt.Errorf without %w when wrapping err — require bare `err` arg, not errCount.
 	emitted := 0
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, "fmt.Errorf(") || strings.Contains(t, "%w") {
 			continue
 		}
-		// Require wrapping form: err appears as a call argument.
-		wraps := strings.Contains(t, ", err") || strings.Contains(t, ",err") ||
-			strings.Contains(t, "(err,") || strings.Contains(t, "(err)")
-		if !wraps {
+		if !bp34WrapsErr(t) {
 			continue
 		}
-		// Skip if message clearly not wrapping (no % verbs about error)
 		pushAt(unit, meta, line.byte, "error wrapping without %w loses the error chain", out)
 		emitted++
-		if emitted >= 2 { // avoid multi-fire storms per file
+		if emitted >= 2 {
 			return
 		}
 	}
+}
+
+// bp34WrapsErr reports whether fmt.Errorf call arguments include the bare
+// identifier `err` (word boundary), not errCount / errno / etc.
+func bp34WrapsErr(line string) bool {
+	// After fmt.Errorf(, scan for , err or (err as standalone ident.
+	idx := strings.Index(line, "fmt.Errorf(")
+	if idx < 0 {
+		return false
+	}
+	args := line[idx+len("fmt.Errorf("):]
+	// Strip trailing comments.
+	if i := strings.Index(args, "//"); i >= 0 {
+		args = args[:i]
+	}
+	for i := 0; i < len(args); {
+		// find "err"
+		j := strings.Index(args[i:], "err")
+		if j < 0 {
+			return false
+		}
+		j += i
+		// word start
+		if j > 0 {
+			prev := args[j-1]
+			if (prev >= 'a' && prev <= 'z') || (prev >= 'A' && prev <= 'Z') ||
+				(prev >= '0' && prev <= '9') || prev == '_' {
+				i = j + 3
+				continue
+			}
+		}
+		// word end
+		end := j + 3
+		if end < len(args) {
+			next := args[end]
+			if (next >= 'a' && next <= 'z') || (next >= 'A' && next <= 'Z') ||
+				(next >= '0' && next <= '9') || next == '_' {
+				i = j + 3
+				continue
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func detectBP36(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {

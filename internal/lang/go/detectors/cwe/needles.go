@@ -582,4 +582,7 @@ var cweNeedles = []string{
 	"os.Environ()",
 	"os.Hostname()",
 	"runtime.NumCPU()",
+	"gin.Context",
+	"*gin.Context",
+	"c.File(",
 }

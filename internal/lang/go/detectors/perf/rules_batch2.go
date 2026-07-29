@@ -1323,7 +1323,8 @@ func detectPERF110(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findi
 		}
 		b2Emit(unit, &MetaPERF110, start,
 			"sync.Pool New returns a value type; return a pointer (e.g. *Foo) to avoid boxing on Put", out)
-		return
+		// Multi-fire: file may declare several pools (Rust walks all).
+		searchFrom = end + 1
 	}
 }
 

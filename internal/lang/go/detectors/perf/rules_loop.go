@@ -30,20 +30,26 @@ func detectPERF2(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding
 			continue
 		}
 		text, expr := a.Text, a.Expr
-		isConcat := strings.Contains(text, " += ") ||
-			strings.Contains(text, "= s +") ||
-			strings.Contains(expr, "s = s +")
-		if !isConcat {
-			// also catch `name = name + ...`
-			if !strings.Contains(text, " = ") || !strings.Contains(expr, a.Name+" +") {
-				if !strings.Contains(text, "+=") {
-					continue
-				}
-			}
+		// String concat in loop: += or name = name + …
+		// Field form: x.joined += " " + part (search.go oracle site).
+		hasPlusEqual := strings.Contains(text, "+=")
+		// Require the concat operand to be the assigned name at a word boundary
+		// (avoid matching the trailing 'd' of cmd in `cmd+" "`).
+		hasNameReuse := strings.Contains(text, " = ") && a.Name != "" &&
+			(strings.Contains(expr, a.Name+" +") ||
+				strings.HasPrefix(strings.TrimSpace(expr), a.Name+"+") ||
+				strings.Contains(expr, " "+a.Name+"+"))
+		if !hasPlusEqual && !hasNameReuse {
+			continue
+		}
+		// ReplaceAll / other rewrites are not concatenation.
+		if strings.Contains(text, "ReplaceAll(") || strings.Contains(text, "Replace(") {
+			continue
 		}
 		if strings.Contains(text, "strings.Builder") ||
 			strings.Contains(text, "bytes.Buffer") ||
-			strings.Contains(text, "strings.Join(") {
+			strings.Contains(text, "strings.Join(") ||
+			strings.Contains(text, "append(") {
 			continue
 		}
 		if k, ok := facts.VarKinds[a.Name]; ok && k == VarNumeric {
@@ -51,7 +57,9 @@ func detectPERF2(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding
 		}
 		isKnownString := facts.VarKinds[a.Name] == VarString
 		hasStringLiteral := strings.Contains(text, "\"") || strings.Contains(text, "`")
-		if !isKnownString && !hasStringLiteral {
+		hasFmt := strings.Contains(text, "fmt.Sprintf") || strings.Contains(text, "fmt.Sprint")
+		fieldConcat := hasPlusEqual && hasStringLiteral
+		if !isKnownString && !hasStringLiteral && !hasFmt && !fieldConcat {
 			continue
 		}
 		line, col := unit.LineCol(a.StartByte)
@@ -65,17 +73,30 @@ func detectPERF2(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding
 // detectPERF3: make([]T, ...) rebuilt inside a loop without capacity-style hint.
 func detectPERF3(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	file := unitFile(unit)
+	seen := map[int]struct{}{}
 	for _, a := range facts.Assignments {
 		if !IsAssignmentInLoop(a) {
 			continue
 		}
 		expr := a.Expr
-		if !strings.Contains(expr, "make([]") || !strings.Contains(expr, ",") {
+		// make([]T, n) or make([]*T, n) — also allow space after make(
+		if !(strings.Contains(expr, "make([]") || strings.Contains(expr, "make([]*") ||
+			strings.Contains(expr, "make( []")) {
+			// generic make( slice type with comma length
+			if !strings.Contains(expr, "make(") || !strings.Contains(expr, "[]") {
+				continue
+			}
+		}
+		if !strings.Contains(expr, ",") {
 			continue
 		}
 		if strings.Contains(expr, ", 0, ") {
 			continue
 		}
+		if _, ok := seen[a.StartByte]; ok {
+			continue
+		}
+		seen[a.StartByte] = struct{}{}
 		line, col := unit.LineCol(a.StartByte)
 		rules.PushFinding(
 			&MetaPERF3, file, line, col,
