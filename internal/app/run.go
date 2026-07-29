@@ -231,7 +231,7 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 	if opts.IncludeTests {
 		walkOpts.IncludeTests = true
 	}
-	entries, err := engine.CollectFiles(opts.Paths, walkOpts, reg.ExtensionMap())
+	entries, _, err := engine.CollectFiles(opts.Paths, walkOpts, reg.ExtensionMap())
 	if err != nil {
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}

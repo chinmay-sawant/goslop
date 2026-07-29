@@ -47,7 +47,7 @@ func DefaultWalkOptions() WalkOptions {
 // Honors .gitignore / .codehoundignore / .ignore when opts.HonorIgnoreFiles.
 func CollectGoFiles(roots []string, opts WalkOptions) ([]string, error) {
 	opts.Extensions = []string{"go"}
-	entries, err := CollectFiles(roots, opts, nil)
+	entries, _, err := CollectFiles(roots, opts, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,9 @@ func CollectGoFiles(roots []string, opts WalkOptions) ([]string, error) {
 	return out, nil
 }
 
-// CollectFiles walks roots and returns ScanEntry values for supported extensions.
+// CollectFiles walks roots and returns ScanEntry values for supported extensions
+// plus a count of regular files skipped by ignore / extension / test filters
+// (Rust walk parity: every non-accepted file increments skipped).
 //
 // pluginExt maps extension (no dot) → language. When nil, opts.Extensions are
 // treated as Go (LangGo) for MVP simplicity.
@@ -66,7 +68,7 @@ func CollectGoFiles(roots []string, opts WalkOptions) ([]string, error) {
 // Honors .gitignore / .codehoundignore / .ignore when opts.HonorIgnoreFiles
 // (default true via DefaultWalkOptions). Vendor and VCS dirs are always skipped
 // when SkipVendor is set.
-func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.LanguageID) ([]ScanEntry, error) {
+func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.LanguageID) ([]ScanEntry, int, error) {
 	if pluginExt == nil {
 		pluginExt = map[string]core.LanguageID{}
 		exts := opts.Extensions
@@ -81,6 +83,7 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 	skipVendor := opts.SkipVendor
 
 	var entries []ScanEntry
+	skipped := 0
 	seen := make(map[string]struct{})
 
 	for _, root := range roots {
@@ -89,7 +92,7 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 		}
 		info, err := os.Stat(root)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		if !info.IsDir() {
 			if e, ok := acceptFile(root, opts, pluginExt); ok {
@@ -102,6 +105,8 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 					e.Path = abs
 					entries = append(entries, e)
 				}
+			} else {
+				skipped++
 			}
 			continue
 		}
@@ -142,11 +147,14 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 				}
 				return nil
 			}
+			// Regular file: count skips like Rust (ignore / unsupported / tests).
 			if matcher != nil && rel != "." && matcher.ignored(rel, false) {
+				skipped++
 				return nil
 			}
 			e, ok := acceptFile(path, opts, pluginExt)
 			if !ok {
+				skipped++
 				return nil
 			}
 			abs, aerr := filepath.Abs(path)
@@ -162,10 +170,10 @@ func CollectFiles(roots []string, opts WalkOptions, pluginExt map[string]core.La
 			return nil
 		})
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 	}
-	return entries, nil
+	return entries, skipped, nil
 }
 
 func acceptFile(path string, opts WalkOptions, pluginExt map[string]core.LanguageID) (ScanEntry, bool) {

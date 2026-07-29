@@ -172,7 +172,7 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 		walkOpts.IncludeTests = true
 	}
 
-	entries, err := CollectFiles(paths, walkOpts, a.registry.ExtensionMap())
+	entries, filesSkipped, err := CollectFiles(paths, walkOpts, a.registry.ExtensionMap())
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +197,7 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 
 	stats := &ScanStats{
 		DetectorsLoaded: a.registry.DetectorCount(),
+		FilesSkipped:    filesSkipped,
 	}
 
 	results := make([]fileResult, len(entries))
