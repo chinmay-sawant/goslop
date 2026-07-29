@@ -1,6 +1,6 @@
 ## Summary
 
-Integration branch that merges the parallel Phase 7–12 workstreams into one tree for combined validation. **Do not merge child PRs separately** — prefer this integration PR once green.
+Integration branch that merges the parallel Phase 7-12 workstreams into one tree for combined validation. **Do not merge child PRs separately** - prefer this integration PR once green.
 
 ---
 
@@ -42,7 +42,7 @@ Merge order used: **12a → 10 → 7 → 8 → 9** (then conflict resolution for
 - **CWE structural**: full registry via `GoCweScan` + taint-lite seeds
 - **BP**: `GoBadPracticeScan` (~127 rules); recommended pack keeps BP off
 - **Taint**: experimental graph detector gated by `--taint` / security profile
-- **Cache / baseline / ignore**: `.codehound-cache`, baseline file, `codehound-ignore`, walk ignores
+- **Cache / baseline / ignore**: `.goslop-cache`, baseline file, `goslop-ignore`, walk ignores
 - **CI**: `.github/workflows/ci.yml` + `tests/integration` seed harness
 
 ### Integration-specific conflict resolutions
@@ -55,7 +55,7 @@ Merge order used: **12a → 10 → 7 → 8 → 9** (then conflict resolution for
 ### Not in this PR (follow-ups)
 
 - **Phase 11** packs/maturity full fidelity (issue #7)
-- **§12.4** hard oracle (915 findings / exports) — still blocked
+- **§12.4** hard oracle (915 findings / exports) - still blocked
 - Export-context / export-chunks full product path
 
 ---
@@ -83,7 +83,7 @@ Merge order used: **12a → 10 → 7 → 8 → 9** (then conflict resolution for
 
 - [x] `CGO_ENABLED=1 go test ./...` on integration branch
 - [x] Child packages: cwe, taint, bad_practices, perf, engine/cache, tests/integration
-- [ ] Manual: `go build -o bin/codehound ./cmd/codehound && ./bin/codehound --list-rules | wc -l`
+- [ ] Manual: `go build -o bin/goslop ./cmd/goslop && ./bin/goslop --list-rules | wc -l`
 - [ ] Manual: `--taint` on taint fixtures; cache hit/miss smoke
 - [ ] Optional: close/supersede child PRs **without merging** them after this lands
 
@@ -91,9 +91,9 @@ Merge order used: **12a → 10 → 7 → 8 → 9** (then conflict resolution for
 
 ```sh
 CGO_ENABLED=1 go test ./...
-go build -o bin/codehound ./cmd/codehound
-./bin/codehound --list-rules | head
-./bin/codehound --profile all --taint --no-cache .
+go build -o bin/goslop ./cmd/goslop
+./bin/goslop --list-rules | head
+./bin/goslop --profile all --taint --no-cache .
 ```
 
 ---
@@ -122,7 +122,7 @@ go build -o bin/codehound ./cmd/codehound
 
 - Phase 11 recommended/security/all pack fidelity + maturity tags (#7)
 - §12.4 oracle on reference corpus (#8)
-- Supersede child PRs #10–#14 without double-merge once this is accepted
+- Supersede child PRs #10-#14 without double-merge once this is accepted
 - Residual FN/FP polish vs Rust
 
 ---
@@ -133,10 +133,10 @@ go build -o bin/codehound ./cmd/codehound
 - [ ] Child PR scope is fully present (no silent drops)
 - [ ] Taint + structural CWE do not double-fire when `--taint`
 - [ ] Cache flags coexist with taint flags
-- [ ] **Do not merge child PRs #10–#14 into main separately**
+- [ ] **Do not merge child PRs #10-#14 into main separately**
 
 ---
 
 ## Release notes (if user-facing)
 
-Integration of CWE, BP, taint, cache/baseline, and CI scaffolding for the CodeHound Go port (pre-§12.4).
+Integration of CWE, BP, taint, cache/baseline, and CI scaffolding for the goslop Go port (pre-§12.4).

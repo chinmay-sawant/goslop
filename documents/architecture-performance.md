@@ -21,7 +21,7 @@ stays bounded on large repos. Details: [incremental-cache.md](./incremental-cach
 
 ## Incremental cache (P2.3)
 
-- **Directory**: `.codehound-cache/` (near project / `go.mod` — see dual roots).
+- **Directory**: `.goslop-cache/` (near project / `go.mod` - see dual roots).
 - **Manifest**: `manifest.json` tracks `tool_version`, `rule_config_hash`, per-file
   content hash, and dependency list (no separate `metadata.json`, no mtime).
 - **Per-file entries**: `files/<sha256>.json` stores serialized findings + meta.
@@ -31,7 +31,7 @@ stays bounded on large repos. Details: [incremental-cache.md](./incremental-cach
 - **Pruning**: full-root scans only for sibling cleanup; `--prune-cache` /
   `cache prune`; `--rebuild-cache` purges the directory.
 - **CLI flags**: `--no-cache`, `--cache-dir`, `--rebuild-cache`, `--prune-cache`.
-- **Configuration**: `[codehound.cache]` (`enabled`, `path`, `max_size_mb`,
+- **Configuration**: `[goslop.cache]` (`enabled`, `path`, `max_size_mb`,
   `evict_target_ratio`, `max_file_size_mb`).
 - **Eviction**: oldest-by-`cached_at` on flush when over `max_size_mb`.
 - **Locking**: `.manifest.lock` advisory exclusive lock during flush.
@@ -39,7 +39,7 @@ stays bounded on large repos. Details: [incremental-cache.md](./incremental-cach
 ## Multi-language (Go-first, pure Go)
 
 - **Go port default:** only the Go `LanguagePlugin` is registered (`internal/lang/go`).
-- **Parse:** pure Go (`go/parser` + `go/ast` via `goparse`) — **no CGO / tree-sitter**.
+- **Parse:** pure Go (`go/parser` + `go/ast` via `goparse`) - **no CGO / tree-sitter**.
 - **Second language:** implement `core.LanguagePlugin` (see package doc on `internal/core/plugin.go`); attach a pure-Go AST as opaque `ParsedUnit.Tree`; register next to `golang.Register`. Prefer parsers without CGO.
 - **Python / others:** reserved `LanguageID`s exist; plugins not shipped yet.
 - TypeScript: **not supported**.
@@ -75,7 +75,7 @@ stays bounded on large repos. Details: [incremental-cache.md](./incremental-cach
 | `src/**/*.rs` module file | Soft **400**, hard **500** lines (`scripts/check_module_size.sh`); large exemptions for PERF domains, BP, taint, `app/run.rs`, … |
 | Go CWE detector | Domain modules under `domains/`; multi-file `registry/*.toml` |
 | New Go CWE/PERF rule | Add `[[detector]]` to the matching registry TOML + implement detector fn |
-| Binary orchestration | `src/app/` only — `main.rs` stays tracing + `app::run` |
+| Binary orchestration | `src/app/` only - `main.rs` stays tracing + `app::run` |
 | PERF domain split | Prefer split around **500** lines when multi-group |
 
 Run `scripts/check_module_size.sh` in CI or locally to catch module growth.
@@ -85,7 +85,7 @@ Run `scripts/check_module_size.sh` in CI or locally to catch module growth.
 - `only` and `skip` are additive across config and CLI.
 - `fail_on` from config applies only when the CLI did not explicitly set `--strict`, `--no-fail`, or `--warnings-as-errors`.
 - `include` and `exclude` are gitignore-style path globs applied during file collection.
-- `.codehoundignore`, `.gitignore`, and `.ignore` remain active alongside config-backed include/exclude filtering.
+- `.goslopignore`, `.gitignore`, and `.ignore` remain active alongside config-backed include/exclude filtering.
 - `--debug-timing` and `--diagnostics` are CLI-only flags (no config-file equivalent); they enable per-detector timing and phase-level instrumentation.
 
 ## Complexity (typical repo)
@@ -98,8 +98,8 @@ Run `scripts/check_module_size.sh` in CI or locally to catch module growth.
 
 ## Benchmarks & regression tests
 
-- `cargo bench --bench scan_throughput` — full scan, collect-only, and `--only` subset
-- `cargo test materialized_fixture_scan` — wall-clock smoke tests with tight ceilings (see `tests/perf_regression.rs`)
+- `cargo bench --bench scan_throughput` - full scan, collect-only, and `--only` subset
+- `cargo test materialized_fixture_scan` - wall-clock smoke tests with tight ceilings (see `tests/perf_regression.rs`)
 
 ### Benchmark regression history
 

@@ -1,21 +1,21 @@
-# Parity Matrix — Rust → Go
+# Parity Matrix - Rust → Go
 
 > **Parent:** `plans/port-phasewise-checklist.md`
 > **Status:** living map
 
 ## Package map
 
-| Rust (`codehound/src`) | Go (`codehound-go/internal`) | Phase | Status |
+| Rust (`goslop/src`) | Go (`goslop-go/internal`) | Phase | Status |
 |------------------------|------------------------------|-------|--------|
-| `main.rs` / `bin/` | `cmd/codehound` | 0 | [ ] |
+| `main.rs` / `bin/` | `cmd/goslop` | 0 | [ ] |
 | `app/` | `app/` | 4 | [ ] |
 | `cli/` | `cli/` | 4 | [ ] |
 | `core/` | `core/` | 1 | [ ] |
 | `rules/` | `rules/` | 1 | [ ] |
-| `engine/` | `engine/` | 2–3, 10 | [ ] |
+| `engine/` | `engine/` | 2-3, 10 | [ ] |
 | `ast/` | `ast/` | 2 | [ ] |
-| `lang/go/` | `lang/go/` | 2, 6–9 | [ ] |
-| `lang/python/` | — | defer | [~] out of scope v0 |
+| `lang/go/` | `lang/go/` | 2, 6-9 | [ ] |
+| `lang/python/` | - | defer | [~] out of scope v0 |
 | `reporting/` | `reporting/` | 5 | [ ] |
 | `export/` | `export/` | 5 | [ ] |
 | `fixture/` | `fixture/` | 2 | [ ] |
@@ -26,12 +26,12 @@
 
 | Pack | Approximate count | Go port target | Status |
 |------|------------------:|----------------|--------|
-| PERF | ~239 | all domains | [x] Phase 6 — **239/239** registered (heuristic batch ports) |
-| CWE structural | ~175 | all domains | [x] Phase 7 — **175/175** (integration) |
+| PERF | ~239 | all domains | [x] Phase 6 - **239/239** registered (heuristic batch ports) |
+| CWE structural | ~175 | all domains | [x] Phase 7 - **175/175** (integration) |
 | BP | ~135 (rules files ~39 modules) | all | [x] Phase 8 (127 detectors registered, heuristic) |
 | Taint CWE-22/78/79/89 | experimental | port graph + rules | [x] Phase 9 (integration) |
 
-Update counts from `codehound --list-rules` when Rust binary available; registries under `internal/lang/go/detectors/*/registry/` are source for wiring.
+Update counts from `goslop --list-rules` when Rust binary available; registries under `internal/lang/go/detectors/*/registry/` are source for wiring.
 
 ## Fixture surface
 

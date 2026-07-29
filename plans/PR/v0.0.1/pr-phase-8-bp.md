@@ -1,13 +1,13 @@
 ## Summary
 
-Ports Phase 8 Go bad-practice (BP) detectors into CodeHound Go: unified `GoBadPracticeScan` runner with per-rule enable and severity override, **127** heuristic BP rule modules (priority **BP-1** / **BP-5**), project-level server-policy rules (BP-47/50/54/55), and recommended-profile parity (BP off by default).
+Ports Phase 8 Go bad-practice (BP) detectors into goslop Go: unified `GoBadPracticeScan` runner with per-rule enable and severity override, **127** heuristic BP rule modules (priority **BP-1** / **BP-5**), project-level server-policy rules (BP-47/50/54/55), and recommended-profile parity (BP off by default).
 
 ---
 
 ## Motivation / context
 
 - Plans: `plans/port-phasewise-checklist.md` (Phase 8), `plans/parity-matrix.md`
-- Rust reference: `codehound/src/lang/go/detectors/bad_practices/`
+- Rust reference: `goslop/src/lang/go/detectors/bad_practices/`
 - Ruleset: `ruleset/golang/bad-practices.json` (135 catalogue entries)
 - Issues: see **Related issues**
 
@@ -17,7 +17,7 @@ Ports Phase 8 Go bad-practice (BP) detectors into CodeHound Go: unified `GoBadPr
 
 ### BP detector package (`internal/lang/go/detectors/bad_practices/`)
 
-- `GoBadPracticeScan` — one Detector, many rules; `ctx.Allows` gating; `ApplyFindingOverrides` for BP severity override
+- `GoBadPracticeScan` - one Detector, many rules; `ctx.Allows` gating; `ApplyFindingOverrides` for BP severity override
 - Metadata catalogue generated from `bad-practices.json` (135 IDs)
 - Shared tree-sitter/source facts + project snapshot caches
 - Rule domains: error handling, concurrency, testing, API/style, production hardening, resources/DB, HTTP frameworks, dependency hygiene
@@ -65,7 +65,7 @@ Ports Phase 8 Go bad-practice (BP) detectors into CodeHound Go: unified `GoBadPr
 
 | Item | Migration |
 |------|-----------|
-| None | — |
+| None | - |
 
 ---
 

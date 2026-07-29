@@ -1,6 +1,6 @@
 ## Summary
 
-Port Phase 7 CWE structural detectors for CodeHound Go: unified `GoCweScan` (PERF-style `RegisterRule` catalogue), SourceIndex fact bag, full **175/175** registry rule registration with generated metadata, structural SI/museum ports across all domain TOMLs, and taint-lite heuristics for CWE-22/78/79/89/90/91. Seed CWE-78/89 behaviour preserved; full inter-procedural taint remains Phase 9.
+Port Phase 7 CWE structural detectors for goslop Go: unified `GoCweScan` (PERF-style `RegisterRule` catalogue), SourceIndex fact bag, full **175/175** registry rule registration with generated metadata, structural SI/museum ports across all domain TOMLs, and taint-lite heuristics for CWE-22/78/79/89/90/91. Seed CWE-78/89 behaviour preserved; full inter-procedural taint remains Phase 9.
 
 ---
 
@@ -8,7 +8,7 @@ Port Phase 7 CWE structural detectors for CodeHound Go: unified `GoCweScan` (PER
 
 - Plans: `plans/port-phasewise-checklist.md` Phase 7
 - Issue: #3
-- Rust oracle: `codehound/src/lang/go/detectors/cwe/`
+- Rust oracle: `goslop/src/lang/go/detectors/cwe/`
 - Fixtures already present under `tests/fixtures/go/{stdlib,frameworks,taint}/`
 
 ---
@@ -30,7 +30,7 @@ Port Phase 7 CWE structural detectors for CodeHound Go: unified `GoCweScan` (PER
 
 ### Tests / docs
 
-- `registry_test.go` — registration count, metadata, structural sample matrix, taint fixtures
+- `registry_test.go` - registration count, metadata, structural sample matrix, taint fixtures
 - Updated `detectors/cwe/README.md` and Phase 7 checklist
 
 ---
@@ -41,7 +41,7 @@ Port Phase 7 CWE structural detectors for CodeHound Go: unified `GoCweScan` (PER
 |------|--------|
 | **Performance** | One SourceIndex build per file; O(rules) cheap `Has` checks |
 | **Memory** | Needle table ~hundreds of strings; per-file bool flags |
-| **Behavior / correctness** | New CWE findings on scan; many rules fixture-shaped museums (parity with Rust trust freezes); confidence 0.55 table / 0.6–0.75 taint-lite |
+| **Behavior / correctness** | New CWE findings on scan; many rules fixture-shaped museums (parity with Rust trust freezes); confidence 0.55 table / 0.6-0.75 taint-lite |
 | **API / CLI** | No CLI change; more rule IDs in `--list-rules` |
 | **Dependencies** | None |
 | **Binary size / build time** | Modest increase from metadata + table |
@@ -52,7 +52,7 @@ Port Phase 7 CWE structural detectors for CodeHound Go: unified `GoCweScan` (PER
 
 | Item | Migration |
 |------|-----------|
-| None | — |
+| None | - |
 
 ---
 

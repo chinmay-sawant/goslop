@@ -1,6 +1,6 @@
 ## Summary
 
-Land the CodeHound Go port foundation (Phases 0–5) and complete Phase 6 by registering the full PERF registry (**239/239** rules) behind a unified `GoPerfScan`, so the product can list and run the entire performance catalogue.
+Land the goslop Go port foundation (Phases 0-5) and complete Phase 6 by registering the full PERF registry (**239/239** rules) behind a unified `GoPerfScan`, so the product can list and run the entire performance catalogue.
 
 ---
 
@@ -9,15 +9,15 @@ Land the CodeHound Go port foundation (Phases 0–5) and complete Phase 6 by reg
 - Plans: [`plans/port-phasewise-checklist.md`](../port-phasewise-checklist.md), [`plans/architecture-go.md`](../architecture-go.md), [`plans/parity-matrix.md`](../parity-matrix.md)
 - Batch manifests: [`plans/perf-batches/`](../perf-batches/)
 - Issues: see **Related issues**
-- Parent product: Rust CodeHound (`../codehound`); this repo is the Go reimplementation (`goslop`)
+- Parent product: Rust goslop (`../goslop`); this repo is the Go reimplementation (`goslop`)
 
 ---
 
 ## Changes
 
-### Core / engine (Phases 0–5)
+### Core / engine (Phases 0-5)
 
-- Bootstrap module layout: `cmd/codehound`, `internal/*`, fixtures, ruleset, plans
+- Bootstrap module layout: `cmd/goslop`, `internal/*`, fixtures, ruleset, plans
 - Core contracts: findings, fingerprint v2, profiles, Detector / LanguagePlugin
 - Fixture materializer + tree-sitter Go parse path (`tsparse`, SourceIndex, AST walk)
 - Engine: file walk, registry, parallel analyzer lifecycle
@@ -35,7 +35,7 @@ Land the CodeHound Go port foundation (Phases 0–5) and complete Phase 6 by reg
 
 | Batch | Range (approx) | Count |
 |------:|----------------|------:|
-| Seed | 1–8, 32, 50, 116, 230 | 12 |
+| Seed | 1-8, 32, 50, 116, 230 | 12 |
 | 1 | PERF-9…60 | 50 |
 | 2 | PERF-61…111 | 50 |
 | 3 | PERF-112…163 | 50 |
@@ -53,7 +53,7 @@ Land the CodeHound Go port foundation (Phases 0–5) and complete Phase 6 by reg
 
 ## Code snippets (if applicable)
 
-### After — unified PERF dispatch
+### After - unified PERF dispatch
 
 ```go
 // GoPerfScan builds facts once, then runs every allowed PERF rule.
@@ -66,7 +66,7 @@ for _, e := range rulesCopy {
 }
 ```
 
-### After — batch registration
+### After - batch registration
 
 ```go
 func init() {
@@ -102,7 +102,7 @@ func init() {
 
 ```mermaid
 flowchart LR
-  CLI[cmd/codehound] --> App[internal/app]
+  CLI[cmd/goslop] --> App[internal/app]
   App --> Engine[internal/engine]
   Engine --> Plugin[lang/go plugin]
   Plugin --> Parse[tsparse ParseSource]
@@ -120,7 +120,7 @@ flowchart LR
 
 | Path | Change |
 |------|--------|
-| `internal/lang/go/detectors/perf/*` | PERF infra + 239-rule catalogue (batches 1–5) |
+| `internal/lang/go/detectors/perf/*` | PERF infra + 239-rule catalogue (batches 1-5) |
 | `internal/lang/go/plugin.go` | tree-sitter `ParseSource` |
 | `internal/engine/analyzer.go` | close unit trees after scan |
 | `internal/lang/go/detectors/all.go` | wire `NewGoPerfScan` |
@@ -134,7 +134,7 @@ flowchart LR
 ## Test plan
 
 - [x] `go test ./...`
-- [x] `go build -o bin/codehound ./cmd/codehound`
+- [x] `go build -o bin/goslop ./cmd/goslop`
 - [x] Focused PERF package tests (seed + batch samples)
 - [x] Manual: `--list-rules` shows 241 lines (239 PERF + 2 CWE)
 - [x] Manual: `--only PERF-6` fires on loop `fmt.Sprintf` sample
@@ -145,9 +145,9 @@ flowchart LR
 
 ```sh
 go test ./...
-go build -o bin/codehound ./cmd/codehound
-./bin/codehound --list-rules | wc -l
-./bin/codehound --profile all --only PERF-6 .
+go build -o bin/goslop ./cmd/goslop
+./bin/goslop --list-rules | wc -l
+./bin/goslop --profile all --only PERF-6 .
 ```
 
 ---
@@ -155,10 +155,10 @@ go build -o bin/codehound ./cmd/codehound
 ## Screenshots / sample output
 
 ```
-$ ./bin/codehound --list-rules | wc -l
+$ ./bin/goslop --list-rules | wc -l
 241
 
-$ ./bin/codehound --profile all --only PERF-6 /tmp/perf6_sample.go
+$ ./bin/goslop --profile all --only PERF-6 /tmp/perf6_sample.go
 PERF-6 /tmp/perf6_sample.go:6:21 fmt-based formatting is performed inside a loop body
 ```
 
@@ -188,7 +188,7 @@ PERF-6 /tmp/perf6_sample.go:6:21 fmt-based formatting is performed inside a loop
 
 ## Follow-ups (out of scope)
 
-- Residual Phase 0–5: `codehound.toml` load, `--export-context` / `--export-chunks`, `--explain`, gitignore walk (#9)
+- Residual Phase 0-5: `goslop.toml` load, `--export-context` / `--export-chunks`, `--explain`, gitignore walk (#9)
 - Phase 6 polish: expand `perfNeedles`, residual FN/FP vs Rust (#2 follow-up comments)
 - Phase 7 CWE structural domains beyond CWE-78/89 seed (#3)
 - Phase 8 BP detectors (#4)
@@ -214,4 +214,4 @@ PERF-6 /tmp/perf6_sample.go:6:21 fmt-based formatting is performed inside a loop
 
 ## Release notes (if user-facing)
 
-Go port of CodeHound: MVP CLI/engine plus full 239-rule PERF catalogue (heuristic parity with Rust registries).
+Go port of goslop: MVP CLI/engine plus full 239-rule PERF catalogue (heuristic parity with Rust registries).

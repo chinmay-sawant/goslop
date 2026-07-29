@@ -1,14 +1,14 @@
-# goslop — GitHub Issue Creation Template
+# goslop - GitHub Issue Creation Template
 
 Use this when opening a **process-gated** implementation issue (same discipline as `PR_TEMPLATE.md`). Fill the body sections, then create the issue with the CLI so **assignee**, **labels**, and **title** are set correctly.
 
-Repo: [chinmay-sawant/goslop](https://github.com/chinmay-sawant/goslop) (Go port of CodeHound).
+Repo: [chinmay-sawant/goslop](https://github.com/chinmay-sawant/goslop) (Go port of goslop).
 
 ---
 
 ## How to use
 
-1. **Pick a title** — short, imperative or noun phrase; include the work area (`engine parse…`, `CWE catalog…`).
+1. **Pick a title** - short, imperative or noun phrase; include the work area (`engine parse…`, `CWE catalog…`).
 2. **Fill the body** below (Context, Scope, Out of scope, Success criteria, Plan, References).
 3. **Save a record** (optional but recommended) under `plans/PR/issue-<slug>-body.md` or `plans/v0.0.x/`.
 4. **Create the issue** with the `gh` command in [Open the issue](#open-the-issue-gh--required-metadata).
@@ -18,7 +18,7 @@ Repo: [chinmay-sawant/goslop](https://github.com/chinmay-sawant/goslop) (Go port
 
 ---
 
-## Open the issue (`gh`) — required metadata
+## Open the issue (`gh`) - required metadata
 
 ```sh
 gh issue create \

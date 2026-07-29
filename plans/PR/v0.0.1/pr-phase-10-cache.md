@@ -1,6 +1,6 @@
 ## Summary
 
-Implements Phase 10 incremental analysis cache, inline/file ignore directives, baseline filtering, and minimal `.gitignore` / `.codehoundignore` walk support. Warm cache hits skip parse+detect; CLI wires `--no-cache`, `--cache-dir`, `--rebuild-cache`, and `--prune-cache` without changing default scan behaviour beyond enabling the cache when writable.
+Implements Phase 10 incremental analysis cache, inline/file ignore directives, baseline filtering, and minimal `.gitignore` / `.goslopignore` walk support. Warm cache hits skip parse+detect; CLI wires `--no-cache`, `--cache-dir`, `--rebuild-cache`, and `--prune-cache` without changing default scan behaviour beyond enabling the cache when writable.
 
 ---
 
@@ -8,7 +8,7 @@ Implements Phase 10 incremental analysis cache, inline/file ignore directives, b
 
 - Plans: `plans/port-phasewise-checklist.md` (Phase 10), `plans/architecture-go.md`, `plans/parity-matrix.md`
 - Issues: see **Related issues**
-- Rust parity: `codehound/src/engine/{cache,baseline,ignore}` + walk ignore filters
+- Rust parity: `goslop/src/engine/{cache,baseline,ignore}` + walk ignore filters
 
 ---
 
@@ -16,7 +16,7 @@ Implements Phase 10 incremental analysis cache, inline/file ignore directives, b
 
 ### Incremental cache (`internal/engine/cache`)
 
-- On-disk layout: `.codehound-cache/manifest.json` + `files/<sha256(path)>.json`
+- On-disk layout: `.goslop-cache/manifest.json` + `files/<sha256(path)>.json`
 - Invalidation: content SHA-256, tool version mass-stale, rule-config fingerprint (`ScanContext.RuleConfigFingerprint`)
 - Warm hit path in `Analyzer.scanOne` skips parse+detect
 - Size-based eviction on flush (default max 500 MiB via app open)
@@ -24,19 +24,19 @@ Implements Phase 10 incremental analysis cache, inline/file ignore directives, b
 
 ### Ignore (`internal/engine/ignore`)
 
-- Comment-only directives: `// codehound-ignore: RULE`, file-level, start/end blocks
+- Comment-only directives: `// goslop-ignore: RULE`, file-level, start/end blocks
 - Lexer skips strings and `/* */` so directives cannot be forged inside literals
 - Applied per-file after detectors; optional `--show-ignored`
 
 ### Baseline (`internal/engine/baseline`)
 
-- Load/discover `.codehound-baseline.json`, fingerprint + location match
+- Load/discover `.goslop-baseline.json`, fingerprint + location match
 - Filter new vs baselined findings; `--no-baseline`, `--baseline-file`, `--show-baselined`
 
 ### Walk + CLI + app
 
-- Minimal `.gitignore` / `.codehoundignore` / `.ignore` matcher during file collection
-- Skips `.codehound-cache` directories
+- Minimal `.gitignore` / `.goslopignore` / `.ignore` matcher during file collection
+- Skips `.goslop-cache` directories
 - CLI flags wired through `cli.Options` → `app.run` → analyzer
 
 ### Plans
@@ -59,7 +59,7 @@ if kind, entry := store.Lookup(rel, contentHash); kind == cache.LookupHit {
 ### Inline ignore (fixture style)
 
 ```go
-// codehound-ignore: CWE-78
+// goslop-ignore: CWE-78
 exec.Command("sh", "-c", cmd).Run()
 ```
 
@@ -95,7 +95,7 @@ flowchart LR
   App --> LoadBaseline
   App --> Analyzer
   Analyzer --> Walk
-  Walk --> IgnoreFiles[".gitignore / .codehoundignore"]
+  Walk --> IgnoreFiles[".gitignore / .goslopignore"]
   Analyzer --> CacheLookup
   CacheLookup -->|hit| Findings
   CacheLookup -->|miss| ParseDetect
@@ -133,10 +133,10 @@ flowchart LR
 
 ```sh
 go test ./...
-go build -o bin/codehound ./cmd/codehound
-./bin/codehound --no-cache --profile all /path/to/project
-./bin/codehound --cache-dir /tmp/ch-cache --profile all /path/to/project
-./bin/codehound --prune-cache --cache-dir /tmp/ch-cache /path/to/project
+go build -o bin/goslop ./cmd/goslop
+./bin/goslop --no-cache --profile all /path/to/project
+./bin/goslop --cache-dir /tmp/ch-cache --profile all /path/to/project
+./bin/goslop --prune-cache --cache-dir /tmp/ch-cache /path/to/project
 ```
 
 ---
@@ -187,4 +187,4 @@ go build -o bin/codehound ./cmd/codehound
 
 ## Release notes (if user-facing)
 
-feat: incremental analysis cache, codehound-ignore suppressions, and baseline filtering
+feat: incremental analysis cache, goslop-ignore suppressions, and baseline filtering

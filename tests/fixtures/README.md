@@ -19,17 +19,17 @@ The `---` line separates header from source.
 Before tests run:
 
 1. Read `*.txt` under `tests/fixtures/<lang>/`
-2. Write source to `target/codehound-fixtures/<lang>/<file>`
-3. Run CodeHound on the generated paths
+2. Write source to `target/goslop-fixtures/<lang>/<file>`
+3. Run goslop on the generated paths
 
-Integration tests call `codehound::fixture::materialize_fixture` automatically.
+Integration tests call `goslop::fixture::materialize_fixture` automatically.
 
 ## Layout
 
 | Language | Text fixture | Generated (gitignored) |
 |----------|--------------|-------------------------|
-| Go (stdlib) | `go/stdlib/*.txt` | `target/codehound-fixtures/go/*.pure.go` |
-| Python | `python/sample.txt` | `target/codehound-fixtures/python/sample.py` |
-| Rust | `rust/sample.txt` | `target/codehound-fixtures/rust/sample.rs` (plugin TBD) |
+| Go (stdlib) | `go/stdlib/*.txt` | `target/goslop-fixtures/go/*.pure.go` |
+| Python | `python/sample.txt` | `target/goslop-fixtures/python/sample.py` |
+| Rust | `rust/sample.txt` | `target/goslop-fixtures/rust/sample.rs` (plugin TBD) |
 
-Do **not** add `.go`, `.py`, or `.rs` files here — only `.txt`.
+Do **not** add `.go`, `.py`, or `.rs` files here - only `.txt`.

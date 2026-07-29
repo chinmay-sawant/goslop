@@ -1,6 +1,6 @@
 # Taint Tracking (Experimental)
 
-CodeHound includes an experimental taint-tracking engine for Go that augments
+goslop includes an experimental taint-tracking engine for Go that augments
 substring-based CWE detectors for the **taint-core** family:
 
 `CWE-22`, `CWE-78`, `CWE-79`, `CWE-89`, `CWE-90`, `CWE-91`
@@ -8,7 +8,7 @@ substring-based CWE detectors for the **taint-core** family:
 When enabled, it traces data flow from untrusted sources to dangerous sinks and
 suppresses findings where a recognized sanitizer intercepts the flow.
 
-**Honesty bar:** name-string and intra/same-package analysis — useful for triage,
+**Honesty bar:** name-string and intra/same-package analysis - useful for triage,
 **not** a CodeQL / whole-program security gate. See [ADR 0003](./adr/0003-taint-model.md)
 and [SECURITY.md](../SECURITY.md).
 
@@ -16,12 +16,12 @@ and [SECURITY.md](../SECURITY.md).
 
 | Method | How |
 |--------|-----|
-| CLI flag | `codehound --taint` |
-| Config file | `[codehound.taint]\nenabled = true` |
+| CLI flag | `goslop --taint` |
+| Config file | `[goslop.taint]\nenabled = true` |
 | Profile | `--profile security` (taint **on** by default) |
-| Disable | `--no-taint` or `[codehound.taint]\nenabled = false` |
-| Show paths | `--taint-show-paths` or `[codehound.taint]\nshow_paths = true` |
-| Inter-proc depth | `--taint-depth N` (1–4, default **1** = direct caller→callee only) |
+| Disable | `--no-taint` or `[goslop.taint]\nenabled = false` |
+| Show paths | `--taint-show-paths` or `[goslop.taint]\nshow_paths = true` |
+| Inter-proc depth | `--taint-depth N` (1-4, default **1** = direct caller→callee only) |
 
 Taint is disabled by default under `recommended` (CWE IDs stay allow-listed).
 The substring-based heuristic still runs as a fallback when taint is off.
@@ -32,11 +32,11 @@ The substring-based heuristic still runs as a fallback when taint is off.
 2. **Build** an intra-procedural data-flow graph per function.
 3. **Query** paths from sinks back to sources; apply sanitizers.
 4. **Accumulate** per-file units; on project **finalize**, refine
-   same-package call summaries with multi-hop depth 1–4.
+   same-package call summaries with multi-hop depth 1-4.
 5. Emit evidence (`TaintFlow`) when `--taint-show-paths` is set.
 
 Cache hits with taint enabled still re-parse or re-accumulate project units when
-`requires_cache_state` is set — warm cache is not free for taint-heavy scans.
+`requires_cache_state` is set - warm cache is not free for taint-heavy scans.
 See [incremental-cache.md](./incremental-cache.md).
 
 ### Intra-proc precision (Phase 8)
@@ -79,7 +79,7 @@ Classifier lives in `taint/extract/classify.rs` (source of truth over this table
 | `HTTPWrite` | CWE-79 | `w.Write()`, `w.WriteHeader()` |
 | `LDAPQuery` | CWE-90 | LDAP search / filter construction sinks |
 | `XMLQuery` | CWE-91 | XML query / decode sinks treated as injection targets |
-| `Deserialization` | — | `json.Unmarshal()`, `xml.Unmarshal()` |
+| `Deserialization` | - | `json.Unmarshal()`, `xml.Unmarshal()` |
 
 ### Sanitizers
 
@@ -97,7 +97,7 @@ Source of truth is the runtime **classifier**, not enum comments in `model.rs`.
 
 **Path confinement (CWE-22):** findings are suppressed only when a path
 variable is confined with `filepath.Abs` / `filepath.EvalSymlinks` **and**
-`strings.HasPrefix` on that same binding — not file-level co-presence of
+`strings.HasPrefix` on that same binding - not file-level co-presence of
 `Clean`.
 
 When a recognized sanitizer is found on every path from the source to the
@@ -113,7 +113,7 @@ accept Path sanitizers.
   still fire. No claim of complete ORM coverage.
 - **CWE-79 is not full XSS.** Template + HTTPWrite sinks only; no DOM model.
 - **CWE-90/91** use real LDAP/XML sink classification; quarantine long-tail
-  CWE IDs that only match fixture needles (catalog honesty — Phase 1).
+  CWE IDs that only match fixture needles (catalog honesty - Phase 1).
 - **Bare `.Prepare` is not a sanitizer.** CWE-89 suppresses only when the
   **same function** binds a simple receiver via literal `Prepare`/`PrepareContext`
   and that binding is the latest write before `Stmt.Query`/`Exec` (or `*Context`).
@@ -139,7 +139,7 @@ accept Path sanitizers.
 - **No type-based aliasing.** Two variables of the same type pointing to the
   same allocation are treated as independent.
 - **Interface dispatch.** Methods called on interface types are treated as
-  opaque — taint flows through arguments but the return value is not tracked
+  opaque - taint flows through arguments but the return value is not tracked
   because the concrete implementation is unknown.
 - **Channel/goroutine.** G5 v0 pilot models **same-function** unbuffered
   handoff when pairing rules hold: exactly one send and one receive on the
@@ -148,22 +148,22 @@ accept Path sanitizers.
   edge so classic `source → send → recv → sink` can fire.
   Declined shapes (`select`, multi-send/recv, buffered `make(chan T, N)`,
   cross-goroutine / `go` MHP) stay `UnsupportedFlow::{Channel,Goroutine}`
-  — honest FN. The old IP-010 source-on-send attribution quirk is
+ - honest FN. The old IP-010 source-on-send attribution quirk is
   quarantined (send-value sources no longer bind the channel identifier).
   Do **not** treat residual IP-010 fixtures as channel-support success.
 - **Pointer dereference.** `*p = tainted` and `json.Unmarshal(data, &target)`
   are handled for a small set of known functions (`json.Unmarshal`,
   `xml.Unmarshal`). General pointer tracking requires type inference.
-- **Name-string sinks.** Callees are matched by identifier text, not types —
+- **Name-string sinks.** Callees are matched by identifier text, not types - 
   renamed wrappers and interface methods may FN or FP.
 - **No SSA / no Go types.** Intra-proc last-write and call facts are AST-level.
 - **Depth.** Inter-procedural summary is bounded (not a full fixpoint). Mutual
   recursion and deep chains may miss flows.
 - **Product positioning.** Enable with `--profile security` or `--taint` for
-  triage. **Do not use as a sole security gate** — pair with govulncheck,
+  triage. **Do not use as a sole security gate** - pair with govulncheck,
   code review, and stronger SAST where required.
 
-See also [ADR 0003 — taint model honesty](./adr/0003-taint-model.md).
+See also [ADR 0003 - taint model honesty](./adr/0003-taint-model.md).
 
 ## Output
 
@@ -208,4 +208,4 @@ Echo packages are imported.
 To extend sources/sinks/sanitizers, edit the classifier and walkers under
 `src/lang/go/detectors/cwe/taint/extract/` (`classify.rs`, walkers, call graph)
 and graph query helpers under `taint/graph_query/`. Enum kinds live in
-`taint/model.rs` — runtime classification is the product source of truth.
+`taint/model.rs` - runtime classification is the product source of truth.

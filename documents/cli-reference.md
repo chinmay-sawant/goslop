@@ -1,10 +1,10 @@
 # CLI reference
 
-Complete command-line reference for the Go CodeHound binary (`./bin/codehound`).
+Complete command-line reference for the Go goslop binary (`./bin/goslop`).
 
 ```text
-Usage: codehound [flags] [PATH...]
-       codehound init
+Usage: goslop [flags] [PATH...]
+       goslop init
 ```
 
 - Flags accept both `-flag` and `--flag` forms (stdlib `flag` package).
@@ -17,8 +17,8 @@ Usage: codehound [flags] [PATH...]
 
 | Mode | Invocation | Behavior |
 |------|------------|----------|
-| **Scan** | `codehound [flags] [PATH...]` | Analyze paths (default) |
-| **`init`** | `codehound init` | Write starter `codehound.toml` in cwd; **no flags parsed after `init`** |
+| **Scan** | `goslop [flags] [PATH...]` | Analyze paths (default) |
+| **`init`** | `goslop init` | Write starter `goslop.toml` in cwd; **no flags parsed after `init`** |
 | **Help** | `-h` / `-help` | Print usage; exit 0 |
 | **Version** | `--version` | Print version (e.g. `0.1.0-dev`); exit 0 |
 | **List rules** | `--list-rules` | Print registered rules; exit 0 |
@@ -28,12 +28,12 @@ Usage: codehound [flags] [PATH...]
 ### `init`
 
 ```sh
-./bin/codehound init
-# wrote starter codehound.toml to /abs/path/codehound.toml
+./bin/goslop init
+# wrote starter goslop.toml to /abs/path/goslop.toml
 ```
 
-- Fails with exit **2** if `codehound.toml` already exists.
-- Content matches [`templates/codehound.toml`](../templates/codehound.toml).
+- Fails with exit **2** if `goslop.toml` already exists.
+- Content matches [`templates/goslop.toml`](../templates/goslop.toml).
 
 ---
 
@@ -60,9 +60,9 @@ Usage: codehound [flags] [PATH...]
 **CSV examples**
 
 ```sh
-./bin/codehound --only "CWE-78,PERF-6,CWE-89" .
-./bin/codehound --profile style --only BP-28 .
-./bin/codehound --skip PERF-1,PERF-7 .
+./bin/goslop --only "CWE-78,PERF-6,CWE-89" .
+./bin/goslop --profile style --only BP-28 .
+./bin/goslop --skip PERF-1,PERF-7 .
 ```
 
 Patterns support exact IDs and prefix wildcards such as `PERF-*`, `CWE-*`, `BP-*` in the filter engine.
@@ -78,11 +78,11 @@ Patterns support exact IDs and prefix wildcards such as `PERF-*`, `CWE-*`, `BP-*
 | `--no-fail` | bool | `false` | Always exit **0** even when findings match the fail policy (still prints summary / exports). |
 
 ```sh
-./bin/codehound --format text .
-./bin/codehound --format json . > findings.json
-./bin/codehound --format sarif . > codehound.sarif
-./bin/codehound --no-terminal .                    # summary only
-./bin/codehound --no-terminal --format json .      # summary on stderr + JSON on stdout
+./bin/goslop --format text .
+./bin/goslop --format json . > findings.json
+./bin/goslop --format sarif . > goslop.sarif
+./bin/goslop --no-terminal .                    # summary only
+./bin/goslop --no-terminal --format json .      # summary on stderr + JSON on stdout
 ```
 
 Full format schemas and SARIF examples: [reporting-formats.md](./reporting-formats.md).
@@ -97,9 +97,9 @@ Full format schemas and SARIF examples: [reporting-formats.md](./reporting-forma
 | `--explain` | string | _(empty)_ | Print catalogue metadata for one rule id and exit |
 
 ```sh
-./bin/codehound --list-rules
-./bin/codehound --explain PERF-6
-./bin/codehound --explain CWE-89
+./bin/goslop --list-rules
+./bin/goslop --explain PERF-6
+./bin/goslop --explain CWE-89
 ```
 
 ---
@@ -109,7 +109,7 @@ Full format schemas and SARIF examples: [reporting-formats.md](./reporting-forma
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--include-tests` | bool | `false` | Include test files (`*_test.*`) in analysis |
-| `--config` | string | _(discover)_ | Path to `codehound.toml` (default: walk upward from first PATH) |
+| `--config` | string | _(discover)_ | Path to `goslop.toml` (default: walk upward from first PATH) |
 | `--version` | bool | `false` | Print version and exit |
 
 Positional **PATH…** arguments are scan roots (files or directories).
@@ -121,15 +121,15 @@ Positional **PATH…** arguments are scan roots (files or directories).
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
 | `--no-cache` | bool | `false` | Disable the incremental analysis cache |
-| `--cache-dir` | string | `.codehound-cache` | Incremental cache directory |
+| `--cache-dir` | string | `.goslop-cache` | Incremental cache directory |
 | `--rebuild-cache` | bool | `false` | Purge the cache directory before scanning |
 | `--prune-cache` | bool | `false` | Prune stale cache entries for PATHS and exit |
 
 ```sh
-./bin/codehound --no-cache .
-./bin/codehound --rebuild-cache .
-./bin/codehound --cache-dir /tmp/ch-cache .
-./bin/codehound --prune-cache .
+./bin/goslop --no-cache .
+./bin/goslop --rebuild-cache .
+./bin/goslop --cache-dir /tmp/ch-cache .
+./bin/goslop --prune-cache .
 ```
 
 ---
@@ -138,9 +138,9 @@ Positional **PATH…** arguments are scan roots (files or directories).
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `--no-baseline` | bool | `false` | Ignore any existing `.codehound-baseline.json` |
+| `--no-baseline` | bool | `false` | Ignore any existing `.goslop-baseline.json` |
 | `--baseline-file` | string | _(discover)_ | Explicit baseline path |
-| `--show-ignored` | bool | `false` | Report findings suppressed by `codehound-ignore` |
+| `--show-ignored` | bool | `false` | Report findings suppressed by `goslop-ignore` |
 | `--show-baselined` | bool | `false` | Report findings present in the baseline |
 
 ---
@@ -151,13 +151,13 @@ Positional **PATH…** arguments are scan roots (files or directories).
 |------|------|---------|-------------|
 | `--taint` | bool | `false` | Enable experimental taint tracking (CWE-22/78/79/89) |
 | `--no-taint` | bool | `false` | Disable taint even under `security` profile |
-| `--taint-depth` | int | `0` | Inter-procedural hops **1–4**; `0` = profile default (security → 4, else 1) |
+| `--taint-depth` | int | `0` | Inter-procedural hops **1-4**; `0` = profile default (security → 4, else 1) |
 | `--taint-show-paths` | bool | `false` | Attach taint hop evidence to findings |
 
 ```sh
-./bin/codehound --taint --taint-depth 3 --taint-show-paths .
-./bin/codehound --profile security .
-./bin/codehound --profile security --no-taint .
+./bin/goslop --taint --taint-depth 3 --taint-show-paths .
+./bin/goslop --profile security .
+./bin/goslop --profile security --no-taint .
 ```
 
 Details: [taint.md](./taint.md).
@@ -175,8 +175,8 @@ Details: [taint.md](./taint.md).
 | `--chunk-size` | int | **25** | Findings per chunk file |
 
 ```sh
-./bin/codehound --profile all --export-context --export-chunks --no-cache .
-./bin/codehound --export-chunks --chunk-size 50 --chunks-dir /tmp/chunks .
+./bin/goslop --profile all --export-context --export-chunks --no-cache .
+./bin/goslop --export-chunks --chunk-size 50 --chunks-dir /tmp/chunks .
 ```
 
 **Use chunks to delegate work** (each chunk is a batch of combined findings).  
@@ -210,10 +210,10 @@ Fail policies (from profile / config `fail_on`):
 Discovery order:
 
 1. `--config PATH` if set  
-2. Else walk upward from the first scan path (or `.`) for `codehound.toml`  
+2. Else walk upward from the first scan path (or `.`) for `goslop.toml`  
 3. Missing file is fine (CLI-only defaults)
 
-### Common TOML keys (`[codehound]`)
+### Common TOML keys (`[goslop]`)
 
 | Key | Effect |
 |-----|--------|
@@ -221,10 +221,10 @@ Discovery order:
 | `fail_on` | Sets fail policy unless `--no-fail` |
 | `include` / `exclude` | Walk globs (config only; no CLI flag) |
 | `exclude_tests` | Default true; set `false` to include tests (CLI `--include-tests` also includes) |
-| `[codehound.baseline]` | `enabled`, `path` |
-| `[codehound.cache]` | `enabled`, `path`, `max_size_mb`, `max_file_size_mb`, … |
-| `[codehound.taint]` | `enabled`, `show_paths` |
-| `[codehound.bad_practices]` | `enabled`, `severity`, `severity_overrides` |
+| `[goslop.baseline]` | `enabled`, `path` |
+| `[goslop.cache]` | `enabled`, `path`, `max_size_mb`, `max_file_size_mb`, … |
+| `[goslop.taint]` | `enabled`, `show_paths` |
+| `[goslop.bad_practices]` | `enabled`, `severity`, `severity_overrides` |
 
 ### Precedence (summary)
 
@@ -238,7 +238,7 @@ Discovery order:
 | taint on/off | CLI `--taint` / `--no-taint` else config |
 | profile / format / export / no-terminal | CLI only |
 
-Starter template with comments: [`templates/codehound.toml`](../templates/codehound.toml).
+Starter template with comments: [`templates/goslop.toml`](../templates/goslop.toml).
 
 ---
 
@@ -246,37 +246,37 @@ Starter template with comments: [`templates/codehound.toml`](../templates/codeho
 
 ```sh
 # Default recommended gate
-./bin/codehound .
+./bin/goslop .
 
 # Full catalogue, JSON, no cache
-./bin/codehound --profile all --format json --no-cache ./cmd
+./bin/goslop --profile all --format json --no-cache ./cmd
 
 # Security + taint paths
-./bin/codehound --profile security --taint-show-paths .
+./bin/goslop --profile security --taint-show-paths .
 
 # Style-only (BP)
-./bin/codehound --profile style .
+./bin/goslop --profile style .
 
 # Export both surfaces for agent workflows
-./bin/codehound --profile all --no-fail --export-context --export-chunks --no-cache .
+./bin/goslop --profile all --no-fail --export-context --export-chunks --no-cache .
 
 # Product Makefile equivalent (see make-run.md)
-./bin/codehound --profile all --no-fail --no-terminal \
+./bin/goslop --profile all --no-fail --no-terminal \
   --export-context --export-chunks --no-cache /path/to/project
 
 # SARIF for GitHub Code Scanning
-./bin/codehound --profile recommended --no-fail --format sarif . > codehound.sarif
+./bin/goslop --profile recommended --no-fail --format sarif . > goslop.sarif
 
 # Narrow run
-./bin/codehound --only PERF-101,CWE-78 --format text ./internal
+./bin/goslop --only PERF-101,CWE-78 --format text ./internal
 ```
 
 ---
 
 ## Related docs
 
-- [overview.md](./overview.md) — product features  
-- [make-run.md](./make-run.md) — `make run` / `make oracle`  
-- [reporting-formats.md](./reporting-formats.md) — text / JSON / SARIF  
-- [export-context-and-chunks.md](./export-context-and-chunks.md) — exports  
-- [go-recommended-pack.md](./go-recommended-pack.md) — pack contents  
+- [overview.md](./overview.md) - product features  
+- [make-run.md](./make-run.md) - `make run` / `make oracle`  
+- [reporting-formats.md](./reporting-formats.md) - text / JSON / SARIF  
+- [export-context-and-chunks.md](./export-context-and-chunks.md) - exports  
+- [go-recommended-pack.md](./go-recommended-pack.md) - pack contents  

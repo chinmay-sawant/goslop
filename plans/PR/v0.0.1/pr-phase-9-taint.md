@@ -7,7 +7,7 @@ Adds experimental intra- and inter-procedural taint tracking for Go CWE-22/78/79
 ## Motivation / context
 
 - Plans: `plans/port-phasewise-checklist.md` Phase 9, `documents/taint.md`
-- Rust reference: `codehound/src/lang/go/detectors/cwe/taint/`
+- Rust reference: `goslop/src/lang/go/detectors/cwe/taint/`
 - Issues: see **Related issues**
 
 Phase 9 is unlocked by seed CWE detectors + existing taint fixtures; full structural CWE (Phase 7) is a parallel PR and is not required.
@@ -18,13 +18,13 @@ Phase 9 is unlocked by seed CWE detectors + existing taint fixtures; full struct
 
 ### Taint engine (`internal/lang/go/detectors/cwe/taint/`)
 
-- **Extract** — tree-sitter walk for sources, sinks, sanitizers, assignments, scopes, channel staging (G5 v0 pairing)
-- **Classify** — name-string tables for UserInput/Args/Env/File/Network sources; CommandExec/SQL/FileOpen/Template/HTTPWrite sinks; Path/HTML/Validation sanitizers (`filepath.Clean` is **not** a path sanitizer)
-- **Graph build** — versioned last-write variables, assignment/argument edges, known propagators, opaque-call skip
-- **Query** — BFS with sanitizer-state tracking
-- **Summaries + multihop** — per-function param/return/sink summaries; `taint_max_depth` 1–4 same-package refinement
-- **Inter-procedural finalize** — same-package call-site resolution (package identity + receiver keys; decline ambiguous method names)
-- **Rules** — CWE-22, CWE-78, CWE-79, CWE-89
+- **Extract** - tree-sitter walk for sources, sinks, sanitizers, assignments, scopes, channel staging (G5 v0 pairing)
+- **Classify** - name-string tables for UserInput/Args/Env/File/Network sources; CommandExec/SQL/FileOpen/Template/HTTPWrite sinks; Path/HTML/Validation sanitizers (`filepath.Clean` is **not** a path sanitizer)
+- **Graph build** - versioned last-write variables, assignment/argument edges, known propagators, opaque-call skip
+- **Query** - BFS with sanitizer-state tracking
+- **Summaries + multihop** - per-function param/return/sink summaries; `taint_max_depth` 1-4 same-package refinement
+- **Inter-procedural finalize** - same-package call-site resolution (package identity + receiver keys; decline ambiguous method names)
+- **Rules** - CWE-22, CWE-78, CWE-79, CWE-89
 
 ### Integration
 
@@ -48,7 +48,7 @@ Phase 9 is unlocked by seed CWE detectors + existing taint fixtures; full struct
 | **Performance** | Taint off by default under recommended; extract+BFS only when enabled |
 | **Memory** | Per-file graphs accumulated for finalize when taint on |
 | **Behavior / correctness** | New findings for CWE-22/79; richer CWE-78/89 when `--taint` |
-| **API / CLI** | New flags; config `[codehound.taint]` stub deferred |
+| **API / CLI** | New flags; config `[goslop.taint]` stub deferred |
 | **Dependencies** | None new (tree-sitter already present) |
 
 ---
@@ -124,7 +124,7 @@ go test ./internal/lang/go/detectors/cwe/taint/ -count=1 -v
 
 ## Follow-ups (out of scope)
 
-- Config table `[codehound.taint]` full load (schema already documents keys)
+- Config table `[goslop.taint]` full load (schema already documents keys)
 - CWE-90/91 taint rules
 - Full import-path cross-package resolution
 - Channel/goroutine concurrent model (IP-010 remains FN)

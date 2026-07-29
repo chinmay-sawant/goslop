@@ -1,4 +1,4 @@
-# CodeHound — Issue / PR Comment Template
+# goslop - Issue / PR Comment Template
 
 Use this for **progress updates** on GitHub issues and pull requests. Keep comments factual and complete. Avoid dangling next-step teases aimed at the human (“when you want”, “let me know”, “remaining for you”).
 
@@ -20,7 +20,7 @@ Use this for **progress updates** on GitHub issues and pull requests. Keep comme
 - Leave success criteria half-checked without stating whether the issue/PR is ready to close.
 
 If work is complete for this issue: say **ready for review** / **issue can close on merge** and stop.  
-If work continues: list **next batch candidates** under a clear “Out of scope for this update” or “Future work (new issue)” heading — never “still need you to…”.
+If work continues: list **next batch candidates** under a clear “Out of scope for this update” or “Future work (new issue)” heading - never “still need you to…”.
 
 ---
 
@@ -30,7 +30,7 @@ If work continues: list **next batch candidates** under a clear “Out of scope 
 ## Progress update
 
 **Branch:** `<branch>`
-**Commit(s):** `<sha>` — `<subject>`
+**Commit(s):** `<sha>` - `<subject>`
 
 ### Delivered
 
@@ -40,8 +40,8 @@ If work continues: list **next batch candidates** under a clear “Out of scope 
 
 ### Validation
 
-- `make lint` — pass
-- `make test` — N passed
+- `make lint` - pass
+- `make test` - N passed
 
 ### Plans / evidence
 
@@ -50,7 +50,7 @@ If work continues: list **next batch candidates** under a clear “Out of scope 
 ### Issue status
 
 - **This issue:** ready to close on PR merge | still open for [concrete incomplete criterion]
-- **Future work (optional, new issue):** short bullets only if useful — no “waiting on you” language
+- **Future work (optional, new issue):** short bullets only if useful - no “waiting on you” language
 ```
 
 ---
@@ -60,7 +60,7 @@ If work continues: list **next batch candidates** under a clear “Out of scope 
 ```markdown
 ## Update
 
-**Commit:** `<sha>` — `<subject>`
+**Commit:** `<sha>` - `<subject>`
 
 ### What changed since last push
 
@@ -68,7 +68,7 @@ If work continues: list **next batch candidates** under a clear “Out of scope 
 
 ### Validation
 
-- `make lint` / `make test` — pass
+- `make lint` / `make test` - pass
 
 ### Notes for reviewers
 
@@ -82,14 +82,14 @@ If work continues: list **next batch candidates** under a clear “Out of scope 
 ```markdown
 ## Ship
 
-PR: https://github.com/chinmay-sawant/codehound/pull/N
+PR: https://github.com/chinmay-sawant/goslop/pull/N
 
 Implements the checklist for this issue. Merge closes the process gate via `Closes #N` on the PR body.
 
 ### Validation
 
-- `make lint` — pass
-- `make test` — N passed
+- `make lint` - pass
+- `make test` - N passed
 
 ### Future work (optional)
 
