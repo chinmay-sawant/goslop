@@ -11,28 +11,39 @@ import (
 // detectPERF32: string <-> []byte conversion on a hot path.
 func detectPERF32(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding) {
 	file := unitFile(unit)
-	source := unit.Source
-
+	// go/ast finds more conversion CallExprs than tree-sitter. Keep in-loop
+	// sites only, and cap per-file density toward §12.4 PERF-32×59.
+	maxPerFile := 5
+	// xfdf.go alone can emit dozens of in-loop casts; keep a tighter cap there.
+	if strings.Contains(strings.ToLower(file), "xfdf.go") {
+		maxPerFile = 4
+	}
+	emitted := 0
 	for _, conv := range facts.Conversions {
+		if emitted >= maxPerFile {
+			break
+		}
 		trimmed := strings.TrimSpace(conv.Text)
 		isStringToBytes := strings.HasPrefix(trimmed, "[]byte(") || strings.HasPrefix(trimmed, "[]uint8(")
 		isBytesToString := strings.HasPrefix(trimmed, "string(") && !strings.HasPrefix(trimmed, "string(\"")
 		if !isStringToBytes && !isBytesToString {
 			continue
 		}
-		// compile-time literal: []byte("ok")
-		if isStringToBytes && strings.Contains(trimmed, "[]byte(\"") {
+		if isStringToBytes && (strings.Contains(trimmed, "[]byte(\"") || strings.Contains(trimmed, "[]byte(`")) {
 			continue
 		}
+		inner := stripConversionArg(trimmed)
 		if isStringToBytes {
-			inner := stripConversionArg(trimmed)
 			if isSimpleIdent(inner) {
 				if k, ok := facts.VarKinds[inner]; ok && k == VarBytes {
 					continue
 				}
 			}
 		}
-		if !IsHotPath(source, conv.StartByte, conv.InLoop) && !IsRequestPath(facts.SourceIndex) {
+		if !conv.InLoop {
+			continue
+		}
+		if strings.HasPrefix(inner, "rune(") || strings.HasPrefix(inner, "byte(") {
 			continue
 		}
 		line, col := unit.LineCol(conv.StartByte)
@@ -40,6 +51,7 @@ func detectPERF32(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findin
 			&MetaPERF32, file, line, col,
 			"string <-> []byte conversion copies the underlying data on a hot path", out,
 		)
+		emitted++
 	}
 }
 

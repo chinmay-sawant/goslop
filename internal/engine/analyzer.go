@@ -401,7 +401,7 @@ func (a *Analyzer) scanOne(
 	}
 }
 
-// closeUnitTree frees an attached tree-sitter tree if the unit owns one.
+// closeUnitTree frees an attached language AST if it implements Close().
 func closeUnitTree(unit *core.ParsedUnit) {
 	if unit == nil || unit.Tree == nil {
 		return

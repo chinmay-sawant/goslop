@@ -16,7 +16,7 @@ const (
 	ScanErrorIO ScanErrorKind = iota
 	// ScanErrorEncoding is invalid UTF-8 source.
 	ScanErrorEncoding
-	// ScanErrorParse is a tree-sitter / parse failure.
+	// ScanErrorParse is a language parse failure.
 	ScanErrorParse
 	// ScanErrorEngine is a detector/engine internal error.
 	ScanErrorEngine

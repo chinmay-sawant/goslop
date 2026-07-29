@@ -1,10 +1,11 @@
 package taint
 
 import (
+	goast "go/ast"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/core"
-	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/chinmay/codehound/internal/lang/go/goparse"
 )
 
 // ExtractCallGraph builds a per-file call graph from the unit AST.
@@ -13,74 +14,66 @@ func ExtractCallGraph(unit *core.ParsedUnit) *CallGraph {
 	if unit == nil {
 		return cg
 	}
-	root := unitRoot(unit)
-	if root == nil {
+	tree := unitTree(unit)
+	if tree == nil || tree.File == nil {
 		return cg
 	}
-	src := []byte(unit.Source)
-	walkCallGraph(root, src, cg)
+	walkCallGraph(tree.File, tree, cg, nil)
 	return cg
 }
 
-func walkCallGraph(node *sitter.Node, src []byte, cg *CallGraph) {
-	if node == nil {
+func walkCallGraph(n goast.Node, tree *goparse.Tree, cg *CallGraph, parents []goast.Node) {
+	if n == nil {
 		return
 	}
-	switch node.Kind() {
-	case "function_declaration":
-		if nameN := node.ChildByFieldName("name"); nameN != nil {
-			name := strings.TrimSpace(nameN.Utf8Text(src))
+	switch x := n.(type) {
+	case *goast.FuncDecl:
+		if x.Name != nil {
+			name := x.Name.Name
 			pc := 0
-			if p := node.ChildByFieldName("parameters"); p != nil {
-				pc = int(p.NamedChildCount())
+			if x.Type != nil && x.Type.Params != nil {
+				pc = len(x.Type.Params.List)
 			}
-			cg.AddDeclaration(name, FunctionDecl{Name: name, ParamCount: pc, IsMethod: false})
+			if x.Recv == nil || len(x.Recv.List) == 0 {
+				cg.AddDeclaration(name, FunctionDecl{Name: name, ParamCount: pc, IsMethod: false})
+			} else {
+				recv := tree.NodeText(x.Recv)
+				identity := name
+				if nrm := NormalizeReceiverType(recv); nrm != "" {
+					identity = nrm + "." + name
+				}
+				cg.AddDeclaration(identity, FunctionDecl{
+					Name: name, ParamCount: pc, IsMethod: true, ReceiverType: recv,
+				})
+			}
 		}
-	case "method_declaration":
-		if nameN := node.ChildByFieldName("name"); nameN != nil {
-			name := strings.TrimSpace(nameN.Utf8Text(src))
-			pc := 0
-			if p := node.ChildByFieldName("parameters"); p != nil {
-				pc = int(p.NamedChildCount())
-			}
-			recv := ""
-			if r := node.ChildByFieldName("receiver"); r != nil {
-				recv = r.Utf8Text(src)
-			}
-			identity := name
-			if n := NormalizeReceiverType(recv); n != "" {
-				identity = n + "." + name
-			}
-			cg.AddDeclaration(identity, FunctionDecl{
-				Name: name, ParamCount: pc, IsMethod: true, ReceiverType: recv,
-			})
-		}
-	case "call_expression":
-		recordCallSite(node, src, cg)
+	case *goast.CallExpr:
+		recordCallSite(x, tree, cg, parents)
 	}
-	for i := uint(0); i < node.ChildCount(); i++ {
-		walkCallGraph(node.Child(i), src, cg)
-	}
+	// Full-slice append so child walks cannot clobber sibling parent stacks.
+	next := append(parents[:len(parents):len(parents)], n)
+	forEachChild(n, func(child goast.Node) {
+		walkCallGraph(child, tree, cg, next)
+	})
 }
 
-func recordCallSite(node *sitter.Node, src []byte, cg *CallGraph) {
-	fn := node.ChildByFieldName("function")
-	if fn == nil {
+func recordCallSite(node *goast.CallExpr, tree *goparse.Tree, cg *CallGraph, parents []goast.Node) {
+	if node == nil || node.Fun == nil {
 		return
 	}
-	callee := strings.TrimSpace(fn.Utf8Text(src))
+	callee := strings.TrimSpace(tree.NodeText(node.Fun))
 	if callee == "" {
 		return
 	}
-	caller := enclosingFunctionName(node, src)
-	isMethod := fn.Kind() == "selector_expression"
-	args := argumentTexts(node, src)
-	lhs := resultVariableOfCall(node, src)
-	returns := callResultIsReturned(node, src, lhs)
+	caller := enclosingFunctionName(parents, tree)
+	_, isMethod := node.Fun.(*goast.SelectorExpr)
+	args := argumentTexts(node, tree)
+	lhs := resultVariableOfCall(parents, tree)
+	returns := callResultIsReturned(parents, tree, lhs)
 	cg.AddSite(CallSite{
 		Caller:        caller,
 		Callee:        callee,
-		ByteRange:     ByteRange{int(node.StartByte()), int(node.EndByte())},
+		ByteRange:     nodeRange(tree, node),
 		Arguments:     args,
 		AssignmentLHS: lhs,
 		ReturnsResult: returns,
@@ -89,69 +82,81 @@ func recordCallSite(node *sitter.Node, src []byte, cg *CallGraph) {
 	})
 }
 
-func enclosingFunctionName(node *sitter.Node, src []byte) string {
-	for p := node.Parent(); p != nil; p = p.Parent() {
-		switch p.Kind() {
-		case "function_declaration":
-			if n := p.ChildByFieldName("name"); n != nil {
-				return strings.TrimSpace(n.Utf8Text(src))
+func enclosingFunctionName(parents []goast.Node, tree *goparse.Tree) string {
+	for i := len(parents) - 1; i >= 0; i-- {
+		switch p := parents[i].(type) {
+		case *goast.FuncDecl:
+			if p.Name == nil {
+				return "<anonymous>"
 			}
-		case "method_declaration":
-			name := "<anonymous>"
-			if n := p.ChildByFieldName("name"); n != nil {
-				name = strings.TrimSpace(n.Utf8Text(src))
+			name := p.Name.Name
+			if p.Recv == nil || len(p.Recv.List) == 0 {
+				return name
 			}
-			recv := ""
-			if r := p.ChildByFieldName("receiver"); r != nil {
-				recv = NormalizeReceiverType(r.Utf8Text(src))
-			}
+			recv := NormalizeReceiverType(tree.NodeText(p.Recv))
 			if recv != "" {
 				return recv + "." + name
 			}
 			return name
-		case "func_literal":
+		case *goast.FuncLit:
 			return "<anonymous>"
 		}
 	}
 	return "<package>"
 }
 
-func callResultIsReturned(node *sitter.Node, src []byte, assignmentLHS string) bool {
-	for p := node.Parent(); p != nil; p = p.Parent() {
-		switch p.Kind() {
-		case "return_statement":
+func callResultIsReturned(parents []goast.Node, tree *goparse.Tree, assignmentLHS string) bool {
+	for i := len(parents) - 1; i >= 0; i-- {
+		switch p := parents[i].(type) {
+		case *goast.ReturnStmt:
 			return true
-		case "function_declaration", "method_declaration", "func_literal":
+		case *goast.FuncDecl:
 			if assignmentLHS == "" {
 				return false
 			}
-			body := p.Utf8Text(src)
-			for _, name := range strings.Split(assignmentLHS, ",") {
-				name = strings.TrimSpace(name)
-				if name == "" {
-					continue
-				}
-				for _, line := range strings.Split(body, "\n") {
-					rest, ok := strings.CutPrefix(strings.TrimSpace(line), "return")
-					if !ok {
-						continue
-					}
-					rest = strings.TrimSpace(rest)
-					// first identifier
-					end := 0
-					for end < len(rest) {
-						c := rest[end]
-						if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
-							break
-						}
-						end++
-					}
-					if rest[:end] == name {
-						return true
-					}
-				}
+			body := ""
+			if p.Body != nil {
+				body = tree.NodeText(p.Body)
 			}
-			return false
+			return assignmentReturnedInBody(body, assignmentLHS)
+		case *goast.FuncLit:
+			if assignmentLHS == "" {
+				return false
+			}
+			body := ""
+			if p.Body != nil {
+				body = tree.NodeText(p.Body)
+			}
+			return assignmentReturnedInBody(body, assignmentLHS)
+		}
+	}
+	return false
+}
+
+func assignmentReturnedInBody(body, assignmentLHS string) bool {
+	for _, name := range strings.Split(assignmentLHS, ",") {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			continue
+		}
+		for _, line := range strings.Split(body, "\n") {
+			rest, ok := strings.CutPrefix(strings.TrimSpace(line), "return")
+			if !ok {
+				continue
+			}
+			rest = strings.TrimSpace(rest)
+			// first identifier
+			end := 0
+			for end < len(rest) {
+				c := rest[end]
+				if !((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
+					break
+				}
+				end++
+			}
+			if rest[:end] == name {
+				return true
+			}
 		}
 	}
 	return false

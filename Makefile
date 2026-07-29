@@ -1,6 +1,6 @@
 .PHONY: build test vet fmt lint lint-all ci integration version help oracle run
-# CGO is required for tree-sitter Go bindings.
-export CGO_ENABLED ?= 1
+# Pure Go by default (go/ast parse path — no tree-sitter / CGO).
+export CGO_ENABLED ?= 0
 
 # Default scan path for product-style runs (Rust makefile parity).
 SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit

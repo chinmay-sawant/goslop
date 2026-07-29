@@ -4,31 +4,14 @@ import (
 	"testing"
 
 	"github.com/chinmay/codehound/internal/ast"
-	"github.com/chinmay/codehound/internal/lang/go/tsparse"
-	sitter "github.com/tree-sitter/go-tree-sitter"
 )
 
-func TestWalkCalls(t *testing.T) {
-	src := []byte(`package sample
-
-import "fmt"
-
-func Hello() {
-	fmt.Println("hi")
-	fmt.Printf("%d", 1)
-}
-`)
-	tree, err := tsparse.Parse(src)
-	if err != nil {
-		t.Fatalf("parse: %v", err)
+func TestSourceIndexStillWorksWithoutTreeSitter(t *testing.T) {
+	idx := ast.Build("hello fmt.Sprintf(world)", []string{"fmt.Sprintf(", "missing"})
+	if !idx.Has("fmt.Sprintf(") {
+		t.Fatal("expected needle present")
 	}
-	defer tree.Close()
-
-	var calls []string
-	ast.WalkCalls(tree.RootNode(), func(n *sitter.Node) {
-		calls = append(calls, n.Utf8Text(src))
-	})
-	if len(calls) < 2 {
-		t.Fatalf("expected >=2 call_expression, got %d: %v", len(calls), calls)
+	if idx.Has("missing") {
+		t.Fatal("expected needle absent")
 	}
 }

@@ -1,10 +1,12 @@
 package taint
 
 import (
+	goast "go/ast"
+	"go/token"
 	"strings"
 
 	"github.com/chinmay/codehound/internal/core"
-	sitter "github.com/tree-sitter/go-tree-sitter"
+	"github.com/chinmay/codehound/internal/lang/go/goparse"
 )
 
 // ExtractTaintFacts walks the unit AST and collects sources/sinks/sanitizers/assignments.
@@ -12,15 +14,12 @@ func ExtractTaintFacts(unit *core.ParsedUnit) TaintAnnotations {
 	if unit == nil {
 		return TaintAnnotations{}
 	}
-	src := []byte(unit.Source)
 	state := newExtractionState(unit.Source)
 	state.pushScope(ScopePackage, ByteRange{0, len(unit.Source)})
 
-	root := unitRoot(unit)
-	if root != nil {
-		walkExtract(root, src, state)
-	} else {
-		// Source-only fallback: no tree → empty annotations.
+	tree := unitTree(unit)
+	if tree != nil && tree.File != nil {
+		walkExtract(tree.File, tree, state, nil)
 	}
 	state.popScope()
 
@@ -40,13 +39,20 @@ func ExtractTaintFacts(unit *core.ParsedUnit) TaintAnnotations {
 	}
 }
 
-func unitRoot(unit *core.ParsedUnit) *sitter.Node {
-	if unit == nil || unit.Tree == nil {
+// unitTree returns the *goparse.Tree attached to the unit, or parses source on demand.
+func unitTree(unit *core.ParsedUnit) *goparse.Tree {
+	if unit == nil {
 		return nil
 	}
-	type rooted interface{ RootNode() *sitter.Node }
-	if t, ok := unit.Tree.(rooted); ok {
-		return t.RootNode()
+	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
+		return t
+	}
+	if unit.Source == "" {
+		return nil
+	}
+	t, _ := goparse.Parse([]byte(unit.Source))
+	if t != nil && t.File != nil {
+		return t
 	}
 	return nil
 }
@@ -124,64 +130,70 @@ func (s *extractionState) currentFunctionScope() int {
 	return s.functionScopes[len(s.functionScopes)-1]
 }
 
-func walkExtract(node *sitter.Node, src []byte, state *extractionState) {
-	if node == nil {
+func walkExtract(n goast.Node, tree *goparse.Tree, state *extractionState, parents []goast.Node) {
+	if n == nil {
 		return
 	}
 	var entered *scopeEntry
 	var restoreFunc *string
 
-	kind := node.Kind()
-	switch kind {
-	case "function_declaration", "func_literal", "method_declaration":
-		name := functionIdentity(node, src)
+	switch x := n.(type) {
+	case *goast.FuncDecl:
+		name := functionIdentityDecl(x, tree)
 		prev := state.currentFunction
 		restoreFunc = &prev
 		state.currentFunction = name
-		state.functionParams[name] = extractParamNames(node, src)
-		state.functionRanges[name] = ByteRange{int(node.StartByte()), int(node.EndByte())}
-		entered = &scopeEntry{ScopeFunction, ByteRange{int(node.StartByte()), int(node.EndByte())}}
-	case "block":
-		entered = &scopeEntry{ScopeBlock, ByteRange{int(node.StartByte()), int(node.EndByte())}}
-	case "if_statement":
-		entered = &scopeEntry{ScopeIf, ByteRange{int(node.StartByte()), int(node.EndByte())}}
-	case "for_statement", "range_clause":
-		entered = &scopeEntry{ScopeFor, ByteRange{int(node.StartByte()), int(node.EndByte())}}
-	case "switch_statement", "expression_switch_statement", "type_switch_statement":
-		entered = &scopeEntry{ScopeSwitch, ByteRange{int(node.StartByte()), int(node.EndByte())}}
-	case "case_clause", "default_case":
-		entered = &scopeEntry{ScopeCase, ByteRange{int(node.StartByte()), int(node.EndByte())}}
-	case "call_expression":
-		recordCall(node, state)
-	case "send_statement":
-		recordSend(node, state)
-	case "receive_statement":
-		recordSelectReceive(node, state)
-	case "go_statement":
+		state.functionParams[name] = extractParamNamesFieldList(x.Type)
+		state.functionRanges[name] = nodeRange(tree, x)
+		entered = &scopeEntry{ScopeFunction, nodeRange(tree, x)}
+	case *goast.FuncLit:
+		name := "<anonymous>"
+		prev := state.currentFunction
+		restoreFunc = &prev
+		state.currentFunction = name
+		state.functionParams[name] = extractParamNamesFieldList(x.Type)
+		state.functionRanges[name] = nodeRange(tree, x)
+		entered = &scopeEntry{ScopeFunction, nodeRange(tree, x)}
+	case *goast.BlockStmt:
+		entered = &scopeEntry{ScopeBlock, nodeRange(tree, x)}
+	case *goast.IfStmt:
+		entered = &scopeEntry{ScopeIf, nodeRange(tree, x)}
+	case *goast.ForStmt, *goast.RangeStmt:
+		entered = &scopeEntry{ScopeFor, nodeRange(tree, x)}
+	case *goast.SwitchStmt, *goast.TypeSwitchStmt:
+		entered = &scopeEntry{ScopeSwitch, nodeRange(tree, x)}
+	case *goast.CaseClause:
+		entered = &scopeEntry{ScopeCase, nodeRange(tree, x)}
+	case *goast.CallExpr:
+		recordCall(x, tree, state, parents)
+	case *goast.SendStmt:
+		recordSend(x, tree, state, parents)
+	case *goast.GoStmt:
 		state.unsupported = append(state.unsupported, UnsupportedFlow{
 			Kind:      UnsupportedGoroutine,
-			ByteRange: ByteRange{int(node.StartByte()), int(node.EndByte())},
+			ByteRange: nodeRange(tree, x),
 			Note:      "goroutine spawn is not tracked by taint (explicit FN)",
 		})
-	case "assignment_statement", "short_var_declaration":
-		recordAssignment(node, state)
+	case *goast.AssignStmt:
+		recordAssignment(x, tree, state, parents)
+	case *goast.CommClause:
+		// Select receive forms that are not AssignStmt/SendStmt.
+		if x.Comm != nil {
+			if ue, ok := receiveUnary(x.Comm); ok {
+				recordSelectReceiveUnary(ue, tree, state, parents)
+			}
+		}
 	}
 
 	if entered != nil {
 		state.pushScope(entered.kind, entered.br)
 	}
 
-	// Manual child walk (pre-order with scopes).
-	for i := uint(0); i < node.ChildCount(); i++ {
-		child := node.Child(i)
-		if child == nil || child.IsNamed() == false && !isInterestingUnnamed(child) {
-			// Still walk all children; tree-sitter Go fields are on named nodes.
-			// Walk named children primarily.
-		}
-		if child != nil {
-			walkExtract(child, src, state)
-		}
-	}
+	// Full-slice append so child walks cannot clobber sibling parent stacks.
+	nextParents := append(parents[:len(parents):len(parents)], n)
+	forEachChild(n, func(child goast.Node) {
+		walkExtract(child, tree, state, nextParents)
+	})
 
 	if entered != nil {
 		state.popScope()
@@ -196,77 +208,82 @@ type scopeEntry struct {
 	br   ByteRange
 }
 
-func isInterestingUnnamed(n *sitter.Node) bool { return false }
-
-func functionIdentity(node *sitter.Node, src []byte) string {
-	name := "<anonymous>"
-	if n := node.ChildByFieldName("name"); n != nil {
-		if t := strings.TrimSpace(n.Utf8Text(src)); t != "" {
-			name = t
-		}
+func nodeRange(tree *goparse.Tree, n goast.Node) ByteRange {
+	if n == nil || tree == nil {
+		return ByteRange{}
 	}
-	if node.Kind() != "method_declaration" {
+	return ByteRange{tree.Offset(n.Pos()), tree.Offset(n.End())}
+}
+
+// forEachChild visits immediate children of n (not n itself, not grandchildren).
+func forEachChild(n goast.Node, fn func(goast.Node)) {
+	if n == nil {
+		return
+	}
+	goast.Inspect(n, func(c goast.Node) bool {
+		if c == n {
+			return true
+		}
+		if c != nil {
+			fn(c)
+		}
+		return false
+	})
+}
+
+func functionIdentityDecl(fn *goast.FuncDecl, tree *goparse.Tree) string {
+	name := "<anonymous>"
+	if fn.Name != nil {
+		name = fn.Name.Name
+	}
+	if fn.Recv == nil || len(fn.Recv.List) == 0 {
 		return name
 	}
-	recv := ""
-	if r := node.ChildByFieldName("receiver"); r != nil {
-		recv = NormalizeReceiverType(r.Utf8Text(src))
-	}
+	recv := NormalizeReceiverType(tree.NodeText(fn.Recv))
 	if recv != "" {
 		return recv + "." + name
 	}
 	return name
 }
 
-func extractParamNames(node *sitter.Node, src []byte) []string {
-	params := node.ChildByFieldName("parameters")
-	if params == nil {
+func extractParamNamesFieldList(ft *goast.FuncType) []string {
+	if ft == nil || ft.Params == nil {
 		return nil
 	}
 	var out []string
-	cursor := params.Walk()
-	defer cursor.Close()
-	for _, p := range params.NamedChildren(cursor) {
-		// parameter_declaration may have multiple name identifiers.
-		if n := p.ChildByFieldName("name"); n != nil {
-			name := strings.TrimSpace(n.Utf8Text(src))
+	for _, field := range ft.Params.List {
+		if len(field.Names) == 0 {
+			continue
+		}
+		for _, id := range field.Names {
+			if id == nil {
+				continue
+			}
+			name := strings.TrimSpace(id.Name)
 			if name != "" && name != "_" {
 				out = append(out, name)
 			}
-			continue
 		}
-		// Walk identifiers in the declaration.
-		pc := p.Walk()
-		for _, ch := range p.NamedChildren(pc) {
-			if ch.Kind() == "identifier" {
-				name := strings.TrimSpace(ch.Utf8Text(src))
-				if name != "" && name != "_" {
-					out = append(out, name)
-				}
-			}
-		}
-		pc.Close()
 	}
 	return out
 }
 
-func recordCall(node *sitter.Node, state *extractionState) {
-	fn := node.ChildByFieldName("function")
-	if fn == nil {
+func recordCall(node *goast.CallExpr, tree *goparse.Tree, state *extractionState, parents []goast.Node) {
+	if node == nil || node.Fun == nil {
 		return
 	}
-	if isChainedCall(fn) {
+	if isChainedCall(node.Fun) {
 		return
 	}
-	funcText := strings.TrimSpace(fn.Utf8Text(state.srcBytes))
+	funcText := strings.TrimSpace(tree.NodeText(node.Fun))
 	if funcText == "" {
 		return
 	}
-	br := ByteRange{int(node.StartByte()), int(node.EndByte())}
-	args := argumentTexts(node, state.srcBytes)
+	br := nodeRange(tree, node)
+	args := argumentTexts(node, tree)
 
 	if kind, ok := ClassifySource(funcText); ok {
-		rv := resultVariableOfCall(node, state.srcBytes)
+		rv := resultVariableOfCall(parents, tree)
 		state.sources = append(state.sources, TaintSourceAnnotation{
 			Function:       funcText,
 			Kind:           kind,
@@ -278,10 +295,8 @@ func recordCall(node *sitter.Node, state *extractionState) {
 	}
 
 	receiver := ""
-	if fn.Kind() == "selector_expression" {
-		if op := fn.ChildByFieldName("operand"); op != nil {
-			receiver = strings.TrimSpace(op.Utf8Text(state.srcBytes))
-		}
+	if sel, ok := node.Fun.(*goast.SelectorExpr); ok && sel.X != nil {
+		receiver = strings.TrimSpace(tree.NodeText(sel.X))
 	}
 	firstArg := ""
 	if len(args) > 0 {
@@ -289,7 +304,7 @@ func recordCall(node *sitter.Node, state *extractionState) {
 	}
 
 	// HTTP write sinks need ResponseWriter check.
-	if sk, idx, ok := ClassifySinkHTTPWrite(funcText, looksLikeResponseWriter(node, state, receiver, firstArg, funcText), strings.HasPrefix(strings.TrimSpace(firstArg), "[]string")); ok {
+	if sk, idx, ok := ClassifySinkHTTPWrite(funcText, looksLikeResponseWriter(parents, tree, state, receiver, firstArg, funcText), strings.HasPrefix(strings.TrimSpace(firstArg), "[]string")); ok {
 		argText := ""
 		if idx < len(args) {
 			argText = args[idx]
@@ -314,7 +329,7 @@ func recordCall(node *sitter.Node, state *extractionState) {
 	}
 
 	if kind, ok := ClassifySanitizer(funcText); ok {
-		rv := resultVariableOfCall(node, state.srcBytes)
+		rv := resultVariableOfCall(parents, tree)
 		state.sanitizers = append(state.sanitizers, TaintSanitizerAnnotation{
 			Function: funcText, Kind: kind, ByteRange: br,
 			ResultVariable: rv, Arguments: args,
@@ -322,7 +337,7 @@ func recordCall(node *sitter.Node, state *extractionState) {
 	}
 }
 
-func looksLikeResponseWriter(call *sitter.Node, state *extractionState, receiver, firstArg, funcText string) bool {
+func looksLikeResponseWriter(parents []goast.Node, tree *goparse.Tree, state *extractionState, receiver, firstArg, funcText string) bool {
 	// fmt.Fprintf: check arg0; method Write: check receiver
 	name := receiver
 	if funcText == "fmt.Fprintf" {
@@ -336,42 +351,60 @@ func looksLikeResponseWriter(call *sitter.Node, state *extractionState, receiver
 	if strings.HasPrefix(strings.TrimSpace(firstArg), "[]string") {
 		return false
 	}
-	// Enclosing function parameters must declare name as http.ResponseWriter
-	fn := enclosingFunction(call)
-	if fn == nil {
+	params := enclosingFunctionParams(parents, tree)
+	if params == "" {
 		return false
 	}
-	params := fn.ChildByFieldName("parameters")
-	if params == nil {
-		return false
-	}
-	ptext := params.Utf8Text(state.srcBytes)
-	return strings.Contains(ptext, name+" http.ResponseWriter") ||
-		strings.Contains(ptext, name+" *http.ResponseWriter")
+	return strings.Contains(params, name+" http.ResponseWriter") ||
+		strings.Contains(params, name+" *http.ResponseWriter")
 }
 
-func enclosingFunction(node *sitter.Node) *sitter.Node {
-	for p := node.Parent(); p != nil; p = p.Parent() {
-		switch p.Kind() {
-		case "function_declaration", "method_declaration", "func_literal":
-			return p
+func enclosingFunctionParams(parents []goast.Node, tree *goparse.Tree) string {
+	for i := len(parents) - 1; i >= 0; i-- {
+		switch p := parents[i].(type) {
+		case *goast.FuncDecl:
+			if p.Type != nil && p.Type.Params != nil {
+				return tree.NodeText(p.Type.Params)
+			}
+			return ""
+		case *goast.FuncLit:
+			if p.Type != nil && p.Type.Params != nil {
+				return tree.NodeText(p.Type.Params)
+			}
+			return ""
 		}
 	}
-	return nil
+	return ""
 }
 
-func recordAssignment(node *sitter.Node, state *extractionState) {
-	text := node.Utf8Text(state.srcBytes)
+func recordAssignment(node *goast.AssignStmt, tree *goparse.Tree, state *extractionState, parents []goast.Node) {
+	text := tree.NodeText(node)
 	lhs, rhs, ok := SplitAssignment(text)
 	if !ok {
-		return
+		// Fallback from AST parts when text split fails.
+		if len(node.Lhs) == 0 {
+			return
+		}
+		var lhsParts []string
+		for _, l := range node.Lhs {
+			lhsParts = append(lhsParts, strings.TrimSpace(tree.NodeText(l)))
+		}
+		lhs = strings.Join(lhsParts, ", ")
+		var rhsParts []string
+		for _, r := range node.Rhs {
+			rhsParts = append(rhsParts, strings.TrimSpace(tree.NodeText(r)))
+		}
+		rhs = strings.Join(rhsParts, ", ")
+		if lhs == "" {
+			return
+		}
 	}
 	names := ExtractLHSNames(lhs)
 	if len(names) == 0 {
 		return
 	}
 	scope := state.currentScope()
-	br := ByteRange{int(node.StartByte()), int(node.EndByte())}
+	br := nodeRange(tree, node)
 	fromCall := IsSourceOrSanitizerCall(rhs)
 	recvCh := ChannelFromReceiveRHS(rhs)
 	for _, name := range names {
@@ -394,19 +427,19 @@ func recordAssignment(node *sitter.Node, state *extractionState) {
 			FunctionScope: state.currentFunctionScope(),
 			RecvScope:     scope,
 			ByteRange:     br,
-			InSelect:      isInsideSelect(node),
+			InSelect:      isInsideSelect(parents),
 		})
 	}
 }
 
-func recordSend(node *sitter.Node, state *extractionState) {
+func recordSend(node *goast.SendStmt, tree *goparse.Tree, state *extractionState, parents []goast.Node) {
 	ch := ""
-	if n := node.ChildByFieldName("channel"); n != nil {
-		ch = strings.TrimSpace(n.Utf8Text(state.srcBytes))
+	if node.Chan != nil {
+		ch = strings.TrimSpace(tree.NodeText(node.Chan))
 	}
 	val := ""
-	if n := node.ChildByFieldName("value"); n != nil {
-		val = strings.TrimSpace(n.Utf8Text(state.srcBytes))
+	if node.Value != nil {
+		val = strings.TrimSpace(tree.NodeText(node.Value))
 	}
 	if ch == "" {
 		return
@@ -414,90 +447,94 @@ func recordSend(node *sitter.Node, state *extractionState) {
 	state.channelSends = append(state.channelSends, ChannelSendSite{
 		Channel: ch, ValueText: val,
 		FunctionScope: state.currentFunctionScope(),
-		ByteRange:     ByteRange{int(node.StartByte()), int(node.EndByte())},
-		InSelect:      isInsideSelect(node),
+		ByteRange:     nodeRange(tree, node),
+		InSelect:      isInsideSelect(parents),
 	})
 }
 
-func recordSelectReceive(node *sitter.Node, state *extractionState) {
-	right := node.ChildByFieldName("right")
-	if right == nil {
+func receiveUnary(n goast.Node) (*goast.UnaryExpr, bool) {
+	switch x := n.(type) {
+	case *goast.UnaryExpr:
+		if x.Op == token.ARROW {
+			return x, true
+		}
+	case *goast.ExprStmt:
+		if ue, ok := x.X.(*goast.UnaryExpr); ok && ue.Op == token.ARROW {
+			return ue, true
+		}
+	}
+	return nil, false
+}
+
+func recordSelectReceiveUnary(ue *goast.UnaryExpr, tree *goparse.Tree, state *extractionState, parents []goast.Node) {
+	if ue == nil || ue.X == nil {
 		return
 	}
-	ch := ChannelFromReceiveRHS(strings.TrimSpace(right.Utf8Text(state.srcBytes)))
+	ch := ChannelFromReceiveRHS("<-" + strings.TrimSpace(tree.NodeText(ue.X)))
 	if ch == "" {
-		return
-	}
-	lhs := ""
-	if left := node.ChildByFieldName("left"); left != nil {
-		names := ExtractLHSNames(left.Utf8Text(state.srcBytes))
-		if len(names) > 0 {
-			lhs = names[0]
+		// ChannelFromReceiveRHS expects full "<-ch"; also try operand alone when simple ident.
+		ch = strings.TrimSpace(tree.NodeText(ue.X))
+		if !IsIdent(ch) {
+			return
 		}
 	}
 	state.channelRecvs = append(state.channelRecvs, ChannelRecvSite{
-		Channel: ch, LHS: lhs,
+		Channel: ch, LHS: "",
 		FunctionScope: state.currentFunctionScope(),
 		RecvScope:     state.currentScope(),
-		ByteRange:     ByteRange{int(node.StartByte()), int(node.EndByte())},
+		ByteRange:     nodeRange(tree, ue),
 		InSelect:      true,
 	})
 }
 
-func isInsideSelect(node *sitter.Node) bool {
-	for p := node.Parent(); p != nil; p = p.Parent() {
-		if p.Kind() == "select_statement" {
+func isInsideSelect(parents []goast.Node) bool {
+	for i := len(parents) - 1; i >= 0; i-- {
+		switch parents[i].(type) {
+		case *goast.SelectStmt:
 			return true
-		}
-		switch p.Kind() {
-		case "function_declaration", "method_declaration", "func_literal":
+		case *goast.FuncDecl, *goast.FuncLit:
 			return false
 		}
 	}
 	return false
 }
 
-func isChainedCall(funcNode *sitter.Node) bool {
-	if funcNode.Kind() != "selector_expression" {
+func isChainedCall(fun goast.Expr) bool {
+	sel, ok := fun.(*goast.SelectorExpr)
+	if !ok {
 		return false
 	}
-	op := funcNode.ChildByFieldName("operand")
-	return op != nil && op.Kind() == "call_expression"
+	_, ok = sel.X.(*goast.CallExpr)
+	return ok
 }
 
-func resultVariableOfCall(call *sitter.Node, src []byte) string {
-	parent := call.Parent()
-	for parent != nil {
-		k := parent.Kind()
-		if k == "assignment_statement" || k == "short_var_declaration" || k == "send_statement" {
-			break
+func resultVariableOfCall(parents []goast.Node, tree *goparse.Tree) string {
+	for i := len(parents) - 1; i >= 0; i-- {
+		switch p := parents[i].(type) {
+		case *goast.AssignStmt:
+			if len(p.Lhs) == 0 {
+				return ""
+			}
+			var parts []string
+			for _, l := range p.Lhs {
+				parts = append(parts, strings.TrimSpace(tree.NodeText(l)))
+			}
+			return strings.Join(parts, ", ")
+		case *goast.SendStmt:
+			// Send value must not attribute channel as result.
+			return ""
 		}
-		parent = parent.Parent()
 	}
-	if parent == nil {
-		return ""
-	}
-	// Send value must not attribute channel as result.
-	if parent.Kind() == "send_statement" {
-		return ""
-	}
-	left := parent.ChildByFieldName("left")
-	if left == nil {
-		return ""
-	}
-	return strings.TrimSpace(left.Utf8Text(src))
+	return ""
 }
 
-func argumentTexts(call *sitter.Node, src []byte) []string {
-	args := call.ChildByFieldName("arguments")
-	if args == nil {
+func argumentTexts(call *goast.CallExpr, tree *goparse.Tree) []string {
+	if call == nil {
 		return nil
 	}
-	cursor := args.Walk()
-	defer cursor.Close()
-	var out []string
-	for _, n := range args.NamedChildren(cursor) {
-		out = append(out, strings.TrimSpace(n.Utf8Text(src)))
+	out := make([]string, 0, len(call.Args))
+	for _, a := range call.Args {
+		out = append(out, strings.TrimSpace(tree.NodeText(a)))
 	}
 	return out
 }

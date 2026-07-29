@@ -1,18 +1,17 @@
-// Package golang implements the Go LanguagePlugin for CodeHound.
+// Package golang implements the Go LanguagePlugin for goslop.
 //
 // Import path ends in /go which is a reserved keyword as a package name, so the
 // package is named "golang". Callers use:
 //
 //	golang.NewPlugin() / golang.Register(reg)
 //
-// The engine package's DefaultRegistry registers this plugin (do not import
-// engine from this package — that creates an import cycle).
+// Parse path is pure Go (go/parser + go/ast via goparse) — no CGO.
 package golang
 
 import (
 	"github.com/chinmay/codehound/internal/core"
 	"github.com/chinmay/codehound/internal/lang/go/detectors"
-	"github.com/chinmay/codehound/internal/lang/go/tsparse"
+	"github.com/chinmay/codehound/internal/lang/go/goparse"
 )
 
 // Plugin is the Go language plugin.
@@ -26,7 +25,6 @@ func NewPlugin() core.LanguagePlugin {
 }
 
 // Register adds the Go plugin to an engine registry.
-// Accepts either RegisterPlugin(plugin) or RegisterPlugin(plugin) error.
 func Register(reg any) {
 	if reg == nil {
 		return
@@ -51,24 +49,24 @@ func (p *Plugin) Extensions() []string { return []string{"go"} }
 // Detectors implements core.LanguagePlugin.
 func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
 
-// ParseSource parses Go source with tree-sitter and attaches the CST to the unit.
+// ParseSource parses Go source with go/parser and attaches *goparse.Tree.
 // On parse failure, falls back to a source-only unit so text-level detectors still run.
 func (p *Plugin) ParseSource(path, source string) (*core.ParsedUnit, error) {
-	tree, parseErr := tsparse.Parse([]byte(source))
-	if parseErr != nil {
-		// Fall back to source-only unit so text-level detectors still run.
-		// parseErr is intentionally discarded: analysis continues without a CST.
-		return core.NewParsedUnit(core.LangGo, path, source), nil //nolint:nilerr // intentional fallback
+	tree, parseErr := goparse.Parse([]byte(source))
+	if tree == nil || tree.File == nil {
+		_ = parseErr
+		return core.NewParsedUnit(core.LangGo, path, source), nil //nolint:nilerr
 	}
+	// Attach tree even if parseErr is non-nil (partial AST from AllErrors-like recovery).
 	return core.NewParsedUnitWithTree(core.LangGo, path, source, tree), nil
 }
 
-// FunctionNodeKinds returns tree-sitter function-like node types.
+// FunctionNodeKinds documents function-like constructs (for tooling; go/ast uses FuncDecl).
 func (p *Plugin) FunctionNodeKinds() []string {
-	return []string{"function_declaration", "method_declaration"}
+	return []string{"FuncDecl", "FuncLit"}
 }
 
-// LoopNodeKinds returns tree-sitter loop node types.
+// LoopNodeKinds documents loop constructs (for tooling; go/ast uses ForStmt/RangeStmt).
 func (p *Plugin) LoopNodeKinds() []string {
-	return []string{"for_statement"}
+	return []string{"ForStmt", "RangeStmt"}
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/chinmay/codehound/internal/fixture"
 	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe"
 	"github.com/chinmay/codehound/internal/lang/go/detectors/cwe/taint"
-	"github.com/chinmay/codehound/internal/lang/go/tsparse"
+	"github.com/chinmay/codehound/internal/lang/go/goparse"
 	"github.com/chinmay/codehound/internal/rules"
 )
 
@@ -59,8 +59,8 @@ func taintCtx() *core.ScanContext {
 
 func runTaintSource(t *testing.T, path, source string) []rules.Finding {
 	t.Helper()
-	tree, err := tsparse.Parse([]byte(source))
-	if err != nil {
+	tree, err := goparse.Parse([]byte(source))
+	if tree == nil || tree.File == nil {
 		t.Fatalf("parse %s: %v", path, err)
 	}
 	defer tree.Close()
@@ -148,8 +148,8 @@ func TestTaintProjects(t *testing.T) {
 				if err != nil {
 					return err
 				}
-				tree, err := tsparse.Parse(src)
-				if err != nil {
+				tree, err := goparse.Parse(src)
+				if tree == nil || tree.File == nil {
 					return err
 				}
 				// Keep tree alive for scan — store as unit tree.

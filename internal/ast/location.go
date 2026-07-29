@@ -1,5 +1,6 @@
-// Package ast provides shared tree-sitter walk helpers, line/column mapping,
-// and multi-needle SourceIndex utilities for detector hot paths.
+// Package ast provides language-agnostic line/column mapping and multi-needle
+// SourceIndex utilities for detector hot paths. Language-specific trees live in
+// each language plugin (Go: go/ast via goparse; no CGO).
 package ast
 
 import "sort"
