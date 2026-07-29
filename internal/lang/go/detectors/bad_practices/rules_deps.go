@@ -268,16 +268,17 @@ func detectBP64(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 }
 
 func detectBP65(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+	// Rust: project anchor only; go.mod exists but go.sum missing or empty.
+	// (Dispatch already gates project-anchor rules.)
+	if isMaterializedFixture(unit) {
+		return
+	}
 	meta := MetadataForID("BP-65")
 	snap := projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
-	// has require but no go.sum
-	if strings.Contains(snap.GoModText, "require") && !snap.GoSumExists {
-		// only if there is at least one external require
-		if strings.Contains(snap.GoModText, "github.com/") || strings.Contains(snap.GoModText, "golang.org/") {
-			pushAt(unit, meta, 0, "go.sum is missing while go.mod has external requirements", out)
-		}
+	if !snap.GoSumExists {
+		pushAt(unit, meta, 0, "go.mod exists but go.sum is missing or empty", out)
 	}
 }

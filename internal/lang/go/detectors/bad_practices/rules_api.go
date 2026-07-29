@@ -16,6 +16,7 @@ func init() {
 	RegisterRule("BP-28", detectBP28)
 	RegisterRule("BP-29", detectBP29)
 	RegisterRule("BP-30", detectBP30)
+	RegisterRule("BP-31", detectBP31)
 	RegisterRule("BP-32", detectBP32)
 	RegisterRule("BP-34", detectBP34)
 	RegisterRule("BP-36", detectBP36)
@@ -23,6 +24,7 @@ func init() {
 	RegisterRule("BP-38", detectBP38)
 	RegisterRule("BP-39", detectBP39)
 	RegisterRule("BP-41", detectBP41)
+	RegisterRule("BP-42", detectBP42)
 	RegisterRule("BP-43", detectBP43)
 	RegisterRule("BP-44", detectBP44)
 	RegisterRule("BP-66", detectBP66)
@@ -244,6 +246,7 @@ func detectBP29(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 }
 
 // detectBP30: exported interface with no evident same-package implementation.
+// Uses the whole package directory (Rust package_method_sets parity).
 func detectBP30(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) {
 		return
@@ -253,87 +256,22 @@ func detectBP30(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	meta := MetadataForID("BP-30")
 	src := unit.Source
-	// Collect method sets implemented by types in this file (func (t T) M(...)).
-	implMethods := map[string]map[string]struct{}{} // type → methods
-	for _, line := range strings.Split(src, "\n") {
-		t := strings.TrimSpace(line)
-		// func (r *Type) Method( or func (r Type) Method(
-		if !strings.HasPrefix(t, "func (") {
-			continue
-		}
-		rest := strings.TrimPrefix(t, "func (")
-		closeParen := strings.Index(rest, ")")
-		if closeParen < 0 {
-			continue
-		}
-		recv := strings.TrimSpace(rest[:closeParen])
-		// last token is type
-		fields := strings.Fields(recv)
-		if len(fields) == 0 {
-			continue
-		}
-		typ := strings.TrimPrefix(fields[len(fields)-1], "*")
-		after := strings.TrimSpace(rest[closeParen+1:])
-		meth := firstIdent(after)
-		if meth == "" || !unicode.IsUpper(rune(meth[0])) {
-			continue
-		}
-		if implMethods[typ] == nil {
-			implMethods[typ] = map[string]struct{}{}
-		}
-		implMethods[typ][meth] = struct{}{}
-	}
-	// Find exported type X interface { ... }
-	reIface := regexp.MustCompile(`(?m)^type\s+([A-Z]\w*)\s+interface\s*\{`)
-	for _, m := range reIface.FindAllStringSubmatchIndex(src, -1) {
-		_ = src[m[2]:m[3]] // interface type name (exported by regex)
-		// extract interface body
-		open := strings.Index(src[m[0]:], "{")
-		if open < 0 {
-			continue
-		}
-		absOpen := m[0] + open
-		depth := 0
-		end := absOpen
-		for i := absOpen; i < len(src); i++ {
-			if src[i] == '{' {
-				depth++
-			} else if src[i] == '}' {
-				depth--
-				if depth == 0 {
-					end = i
-					break
-				}
-			}
-		}
-		block := src[absOpen+1 : end]
-		var methods []string
-		for _, line := range strings.Split(block, "\n") {
-			t := strings.TrimSpace(line)
-			if t == "" || strings.HasPrefix(t, "//") {
-				continue
-			}
-			// MethodName(
-			if i := strings.Index(t, "("); i > 0 {
-				meth := strings.TrimSpace(t[:i])
-				if meth != "" && unicode.IsUpper(rune(meth[0])) {
-					methods = append(methods, meth)
-				}
-			}
-		}
-		if len(methods) == 0 {
+	pkgFacts := packageTypeFactsForUnit(unit)
+
+	// Only report interfaces declared in this file (per-file findings).
+	for _, m := range reExportedIface.FindAllStringSubmatchIndex(src, -1) {
+		ifaceName := src[m[2]:m[3]]
+		methods, ok := pkgFacts.interfaces[ifaceName]
+		if !ok || len(methods) == 0 {
+			// re-parse local body if package scan missed embedding noise
 			continue
 		}
 		hasImpl := false
-		for _, impl := range implMethods {
-			ok := true
-			for _, meth := range methods {
-				if _, has := impl[meth]; !has {
-					ok = false
-					break
-				}
+		for typ := range pkgFacts.methods {
+			if typ == ifaceName {
+				continue
 			}
-			if ok {
+			if typeImplements(pkgFacts, typ, methods) {
 				hasImpl = true
 				break
 			}
@@ -342,6 +280,122 @@ func detectBP30(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 			pushAt(unit, meta, m[0], "exported interface has no evident same-package implementation", out)
 		}
 	}
+}
+
+// detectBP31: New* constructor returns a concrete type even though a fitting
+// package interface already exists (Rust api_design::detect_bp_31).
+func detectBP31(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+	if isTestFile(unit) {
+		return
+	}
+	if !strings.Contains(unit.Source, "func New") {
+		return
+	}
+	meta := MetadataForID("BP-31")
+	pkgFacts := packageTypeFactsForUnit(unit)
+	if len(pkgFacts.interfaces) == 0 {
+		return
+	}
+	lines := strings.Split(unit.Source, "\n")
+	byteOff := 0
+	for _, line := range lines {
+		t := strings.TrimSpace(line)
+		// package-level constructors only (not methods)
+		if strings.HasPrefix(t, "func New") || strings.HasPrefix(t, "func Must") {
+			// func NewX(...) *Type / Type
+			if strings.HasPrefix(t, "func (") {
+				byteOff += len(line) + 1
+				continue
+			}
+			name := firstIdent(strings.TrimPrefix(t, "func "))
+			if name == "" || !unicode.IsUpper(rune(name[0])) {
+				byteOff += len(line) + 1
+				continue
+			}
+			if !strings.HasPrefix(name, "New") && !strings.HasPrefix(name, "Must") {
+				byteOff += len(line) + 1
+				continue
+			}
+			returned := firstResultTypeFromFuncLine(t)
+			if returned == "" || !unicode.IsUpper(rune(returned[0])) {
+				byteOff += len(line) + 1
+				continue
+			}
+			methods := pkgFacts.methods[returned]
+			if len(methods) == 0 {
+				byteOff += len(line) + 1
+				continue
+			}
+			exposes := false
+			for ifaceName, ifaceMethods := range pkgFacts.interfaces {
+				if ifaceName == returned || len(ifaceMethods) == 0 {
+					continue
+				}
+				if typeImplements(pkgFacts, returned, ifaceMethods) {
+					exposes = true
+					break
+				}
+			}
+			if exposes {
+				pushAt(unit, meta, byteOff,
+					"constructor returns a concrete type even though the package already exposes a fitting interface",
+					out)
+			}
+		}
+		byteOff += len(line) + 1
+	}
+}
+
+// firstResultTypeFromFuncLine extracts the first named result type from a single-line
+// func signature (best-effort; multi-line signatures are skipped).
+func firstResultTypeFromFuncLine(line string) string {
+	// func Name(...) results {
+	closeParams := strings.Index(line, ")")
+	if closeParams < 0 {
+		return ""
+	}
+	rest := strings.TrimSpace(line[closeParams+1:])
+	if rest == "" || strings.HasPrefix(rest, "{") {
+		return ""
+	}
+	// strip trailing {
+	if i := strings.Index(rest, "{"); i >= 0 {
+		rest = strings.TrimSpace(rest[:i])
+	}
+	// (T, error) or *T or (a T, err error)
+	rest = strings.TrimSpace(rest)
+	if strings.HasPrefix(rest, "(") {
+		inner := strings.TrimSuffix(strings.TrimPrefix(rest, "("), ")")
+		parts := strings.Split(inner, ",")
+		if len(parts) == 0 {
+			return ""
+		}
+		return normalizeResultType(parts[0])
+	}
+	// single result
+	if i := strings.IndexAny(rest, " \t"); i > 0 {
+		rest = rest[:i]
+	}
+	return normalizeResultType(rest)
+}
+
+func normalizeResultType(s string) string {
+	s = strings.TrimSpace(s)
+	// named result: "err error" / "v *Type"
+	fields := strings.Fields(s)
+	if len(fields) >= 2 {
+		s = fields[len(fields)-1]
+	}
+	s = strings.TrimPrefix(s, "*")
+	// drop package qualifier
+	if i := strings.LastIndex(s, "."); i >= 0 {
+		s = s[i+1:]
+	}
+	// only plain identifiers
+	if s == "" || !unicode.IsLetter(rune(s[0])) {
+		return ""
+	}
+	return s
 }
 
 func detectBP32(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -752,7 +806,9 @@ func localCallNames(source string) map[string]struct{} {
 }
 
 func detectBP39(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
-	// Rust: exported API doc comment must start with the function name.
+	// Rust: exported API (funcs + methods on exported receivers) need a doc
+	// comment that starts with the function/method name. Emit all hits (no
+	// early return) for real-repos parity.
 	if isTestFile(unit) {
 		return
 	}
@@ -761,49 +817,124 @@ func detectBP39(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	byteOff := 0
 	for i, line := range lines {
 		t := strings.TrimSpace(line)
-		if strings.HasPrefix(t, "func ") {
-			// get name
-			rest := strings.TrimPrefix(t, "func ")
-			if strings.HasPrefix(rest, "(") {
+		if !strings.HasPrefix(t, "func ") {
+			byteOff += len(line) + 1
+			continue
+		}
+		rest := strings.TrimPrefix(t, "func ")
+		name := ""
+		if strings.HasPrefix(rest, "(") {
+			// method: func (r *Type) Name
+			closeParen := strings.Index(rest, ")")
+			if closeParen < 0 {
 				byteOff += len(line) + 1
-				continue // methods handled separately if needed
+				continue
 			}
-			nameEnd := 0
-			for nameEnd < len(rest) && (unicode.IsLetter(rune(rest[nameEnd])) || unicode.IsDigit(rune(rest[nameEnd])) || rest[nameEnd] == '_') {
-				nameEnd++
+			recv := strings.TrimSpace(rest[:closeParen+1]) // includes leading (
+			recvInner := strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(recv, "("), ")"))
+			fields := strings.Fields(recvInner)
+			if len(fields) == 0 {
+				byteOff += len(line) + 1
+				continue
 			}
-			name := rest[:nameEnd]
-			if name != "" && unicode.IsUpper(rune(name[0])) {
-				// Collect contiguous // comments immediately above.
-				var docs []string
-				for j := i - 1; j >= 0; j-- {
-					pt := strings.TrimSpace(lines[j])
-					if pt == "" {
-						if len(docs) > 0 {
-							break
-						}
-						continue
-					}
-					if strings.HasPrefix(pt, "//") {
-						docs = append([]string{strings.TrimSpace(strings.TrimPrefix(pt, "//"))}, docs...)
-						continue
-					}
-					break
+			recvType := strings.TrimPrefix(fields[len(fields)-1], "*")
+			// Rust is_exported_api: only methods on exported receivers.
+			if recvType == "" || !unicode.IsUpper(rune(recvType[0])) {
+				byteOff += len(line) + 1
+				continue
+			}
+			after := strings.TrimSpace(rest[closeParen+1:])
+			name = firstIdent(after)
+		} else {
+			name = firstIdent(rest)
+		}
+		if name == "" || !unicode.IsUpper(rune(name[0])) {
+			byteOff += len(line) + 1
+			continue
+		}
+		// Collect contiguous // comments immediately above (blank lines stop after docs start).
+		var docs []string
+		for j := i - 1; j >= 0; j-- {
+			pt := strings.TrimSpace(lines[j])
+			if pt == "" {
+				break // Rust breaks on empty (after reading upward)
+			}
+			if strings.HasPrefix(pt, "//") {
+				docs = append([]string{strings.TrimSpace(strings.TrimPrefix(pt, "//"))}, docs...)
+				continue
+			}
+			break
+		}
+		ok := len(docs) > 0 && strings.HasPrefix(docs[0], name)
+		if !ok {
+			pushAt(unit, meta, byteOff, "exported API should have a doc comment that starts with its name", out)
+		}
+		byteOff += len(line) + 1
+	}
+}
+
+// detectBP42: import alias used only once (Rust count_word_occurrences <= 2).
+func detectBP42(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+	if isTestFile(unit) {
+		return
+	}
+	meta := MetadataForID("BP-42")
+	src := unit.Source
+	// Single-line: import alias "path"  (not import "path")
+	reSingle := regexp.MustCompile(`(?m)^import\s+([A-Za-z_]\w*)\s+"[^"]+"`)
+	// Inside import ( ): alias "path"  (not bare "path")
+	reBlock := regexp.MustCompile(`(?m)^\s*([A-Za-z_]\w*)\s+"[^"]+"`)
+	inImport := false
+	byteOff := 0
+	for _, line := range strings.Split(src, "\n") {
+		t := strings.TrimSpace(line)
+		if strings.HasPrefix(t, "import ") || t == "import (" || strings.HasPrefix(t, "import(") {
+			if strings.Contains(t, "(") {
+				inImport = true
+				// also handle: import ( alias "path" ) rare one-liners
+			} else if m := reSingle.FindStringSubmatchIndex(line); m != nil {
+				alias := line[m[2]:m[3]]
+				if isUsefulImportAlias(alias) && countWordOccurrences(src, alias) <= 2 {
+					pushAt(unit, meta, byteOff+m[2],
+						"import alias is only used once and likely adds indirection without value", out)
 				}
-				ok := len(docs) > 0 && strings.HasPrefix(docs[0], name)
-				// Also accept //nolint only if followed by real Package-style — rust rejects nolint-only.
-				if !ok {
-					// skip pure nolint comments as "docs"
-					if len(docs) == 1 && strings.HasPrefix(docs[0], "nolint") {
-						ok = false
-					}
-					pushAt(unit, meta, byteOff, "exported API should have a doc comment that starts with its name", out)
-					return // one per file keeps oracle noise down; merge.go has the rust hit
+			}
+			byteOff += len(line) + 1
+			continue
+		}
+		if inImport {
+			if t == ")" {
+				inImport = false
+				byteOff += len(line) + 1
+				continue
+			}
+			// skip bare "path" imports (no alias)
+			if strings.HasPrefix(t, "\"") || strings.HasPrefix(t, ". \"") || strings.HasPrefix(t, "_ \"") {
+				byteOff += len(line) + 1
+				continue
+			}
+			if m := reBlock.FindStringSubmatchIndex(line); m != nil {
+				alias := line[m[2]:m[3]]
+				if isUsefulImportAlias(alias) && countWordOccurrences(src, alias) <= 2 {
+					pushAt(unit, meta, byteOff+m[2],
+						"import alias is only used once and likely adds indirection without value", out)
 				}
 			}
 		}
 		byteOff += len(line) + 1
 	}
+}
+
+func isUsefulImportAlias(alias string) bool {
+	if alias == "" || alias == "_" || alias == "." {
+		return false
+	}
+	// never treat the import keyword / common false parses as an alias
+	switch alias {
+	case "import", "package", "var", "const", "type", "func", "go", "defer", "map", "chan", "interface", "struct":
+		return false
+	}
+	return true
 }
 
 func detectBP41(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {

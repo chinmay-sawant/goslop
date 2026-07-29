@@ -336,42 +336,101 @@ func detectBP68(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-// BP-70: log error then continue without return/break.
+// BP-70: error branch logs with log.Print* and continues (Rust core_language_deferred).
+// log.Fatal / panic / os.Exit / return are explicit exits and must not fire.
 func detectBP70(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+	if isTestFile(unit) {
+		return
+	}
 	meta := MetadataForID("BP-70")
 	lines := codeLines(unit.Source)
 	for i := 0; i < len(lines); i++ {
 		t := strings.TrimSpace(lines[i].text)
-		if !(strings.Contains(t, "log.") && (strings.Contains(t, "err") || strings.Contains(t, "Error"))) {
+		// Only non-fatal log.Print family (Rust is_error_log_call).
+		if !isBP70ErrorLogCall(t) {
 			continue
 		}
-		// Look for err != nil block with log then no return on next meaningful line inside braces is hard;
-		// simpler: if log.Print* / log.Error with err on same line after if err check without return nearby.
-		if strings.Contains(t, "if err") {
+		// Must mention err-shaped identifier in the call args.
+		if !strings.Contains(t, "err") && !strings.Contains(t, "Err") {
 			continue
 		}
-		// Pattern: inside if err != nil { log... } without return — detect log line alone after err check
-		if i > 0 {
-			prev := strings.TrimSpace(lines[i-1].text)
-			if strings.Contains(prev, "err != nil") || strings.Contains(prev, "err!=nil") {
-				// check next non-empty for return
-				hasReturn := false
-				for j := i + 1; j < len(lines) && j < i+4; j++ {
-					n := strings.TrimSpace(lines[j].text)
-					if n == "}" {
-						break
-					}
-					if strings.HasPrefix(n, "return") {
-						hasReturn = true
-						break
-					}
-				}
-				if !hasReturn && (strings.Contains(t, "log.") || strings.Contains(t, "fmt.Print")) {
-					pushAt(unit, meta, lines[i].byte, "error is logged then execution continues; return or handle the failure", out)
-				}
+		// Require error-ish message literal (Rust error_message_literal).
+		if !bp70ErrorMessageLiteral(t) {
+			// Still allow log.Print(err) / log.Println(err) with no string.
+			if !(strings.Contains(t, "log.Print(err") || strings.Contains(t, "log.Println(err") ||
+				strings.Contains(t, "log.Print( err") || strings.Contains(t, "log.Println( err")) {
+				continue
 			}
 		}
+		// Find enclosing if err != nil by scanning upward for condition.
+		ifStart := -1
+		for j := i; j >= 0 && j >= i-12; j-- {
+			prev := strings.TrimSpace(lines[j].text)
+			if strings.Contains(prev, "if ") && (strings.Contains(prev, "err != nil") ||
+				strings.Contains(prev, "err!= nil") || strings.Contains(prev, "err !=nil") ||
+				strings.Contains(prev, "err!=nil")) {
+				ifStart = j
+				break
+			}
+			if prev == "}" {
+				break
+			}
+		}
+		if ifStart < 0 {
+			continue
+		}
+		// Explicit exit in the same branch (until closing brace of the if).
+		if bp70BranchHasExplicitExit(lines, i) {
+			continue
+		}
+		pushAt(unit, meta, lines[ifStart].byte,
+			"error is logged and execution continues; return, panic, or otherwise handle the failure", out)
 	}
+}
+
+func isBP70ErrorLogCall(line string) bool {
+	// Fatal/Panic are exits, not "continue after log".
+	if strings.Contains(line, "log.Fatal") || strings.Contains(line, "log.Panic") ||
+		strings.Contains(line, ".Fatal(") || strings.Contains(line, ".Fatalf(") ||
+		strings.Contains(line, ".Fatalln(") || strings.Contains(line, ".Panic(") {
+		return false
+	}
+	return strings.Contains(line, "log.Print(") ||
+		strings.Contains(line, "log.Printf(") ||
+		strings.Contains(line, "log.Println(")
+}
+
+func bp70ErrorMessageLiteral(line string) bool {
+	lower := strings.ToLower(line)
+	for _, n := range []string{
+		"error", "failed", "failure", "unable", "cannot", "could not", "invalid", "timeout",
+	} {
+		if strings.Contains(lower, n) {
+			return true
+		}
+	}
+	return false
+}
+
+func bp70BranchHasExplicitExit(lines []struct {
+	idx  int
+	text string
+	byte int
+}, logIdx int) bool {
+	for j := logIdx; j < len(lines) && j < logIdx+12; j++ {
+		n := strings.TrimSpace(lines[j].text)
+		if n == "}" {
+			return false
+		}
+		if strings.HasPrefix(n, "return") || strings.HasPrefix(n, "break") ||
+			strings.HasPrefix(n, "continue") || strings.HasPrefix(n, "panic(") ||
+			strings.Contains(n, "os.Exit(") || strings.Contains(n, "log.Fatal") ||
+			strings.Contains(n, "log.Fatalf") || strings.Contains(n, "log.Fatalln") ||
+			strings.Contains(n, "runtime.Goexit") {
+			return true
+		}
+	}
+	return false
 }
 
 // BP-154: discarded json.Unmarshal error (expression statement).
