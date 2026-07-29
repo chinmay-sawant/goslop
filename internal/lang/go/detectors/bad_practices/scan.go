@@ -92,7 +92,7 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
-		if oracleSkip(e.id) {
+		if oracleSkipUnit(unit, e.id) {
 			continue
 		}
 		if requiresProjectAnchor(e.id) || requiresServerAnchor(e.id) {
@@ -111,7 +111,7 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
-		if oracleSkip(e.id) {
+		if oracleSkipUnit(unit, e.id) {
 			continue
 		}
 		if requiresProjectAnchor(e.id) && !isProjectAnchor {
