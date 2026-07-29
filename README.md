@@ -99,15 +99,33 @@ GitHub Actions: [`.github/workflows/ci.yml`](./.github/workflows/ci.yml) runs `g
 
 Integration harness: `tests/integration` materializes a small fixture seed and asserts fire/silent behavior. Full fixture matrix is optional polish; **§12.4** hard counts are locked on the `gopdfsuit` corpus via `make oracle`.
 
+## Documentation
+
+Detailed user docs live under [`documents/`](./documents/):
+
+| Doc | Contents |
+|-----|----------|
+| [`documents/README.md`](./documents/README.md) | Documentation index |
+| [`documents/overview.md`](./documents/overview.md) | Features, profiles, cache, baseline, ignore |
+| [`documents/cli-reference.md`](./documents/cli-reference.md) | All CLI flags, exit codes, config merge |
+| [`documents/make-run.md`](./documents/make-run.md) | Product `make run` / `make oracle` workflow |
+| [`documents/reporting-formats.md`](./documents/reporting-formats.md) | Text, JSON, **SARIF** examples |
+| [`documents/export-context-and-chunks.md`](./documents/export-context-and-chunks.md) | `scripts/chunks` (delegate) + `scripts/findings/functions` (refs) |
+
+Topic guides: [recommended pack](./documents/go-recommended-pack.md), [PERF notes](./documents/perf-rules.md), [taint](./documents/taint.md), [architecture](./documents/architecture-performance.md).
+
 ## Layout
 
 | Path | Role |
 |------|------|
 | `cmd/codehound` | CLI entry |
 | `internal/` | Core, engine, lang/go detectors, reporting |
+| `documents/` | User-facing documentation |
 | `tests/fixtures` | Oracle fixtures (copied from Rust) |
 | `tests/integration` | Materialized fixture harness |
 | `ruleset/` | Rule metadata JSON (copied) |
+| `scripts/findings/functions` | Per-finding export (with `--export-context`) |
+| `scripts/chunks` | Batched findings for agent delegation (`--export-chunks`) |
 | `plans/` | Phase-wise port ledger |
 | `.github/workflows/` | CI |
 
