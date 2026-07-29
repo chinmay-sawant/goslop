@@ -31,3 +31,10 @@ version: build
 help:
 	@echo "Targets: build test integration vet fmt lint ci version"
 	@echo "CGO_ENABLED=$(CGO_ENABLED) (required for tree-sitter)"
+
+
+# Comprehensive lint with all practical linters enabled. Keep in sync with the
+# .golangci.yml if one exists. Run this before pushing to catch pre-existing
+# issues that the default lint target does not cover.
+lint-all:
+	golangci-lint run -c .golangci.yml ./...
