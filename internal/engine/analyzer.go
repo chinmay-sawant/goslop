@@ -248,6 +248,19 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 		}
 		stats.FilesScanned++
 		stats.BytesScanned += fr.bytes
+		if fr.source != "" {
+			// line count = newlines + 1 when non-empty (match product summary)
+			n := 0
+			for i := 0; i < len(fr.source); i++ {
+				if fr.source[i] == '\n' {
+					n++
+				}
+			}
+			if len(fr.source) > 0 && fr.source[len(fr.source)-1] != '\n' {
+				n++
+			}
+			stats.LinesScanned += n
+		}
 		findings = append(findings, fr.findings...)
 		if sourceCache != nil && fr.source != "" {
 			sourceCache[fr.path] = fr.source

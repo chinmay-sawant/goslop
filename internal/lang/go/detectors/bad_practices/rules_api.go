@@ -1,6 +1,7 @@
 package badpractices
 
 import (
+	"path/filepath"
 	"strings"
 	"unicode"
 
@@ -17,6 +18,7 @@ func init() {
 	RegisterRule("BP-34", detectBP34)
 	RegisterRule("BP-36", detectBP36)
 	RegisterRule("BP-37", detectBP37)
+	RegisterRule("BP-38", detectBP38)
 	RegisterRule("BP-39", detectBP39)
 	RegisterRule("BP-41", detectBP41)
 	RegisterRule("BP-43", detectBP43)
@@ -286,18 +288,237 @@ func detectBP36(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 }
 
 func detectBP37(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+	// Rust parity: package-level var that is later written (not just declared).
+	if isTestFile(unit) {
+		return
+	}
 	meta := MetadataForID("BP-37")
+	globals := packageLevelVarNames(unit.Source)
+	if len(globals) == 0 {
+		return
+	}
+	written := packageLevelVarsWritten(unit.Source, globals)
+	if len(written) == 0 {
+		return
+	}
+	// Emit at first package-level var that is written.
 	for _, line := range codeLines(unit.Source) {
 		t := strings.TrimSpace(line.text)
-		if strings.HasPrefix(t, "var ") && (strings.Contains(t, "map[") || strings.Contains(t, "[]") || strings.Contains(t, "struct")) {
-			// package-level mutable — skip if const-like or once
-			if !strings.Contains(t, "=") {
-				// bare var m map — mutable global
-				pushAt(unit, meta, line.byte, "package-level mutable global; prefer dependency injection", out)
+		if !strings.HasPrefix(t, "var ") {
+			continue
+		}
+		for name := range written {
+			if strings.Contains(t, name) {
+				// Skip pure error sentinels
+				if strings.HasPrefix(name, "Err") {
+					continue
+				}
+				pushAt(unit, meta, line.byte, "package-level mutable global state makes behavior harder to reason about", out)
 				return
 			}
 		}
 	}
+}
+
+func packageLevelVarNames(source string) map[string]struct{} {
+	out := map[string]struct{}{}
+	inFunc := 0
+	for _, line := range strings.Split(source, "\n") {
+		t := strings.TrimSpace(line)
+		if t == "" || strings.HasPrefix(t, "//") {
+			continue
+		}
+		// crude brace depth for top-level only
+		open := strings.Count(t, "{")
+		closeN := strings.Count(t, "}")
+		if inFunc == 0 && strings.HasPrefix(t, "var ") {
+			// var name T or var ( ... )
+			rest := strings.TrimSpace(strings.TrimPrefix(t, "var "))
+			if strings.HasPrefix(rest, "(") {
+				// multi-line block handled poorly — skip paren form for now
+			} else {
+				name := firstIdent(rest)
+				if name != "" && !strings.HasPrefix(name, "Err") {
+					out[name] = struct{}{}
+				}
+			}
+		}
+		inFunc += open - closeN
+		if inFunc < 0 {
+			inFunc = 0
+		}
+	}
+	return out
+}
+
+func packageLevelVarsWritten(source string, globals map[string]struct{}) map[string]struct{} {
+	written := map[string]struct{}{}
+	// After first function starts, look for name = or name[ or name.Field =
+	inFunc := false
+	for _, line := range strings.Split(source, "\n") {
+		t := strings.TrimSpace(line)
+		if strings.HasPrefix(t, "func ") {
+			inFunc = true
+		}
+		if !inFunc {
+			continue
+		}
+		for name := range globals {
+			// assignment to global (not short decl of local with same name)
+			if strings.Contains(t, name+" =") || strings.Contains(t, name+"=") ||
+				strings.Contains(t, name+"[") || strings.Contains(t, name+".") {
+				// exclude := which is short decl (often shadows)
+				if strings.Contains(t, name+" :=") || strings.Contains(t, name+":=") {
+					continue
+				}
+				written[name] = struct{}{}
+			}
+		}
+	}
+	return written
+}
+
+func firstIdent(s string) string {
+	s = strings.TrimSpace(s)
+	i := 0
+	for i < len(s) {
+		r := rune(s[i])
+		if i == 0 {
+			if !unicode.IsLetter(r) && r != '_' {
+				return ""
+			}
+		} else if !unicode.IsLetter(r) && !unicode.IsDigit(r) && r != '_' {
+			break
+		}
+		i++
+	}
+	return s[:i]
+}
+
+func detectBP38(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+	// Unexported helper with no same-file callers.
+	if isTestFile(unit) {
+		return
+	}
+	meta := MetadataForID("BP-38")
+	src := unit.Source
+	helpers := unexportedHelpers(src)
+	if len(helpers) == 0 {
+		return
+	}
+	calls := localCallNames(src)
+	for name, byteOff := range helpers {
+		if _, used := calls[name]; used {
+			continue
+		}
+		// skip common generated / interface method noise
+		if name == "init" || name == "main" {
+			continue
+		}
+		pushAt(unit, meta, byteOff, "unexported helper has no same-file callers", out)
+	}
+}
+
+func unexportedHelpers(source string) map[string]int {
+	// Package-scope funcs and methods (Rust collects both function_declaration
+	// and method_declaration). Name filter: helper/must/build/parse*.
+	out := map[string]int{}
+	byteOff := 0
+	for _, line := range strings.Split(source, "\n") {
+		t := strings.TrimSpace(line)
+		if strings.HasPrefix(t, "func ") {
+			rest := strings.TrimPrefix(t, "func ")
+			// methods: func (r *T) name(
+			if strings.HasPrefix(rest, "(") {
+				if close := strings.Index(rest, ")"); close >= 0 {
+					rest = strings.TrimSpace(rest[close+1:])
+				} else {
+					byteOff += len(line) + 1
+					continue
+				}
+			}
+			name := firstIdent(rest)
+			if name != "" && unicode.IsLower(rune(name[0])) && looksLikeHelperName(name) {
+				if name != "init" && name != "main" &&
+					!strings.HasPrefix(name, "Test") &&
+					!strings.HasPrefix(name, "Benchmark") &&
+					!strings.HasPrefix(name, "Example") {
+					// first declaration wins for multi-line
+					if _, ok := out[name]; !ok {
+						out[name] = byteOff
+					}
+				}
+			}
+		}
+		byteOff += len(line) + 1
+	}
+	return out
+}
+
+func looksLikeHelperName(name string) bool {
+	// Rust parity: only helper/must/build/parse prefixes.
+	lower := strings.ToLower(name)
+	return lower == "helper" ||
+		strings.HasPrefix(lower, "helper") ||
+		strings.HasPrefix(lower, "must") ||
+		strings.HasPrefix(lower, "build") ||
+		strings.HasPrefix(lower, "parse")
+}
+
+func localCallNames(source string) map[string]struct{} {
+	out := map[string]struct{}{}
+	// crude: bare name( not preceded by ., excluding func/method declarations.
+	for i := 0; i < len(source); i++ {
+		if source[i] != '(' {
+			continue
+		}
+		// walk back over ident
+		j := i - 1
+		for j >= 0 && isIdentByte(source[j]) {
+			j--
+		}
+		name := source[j+1 : i]
+		if name == "" {
+			continue
+		}
+		// skip method/selector call: x.Name(
+		if j >= 0 && source[j] == '.' {
+			continue
+		}
+		// skip function/method declarations:
+		//   func name(
+		//   func (recv T) name(
+		k := j
+		for k >= 0 && (source[k] == ' ' || source[k] == '\t') {
+			k--
+		}
+		if k >= 0 && source[k] == ')' {
+			// method declaration receiver — skip back over "(...)" then look for func
+			depth := 1
+			k--
+			for k >= 0 && depth > 0 {
+				switch source[k] {
+				case ')':
+					depth++
+				case '(':
+					depth--
+				}
+				k--
+			}
+			for k >= 0 && (source[k] == ' ' || source[k] == '\t') {
+				k--
+			}
+		}
+		if k >= 3 && source[k-3:k+1] == "func" {
+			if k-3 == 0 || !isIdentByte(source[k-4]) {
+				continue // declaration, not a call
+			}
+		}
+		if unicode.IsLower(rune(name[0])) {
+			out[name] = struct{}{}
+		}
+	}
+	return out
 }
 
 func detectBP39(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
@@ -341,28 +562,35 @@ func detectBP39(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 }
 
 func detectBP41(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
-	meta := MetadataForID("BP-41")
-	// first non-comment should be package with preceding doc
-	lines := strings.Split(unit.Source, "\n")
-	for i, line := range lines {
-		t := strings.TrimSpace(line)
-		if t == "" {
-			continue
-		}
-		if strings.HasPrefix(t, "//") || strings.HasPrefix(t, "/*") {
-			if strings.HasPrefix(t, "// Package ") || strings.HasPrefix(t, "// package ") {
-				return
-			}
-			continue
-		}
-		if strings.HasPrefix(t, "package ") {
-			// check prev
-			if i == 0 || !strings.HasPrefix(strings.TrimSpace(lines[i-1]), "//") {
-				pushAt(unit, meta, 0, "package is missing a package doc comment", out)
-			}
-		}
+	// Rust parity: only the package anchor file reports missing package doc.
+	if isTestFile(unit) || isMaterializedFixture(unit) {
 		return
 	}
+	meta := MetadataForID("BP-41")
+	pkg := packageName(unit.Source)
+	if pkg == "" {
+		return
+	}
+	snap := packageDocSnapshotForUnit(unit)
+	anchor, ok := snap.Anchors[pkg]
+	if !ok {
+		return
+	}
+	// Compare absolute paths when possible.
+	unitPath := unit.Path
+	if abs, err := filepath.Abs(unitPath); err == nil {
+		unitPath = abs
+	}
+	if abs, err := filepath.Abs(anchor); err == nil {
+		anchor = abs
+	}
+	if unitPath != anchor {
+		return
+	}
+	if _, documented := snap.DocumentedPackages[pkg]; documented {
+		return
+	}
+	pushAt(unit, meta, 0, "package is missing a package-level doc comment", out)
 }
 
 func detectBP43(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {

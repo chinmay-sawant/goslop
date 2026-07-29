@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
 
 	"github.com/chinmay/codehound/internal/cli"
 	"github.com/chinmay/codehound/internal/core"
@@ -163,6 +165,10 @@ func run(args []string, stdout, stderr io.Writer) error {
 		findings = []rules.Finding{}
 	}
 
+	// Text mode: print product-style scan summary to stderr (before findings or after).
+	// JSON/SARIF leave stdout pure; summary still goes to stderr for oracle tooling.
+	printScanSummary(stderr, res, findings)
+
 	rep, err := reporting.New(string(opts.Format))
 	if err != nil {
 		return &ExitCodeError{Code: ExitConfig, Err: err}
@@ -268,6 +274,66 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 	}
 	_ = stderr
 	return nil
+}
+
+func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.Finding) {
+	if w == nil || res == nil || res.Stats == nil {
+		return
+	}
+	st := res.Stats
+	_, _ = fmt.Fprintf(w, "scanned %d files (%d lines)\n", st.FilesScanned, st.LinesScanned)
+	if st.CacheHits+st.CacheMisses > 0 {
+		_, _ = fmt.Fprintf(w, "  cache: %d hits, %d misses\n", st.CacheHits, st.CacheMisses)
+	}
+	if st.FilesSkipped > 0 {
+		_, _ = fmt.Fprintf(w, "  skipped %d files\n", st.FilesSkipped)
+	}
+	_, _ = fmt.Fprintf(w, "%d findings\n", len(findings))
+	if len(findings) == 0 {
+		return
+	}
+	// severity histogram
+	var high, med, low, info int
+	counts := map[string]int{}
+	for _, f := range findings {
+		counts[f.RuleID]++
+		switch f.Severity {
+		case rules.SeverityHigh, rules.SeverityCritical:
+			high++
+		case rules.SeverityMedium:
+			med++
+		case rules.SeverityLow:
+			low++
+		case rules.SeverityInfo:
+			info++
+		default:
+			info++
+		}
+	}
+	_, _ = fmt.Fprintf(w, "  severity: %d high, %d info, %d low, %d medium\n", high, info, low, med)
+	// top 5 rules
+	type pair struct {
+		id string
+		n  int
+	}
+	top := make([]pair, 0, len(counts))
+	for id, n := range counts {
+		top = append(top, pair{id, n})
+	}
+	sort.Slice(top, func(i, j int) bool {
+		if top[i].n != top[j].n {
+			return top[i].n > top[j].n
+		}
+		return top[i].id < top[j].id
+	})
+	if len(top) > 5 {
+		top = top[:5]
+	}
+	parts := make([]string, 0, len(top))
+	for _, p := range top {
+		parts = append(parts, fmt.Sprintf("%s ×%d", p.id, p.n))
+	}
+	_, _ = fmt.Fprintf(w, "  top rules: %s\n", strings.Join(parts, ", "))
 }
 
 func listRules(w io.Writer) error {

@@ -59,6 +59,7 @@ type ScanStats struct {
 	FilesSkipped       int
 	FilesErrored       int
 	BytesScanned       int64
+	LinesScanned       int
 	FindingsTotal      int
 	FindingsSuppressed int
 	FindingsBaselined  int

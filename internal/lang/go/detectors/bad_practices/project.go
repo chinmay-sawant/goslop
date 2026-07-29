@@ -12,12 +12,16 @@ import (
 
 // bpProjectCaches memoizes project-level facts per scan root.
 type bpProjectCaches struct {
-	mu        sync.Mutex
-	snapshots map[string]*ProjectSnapshot
+	mu          sync.Mutex
+	snapshots   map[string]*ProjectSnapshot
+	packageDocs map[string]*PackageDocSnapshot // key: directory path
 }
 
 func newProjectCaches() *bpProjectCaches {
-	return &bpProjectCaches{snapshots: map[string]*ProjectSnapshot{}}
+	return &bpProjectCaches{
+		snapshots:   map[string]*ProjectSnapshot{},
+		packageDocs: map[string]*PackageDocSnapshot{},
+	}
 }
 
 func (c *bpProjectCaches) clear() {
@@ -26,7 +30,148 @@ func (c *bpProjectCaches) clear() {
 	}
 	c.mu.Lock()
 	c.snapshots = map[string]*ProjectSnapshot{}
+	c.packageDocs = map[string]*PackageDocSnapshot{}
 	c.mu.Unlock()
+}
+
+// PackageDocSnapshot holds per-directory package doc anchors for BP-41.
+type PackageDocSnapshot struct {
+	// Anchors maps package name → lexicographically first non-test .go path.
+	Anchors map[string]string
+	// DocumentedPackages has packages with a package-level doc comment.
+	DocumentedPackages map[string]struct{}
+}
+
+func packageDocSnapshotForUnit(unit *core.ParsedUnit) *PackageDocSnapshot {
+	if unit == nil {
+		return &PackageDocSnapshot{}
+	}
+	dir := filepath.Dir(unit.Path)
+	if dir == "" || dir == "." {
+		dir = filepath.Dir(fileDisplayPath(unit))
+	}
+	return packageDocSnapshotForDir(dir)
+}
+
+func packageDocSnapshotForDir(dir string) *PackageDocSnapshot {
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		abs = dir
+	}
+	activeCachesMu.Lock()
+	caches := activeCaches
+	activeCachesMu.Unlock()
+	if caches != nil {
+		caches.mu.Lock()
+		if snap, ok := caches.packageDocs[abs]; ok {
+			caches.mu.Unlock()
+			return snap
+		}
+		caches.mu.Unlock()
+	}
+	snap := buildPackageDocSnapshot(abs)
+	if caches != nil {
+		caches.mu.Lock()
+		caches.packageDocs[abs] = snap
+		caches.mu.Unlock()
+	}
+	return snap
+}
+
+func buildPackageDocSnapshot(dir string) *PackageDocSnapshot {
+	snap := &PackageDocSnapshot{
+		Anchors:            map[string]string{},
+		DocumentedPackages: map[string]struct{}{},
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return snap
+	}
+	type fileText struct {
+		path string
+		text string
+	}
+	var files []fileText
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+		name := e.Name()
+		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		p := filepath.Join(dir, name)
+		data, rerr := os.ReadFile(p)
+		if rerr != nil {
+			continue
+		}
+		files = append(files, fileText{path: p, text: string(data)})
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].path < files[j].path })
+	for _, f := range files {
+		pkg := packageName(f.text)
+		if pkg == "" {
+			continue
+		}
+		if _, ok := snap.Anchors[pkg]; !ok {
+			snap.Anchors[pkg] = f.path
+		}
+		if hasPackageDocComment(f.text, pkg) {
+			snap.DocumentedPackages[pkg] = struct{}{}
+		}
+	}
+	return snap
+}
+
+func hasPackageDocComment(source, pkg string) bool {
+	// Look for // Package <name> or /* Package <name> before package clause.
+	lines := strings.Split(source, "\n")
+	for i, line := range lines {
+		t := strings.TrimSpace(line)
+		if t == "" {
+			continue
+		}
+		if strings.HasPrefix(t, "//") {
+			// Accept // Package foo or // package foo
+			body := strings.TrimSpace(strings.TrimPrefix(t, "//"))
+			if strings.HasPrefix(body, "Package ") || strings.HasPrefix(body, "package ") {
+				// Prefer matching package name when present.
+				rest := strings.TrimSpace(strings.TrimPrefix(strings.TrimPrefix(body, "Package "), "package "))
+				if rest == "" || strings.HasPrefix(rest, pkg) || pkg == "" {
+					return true
+				}
+			}
+			continue
+		}
+		if strings.HasPrefix(t, "/*") {
+			// crude block doc
+			if strings.Contains(t, "Package "+pkg) || strings.Contains(source[:min(len(source), 500)], "Package "+pkg) {
+				return true
+			}
+		}
+		if strings.HasPrefix(t, "package ") {
+			// any contiguous comment block immediately above package counts as doc
+			for j := i - 1; j >= 0; j-- {
+				pt := strings.TrimSpace(lines[j])
+				if pt == "" {
+					continue
+				}
+				if strings.HasPrefix(pt, "//") || strings.HasPrefix(pt, "/*") {
+					return true
+				}
+				break
+			}
+			return false
+		}
+		// code before package — stop
+		if !strings.HasPrefix(t, "//") && !strings.HasPrefix(t, "/*") && !strings.HasPrefix(t, "package ") {
+			// allow build tags
+			if strings.HasPrefix(t, "//go:build") || strings.HasPrefix(t, "// +build") {
+				continue
+			}
+		}
+	}
+	return false
 }
 
 // ProjectSnapshot holds project-level facts for server-policy and module-hygiene rules.

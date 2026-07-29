@@ -353,18 +353,20 @@ scanned 78 files (28120 lines) in 479.5ms
 exported 915 context file(s) to scripts/findings/functions; exported 37 chunk file(s) to scripts/chunks
 ```
 
-| Check | Expected (oracle) | Go port proof |
+| Check | Expected (oracle) | Go port proof (2026-07-29, `gopdfsuit`) |
 |------:|-------------------|---------------|
-| Files scanned | **78** | [ ] |
-| Lines scanned | **28120** | [ ] |
-| Cache | **0 hits, 78 misses** (`--no-cache` / full re-analysis) | [ ] |
-| Files skipped | **383** | [ ] |
-| **Total findings** | **915** | [ ] |
-| Severity breakdown | **10 high, 197 info, 312 low, 396 medium** | [ ] |
-| Top rules (order + counts) | **BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44** | [ ] |
-| Export context | **915** files under `scripts/findings/functions` | [ ] |
-| Export chunks | **37** files under `scripts/chunks` | [ ] |
+| Files scanned | **78** | [x] **78** |
+| Lines scanned | **28120** | [~] **28042** (line-count off-by ~78; soft) |
+| Cache | **0 hits, 78 misses** (`--no-cache` / full re-analysis) | [x] `--no-cache` path |
+| Files skipped | **383** | [ ] not yet counted in walk stats |
+| **Total findings** | **915** | [~] **957** (Δ +42 residual FPs/FNs) |
+| Severity breakdown | **10 high, 197 info, 312 low, 396 medium** | [~] 50 / 70 / 445 / 392 |
+| Top rules (order + counts) | **BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44** | [x] **exact match** |
+| Export context | **915** files under `scripts/findings/functions` | [~] equals findings count (957) |
+| Export chunks | **37** files under `scripts/chunks` | [~] 39 (chunk-size 25) |
 | Wall time | ~**480 ms** class on reference host (budget: document host; do not fail solely on ms until Phase 12 perf gate is set) | [ ] |
+
+**Residual FN/FP (tracked):** BP-37 overfire; PERF-114 overfire; some CWE fixture-only museums fire in Go but not Rust; PERF-119/123/112 underfire; BP-30 not registered. Top-five multiset is locked.
 
 **Go equivalent (once CLI/export/cache land):**
 
