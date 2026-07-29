@@ -247,11 +247,11 @@ go build -o bin/codehound ./cmd/codehound
 > Rust: `codehound/src/lang/go/detectors/bad_practices/`  
 > Ruleset: `ruleset/golang/bad-practices.json`
 
-- [ ] BP detector runner with per-rule enable + severity override
-- [ ] Port rule modules under `rules/` (error handling, concurrency, testing, API, prod hardening, …)
-- [ ] Project-level rules + prewarm cache (BP-47/50/54/55 class)
-- [ ] Default **recommended** pack keeps BP **off** (parity)
-- [ ] Fixture / integration coverage for BP positives/negatives
+- [x] BP detector runner with per-rule enable + severity override
+- [x] Port rule modules under `rules/` (error handling, concurrency, testing, API, prod hardening, …)
+- [x] Project-level rules + prewarm cache (BP-47/50/54/55 class)
+- [x] Default **recommended** pack keeps BP **off** (parity)
+- [x] Fixture / integration coverage for BP positives/negatives
 
 ---
 
