@@ -1,0 +1,28 @@
+# CWE-267 — Privilege Defined With Unsafe Actions (safe) (pure stdlib)
+lang: go
+file: CWE-267-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var reviewStatus sync.Map
+
+// Safe: reviewer role limited to updating in-memory review records.
+func ReviewerUpdate(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("X-Role") != "reviewer" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+	reviewStatus.Store(id, r.FormValue("status"))
+	w.WriteHeader(http.StatusOK)
+}

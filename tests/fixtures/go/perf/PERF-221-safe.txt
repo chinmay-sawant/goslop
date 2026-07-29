@@ -1,0 +1,14 @@
+# PERF-221 negative: sparse map keyed by external ids
+lang: go
+file: PERF-221-safe.go
+variant: stdlib
+---
+package sample
+
+func Index(ids []int) map[int]string {
+	m := make(map[int]string, len(ids))
+	for _, id := range ids {
+		m[id] = "value"
+	}
+	return m
+}

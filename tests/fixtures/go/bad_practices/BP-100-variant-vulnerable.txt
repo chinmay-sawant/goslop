@@ -1,0 +1,15 @@
+# BP-100 positive variant: request work fans out without a bound
+lang: go
+file: BP-100-variant-vulnerable.go
+---
+package sample
+
+func handleJobs(jobs []string) {
+	for _, job := range jobs {
+		go func() {
+			handle(job)
+		}()
+	}
+}
+
+func handle(job string) {}

@@ -1,0 +1,10 @@
+# BP-91 positive variant: an integer channel sends a signal value that is discarded
+lang: go
+file: BP-91-variant-vulnerable.go
+---
+package sample
+
+func notify(done chan int) {
+	done <- 1
+	<-done
+}

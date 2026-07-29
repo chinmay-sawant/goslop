@@ -1,0 +1,12 @@
+# BP-75 positive variant: a nil slice also has length zero
+lang: go
+file: BP-75-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func CopyValues() []int {
+	var destination []int
+	copy(destination, []int{7})
+	return destination
+}

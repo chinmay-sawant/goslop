@@ -1,0 +1,13 @@
+# BP-18 positive: t.Error without an early exit
+lang: go
+file: BP-18-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestErrorContinues(t *testing.T) {
+	t.Error("bad")
+	_ = 42
+}

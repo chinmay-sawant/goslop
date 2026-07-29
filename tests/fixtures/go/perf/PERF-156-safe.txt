@@ -1,0 +1,20 @@
+# PERF-156 negative: range by index on a string skips UTF-8 decoding
+lang: go
+file: PERF-156-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func ByteLengths(strs []string) []int {
+	out := make([]int, 0, len(strs))
+	for i := range strs {
+		out = append(out, i)
+	}
+	return out
+}
+
+func _() {
+	fmt.Println(ByteLengths([]string{"a", "bb", "ccc"}))
+}

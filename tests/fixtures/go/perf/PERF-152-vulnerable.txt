@@ -1,0 +1,14 @@
+# PERF-152 positive: header copy via for-range loop and .Set
+lang: go
+file: PERF-152-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func ForwardHeaders(dst, src http.Header) {
+	for k, v := range src {
+		dst.Set(k, v)
+	}
+}

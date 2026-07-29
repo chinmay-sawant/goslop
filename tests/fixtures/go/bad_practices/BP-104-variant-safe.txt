@@ -1,0 +1,17 @@
+# BP-104 negative variant: separate literal paths do not conflict.
+lang: go
+file: BP-104-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func routes() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", health)
+	mux.HandleFunc("/ready", ready)
+}
+
+func health(http.ResponseWriter, *http.Request) {}
+func ready(http.ResponseWriter, *http.Request) {}

@@ -1,0 +1,16 @@
+# PERF-217 negative: static computation cached at init
+lang: go
+file: PERF-217-safe.go
+variant: stdlib
+---
+package sample
+
+func buildStaticConfig() []byte {
+	return []byte("static-config")
+}
+
+var staticConfig = buildStaticConfig()
+
+func GenerateReport() []byte {
+	return staticConfig
+}

@@ -1,0 +1,20 @@
+# BP-110 positive: Gin ShouldBindJSON is used as a bare statement.
+lang: go
+file: BP-110-vulnerable.go
+variant: gin
+---
+package sample
+
+import "github.com/gin-gonic/gin"
+
+type Login struct {
+	Email string `json:"email"`
+}
+
+func login(c *gin.Context) {
+	var request Login
+	c.ShouldBindJSON(&request)
+	use(request)
+}
+
+func use(Login) {}

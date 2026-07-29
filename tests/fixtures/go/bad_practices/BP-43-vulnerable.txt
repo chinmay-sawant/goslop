@@ -1,0 +1,12 @@
+# BP-43 positive: dot import outside tests
+lang: go
+file: BP-43-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import . "strings"
+
+func trim(value string) string {
+	return TrimSpace(value)
+}

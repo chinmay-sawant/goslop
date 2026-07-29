@@ -1,0 +1,10 @@
+# PERF-018 negative: reslice avoids the full copy
+lang: go
+file: PERF-018-safe.go
+---
+package sample
+
+func CopyAll(items []int) []int {
+	// Caller-owned; return a reslice instead of append-copying.
+	return items[:len(items):len(items)]
+}

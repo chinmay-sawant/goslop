@@ -1,0 +1,20 @@
+# BP-122 positive: Chi middleware returns without delegating or responding.
+lang: go
+file: BP-122-vulnerable.go
+variant: chi
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
+
+func middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_ = r.Method
+	})
+}
+
+func router() chi.Router { return chi.NewRouter() }

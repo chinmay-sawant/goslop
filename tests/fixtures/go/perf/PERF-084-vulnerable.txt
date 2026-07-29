@@ -1,0 +1,25 @@
+# PERF-84 positive: db.Beginx opens a transaction inside a handler
+lang: go
+file: PERF-084-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/jmoiron/sqlx"
+)
+
+func UpdateUser(c echo.Context, db *sqlx.DB) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return c.String(500, "err")
+	}
+	if _, err := tx.Exec("UPDATE users SET name = ? WHERE id = ?", "x", 1); err != nil {
+		_ = tx.Rollback()
+		return c.String(500, "err")
+	}
+	if err := tx.Commit(); err != nil {
+		return c.String(500, "err")
+	}
+	return c.String(200, "ok")
+}

@@ -1,0 +1,39 @@
+# PERF-196 negative: JWT parse lives in a middleware that caches the result
+lang: go
+file: PERF-196-safe.go
+variant: framework
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/golang-jwt/jwt/v5"
+)
+
+type ctxKey struct{}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tok := r.Header.Get("Authorization")
+		claims := &Claims{}
+		parsed, _ := jwt.ParseWithClaims(tok, claims, func(t *jwt.Token) (interface{}, error) {
+			return []byte("secret"), nil
+		})
+		if parsed != nil {
+			r = r.WithContext(context.WithValue(r.Context(), ctxKey{}, claims))
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+type Claims struct {
+	UserID string `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = r.Context().Value(ctxKey{})
+	w.WriteHeader(200)
+}

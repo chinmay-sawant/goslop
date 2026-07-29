@@ -1,0 +1,32 @@
+# CWE-140 positive: delimiter injection in CSV export (pure stdlib)
+lang: go
+file: CWE-140-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+)
+
+// CWE-140 Improper Neutralization of Delimiters
+// Vulnerable line: comma-separated row built by naive concatenation.
+func BuildMemberCSV(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	display := r.URL.Query().Get("display")
+	dept := r.URL.Query().Get("dept")
+	if display == "" || dept == "" {
+		http.Error(w, "missing", http.StatusBadRequest)
+		return
+	}
+	line := strings.Join([]string{display, dept, "active"}, ",")
+	csv := fmt.Sprintf("display,dept,status\n%s", line)
+	w.Header().Set("Content-Type", "text/csv")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(csv))
+}

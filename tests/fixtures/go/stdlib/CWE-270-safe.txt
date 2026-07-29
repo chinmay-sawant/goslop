@@ -1,0 +1,27 @@
+# CWE-270 — Privilege Context Switching Error (safe) (pure stdlib)
+lang: go
+file: CWE-270-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+)
+
+type ctxKey string
+
+const effectiveUserKey ctxKey = "effective_user"
+
+// Safe: saves and restores the request principal after privileged work.
+func RunMaintenanceSweep(w http.ResponseWriter, r *http.Request) {
+	original, _ := r.Context().Value(effectiveUserKey).(string)
+	ctx := context.WithValue(r.Context(), effectiveUserKey, "maintenance")
+	r = r.WithContext(ctx)
+	defer func() {
+		r = r.WithContext(context.WithValue(r.Context(), effectiveUserKey, original))
+	}()
+	_ = r.Context().Value(effectiveUserKey)
+	w.WriteHeader(http.StatusOK)
+}

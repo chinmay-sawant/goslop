@@ -1,0 +1,16 @@
+# BP-37 negative: type-switch alias is local when the initializer does not write the package global
+lang: go
+file: BP-37-type-init-safe.go
+variant: stdlib
+---
+package sample
+
+var counter int
+
+func classify(value any) {
+	switch local := 1; counter := value.(type) {
+	case int:
+		counter++
+		_ = local
+	}
+}

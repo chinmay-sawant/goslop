@@ -1,0 +1,11 @@
+# CWE registry — domain: input_validation_redos
+
+[[detector]]
+cwe = 186
+domain = "input_validation_redos"
+function = "detect_cwe_186"
+
+[[detector]]
+cwe = 1333
+domain = "input_validation_redos"
+function = "detect_cwe_1333"

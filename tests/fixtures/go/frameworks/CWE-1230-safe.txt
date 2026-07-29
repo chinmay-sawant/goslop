@@ -1,0 +1,29 @@
+# CWE-1230 safe: metadata stripped from response
+lang: go
+file: CWE-1230-safe.go
+---
+package sample
+
+// CWE-1230 mitigated: response omits filename, size, and other derived metadata.
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func DownloadRedactedSafe() gin.HandlerFunc {
+	base := "/var/vault/documents"
+	return func(c *gin.Context) {
+		name := c.Param("name")
+		path := filepath.Join(base, name)
+		if _, err := os.Stat(path); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+			return
+		}
+		c.Header("Cache-Control", "no-store")
+		c.String(http.StatusOK, "[REDACTED CONTENT]")
+	}
+}

@@ -1,0 +1,17 @@
+# PERF-003 negative: make with capacity hint
+lang: go
+file: PERF-003-safe.go
+---
+package sample
+
+func Filter(items []int) []int {
+	out := make([]int, 0, len(items))
+	for _, v := range items {
+		for _, w := range items {
+			if w == v {
+				out = append(out, w)
+			}
+		}
+	}
+	return out
+}

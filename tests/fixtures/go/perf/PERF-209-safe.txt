@@ -1,0 +1,33 @@
+# PERF-209 negative: pre-build the dependency in a sync.Once
+# called once, not via a hook that runs for every subcommand
+lang: go
+file: PERF-209-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"github.com/spf13/cobra"
+	"sync"
+)
+
+var (
+	dbOnce sync.Once
+	dbErr  error
+)
+
+func connectDatabase() error { return nil }
+
+func ensureDB() error {
+	dbOnce.Do(func() {
+		dbErr = connectDatabase()
+	})
+	return dbErr
+}
+
+var RootCmd = &cobra.Command{
+	Use:   "mytool",
+	Short: "mytool does things",
+	// No PersistentPreRunE; subcommands call ensureDB lazily on
+	// first use.
+}

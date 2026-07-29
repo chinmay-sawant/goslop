@@ -1,0 +1,40 @@
+# CWE-324 safe — Use of a Key Past its Expiration Date (mitigated)
+lang: go
+file: CWE-324-safe.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"errors"
+	"net/http"
+	"time"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type ApiKeyRow struct {
+	Secret    string
+	ExpiresAt time.Time
+}
+
+func SignWebhook(c *GinCtx, row ApiKeyRow, body []byte) ([]byte, error) {
+	if time.Now().After(row.ExpiresAt) {
+		return nil, errors.New("signing key expired")
+	}
+	mac := hmac.New(sha256.New, []byte(row.Secret))
+	mac.Write(body)
+	return mac.Sum(nil), nil
+}
+
+func HandlePartnerHook(c *GinCtx) error {
+	row := ApiKeyRow{Secret: c.Request.Header.Get("X-Key"), ExpiresAt: time.Now().Add(24 * time.Hour)}
+	if time.Now().After(row.ExpiresAt) {
+		return errors.New("reject expired partner key")
+	}
+	_, err := SignWebhook(c, row, []byte(c.Request.URL.Query().Get("payload")))
+	return err
+}

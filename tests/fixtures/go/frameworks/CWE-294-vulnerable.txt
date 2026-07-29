@@ -1,0 +1,20 @@
+# CWE-294 — Authentication Bypass by Capture-replay (vulnerable)
+lang: go
+file: CWE-294-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: accepts the same signed login blob repeatedly without nonce tracking.
+func TokenLogin(c *gin.Context) {
+	token := c.PostForm("auth_token")
+	if token == "" {
+		c.JSON(401, gin.H{"error": "missing token"})
+		return
+	}
+	c.Set("user", "alice")
+	c.JSON(200, gin.H{"ok": true})
+}

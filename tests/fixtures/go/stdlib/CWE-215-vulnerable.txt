@@ -1,0 +1,27 @@
+# CWE-215 positive: debug logging prints session secret (pure stdlib)
+lang: go
+file: CWE-215-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
+// CWE-215 Insertion of Sensitive Information Into Debugging Code
+// Vulnerable line: debug log includes session secret from header.
+func LogRequestState(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	secret := r.Header.Get("X-Session-Secret")
+	traceID := r.Header.Get("X-Trace-Id")
+	log.Printf("request debug secret=%s trace=%s uri=%s", secret, traceID, r.URL.RequestURI())
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "logged"})
+}

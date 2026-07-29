@@ -1,0 +1,16 @@
+# BP-101 negative variant: a non-HTTP writer must not be treated as a handler response.
+lang: go
+file: BP-101-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func writeDocument(out io.Writer, w http.ResponseWriter, r *http.Request) {
+	out.Write([]byte("document"))
+	w.WriteHeader(http.StatusOK)
+}

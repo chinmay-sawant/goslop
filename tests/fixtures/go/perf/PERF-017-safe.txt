@@ -1,0 +1,18 @@
+# PERF-017 negative: strings.Join hoisted out of the request loop
+lang: go
+file: PERF-017-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Handle(c *gin.Context) {
+	header := c.GetHeader("Accept-Language")
+	parts := strings.Split(header, ",")
+	c.JSON(http.StatusOK, gin.H{"languages": strings.Join(parts, ";")})
+}

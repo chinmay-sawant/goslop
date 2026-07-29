@@ -1,0 +1,32 @@
+# CWE-1392 positive: default admin credentials (pure stdlib)
+lang: go
+file: CWE-1392-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1392: Use of Default Credentials.
+// Vulnerable: bootstrap admin account always seeded with password "admin".
+
+import (
+	"net/http"
+	"sync"
+)
+
+type AdminUserPure struct {
+	Username string
+	Password string
+}
+
+var adminMu sync.Mutex
+var adminUserPure AdminUserPure
+
+func BootstrapAdminPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		adminMu.Lock()
+		adminUserPure = AdminUserPure{Username: "admin", Password: "admin"}
+		adminMu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"admin_ready":true}`))
+	}
+}

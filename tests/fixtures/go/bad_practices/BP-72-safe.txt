@@ -1,0 +1,26 @@
+# BP-72 negative: bare nil and a non-nil concrete error are safe returns
+lang: go
+file: BP-72-safe.go
+variant: stdlib
+---
+package sample
+
+type typedError struct{}
+
+func (*typedError) Error() string {
+	return "typed error"
+}
+
+func bareNil() error {
+	return nil
+}
+
+func concreteError() error {
+	return &typedError{}
+}
+
+func reassignedBeforeReturn() error {
+	var err *typedError = nil
+	err = &typedError{}
+	return error(err)
+}

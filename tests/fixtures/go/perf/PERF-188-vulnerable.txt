@@ -1,0 +1,19 @@
+# PERF-188 positive: fmt.Sscanf in a handler
+lang: go
+file: PERF-188-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("n")
+	var n int
+	_, _ = fmt.Sscanf(raw, "%d", &n)
+	w.WriteHeader(200)
+	_ = n
+}

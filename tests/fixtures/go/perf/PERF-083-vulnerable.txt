@@ -1,0 +1,32 @@
+# PERF-83 positive: rows.MapScan inside a for rows.Next() loop
+lang: go
+file: PERF-083-vulnerable.go
+---
+package sample
+
+import "database/sql"
+
+func ListRows(db *sql.DB) ([]map[string]interface{}, error) {
+	rows, err := db.Query("SELECT id, email FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []map[string]interface{}
+	for rows.Next() {
+		m := make(map[string]interface{})
+		if err := rows.MapScan(mapToAny(m)); err != nil {
+			return nil, err
+		}
+		out = append(out, m)
+	}
+	return out, nil
+}
+
+func mapToAny(m map[string]interface{}) []interface{} {
+	out := make([]interface{}, 0, len(m))
+	for _, v := range m {
+		out = append(out, v)
+	}
+	return out
+}

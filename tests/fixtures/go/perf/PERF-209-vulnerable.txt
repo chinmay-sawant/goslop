@@ -1,0 +1,21 @@
+# PERF-209 positive: Cobra PersistentPreRunE on a parent command
+lang: go
+file: PERF-209-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"github.com/spf13/cobra"
+)
+
+var RootCmd = &cobra.Command{
+	Use:   "mytool",
+	Short: "mytool does things",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		// This runs for every subcommand.
+		return connectDatabase()
+	},
+}
+
+func connectDatabase() error { return nil }

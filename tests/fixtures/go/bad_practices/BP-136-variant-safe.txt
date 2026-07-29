@@ -1,0 +1,21 @@
+# BP-136 negative variant: a request handler delegates migration to startup-owned code.
+lang: go
+file: BP-136-variant-safe.go
+variant: gorm-handler-delegation
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func migrateSchema(db *gorm.DB) error {
+	return db.AutoMigrate(&User{})
+}
+
+func createUser(c *gin.Context) {
+	_ = c
+}

@@ -1,0 +1,15 @@
+# PERF-061 positive: gin.Static with no cache headers configured
+lang: go
+file: PERF-061-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func BuildRouterNoCache() *gin.Engine {
+	r := gin.New()
+	r.Static("/assets", "./public")
+	return r
+}

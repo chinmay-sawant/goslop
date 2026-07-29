@@ -1,0 +1,19 @@
+# CWE-605: metrics listener binds exclusively without address reuse.
+lang: go
+file: CWE-605-safe.go
+---
+package sample
+
+import (
+	"net"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ServeMetrics(r *gin.Engine) error {
+	ln, err := net.Listen("tcp", ":9090")
+	if err != nil {
+		return err
+	}
+	return r.RunListener(ln)
+}

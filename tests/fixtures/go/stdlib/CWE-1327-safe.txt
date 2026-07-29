@@ -1,0 +1,25 @@
+# CWE-1327 negative: loopback-only bind address (pure stdlib)
+lang: go
+file: CWE-1327-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1327 mitigated: server listens on 127.0.0.1 instead of all interfaces.
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func StartLocalAPIPure(db *sql.DB) error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+		if db == nil || db.Ping() != nil {
+			http.Error(w, "db down", http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	})
+	return http.ListenAndServe("127.0.0.1:9090", mux)
+}

@@ -1,0 +1,20 @@
+# CWE-309 — Use of Password System for Primary Authentication (vulnerable)
+lang: go
+file: CWE-309-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: enterprise SSO route still accepts password form login only.
+func EnterpriseLogin(c *gin.Context) {
+	user := c.PostForm("username")
+	pass := c.PostForm("password")
+	if user == "" || pass == "" {
+		c.JSON(400, gin.H{"error": "missing fields"})
+		return
+	}
+	c.JSON(200, gin.H{"session": user})
+}

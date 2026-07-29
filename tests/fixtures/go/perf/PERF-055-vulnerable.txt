@@ -1,0 +1,24 @@
+# PERF-055 positive: bufio.NewScanner without explicit Buffer sizing
+lang: go
+file: PERF-055-vulnerable.go
+---
+package sample
+
+import (
+	"bufio"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ScanLines(c *gin.Context) {
+	body := c.Request.Body
+	defer body.Close()
+	scanner := bufio.NewScanner(body)
+	for scanner.Scan() {
+		line := scanner.Text()
+		_ = line
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

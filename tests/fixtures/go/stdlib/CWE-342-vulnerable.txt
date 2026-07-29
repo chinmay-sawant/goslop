@@ -1,0 +1,26 @@
+# CWE-342 vulnerable: Predictable Exact Value from Previous Values (positive, pure stdlib)
+lang: go
+file: CWE-342-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+var lastSmsCode uint64 = 442211
+
+func AdvanceSmsCode(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	lastSmsCode++
+	code := lastSmsCode
+	email := r.FormValue("email")
+	_, err := db.Exec("UPDATE login_codes SET otp = ? WHERE email = ?", code, email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

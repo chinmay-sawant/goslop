@@ -1,0 +1,31 @@
+# CWE-289 — Authentication Bypass by Alternate Name (vulnerable) (pure stdlib)
+lang: go
+file: CWE-289-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"strings"
+)
+
+// Vulnerable: only compares bare username, ignoring domain aliases.
+func LookupPrincipal(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	who := r.URL.Query().Get("user")
+	if who == "" {
+		http.Error(w, "missing user", http.StatusBadRequest)
+		return
+	}
+	var count int
+	_ = db.QueryRow("SELECT COUNT(*) FROM principals WHERE name = ?", strings.Split(who, "@")[0]).Scan(&count)
+	if count > 0 {
+		w.Header().Set("X-Authenticated", "true")
+	}
+	w.WriteHeader(http.StatusOK)
+}

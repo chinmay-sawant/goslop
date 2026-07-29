@@ -1,0 +1,22 @@
+# CWE-267 — Privilege Defined With Unsafe Actions (vulnerable)
+lang: go
+file: CWE-267-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: "reviewer" role may delete arbitrary paths from disk.
+func ReviewerPurge(c *gin.Context) {
+	if c.GetString("role") != "reviewer" {
+		c.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+	target := c.Query("path")
+	_ = os.Remove(target)
+	c.JSON(200, gin.H{"removed": target})
+}

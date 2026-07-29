@@ -1,0 +1,21 @@
+# CWE-603: server trusts client-sent authentication header without verification.
+lang: go
+file: CWE-603-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func UpdateBilling(c *gin.Context, db *gorm.DB) {
+	if c.GetHeader("X-Authenticated") != "true" {
+		c.String(http.StatusUnauthorized, "login required")
+		return
+	}
+	db.Exec("UPDATE billing SET plan = ? WHERE user_id = ?", c.PostForm("plan"), c.Param("id"))
+	c.Status(http.StatusOK)
+}

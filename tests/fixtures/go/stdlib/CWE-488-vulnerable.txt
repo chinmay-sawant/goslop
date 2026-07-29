@@ -1,0 +1,25 @@
+# CWE-488 positive: global map keyed by client session id (pure stdlib)
+lang: go
+file: CWE-488-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+var cartsBySession = map[string][]string{}
+
+func ViewCart(w http.ResponseWriter, r *http.Request) {
+	sid := r.URL.Query().Get("session")
+	_ = json.NewEncoder(w).Encode(map[string]any{"items": cartsBySession[sid]})
+}
+
+func AddCartItem(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	sid := r.URL.Query().Get("session")
+	cartsBySession[sid] = append(cartsBySession[sid], r.FormValue("sku"))
+	w.WriteHeader(http.StatusOK)
+}

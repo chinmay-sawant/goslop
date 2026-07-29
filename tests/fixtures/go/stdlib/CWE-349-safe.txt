@@ -1,0 +1,41 @@
+# CWE-349 safe: Acceptance of Extraneous Untrusted Data With Trusted Data (mitigated, pure stdlib)
+lang: go
+file: CWE-349-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"net/http"
+)
+
+type SignedEnvelope struct {
+	TrustedChannel bool `json:"trusted_channel"`
+	Profile        struct {
+		ID   string `json:"id"`
+		Role string `json:"role"`
+	} `json:"profile"`
+}
+
+func ProcessSignedEnvelope(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	var env SignedEnvelope
+	if err := json.NewDecoder(r.Body).Decode(&env); err != nil {
+		return err
+	}
+	if !env.TrustedChannel {
+		return errors.New("untrusted envelope")
+	}
+	if env.Profile.Role != "support" {
+		return errors.New("role not allowed from trusted channel")
+	}
+	_, err := db.Exec("UPDATE users SET role = ? WHERE id = ?", env.Profile.Role, env.Profile.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

@@ -1,0 +1,26 @@
+# CWE-279 — Incorrect Execution-Assigned Permissions (safe)
+lang: go
+file: CWE-279-safe.go
+---
+package sample
+
+import (
+	"os"
+	"path/filepath"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: honors the requested mode capped to owner read/write.
+func StoreUpload(c *gin.Context) {
+	modeStr := c.PostForm("mode")
+	mode, err := strconv.ParseUint(modeStr, 8, 32)
+	if err != nil || mode > 0644 {
+		mode = 0644
+	}
+	raw := c.PostForm("name")
+	path := "/data/uploads/" + filepath.Base(raw)
+	_ = os.WriteFile(path, []byte(c.PostForm("body")), os.FileMode(mode))
+	c.JSON(200, gin.H{"path": path})
+}

@@ -1,0 +1,36 @@
+# CWE registry — domain: injection
+
+[[detector]]
+cwe = 78
+domain = "injection"
+function = "detect_cwe_78_taint"
+
+[[detector]]
+cwe = 89
+domain = "injection"
+function = "detect_cwe_89_taint"
+
+[[detector]]
+cwe = 90
+domain = "injection"
+function = "detect_cwe_90_taint"
+
+[[detector]]
+cwe = 91
+domain = "injection"
+function = "detect_cwe_91_taint"
+
+[[detector]]
+cwe = 93
+domain = "injection"
+function = "detect_cwe_93"
+
+[[detector]]
+cwe = 619
+domain = "injection"
+function = "detect_cwe_619"
+
+[[detector]]
+cwe = 917
+domain = "injection"
+function = "detect_cwe_917"

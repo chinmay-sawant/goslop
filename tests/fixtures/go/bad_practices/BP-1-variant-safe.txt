@@ -1,0 +1,16 @@
+# BP-1 negative variant: returned error is handled
+lang: go
+file: BP-1-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func inspect(path string) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return
+	}
+	_ = info
+}

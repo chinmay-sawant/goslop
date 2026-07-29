@@ -1,0 +1,12 @@
+# BP-49 positive: deferred cleanup ignores returned error
+lang: go
+file: BP-49-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func syncFile(f *os.File) {
+	defer f.Sync()
+}

@@ -1,0 +1,21 @@
+# BP-140 variant positive: sqlx StructScan is invoked without checking its error.
+lang: go
+file: BP-140-variant-vulnerable.go
+variant: sqlx-structscan-bare
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct{}
+
+func loadUser(db *sqlx.DB, user *User) error {
+	rows, err := db.Queryx("SELECT id FROM users")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	rows.Next()
+	rows.StructScan(user)
+	return nil
+}

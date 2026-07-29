@@ -1,0 +1,40 @@
+# CWE-421 negative: synchronized access to alternate SSE channel (pure stdlib)
+lang: go
+file: CWE-421-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+	"sync"
+)
+
+var (
+	wireMu   sync.Mutex
+	wireCode string
+)
+
+func RegisterWireHandlers() {
+	http.HandleFunc("/wire/authorize", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		wireMu.Lock()
+		wireCode = r.FormValue("token")
+		wireMu.Unlock()
+		w.WriteHeader(http.StatusOK)
+	})
+	http.HandleFunc("/wire/events", func(w http.ResponseWriter, r *http.Request) {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+			return
+		}
+		wireMu.Lock()
+		payload := wireCode
+		wireMu.Unlock()
+		w.Header().Set("Content-Type", "text/event-stream")
+		fmt.Fprintf(w, "event: status\ndata: %s\n\n", payload)
+		flusher.Flush()
+	})
+}

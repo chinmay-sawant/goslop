@@ -1,0 +1,15 @@
+# BP-151 positive variant: slog receives a password environment value.
+lang: go
+file: BP-151-variant-vulnerable.go
+variant: slog-secret-env
+---
+package main
+
+import (
+	"log/slog"
+	"os"
+)
+
+func main() {
+	slog.Info("database configured", "password", os.Getenv("DB_PASSWORD"))
+}

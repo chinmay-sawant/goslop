@@ -1,0 +1,20 @@
+# CWE-538: secrets written only to restricted internal directory.
+lang: go
+file: CWE-538-safe.go
+---
+package sample
+
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func DumpConfigSnapshot(c *gin.Context, db *gorm.DB) error {
+	_ = db
+	dsn := os.Getenv("DATABASE_URL")
+	path := filepath.Join("/var/lib/codehound/private", "config-snapshot.txt")
+	return os.WriteFile(path, []byte("dsn="+dsn), 0o600)
+}

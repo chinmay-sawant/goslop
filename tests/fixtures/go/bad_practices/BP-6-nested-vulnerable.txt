@@ -1,0 +1,18 @@
+# BP-6 positive: nested goroutine Add is reported once
+lang: go
+file: BP-6-nested-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func run() {
+	var wg sync.WaitGroup
+	go func() {
+		go func() {
+			wg.Add(1)
+			wg.Done()
+		}()
+	}()
+}

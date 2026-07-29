@@ -1,0 +1,12 @@
+# PERF-146 negative: fmt.Sprintf with real formatting
+lang: go
+file: PERF-146-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Label(name string, id int) string {
+	return fmt.Sprintf("%s-%d", name, id)
+}

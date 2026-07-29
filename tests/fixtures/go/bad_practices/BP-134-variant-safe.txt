@@ -1,0 +1,21 @@
+# BP-134 variant negative: Take handles ErrRecordNotFound explicitly.
+lang: go
+file: BP-134-variant-safe.go
+variant: gorm-take-not-found
+---
+package sample
+
+import (
+	"errors"
+
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func takeUser(db *gorm.DB, user *User) error {
+	if err := db.Take(user).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return nil
+}

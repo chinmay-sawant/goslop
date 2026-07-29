@@ -1,0 +1,16 @@
+# BP-81 negative: one captured time value is reused throughout the condition.
+lang: go
+file: BP-81-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func expired(deadline time.Time) bool {
+	now := time.Now()
+	if now.After(deadline) && now.Before(deadline.Add(time.Minute)) {
+		return true
+	}
+	return false
+}

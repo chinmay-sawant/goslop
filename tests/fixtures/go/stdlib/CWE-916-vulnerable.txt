@@ -1,0 +1,36 @@
+# CWE-916 positive: MD5 password hashing (pure stdlib)
+lang: go
+file: CWE-916-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-916: Use of Password Hash With Insufficient Computational Effort.
+// Vulnerable: registration handler stores md5 digest of the posted password.
+
+import (
+	"crypto/md5"
+	"encoding/hex"
+	"net/http"
+	"sync"
+)
+
+var accountsMu sync.Mutex
+var accounts = map[string]string{}
+
+func RegisterWeakHashPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+		sum := md5.Sum([]byte(password))
+		hash := hex.EncodeToString(sum[:])
+		accountsMu.Lock()
+		accounts[username] = hash
+		accountsMu.Unlock()
+		w.WriteHeader(http.StatusCreated)
+	}
+}

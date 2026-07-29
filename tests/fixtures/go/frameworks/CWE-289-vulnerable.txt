@@ -1,0 +1,23 @@
+# CWE-289 — Authentication Bypass by Alternate Name (vulnerable)
+lang: go
+file: CWE-289-vulnerable.go
+---
+package sample
+
+import (
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Vulnerable: only compares bare username, ignoring domain aliases.
+func LookupPrincipal(c *gin.Context, db *sqlx.DB) {
+	who := c.Query("user")
+	var count int
+	_ = db.Get(&count, "SELECT COUNT(*) FROM principals WHERE name = ?", strings.Split(who, "@")[0])
+	if count > 0 {
+		c.Set("authenticated", true)
+	}
+	c.JSON(200, gin.H{"ok": c.GetBool("authenticated")})
+}

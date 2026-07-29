@@ -1,0 +1,10 @@
+# BP-156 negative: the password field has an explicit JSON representation.
+lang: go
+file: BP-156-safe.go
+variant: password-explicit-json
+---
+package api
+
+type Credentials struct {
+	Password string `json:"password"`
+}

@@ -1,0 +1,19 @@
+# PERF-162 positive: db.Ping inside a request handler
+lang: go
+file: PERF-162-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if err := db.Ping(); err != nil {
+		w.WriteHeader(500)
+		return
+	}
+	w.WriteHeader(200)
+}

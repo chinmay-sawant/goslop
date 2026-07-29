@@ -1,0 +1,23 @@
+# CWE-301 — Reflection Attack in an Authentication Protocol (safe)
+lang: go
+file: CWE-301-safe.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: responds with HMAC of challenge using server-only key material.
+func MutualAuth(c *gin.Context) {
+	challenge := c.PostForm("challenge")
+	mac := hmac.New(sha256.New, []byte(os.Getenv("AUTH_HMAC_KEY")))
+	mac.Write([]byte(challenge))
+	proof := hex.EncodeToString(mac.Sum(nil))
+	c.JSON(200, gin.H{"proof": proof})
+}

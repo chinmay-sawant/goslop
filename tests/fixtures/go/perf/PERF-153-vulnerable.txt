@@ -1,0 +1,18 @@
+# PERF-153 positive: cookie.String called twice in a handler
+lang: go
+file: PERF-153-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == "session" {
+			log := cookie.String()
+			trace := cookie.String()
+			_, _ = log, trace
+		}
+	}
+}

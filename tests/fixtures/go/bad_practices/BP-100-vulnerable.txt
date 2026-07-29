@@ -1,0 +1,13 @@
+# BP-100 positive: a goroutine is launched for every range item
+lang: go
+file: BP-100-vulnerable.go
+---
+package sample
+
+func processAll(items []int) {
+	for _, item := range items {
+		go process(item)
+	}
+}
+
+func process(item int) {}

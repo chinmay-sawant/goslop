@@ -1,0 +1,22 @@
+# PERF-154 negative: use http.HandleFunc with the bare function
+lang: go
+file: PERF-154-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+)
+
+func h(w http.ResponseWriter, r *http.Request) {
+	for _, c := range []byte("data") {
+		_ = c
+	}
+	w.WriteHeader(200)
+}
+
+func Init() {
+	http.Handle("/h", http.TimeoutHandler(h, 5*time.Second, ""))
+}

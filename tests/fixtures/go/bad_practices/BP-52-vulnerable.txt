@@ -1,0 +1,11 @@
+# BP-52 positive: allocation size multiplies values without overflow guard
+lang: go
+file: BP-52-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func alloc(width, height int) []byte {
+	buf := make([]byte, width*height)
+	return buf
+}

@@ -1,0 +1,23 @@
+# CWE-309 — Use of Password System for Primary Authentication (safe)
+lang: go
+file: CWE-309-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: primary authentication uses WebAuthn assertion, not password form.
+func EnterpriseLogin(c *gin.Context) {
+	assertion := c.PostForm("webauthn_assertion")
+	if assertion == "" {
+		c.JSON(400, gin.H{"error": "webauthn required"})
+		return
+	}
+	if !c.GetBool("webauthn_ok") {
+		c.JSON(401, gin.H{"error": "invalid assertion"})
+		return
+	}
+	c.JSON(200, gin.H{"session": c.GetString("subject")})
+}

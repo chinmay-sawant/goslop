@@ -1,0 +1,22 @@
+# CWE-538 positive: DSN written to world-readable export (pure stdlib)
+lang: go
+file: CWE-538-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"os"
+	"path/filepath"
+	"time"
+)
+
+func SnapshotDatabaseConfig() error {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		return os.ErrInvalid
+	}
+	path := filepath.Join("/var/www/static", "config-snapshot.txt")
+	payload := []byte("dsn=" + dsn + "\nexported=" + time.Now().UTC().Format(time.RFC3339))
+	return os.WriteFile(path, payload, 0o644)
+}

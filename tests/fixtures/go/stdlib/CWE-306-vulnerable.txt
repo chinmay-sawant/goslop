@@ -1,0 +1,27 @@
+# CWE-306 — Missing Authentication for Critical Function (vulnerable) (pure stdlib)
+lang: go
+file: CWE-306-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: destructive purge endpoint has no auth gate.
+func PurgeLedger(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if db == nil {
+		http.Error(w, "database unavailable", http.StatusInternalServerError)
+		return
+	}
+	_, _ = db.Exec("TRUNCATE ledger")
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"purged":true}`))
+}

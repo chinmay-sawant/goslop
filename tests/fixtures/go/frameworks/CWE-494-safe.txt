@@ -1,0 +1,40 @@
+# CWE-494: downloaded bundle must match pinned SHA-256 before execution.
+lang: go
+file: CWE-494-safe.go
+---
+package sample
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+const workerBundleSHA = "a3b5c7d9e1f2030405060708090a1b2c3d4e5f60718293a4b5c6d7e8f901234"
+
+func InstallWorker(c *gin.Context) {
+	url := c.Query("bundle_url")
+	resp, err := http.Get(url)
+	if err != nil {
+		c.String(http.StatusBadGateway, "download failed")
+		return
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		c.String(http.StatusBadGateway, "read failed")
+		return
+	}
+	sum := sha256.Sum256(data)
+	if hex.EncodeToString(sum[:]) != workerBundleSHA {
+		c.String(http.StatusForbidden, "integrity check failed")
+		return
+	}
+	path := "/tmp/worker.bin"
+	_ = os.WriteFile(path, data, 0o500)
+	c.Status(http.StatusOK)
+}

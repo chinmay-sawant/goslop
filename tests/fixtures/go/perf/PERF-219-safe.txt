@@ -1,0 +1,19 @@
+# PERF-219 negative: oversized buffer discarded before Put
+lang: go
+file: PERF-219-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+const maxBufSize = 4096
+
+var pool sync.Pool
+
+func Recycle(buf []byte) {
+	if cap(buf) > maxBufSize {
+		return
+	}
+	pool.Put(buf)
+}

@@ -1,0 +1,17 @@
+# BP-136 positive variant: schema migration runs in a Gin request handler.
+lang: go
+file: BP-136-variant-vulnerable.go
+variant: gorm-gin
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func createUser(db *gorm.DB, c *gin.Context) {
+	_ = db.AutoMigrate(&User{})
+}

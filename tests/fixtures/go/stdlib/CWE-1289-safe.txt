@@ -1,0 +1,28 @@
+# CWE-1289 negative: filename-only public asset lookup (pure stdlib)
+lang: go
+file: CWE-1289-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1289 mitigated: only a final filename component is accepted.
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func FetchSharedAssetSafePure() http.HandlerFunc {
+	root := "/srv/assets/public"
+	return func(w http.ResponseWriter, r *http.Request) {
+		requested := r.URL.Query().Get("path")
+		asset := filepath.Join(root, filepath.Base(requested))
+		data, err := os.ReadFile(asset)
+		if err != nil {
+			http.Error(w, "missing", http.StatusNotFound)
+			return
+		}
+		w.Write(data)
+	}
+}

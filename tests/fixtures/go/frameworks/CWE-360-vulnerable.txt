@@ -1,0 +1,22 @@
+# CWE-360 vulnerable — Trust of System Event Data
+lang: go
+file: CWE-360-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Exec(query string, args ...interface{}) error { return nil }
+
+func BanClientIP(c *GinCtx, db *GormDB) error {
+	clientIP := c.Request.Header.Get("X-Forwarded-For")
+	return db.Exec("INSERT INTO ip_bans (ip) VALUES (?)", clientIP)
+}

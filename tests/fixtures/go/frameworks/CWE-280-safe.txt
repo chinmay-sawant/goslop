@@ -1,0 +1,33 @@
+# CWE-280 — Improper Handling of Insufficient Permissions or Privileges (safe)
+lang: go
+file: CWE-280-safe.go
+---
+package sample
+
+import (
+	"errors"
+	"os"
+	"path/filepath"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Safe: aborts when the process lacks permission to access the resource.
+func DeleteTenant(c *gin.Context, db *gorm.DB) {
+	raw := c.Param("id")
+	path := "/secure/tenants/" + filepath.Base(raw)
+	f, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, syscall.EACCES) || errors.Is(err, syscall.EPERM) {
+			c.JSON(403, gin.H{"error": "forbidden"})
+			return
+		}
+		c.JSON(500, gin.H{"error": "open failed"})
+		return
+	}
+	f.Close()
+	db.Exec("DELETE FROM tenants WHERE id = ?", c.Param("id"))
+	c.JSON(200, gin.H{"deleted": true})
+}

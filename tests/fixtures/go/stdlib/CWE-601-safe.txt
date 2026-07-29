@@ -1,0 +1,20 @@
+# CWE-601 negative: redirect limited to same-site paths (pure stdlib)
+lang: go
+file: CWE-601-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+func OAuthReturn(w http.ResponseWriter, r *http.Request) {
+	target := r.URL.Query().Get("next")
+	if !strings.HasPrefix(target, "/") || strings.Contains(target, "//") {
+		http.Error(w, "bad redirect", http.StatusBadRequest)
+		return
+	}
+	http.Redirect(w, r, target, http.StatusFound)
+}

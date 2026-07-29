@@ -1,0 +1,19 @@
+# CWE-76 negative: full HTML escaping for output context
+lang: go
+file: CWE-76-safe.go
+---
+package sample
+
+import (
+	"html"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-76 Improper Neutralization of Equivalent Special Elements (mitigated)
+func RenderSnippet(c *gin.Context) {
+	raw := c.PostForm("snippet")
+	safe := html.EscapeString(raw)
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte("<section>"+safe+"</section>"))
+}

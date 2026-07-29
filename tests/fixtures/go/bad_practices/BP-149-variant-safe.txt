@@ -1,0 +1,18 @@
+# BP-149 negative variant: zap attaches the error with zap.Error.
+lang: go
+file: BP-149-variant-safe.go
+variant: zap-error-attribute
+---
+package service
+
+import "go.uber.org/zap"
+
+func save() error {
+	err := doSave()
+	if err != nil {
+		zap.L().Error("save failed", zap.Error(err))
+	}
+	return nil
+}
+
+func doSave() error { return nil }

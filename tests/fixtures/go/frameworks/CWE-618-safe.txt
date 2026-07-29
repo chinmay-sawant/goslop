@@ -1,0 +1,26 @@
+# CWE-618: Exposed Unsafe ActiveX Method (mitigated)
+lang: go
+file: CWE-618-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var allowedPluginMethods = map[string]struct{}{
+	"GetVersion": {},
+	"Ping":       {},
+}
+
+// Safe: only allowlisted, non-privileged plugin methods are reachable.
+func InvokePluginMethod(c *gin.Context) {
+	method := c.Query("method")
+	if _, ok := allowedPluginMethods[method]; !ok {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"method": method, "result": "ok"})
+}

@@ -1,0 +1,17 @@
+# BP-159 negative: flags are parsed before their values are read.
+lang: go
+file: BP-159-safe.go
+variant: flag-order
+---
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+func main() {
+	port := flag.Int("port", 8080, "listen port")
+	flag.Parse()
+	fmt.Println(*port)
+}

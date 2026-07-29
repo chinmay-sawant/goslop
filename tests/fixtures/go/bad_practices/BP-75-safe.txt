@@ -1,0 +1,12 @@
+# BP-75 negative: copy destination is allocated to the source length
+lang: go
+file: BP-75-safe.go
+variant: stdlib
+---
+package sample
+
+func copyValues(source []int) []int {
+	destination := make([]int, len(source))
+	copy(destination, source)
+	return destination
+}

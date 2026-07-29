@@ -1,0 +1,35 @@
+# CWE-324 safe: Use of a Key Past its Expiration Date (mitigated, pure stdlib)
+lang: go
+file: CWE-324-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"errors"
+	"net/http"
+	"time"
+)
+
+type SigningKey struct {
+	Secret    string
+	ExpiresAt time.Time
+}
+
+func VerifyPartnerSignature(w http.ResponseWriter, r *http.Request, key SigningKey) error {
+	if time.Now().After(key.ExpiresAt) {
+		return errors.New("signing key expired")
+	}
+	body := []byte(r.URL.Query().Get("payload"))
+	mac := hmac.New(sha256.New, []byte(key.Secret))
+	mac.Write(body)
+	expected := mac.Sum(nil)
+	provided := []byte(r.Header.Get("X-Signature"))
+	if len(provided) != len(expected) {
+		return errors.New("invalid signature length")
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

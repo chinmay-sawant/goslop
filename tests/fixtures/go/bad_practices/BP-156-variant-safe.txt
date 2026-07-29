@@ -1,0 +1,10 @@
+# BP-156 negative variant: omitempty is used only for a non-sensitive label.
+lang: go
+file: BP-156-variant-safe.go
+variant: display-name-omitempty
+---
+package api
+
+type Session struct {
+	DisplayName string `json:"display_name,omitempty"`
+}

@@ -1,0 +1,28 @@
+# CWE-335 vulnerable: Incorrect Usage of Seeds in Pseudo-Random Number Generator (PRNG) (positive, pure stdlib)
+lang: go
+file: CWE-335-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"math/rand"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+func AssignQueueTicket(w http.ResponseWriter, r *http.Request) {
+	queue := r.URL.Query().Get("queue")
+	if queue == "" {
+		http.Error(w, "queue required", http.StatusBadRequest)
+		return
+	}
+	seed := time.Now().Unix()
+	rng := rand.New(rand.NewSource(seed))
+	ticket := strconv.Itoa(rng.Intn(10000))
+	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("X-Queue", queue)
+	w.Header().Set("X-Ticket", ticket)
+	w.WriteHeader(http.StatusOK)
+}

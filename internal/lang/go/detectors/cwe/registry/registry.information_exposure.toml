@@ -1,0 +1,61 @@
+# CWE registry — domain: information_exposure
+
+[[detector]]
+cwe = 201
+domain = "information_exposure"
+function = "detect_cwe_201"
+
+[[detector]]
+cwe = 209
+domain = "information_exposure"
+function = "detect_cwe_209"
+
+[[detector]]
+cwe = 212
+domain = "information_exposure"
+function = "detect_cwe_212"
+
+[[detector]]
+cwe = 213
+domain = "information_exposure"
+function = "detect_cwe_213"
+
+[[detector]]
+cwe = 214
+domain = "information_exposure"
+function = "detect_cwe_214"
+
+[[detector]]
+cwe = 215
+domain = "information_exposure"
+function = "detect_cwe_215"
+
+[[detector]]
+cwe = 312
+domain = "information_exposure"
+function = "detect_cwe_312"
+
+[[detector]]
+cwe = 319
+domain = "information_exposure"
+function = "detect_cwe_319"
+
+[[detector]]
+cwe = 524
+domain = "information_exposure"
+function = "detect_cwe_524"
+
+[[detector]]
+cwe = 538
+domain = "information_exposure"
+function = "detect_cwe_538"
+
+[[detector]]
+cwe = 756
+domain = "information_exposure"
+function = "detect_cwe_756"
+
+[[detector]]
+cwe = 1230
+domain = "information_exposure"
+function = "detect_cwe_1230"

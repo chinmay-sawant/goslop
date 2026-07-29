@@ -1,0 +1,16 @@
+# BP-162 variant negative: a parallel test keeps its counter local.
+lang: go
+file: BP-162-variant-safe_test.go
+variant: local-parallel-counter
+---
+package sample
+
+import "testing"
+
+var completed int
+
+func TestParallelCounter(t *testing.T) {
+	t.Parallel()
+	localCompleted := 0
+	localCompleted++
+}

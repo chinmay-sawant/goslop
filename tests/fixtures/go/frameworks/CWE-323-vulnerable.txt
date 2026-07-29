@@ -1,0 +1,23 @@
+# CWE-323 vulnerable — Reusing a Nonce, Key Pair in Encryption
+lang: go
+file: CWE-323-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+var sharedNonce = []byte("fixednonce12")
+
+func SealUserBlob(c *gin.Context, db *gorm.DB, plaintext []byte) error {
+	key := []byte("0123456789abcdef0123456789abcdef")
+	block, _ := aes.NewCipher(key)
+	aead, _ := cipher.NewGCM(block)
+	ciphertext := aead.Seal(nil, sharedNonce, plaintext, nil)
+	return db.Exec("UPDATE users SET blob = ? WHERE id = ?", ciphertext, c.Query("id")).Error
+}

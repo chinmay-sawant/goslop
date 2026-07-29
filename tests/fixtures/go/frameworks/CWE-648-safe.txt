@@ -1,0 +1,26 @@
+# CWE-648: Incorrect Use of Privileged APIs (mitigated)
+lang: go
+file: CWE-648-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+const uploadRoot = "/var/app/uploads"
+
+// Safe: ownership changes are restricted to files under a controlled upload root.
+func AssignFileOwner(c *gin.Context) {
+	name := c.PostForm("filename")
+	clean := filepath.Clean(name)
+	full := filepath.Join(uploadRoot, clean)
+	if !filepath.HasPrefix(full, uploadRoot) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"file": full, "owner": "app"})
+}

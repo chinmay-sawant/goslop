@@ -1,0 +1,16 @@
+# PERF-057 negative: pass-through middleware with no heavy work
+lang: go
+file: PERF-057-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func MiddlewarePass(c *gin.Context) {
+	c.Next()
+	_ = http.StatusOK
+}

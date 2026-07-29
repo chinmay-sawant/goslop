@@ -1,0 +1,27 @@
+# CWE-303 — Incorrect Implementation of Authentication Algorithm (vulnerable) (pure stdlib)
+lang: go
+file: CWE-303-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"io"
+	"net/http"
+)
+
+// Vulnerable: compares MACs with ==, enabling timing leaks and wrong semantics.
+func VerifyWebhook(w http.ResponseWriter, r *http.Request) {
+	sig := r.Header.Get("X-Signature")
+	body, _ := io.ReadAll(r.Body)
+	mac := hmac.New(sha256.New, []byte("secret"))
+	mac.Write(body)
+	expected := mac.Sum(nil)
+	if string(expected) == sig {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	http.Error(w, "bad sig", http.StatusUnauthorized)
+}

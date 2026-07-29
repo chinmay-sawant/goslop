@@ -1,0 +1,27 @@
+# CWE-274 — Improper Handling of Insufficient Privileges (vulnerable) (pure stdlib)
+lang: go
+file: CWE-274-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+// Vulnerable: continues after EPERM as if the privileged action succeeded.
+func RotateAuditLog(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	err := os.Rename("/var/log/audit/current", "/var/log/audit/prev")
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"rotated":true}`))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

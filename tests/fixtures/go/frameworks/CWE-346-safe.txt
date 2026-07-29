@@ -1,0 +1,30 @@
+# CWE-346 safe — Origin Validation Error (mitigated)
+lang: go
+file: CWE-346-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+type GinCtx struct {
+	Writer  http.ResponseWriter
+	Request *http.Request
+}
+
+var allowedOrigins = map[string]struct{}{
+	"https://ledger.example.com": {},
+}
+
+func ExportLedger(c *GinCtx) {
+	origin := c.Request.Header.Get("Origin")
+	if _, ok := allowedOrigins[strings.TrimSpace(origin)]; !ok {
+		http.Error(c.Writer, "forbidden origin", http.StatusForbidden)
+		return
+	}
+	c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+	c.Writer.Header().Set("Vary", "Origin")
+	c.Writer.Write([]byte(`{"status":"ok"}`))
+}

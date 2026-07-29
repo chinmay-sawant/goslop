@@ -1,0 +1,25 @@
+# BP-31 positive: constructor returns concrete type instead of package interface
+lang: go
+file: bp31/BP-31-vulnerable.go
+variant: stdlib
+---
+// Package bp31 contains BP-31 fixture code.
+package bp31
+
+type Runner interface {
+	Run()
+	Stop()
+}
+
+type Service struct{}
+
+// Run executes the service work.
+func (Service) Run() {}
+
+// Stop shuts the service down.
+func (Service) Stop() {}
+
+// NewRunner returns the concrete implementation even though a package interface exists.
+func NewRunner() *Service {
+	return &Service{}
+}

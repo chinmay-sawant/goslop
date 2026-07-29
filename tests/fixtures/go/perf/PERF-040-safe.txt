@@ -1,0 +1,18 @@
+# PERF-040 negative: time.Now is sampled once at function entry
+lang: go
+file: PERF-040-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Stamp(c *gin.Context) {
+	now := time.Now()
+	_ = now
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

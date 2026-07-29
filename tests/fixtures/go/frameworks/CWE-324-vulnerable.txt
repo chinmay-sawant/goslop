@@ -1,0 +1,32 @@
+# CWE-324 vulnerable — Use of a Key Past its Expiration Date
+lang: go
+file: CWE-324-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"net/http"
+	"time"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type ApiKeyRow struct {
+	Secret    string
+	ExpiresAt time.Time
+}
+
+func SignWebhook(c *GinCtx, row ApiKeyRow, body []byte) []byte {
+	mac := hmac.New(sha256.New, []byte(row.Secret))
+	mac.Write(body)
+	return mac.Sum(nil)
+}
+
+func HandlePartnerHook(c *GinCtx) {
+	row := ApiKeyRow{Secret: c.Request.Header.Get("X-Key"), ExpiresAt: time.Now().Add(-48 * time.Hour)}
+	_ = SignWebhook(c, row, []byte(c.Request.URL.Query().Get("payload")))
+}

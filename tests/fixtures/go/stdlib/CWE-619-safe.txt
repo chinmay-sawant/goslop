@@ -1,0 +1,29 @@
+# CWE-619: Dangling Database Cursor (mitigated, pure stdlib)
+lang: go
+file: CWE-619-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Safe: rows are always closed via defer.
+func ListOrders(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	rows, err := db.Query("SELECT id, total FROM orders WHERE owner_id = $1", r.URL.Query().Get("owner"))
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	var id int
+	var total float64
+	_ = rows.Scan(&id, &total)
+	w.WriteHeader(http.StatusOK)
+}

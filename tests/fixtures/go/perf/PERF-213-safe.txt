@@ -1,0 +1,19 @@
+# PERF-213 negative: package-level cache has an eviction bound
+lang: go
+file: PERF-213-safe.go
+variant: stdlib
+---
+package sample
+
+var renderCache = map[string]int{}
+
+func Lookup(key string) int {
+	if v, ok := renderCache[key]; ok {
+		return v
+	}
+	if len(renderCache) > 1000 {
+		clear(renderCache)
+	}
+	renderCache[key] = len(key)
+	return renderCache[key]
+}

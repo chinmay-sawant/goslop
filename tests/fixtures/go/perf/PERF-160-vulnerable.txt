@@ -1,0 +1,17 @@
+# PERF-160 positive: sql.Open inside a request handler
+lang: go
+file: PERF-160-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	db, _ := sql.Open("postgres", "host=localhost")
+	defer db.Close()
+	_ = db
+}

@@ -1,0 +1,12 @@
+# BP-44 positive: blank import lacks justification
+lang: go
+file: BP-44-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import _ "example.com/acme/hooks"
+
+func trim(value string) string {
+	return value
+}

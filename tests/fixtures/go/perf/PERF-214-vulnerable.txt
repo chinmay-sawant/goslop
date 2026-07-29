@@ -1,0 +1,25 @@
+# PERF-214 positive: cache key includes volatile fields
+lang: go
+file: PERF-214-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"sync"
+)
+
+type Entry struct {
+	ID string
+}
+
+func Render(entry Entry, y int) int {
+	var cache sync.Map
+	key := fmt.Sprintf("%p-%d", &entry, y)
+	if v, ok := cache.Load(key); ok {
+		return v.(int)
+	}
+	cache.Store(key, len(entry.ID))
+	return len(entry.ID)
+}

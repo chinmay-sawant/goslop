@@ -1,0 +1,31 @@
+# CWE-278 — Insecure Preserved Inherited Permissions (vulnerable) (pure stdlib)
+lang: go
+file: CWE-278-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"archive/tar"
+	"io"
+	"net/http"
+	"os"
+)
+
+// Vulnerable: restores archive entry mode verbatim, including 0777 bits.
+func ExtractBundle(w http.ResponseWriter, r *http.Request, bundle io.Reader) {
+	tr := tar.NewReader(bundle)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			break
+		}
+		f, _ := os.OpenFile(hdr.Name, os.O_CREATE|os.O_WRONLY, os.FileMode(hdr.Mode))
+		_, _ = io.Copy(f, tr)
+		f.Close()
+	}
+	w.WriteHeader(http.StatusOK)
+}

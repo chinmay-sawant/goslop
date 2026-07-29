@@ -1,0 +1,33 @@
+# CWE-179 negative: decode before validating final form (pure stdlib)
+lang: go
+file: CWE-179-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/url"
+	"regexp"
+	"strings"
+)
+
+var slugPattern = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+
+// CWE-179 Incorrect Behavior Order: Early Validation (mitigated)
+func ResolveSlug(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("slug")
+	decoded, err := url.QueryUnescape(raw)
+	if err != nil {
+		http.Error(w, "invalid", http.StatusBadRequest)
+		return
+	}
+	if !slugPattern.MatchString(decoded) {
+		http.Error(w, "invalid", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"slug": strings.ToLower(decoded)})
+}

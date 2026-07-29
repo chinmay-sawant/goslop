@@ -1,0 +1,29 @@
+# CWE-201 positive: API echoes internal secret fields
+lang: go
+file: CWE-201-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type userRecord struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	APIKey   string `json:"api_key"`
+}
+
+// CWE-201 Insertion of Sensitive Information Into Sent Data
+// Vulnerable line: returns APIKey to external caller.
+func FetchUser(c *gin.Context, store map[string]userRecord) {
+	id := c.Param("id")
+	record, ok := store[id]
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.JSON(http.StatusOK, record)
+}

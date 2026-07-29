@@ -1,0 +1,16 @@
+# BP-120 positive variant: an aliased Fiber context still discards BodyParser's error.
+lang: go
+file: BP-120-variant-vulnerable.go
+variant: fiber
+---
+package sample
+
+import fiber "github.com/gofiber/fiber/v2"
+
+func update(ctx *fiber.Ctx) error {
+	var request struct {
+		Enabled bool `json:"enabled"`
+	}
+	ctx.BodyParser(&request)
+	return nil
+}

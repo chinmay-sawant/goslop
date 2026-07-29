@@ -1,0 +1,19 @@
+# BP-92 negative: errgroup.WithContext supplies cancellation propagation
+lang: go
+file: BP-92-safe.go
+---
+package sample
+
+import (
+	"context"
+	"golang.org/x/sync/errgroup"
+)
+
+func run(parent context.Context) error {
+	g, ctx := errgroup.WithContext(parent)
+	g.Go(func() error {
+		_ = ctx
+		return nil
+	})
+	return g.Wait()
+}

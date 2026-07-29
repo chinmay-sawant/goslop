@@ -1,0 +1,30 @@
+# CWE-279 — Incorrect Execution-Assigned Permissions (safe) (pure stdlib)
+lang: go
+file: CWE-279-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+)
+
+// Safe: honors the requested mode capped to owner read/write.
+func StoreArtifact(w http.ResponseWriter, r *http.Request) {
+	modeStr := r.FormValue("mode")
+	mode, err := strconv.ParseUint(modeStr, 8, 32)
+	if err != nil || mode > 0644 {
+		mode = 0644
+	}
+	name := r.FormValue("name")
+	if name == "" {
+		http.Error(w, "missing name", http.StatusBadRequest)
+		return
+	}
+	path := "/data/uploads/" + filepath.Base(name)
+	_ = os.WriteFile(path, []byte(r.FormValue("body")), os.FileMode(mode))
+	w.WriteHeader(http.StatusOK)
+}

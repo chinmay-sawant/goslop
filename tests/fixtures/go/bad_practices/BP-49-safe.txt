@@ -1,0 +1,16 @@
+# BP-49 negative: deferred cleanup handles the returned error
+lang: go
+file: BP-49-safe.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func syncFile(f *os.File) {
+	defer func() {
+		if err := f.Sync(); err != nil {
+			return
+		}
+	}()
+}

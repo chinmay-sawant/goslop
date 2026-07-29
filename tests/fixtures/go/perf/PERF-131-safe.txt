@@ -1,0 +1,14 @@
+# PERF-131 negative: use sync/atomic for a single counter
+lang: go
+file: PERF-131-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync/atomic"
+
+var counter int32
+
+func Inc() {
+	atomic.AddInt32(&counter, 1)
+}

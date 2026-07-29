@@ -1,0 +1,22 @@
+# PERF-181 negative: json.NewDecoder with .UseNumber() called
+lang: go
+file: PERF-181-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/json"
+	"io"
+)
+
+type Row struct {
+	ID   int64
+	Name string
+}
+
+func Decode(r io.Reader, out *Row) error {
+	dec := json.NewDecoder(r)
+	dec.UseNumber()
+	return dec.Decode(out)
+}

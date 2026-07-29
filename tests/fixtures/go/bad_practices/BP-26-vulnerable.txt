@@ -1,0 +1,15 @@
+# BP-26 positive: context.Context is not the first parameter
+lang: go
+file: BP-26-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+// Fetch accepts context after another parameter.
+func Fetch(name string, ctx context.Context) error {
+	_ = name
+	_ = ctx
+	return nil
+}

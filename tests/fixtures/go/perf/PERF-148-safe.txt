@@ -1,0 +1,24 @@
+# PERF-148 negative: a buffered channel with a guaranteed receiver
+lang: go
+file: PERF-148-safe.go
+variant: stdlib
+---
+package sample
+
+import "context"
+
+func Spawn(ctx context.Context, work []int) {
+	ch := make(chan int, len(work))
+	go func() {
+		for {
+			select {
+			case <-ch:
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	for _, item := range work {
+		ch <- item
+	}
+}

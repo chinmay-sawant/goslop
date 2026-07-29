@@ -1,0 +1,16 @@
+# BP-107 positive: typed middleware returns a handler that never delegates.
+lang: go
+file: BP-107-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "" {
+			return
+		}
+	})
+}

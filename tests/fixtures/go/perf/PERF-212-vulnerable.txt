@@ -1,0 +1,21 @@
+# PERF-212 positive: db.Find(&slice) without a Limit
+lang: go
+file: PERF-212-vulnerable.go
+variant: framework
+---
+package sample
+
+import "gorm.io/gorm"
+
+type Order struct {
+	ID    uint
+	Total float64
+}
+
+func LoadAll(db *gorm.DB) ([]Order, error) {
+	var orders []Order
+	if err := db.Find(&orders).Error; err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

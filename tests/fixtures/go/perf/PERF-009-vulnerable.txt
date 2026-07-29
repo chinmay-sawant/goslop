@@ -1,0 +1,27 @@
+# PERF-009 positive: url.Parse inside loop
+lang: go
+file: PERF-009-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"net/url"
+)
+
+func FetchAll(urls []string) ([]int, error) {
+	statuses := make([]int, 0, len(urls))
+	for _, raw := range urls {
+		u, err := url.Parse(raw)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := http.Get(u.String())
+		if err != nil {
+			return nil, err
+		}
+		statuses = append(statuses, resp.StatusCode)
+		resp.Body.Close()
+	}
+	return statuses, nil
+}

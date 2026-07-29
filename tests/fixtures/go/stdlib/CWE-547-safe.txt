@@ -1,0 +1,28 @@
+# CWE-547 negative: signing key loaded from environment (pure stdlib)
+lang: go
+file: CWE-547-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+	"os"
+)
+
+func IssueSessionCookie(w http.ResponseWriter, r *http.Request) {
+	secret := os.Getenv("SESSION_MAC_KEY")
+	if secret == "" {
+		http.Error(w, "misconfigured", http.StatusInternalServerError)
+		return
+	}
+	uid := r.Header.Get("X-UID")
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(uid))
+	token := hex.EncodeToString(mac.Sum(nil))
+	http.SetCookie(w, &http.Cookie{Name: "session", Value: token})
+	w.WriteHeader(http.StatusOK)
+}

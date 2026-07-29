@@ -1,0 +1,12 @@
+# PERF-207 positive: Fiber c.SendFile without cache headers
+lang: go
+file: PERF-207-vulnerable.go
+variant: framework
+---
+package sample
+
+import "github.com/gofiber/fiber/v2"
+
+func Handle(c *fiber.Ctx) error {
+	return c.SendFile("./public/index.html")
+}

@@ -1,0 +1,31 @@
+# CWE-501: trusted approval state kept separate from untrusted request payload.
+lang: go
+file: CWE-501-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type payoutRequest struct {
+	Amount float64 `json:"amount"`
+	Memo   string  `json:"memo"`
+}
+
+type payoutDecision struct {
+	Approved bool           `json:"approved"`
+	Request  payoutRequest  `json:"request"`
+}
+
+func QueuePayout(c *gin.Context) {
+	var req payoutRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	out := payoutDecision{Approved: true, Request: req}
+	c.JSON(http.StatusOK, out)
+}

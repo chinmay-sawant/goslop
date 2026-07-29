@@ -1,0 +1,20 @@
+# PERF-89 negative: configuration is loaded once at package scope
+lang: go
+file: PERF-089-safe.go
+---
+package sample
+
+import "github.com/labstack/echo/v4"
+
+type Config struct {
+	Token string
+}
+
+var sharedConfig = Config{Token: "abc"}
+
+func ConfigMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		_ = sharedConfig.Token
+		return next(c)
+	}
+}

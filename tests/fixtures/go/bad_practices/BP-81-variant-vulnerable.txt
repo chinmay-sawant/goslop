@@ -1,0 +1,15 @@
+# BP-81 positive variant: nested boolean expressions still read the clock twice.
+lang: go
+file: BP-81-variant-vulnerable.go
+variant: nested-condition
+---
+package sample
+
+import "time"
+
+func active(start, end time.Time) bool {
+	if (time.Now().Equal(start) || time.Now().After(start)) && end.After(start) {
+		return true
+	}
+	return false
+}

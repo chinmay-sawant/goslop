@@ -1,0 +1,19 @@
+# PERF-171 negative: sync.Mutex for acquire/release
+lang: go
+file: PERF-171-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var counterMu sync.Mutex
+var counterMap = map[string]int{}
+
+func Inc(key string) {
+	counterMu.Lock()
+	// Map mutation: not a simple counter, so a mutex is
+	// justified (PERF-131 would not fire here).
+	counterMap[key]++
+	counterMu.Unlock()
+}

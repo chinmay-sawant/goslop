@@ -1,0 +1,17 @@
+# CWE-78 positive: taint-tracked command injection (identifier flow)
+lang: go
+file: CWE-78-taint-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+	"path/filepath"
+)
+
+func RunCommand(w http.ResponseWriter, r *http.Request) {
+	cmdName := r.URL.Query().Get("cmd")
+	_ = exec.Command("sh", "-c", filepath.Clean(cmdName))
+}

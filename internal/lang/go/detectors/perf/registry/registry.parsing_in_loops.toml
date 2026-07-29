@@ -1,0 +1,41 @@
+# PERF registry — domain: parsing_in_loops
+
+[[detector]]
+perf = 9
+domain = "parsing_in_loops"
+function = "detect_perf_9"
+
+[[detector]]
+perf = 10
+domain = "parsing_in_loops"
+function = "detect_perf_10"
+
+[[detector]]
+perf = 11
+domain = "parsing_in_loops"
+function = "detect_perf_11"
+
+[[detector]]
+perf = 12
+domain = "parsing_in_loops"
+function = "detect_perf_12"
+
+[[detector]]
+perf = 13
+domain = "parsing_in_loops"
+function = "detect_perf_13"
+
+[[detector]]
+perf = 14
+domain = "parsing_in_loops"
+function = "detect_perf_14"
+
+[[detector]]
+perf = 15
+domain = "parsing_in_loops"
+function = "detect_perf_15"
+
+[[detector]]
+perf = 16
+domain = "parsing_in_loops"
+function = "detect_perf_16"

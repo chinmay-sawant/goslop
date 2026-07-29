@@ -1,0 +1,20 @@
+# BP-20 negative: table-driven loop uses t.Run
+lang: go
+file: BP-20-safe_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestTableLoop(t *testing.T) {
+	tests := []int{1, 2}
+	for _, tc := range tests {
+		t.Run("case", func(t *testing.T) {
+			t.Parallel()
+			if tc == 0 {
+				t.Fatal("bad")
+			}
+		})
+	}
+}

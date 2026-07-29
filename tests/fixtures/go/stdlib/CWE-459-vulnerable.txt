@@ -1,0 +1,30 @@
+# CWE-459 positive: temp ledger export never deleted (pure stdlib)
+lang: go
+file: CWE-459-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func ExportLedgerCSV(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	f, err := os.CreateTemp("", "ledger-*.csv")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	rows, _ := db.Query("SELECT account, balance FROM ledger")
+	for rows.Next() {
+		var account string
+		var balance float64
+		_ = rows.Scan(&account, &balance)
+		_, _ = fmt.Fprintf(f, "%s,%s\n", account, r.URL.Query().Get("mask"))
+	}
+	_ = rows.Close()
+	http.ServeFile(w, r, f.Name())
+}

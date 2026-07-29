@@ -1,0 +1,26 @@
+# CWE-214 positive: secret passed on process command line (pure stdlib)
+lang: go
+file: CWE-214-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"os/exec"
+)
+
+// CWE-214 Invocation of Process Using Visible Sensitive Information
+// Vulnerable line: API token appears in argv for archive helper.
+func RunSnapshotJob(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("X-Api-Token")
+	cmd := exec.Command("archivectl", "--token", token, "--target", "ledger")
+	if err := cmd.Run(); err != nil {
+		http.Error(w, "backup", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "started"})
+}

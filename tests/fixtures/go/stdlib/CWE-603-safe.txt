@@ -1,0 +1,26 @@
+# CWE-603 negative: billing mutation requires session uid match (pure stdlib)
+lang: go
+file: CWE-603-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func UpdateBillingPlan(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	uid := r.Header.Get("X-UID")
+	if uid == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	if uid != r.PathValue("id") {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	_ = r.ParseForm()
+	_, _ = db.Exec("UPDATE billing SET plan = ? WHERE user_id = ?", r.FormValue("plan"), uid)
+	w.WriteHeader(http.StatusOK)
+}

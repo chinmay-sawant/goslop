@@ -1,0 +1,19 @@
+# PERF-95 negative: single shared middleware in a Fiber app
+lang: go
+file: PERF-095-safe.go
+---
+package sample
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+func Build(app *fiber.App) {
+	app.Use(commonMW)
+	app.Get("/foo", fooHandler)
+}
+
+func commonMW(c *fiber.Ctx) error { return c.Next() }
+func fooHandler(c *fiber.Ctx) error {
+	return c.SendString("foo")
+}

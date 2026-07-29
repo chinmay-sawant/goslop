@@ -1,0 +1,18 @@
+# PERF-139 positive: closure captures outer variable, forcing escape
+lang: go
+file: PERF-139-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+)
+
+func ClosureEscapeHandler(w http.ResponseWriter, r *http.Request) {
+	secret := r.Header.Get("Authorization")
+	go func() {
+		w.Write([]byte(secret))
+	}()
+	_ = http.StatusOK
+}

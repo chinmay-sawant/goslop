@@ -1,0 +1,15 @@
+# PERF-198 positive: Content-Type checked with strings.Contains
+lang: go
+file: PERF-198-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+func IsJSON(r *http.Request) bool {
+	return strings.Contains(r.Header.Get("Content-Type"), "json")
+}

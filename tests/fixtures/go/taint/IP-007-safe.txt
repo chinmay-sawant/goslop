@@ -1,0 +1,18 @@
+# IP-007: Recursive chain — safe (constant arg)
+lang: go
+file: IP-007-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func process(s string, depth int) {
+    if depth > 5 { return }
+    os.Open(s)
+    process(s, depth + 1)
+}
+
+func caller() {
+    process("/safe/path", 0)
+}

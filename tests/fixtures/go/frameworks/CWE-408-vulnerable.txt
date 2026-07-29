@@ -1,0 +1,29 @@
+# CWE-408 vulnerable — Incorrect Behavior Order: Early Amplification
+lang: go
+file: CWE-408-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Raw(sql string, values ...interface{}) *GormDB { return db }
+
+func (db *GormDB) Scan(dest interface{}) error { return nil }
+
+func ExportAllOrders(c *GinCtx, db *GormDB) error {
+	tenant := c.Request.URL.Query().Get("tenant")
+	_ = db.Raw("SELECT * FROM orders WHERE tenant_id = ?", tenant).Scan(&[]map[string]interface{}{})
+	auth := c.Request.Header.Get("Authorization")
+	if auth == "" {
+		return http.ErrNotSupported
+	}
+	return nil
+}

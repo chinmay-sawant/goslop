@@ -1,0 +1,16 @@
+# BP-79 positive variant: renamed local cancellation function is passed away without local release
+lang: go
+file: BP-79-variant-vulnerable.go
+variant: renamed-cancel
+---
+package sample
+
+import "context"
+
+func retainCancel(context.CancelFunc) {}
+
+func Derive(parent context.Context) context.Context {
+	ctx, stop := context.WithCancel(parent)
+	retainCancel(stop)
+	return ctx
+}

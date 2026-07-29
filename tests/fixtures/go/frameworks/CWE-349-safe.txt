@@ -1,0 +1,41 @@
+# CWE-349 safe — Acceptance of Extraneous Untrusted Data With Trusted Data (mitigated)
+lang: go
+file: CWE-349-safe.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) First(dest interface{}, conds ...interface{}) error { return nil }
+
+type SignedBundle struct {
+	TrustedAdmin bool `json:"trusted_admin"`
+	Profile      struct {
+		ID   string `json:"id"`
+		Role string `json:"role"`
+	} `json:"profile"`
+}
+
+func PromoteFromBundle(c *GinCtx, db *GormDB) error {
+	var bundle SignedBundle
+	if err := json.NewDecoder(c.Request.Body).Decode(&bundle); err != nil {
+		return err
+	}
+	if !bundle.TrustedAdmin {
+		return errors.New("untrusted bundle")
+	}
+	if bundle.Profile.Role != "support" {
+		return errors.New("role not allowed from trusted channel")
+	}
+	return db.First(nil, "UPDATE users SET role = ? WHERE id = ?", bundle.Profile.Role, bundle.Profile.ID)
+}

@@ -1,0 +1,12 @@
+# BP-105 positive variant: a refresh token has Secure but not HttpOnly.
+lang: go
+file: BP-105-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func issue(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{Name: "refresh_token", Secure: true, Path: "/"})
+}

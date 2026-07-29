@@ -1,0 +1,26 @@
+# CWE-385 vulnerable — Covert Timing Channel
+lang: go
+file: CWE-385-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func CheckApiSecret(c *GinCtx, expected string) bool {
+	provided := c.Request.Header.Get("X-Api-Secret")
+	if len(provided) != len(expected) {
+		return false
+	}
+	for i := 0; i < len(provided); i++ {
+		if provided[i] != expected[i] {
+			return false
+		}
+	}
+	return true
+}

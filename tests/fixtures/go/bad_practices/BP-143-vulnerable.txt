@@ -1,0 +1,12 @@
+# BP-143 positive: a go-redis Get Result is invoked as a bare expression.
+lang: go
+file: BP-143-vulnerable.go
+variant: redis-get-result-bare
+---
+package sample
+
+import "github.com/redis/go-redis/v9"
+
+func loadName(rdb *redis.Client, key string) {
+	rdb.Get(nil, key).Result()
+}

@@ -1,0 +1,21 @@
+# PERF-74 positive: db.Find inside handler with no Select clause
+lang: go
+file: PERF-074-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func ListUsers(c echo.Context, db *gorm.DB) error {
+	var users []User
+	db.Find(&users)
+	return c.String(200, "ok")
+}

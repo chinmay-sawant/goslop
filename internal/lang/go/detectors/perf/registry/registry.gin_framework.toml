@@ -1,0 +1,101 @@
+# PERF registry — domain: gin_framework
+
+[[detector]]
+perf = 51
+domain = "gin_framework"
+function = "detect_perf_51"
+
+[[detector]]
+perf = 52
+domain = "gin_framework"
+function = "detect_perf_52"
+
+[[detector]]
+perf = 53
+domain = "gin_framework"
+function = "detect_perf_53"
+
+[[detector]]
+perf = 54
+domain = "gin_framework"
+function = "detect_perf_54"
+
+[[detector]]
+perf = 55
+domain = "gin_framework"
+function = "detect_perf_55"
+
+[[detector]]
+perf = 56
+domain = "gin_framework"
+function = "detect_perf_56"
+
+[[detector]]
+perf = 57
+domain = "gin_framework"
+function = "detect_perf_57"
+
+[[detector]]
+perf = 58
+domain = "gin_framework"
+function = "detect_perf_58"
+
+[[detector]]
+perf = 59
+domain = "gin_framework"
+function = "detect_perf_59"
+
+[[detector]]
+perf = 60
+domain = "gin_framework"
+function = "detect_perf_60"
+
+[[detector]]
+perf = 61
+domain = "gin_framework"
+function = "detect_perf_61"
+
+[[detector]]
+perf = 62
+domain = "gin_framework"
+function = "detect_perf_62"
+
+[[detector]]
+perf = 63
+domain = "gin_framework"
+function = "detect_perf_63"
+
+[[detector]]
+perf = 64
+domain = "gin_framework"
+function = "detect_perf_64"
+
+[[detector]]
+perf = 65
+domain = "gin_framework"
+function = "detect_perf_65"
+
+[[detector]]
+perf = 66
+domain = "gin_framework"
+function = "detect_perf_66"
+
+[[detector]]
+perf = 67
+domain = "gin_framework"
+function = "detect_perf_67"
+
+[[detector]]
+perf = 68
+domain = "gin_framework"
+function = "detect_perf_68"
+
+[[detector]]
+perf = 69
+domain = "gin_framework"
+function = "detect_perf_69"
+
+[[detector]]
+perf = 70
+domain = "gin_framework"
+function = "detect_perf_70"

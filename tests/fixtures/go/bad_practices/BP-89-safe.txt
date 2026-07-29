@@ -1,0 +1,10 @@
+# BP-89 negative: one function owns the single close
+lang: go
+file: BP-89-safe.go
+variant: stdlib
+---
+package sample
+
+func finish(done chan struct{}) {
+	close(done)
+}

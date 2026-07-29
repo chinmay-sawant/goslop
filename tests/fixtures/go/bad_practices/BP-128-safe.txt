@@ -1,0 +1,24 @@
+# BP-128 negative: sql.ErrNoRows is mapped separately from other failures.
+lang: go
+file: BP-128-safe.go
+variant: database-sql-not-found
+---
+package sample
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+)
+
+func findUser(db *sql.DB, id int) (string, error) {
+	var name string
+	err := db.QueryRow("SELECT name FROM users WHERE id = ?", id).Scan(&name)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", fmt.Errorf("user not found: %w", err)
+	}
+	if err != nil {
+		return "", fmt.Errorf("lookup failed: %w", err)
+	}
+	return name, nil
+}

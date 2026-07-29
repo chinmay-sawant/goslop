@@ -1,0 +1,29 @@
+# CWE-184 positive: incomplete disallowed keyword list (pure stdlib)
+lang: go
+file: CWE-184-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+var forbidden = []string{"drop", "delete"}
+
+// CWE-184 Incomplete List of Disallowed Inputs
+// Vulnerable line: blocklist misses uppercase and synonym verbs.
+func FilterStatement(w http.ResponseWriter, r *http.Request) {
+	clause := strings.ToLower(r.FormValue("clause"))
+	for _, word := range forbidden {
+		if strings.Contains(clause, word) {
+			http.Error(w, "blocked", http.StatusBadRequest)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"accepted": clause})
+}

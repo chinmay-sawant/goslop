@@ -1,0 +1,16 @@
+# CWE-601: open redirect via unvalidated next query parameter.
+lang: go
+file: CWE-601-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func OAuthCallback(c *gin.Context) {
+	target := c.Query("next")
+	c.Redirect(http.StatusFound, target)
+}

@@ -1,0 +1,27 @@
+# CWE-353 vulnerable: Missing Support for Integrity Check (positive, pure stdlib)
+lang: go
+file: CWE-353-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"io"
+	"net/http"
+)
+
+func ReceiveAgentReport(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+	_, err = db.Exec("INSERT INTO agent_reports (payload) VALUES (?)", string(body))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusAccepted)
+	return nil
+}

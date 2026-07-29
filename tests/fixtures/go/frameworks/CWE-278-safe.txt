@@ -1,0 +1,32 @@
+# CWE-278 — Insecure Preserved Inherited Permissions (safe)
+lang: go
+file: CWE-278-safe.go
+---
+package sample
+
+import (
+	"archive/tar"
+	"io"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: clamps permissions after extraction instead of trusting archive metadata.
+func ExtractBundle(c *gin.Context, r io.Reader) {
+	tr := tar.NewReader(r)
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			break
+		}
+		f, _ := os.OpenFile(hdr.Name, os.O_CREATE|os.O_WRONLY, 0640)
+		_, _ = io.Copy(f, tr)
+		f.Close()
+		_ = os.Chmod(hdr.Name, 0640)
+	}
+	c.JSON(200, gin.H{"extracted": true})
+}

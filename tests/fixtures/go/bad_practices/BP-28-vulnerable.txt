@@ -1,0 +1,10 @@
+# BP-28 positive: explicit opt-in flags an interface with a single method
+lang: go
+file: BP-28-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type callback interface {
+	Run()
+}

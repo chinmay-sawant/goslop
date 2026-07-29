@@ -1,0 +1,18 @@
+# IP-011: Pointer aliasing — callee writes constant through *p (safe)
+lang: go
+file: IP-011-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func caller() {
+    x := ""
+    mutate(&x)
+    os.Open(x)
+}
+
+func mutate(p *string) {
+    *p = "/safe/path"
+}

@@ -1,0 +1,30 @@
+# CWE-524 positive: process-wide cache of bearer tokens (pure stdlib)
+lang: go
+file: CWE-524-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var (
+	tokenVault   = map[string]string{}
+	tokenVaultMu sync.Mutex
+)
+
+func StoreSessionToken(w http.ResponseWriter, r *http.Request) {
+	tokenVaultMu.Lock()
+	tokenVault[r.Header.Get("X-UID")] = r.Header.Get("Authorization")
+	tokenVaultMu.Unlock()
+	w.WriteHeader(http.StatusOK)
+}
+
+func FetchSessionToken(w http.ResponseWriter, r *http.Request) {
+	tokenVaultMu.Lock()
+	tok := tokenVault[r.URL.Query().Get("uid")]
+	tokenVaultMu.Unlock()
+	w.Write([]byte(tok))
+}

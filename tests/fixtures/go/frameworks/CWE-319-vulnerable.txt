@@ -1,0 +1,27 @@
+# CWE-319 — Cleartext Transmission of Sensitive Information (vulnerable)
+lang: go
+file: CWE-319-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type cardPayload struct {
+	Number string `json:"number"`
+	CVV    string `json:"cvv"`
+}
+
+// Vulnerable: serves PAN/CVV over plain HTTP listener.
+func StartPaymentsAPI(r *gin.Engine) {
+	r.POST("/pay", func(c *gin.Context) {
+		var p cardPayload
+		_ = json.Unmarshal([]byte(c.PostForm("payload")), &p)
+		c.JSON(200, gin.H{"charged": true})
+	})
+	_ = http.ListenAndServe(":8080", r)
+}

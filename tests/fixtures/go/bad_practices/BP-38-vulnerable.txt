@@ -1,0 +1,10 @@
+# BP-38 positive: unexported helper is never called
+lang: go
+file: BP-38-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func helper() int {
+	return 1
+}

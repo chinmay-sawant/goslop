@@ -1,0 +1,27 @@
+# PERF-214 negative: cache key is stable
+lang: go
+file: PERF-214-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+type Entry struct {
+	ID string
+}
+
+func Render(entry Entry) int {
+	var cache sync.Map
+	key := entry.ID
+	if v, ok := cache.Load(key); ok {
+		return v.(int)
+	}
+	cache.Store(key, len(entry.ID))
+	return len(entry.ID)
+}
+
+func StableValue(item Entry) string {
+	pointer := &item
+	return pointer.ID
+}

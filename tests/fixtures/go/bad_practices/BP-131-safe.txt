@@ -1,0 +1,18 @@
+# BP-131 negative: Exec is used for a DML statement that does not return rows.
+lang: go
+file: BP-131-safe.go
+variant: database-sql
+---
+package sample
+
+import "database/sql"
+
+import "fmt"
+
+func archive(db *sql.DB, name string) error {
+	_, err := db.Exec("INSERT INTO accounts(name) VALUES (?)", name)
+	if err != nil {
+		return fmt.Errorf("archive: %w", err)
+	}
+	return nil
+}

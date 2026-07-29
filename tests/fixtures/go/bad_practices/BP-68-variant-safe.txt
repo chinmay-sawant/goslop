@@ -1,0 +1,13 @@
+# BP-68 safe variant: the combined error is assigned and returned.
+lang: go
+file: BP-68-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "errors"
+
+func combine(first, second error) error {
+	combined := errors.Join(first, second)
+	return combined
+}

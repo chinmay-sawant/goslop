@@ -1,0 +1,28 @@
+# CWE-1289 vulnerable: path equivalence bypass
+lang: go
+file: CWE-1289-vulnerable.go
+---
+package sample
+
+// CWE-1289: Improper Validation of Unsafe Equivalence in Input.
+// Vulnerable: resource id compared literally without filepath.Clean normalization.
+
+import (
+	"net/http"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func FetchSharedAsset() gin.HandlerFunc {
+	root := "/srv/assets/public"
+	return func(c *gin.Context) {
+		requested := c.Param("path")
+		if requested == "private/keys.pem" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "blocked"})
+			return
+		}
+		full := filepath.Join(root, requested)
+		c.File(full)
+	}
+}

@@ -1,0 +1,28 @@
+# CWE-552: uploaded documents stored with world-readable permissions.
+lang: go
+file: CWE-552-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SaveContract(c *gin.Context) {
+	file, err := c.FormFile("contract")
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	dest := filepath.Join("/srv/contracts", file.Filename)
+	if err := c.SaveUploadedFile(file, dest); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	_ = os.Chmod(dest, 0o777)
+	c.Status(http.StatusOK)
+}

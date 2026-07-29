@@ -1,0 +1,41 @@
+# CWE-1240 safe: standard AES-GCM encryption
+lang: go
+file: CWE-1240-safe.go
+---
+package sample
+
+// CWE-1240 mitigated: aes/gcm from the standard library protects session tokens.
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func SealSessionTokenSafe(key []byte) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := c.PostForm("token")
+		block, err := aes.NewCipher(key)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		nonce := make([]byte, gcm.NonceSize())
+		if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		sealed := gcm.Seal(nonce, nonce, []byte(token), nil)
+		c.JSON(http.StatusOK, gin.H{"sealed": base64.StdEncoding.EncodeToString(sealed)})
+	}
+}

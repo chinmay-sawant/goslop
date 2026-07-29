@@ -1,0 +1,39 @@
+# CWE-1286 positive: accepts malformed JSON config (pure stdlib)
+lang: go
+file: CWE-1286-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1286: Improper Validation of Syntactic Correctness of Input.
+// Vulnerable: webhook config JSON unmarshaled without schema or field checks.
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type HookConfigPure struct {
+	URL     string `json:"url"`
+	Enabled bool   `json:"enabled"`
+}
+
+func SaveHookConfigPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var cfg HookConfigPure
+		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec(
+			"INSERT INTO hook_configs (url, enabled) VALUES ($1, $2)", cfg.URL, cfg.Enabled,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"saved":true}`))
+	}
+}

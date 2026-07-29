@@ -1,0 +1,22 @@
+# BP-163 negative variant: the renamed update flag is guarded by testing.Short.
+lang: go
+file: BP-163-variant-safe_test.go
+variant: renamed-update-with-short
+---
+package snapshots
+
+import (
+	"flag"
+	"os"
+	"testing"
+)
+
+var updateGolden = flag.Bool("update-golden", false, "rewrite snapshots")
+
+func TestSnapshot(t *testing.T) {
+	if *updateGolden && !testing.Short() {
+		if _, err := os.Create("testdata/snapshot.json"); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

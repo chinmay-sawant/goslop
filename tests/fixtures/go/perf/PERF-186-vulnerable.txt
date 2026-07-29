@@ -1,0 +1,18 @@
+# PERF-186 positive: strings.Fields inside a request handler
+lang: go
+file: PERF-186-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	tags := r.URL.Query().Get("tags")
+	parts := strings.Fields(tags)
+	_ = parts
+	w.WriteHeader(200)
+}

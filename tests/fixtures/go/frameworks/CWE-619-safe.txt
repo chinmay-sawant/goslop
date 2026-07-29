@@ -1,0 +1,30 @@
+# CWE-619: Dangling Database Cursor ('Cursor Injection') (mitigated)
+lang: go
+file: CWE-619-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: rows are always closed via defer.
+func ListOrders(c *gin.Context, db *sql.DB) {
+	rows, err := db.Query("SELECT id, total FROM orders WHERE owner_id = $1", c.Query("owner"))
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	var id int
+	var total float64
+	_ = rows.Scan(&id, &total)
+	c.JSON(http.StatusOK, gin.H{"id": id, "total": total})
+}

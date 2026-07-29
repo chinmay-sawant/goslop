@@ -1,0 +1,32 @@
+# BP-1 negative: error is handled; non-error blanks ignored
+lang: go
+file: BP-1-safe.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+// WriteFile persists data and returns any write failure.
+func WriteFile(path string, data []byte) error {
+	return os.WriteFile(path, data, 0644)
+}
+
+// HandledMulti reads a file and keeps the error return bound.
+func HandledMulti(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	// blank is not the error return
+	n, err := os.Stdout.Write(data)
+	_ = n
+	return data, err
+}
+
+// BuiltinBlank discards non-error builtin results only.
+func BuiltinBlank(s string) int {
+	// builtins are not error-returning for this rule
+	_ = len(s)
+	return len(s)
+}

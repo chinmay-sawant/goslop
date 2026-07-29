@@ -1,0 +1,25 @@
+# CWE-708: Incorrect Ownership Assignment (pure stdlib)
+lang: go
+file: CWE-708-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"strconv"
+)
+
+// Vulnerable: uploaded file ownership is assigned to a client-provided uid.
+// No validation ties the target path to an application-controlled directory.
+func FinishUpload(w http.ResponseWriter, r *http.Request) {
+	dest := r.FormValue("dest")
+	owner := r.FormValue("owner_uid")
+	uid, _ := strconv.Atoi(owner)
+	if err := os.Chown(dest, uid, uid); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

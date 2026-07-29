@@ -1,0 +1,29 @@
+# CWE-267 — Privilege Defined With Unsafe Actions (safe)
+lang: go
+file: CWE-267-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Review struct {
+	ID     uint
+	Status string
+}
+
+// Safe: reviewer role limited to updating review records in the database.
+func ReviewerUpdate(c *gin.Context, db *gorm.DB) {
+	if c.GetString("role") != "reviewer" {
+		c.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+	id := c.Param("id")
+	var rev Review
+	db.First(&rev, id)
+	rev.Status = c.PostForm("status")
+	db.Save(&rev)
+	c.JSON(200, gin.H{"id": rev.ID})
+}

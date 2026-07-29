@@ -1,0 +1,17 @@
+# PERF-067 positive: gin.New() without gin.Recovery()
+lang: go
+file: PERF-067-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+func BuildRouterNoRecovery() *gin.Engine {
+	r := gin.New()
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
+	return r
+}

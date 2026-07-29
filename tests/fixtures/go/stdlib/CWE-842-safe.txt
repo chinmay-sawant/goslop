@@ -1,0 +1,28 @@
+# CWE-842: Placement of User into Incorrect Group (mitigated, pure stdlib)
+lang: go
+file: CWE-842-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Member struct {
+	Email string `json:"email"`
+	Group string `json:"group"`
+}
+
+var members []Member
+
+// Safe: new accounts receive the standard members group by default.
+func RegisterMember(w http.ResponseWriter, r *http.Request) {
+	email := r.FormValue("email")
+	member := Member{Email: email, Group: "members"}
+	members = append(members, member)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(member)
+}

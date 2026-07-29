@@ -1,0 +1,16 @@
+# PERF-023 negative: use bytes.NewReader inline without short-lived variable
+lang: go
+file: PERF-023-safe.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Echo(c *gin.Context) {
+	io.Copy(c.Writer, bytes.NewReader([]byte("ok")))
+}

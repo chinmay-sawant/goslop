@@ -1,0 +1,18 @@
+# PERF-188 negative: strconv.ParseInt replaces fmt.Sscanf
+lang: go
+file: PERF-188-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strconv"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("n")
+	n, _ := strconv.ParseInt(raw, 10, 64)
+	w.WriteHeader(200)
+	_ = n
+}

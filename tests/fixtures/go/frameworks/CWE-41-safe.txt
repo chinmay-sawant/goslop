@@ -1,0 +1,36 @@
+# CWE-41 negative: canonical path checked under root
+lang: go
+file: CWE-41-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-41 Improper Resolution of Path Equivalence (mitigated)
+func ReadSharedNote(c *gin.Context) {
+	root := "/srv/notes"
+	rel := c.Query("path")
+	full, err := filepath.Abs(filepath.Join(root, rel))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad path"})
+		return
+	}
+	rootAbs, err := filepath.Abs(root)
+	if err != nil || !strings.HasPrefix(full, rootAbs+string(os.PathSeparator)) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad path"})
+		return
+	}
+	body, err := os.ReadFile(full)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.String(http.StatusOK, string(body))
+}

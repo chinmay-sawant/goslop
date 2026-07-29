@@ -1,0 +1,27 @@
+# CWE-807: Reliance on Untrusted Inputs in a Security Decision (mitigated, pure stdlib)
+lang: go
+file: CWE-807-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+var blockedIPs = map[string]struct{}{"203.0.113.50": {}}
+
+// Safe: uses RemoteAddr from the trusted connection rather than a spoofable header.
+// Reverse proxies should normalize trusted client addresses at the edge.
+func GateSensitiveAction(w http.ResponseWriter, r *http.Request) {
+	clientIP := r.RemoteAddr
+	if clientIP == "" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	if _, blocked := blockedIPs[clientIP]; blocked {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

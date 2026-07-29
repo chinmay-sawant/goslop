@@ -1,0 +1,16 @@
+# BP-98 negative variant: returning the file transfers ownership
+lang: go
+file: BP-98-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func openConfig(path string) (*os.File, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
+}

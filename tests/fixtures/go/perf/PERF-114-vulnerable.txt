@@ -1,0 +1,21 @@
+# PERF-114 positive: manual for-range copy that should be copy()
+lang: go
+file: PERF-114-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Copy(src []int) []int {
+	dst := make([]int, len(src))
+	for i, v := range src {
+		dst[i] = v
+	}
+	return dst
+}
+
+func _() {
+	out := Copy([]int{1, 2, 3})
+	fmt.Println(out)
+}

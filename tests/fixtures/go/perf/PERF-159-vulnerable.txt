@@ -1,0 +1,36 @@
+# PERF-159 positive: json.NewDecoder over a pre-buffered bytes.Reader
+lang: go
+file: PERF-159-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/json"
+	"net/http"
+)
+
+type Payload struct {
+	Name string `json:"name"`
+}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	body, _ := readAll(r.Body)
+	dec := json.NewDecoder(bytes.NewReader(body))
+	var p Payload
+	_ = dec.Decode(&p)
+	w.WriteHeader(200)
+}
+
+func readAll(r interface{ Read(p []byte) (int, error) }) ([]byte, error) {
+	buf := make([]byte, 1024)
+	out := make([]byte, 0, 1024)
+	for {
+		n, err := r.Read(buf)
+		out = append(out, buf[:n]...)
+		if err != nil {
+			return out, err
+		}
+	}
+}

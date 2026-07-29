@@ -1,0 +1,29 @@
+# CWE-551: path canonicalized before role check.
+lang: go
+file: CWE-551-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"net/url"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func AdminGate(c *gin.Context) {
+	raw := c.Request.URL.Path
+	clean, err := url.PathUnescape(raw)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	clean = strings.ReplaceAll(clean, "//", "/")
+	if !strings.HasPrefix(clean, "/admin") {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	c.Request.URL.Path = clean
+	c.Next()
+}

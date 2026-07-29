@@ -1,0 +1,21 @@
+# PERF-020 negative: reflect types cached at startup; no per-request reflection
+lang: go
+file: PERF-020-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"reflect"
+
+	"github.com/gin-gonic/gin"
+)
+
+// reflection initialised at startup
+var bodyType = reflect.TypeOf(map[string]any{"ok": true})
+
+func Echo(c *gin.Context) {
+	body := map[string]any{"ok": true}
+	_ = bodyType
+	c.JSON(http.StatusOK, body)
+}

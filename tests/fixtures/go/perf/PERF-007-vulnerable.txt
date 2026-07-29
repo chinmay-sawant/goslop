@@ -1,0 +1,18 @@
+# PERF-007 positive: defer inside loop
+lang: go
+file: PERF-007-vulnerable.go
+---
+package sample
+
+import "os"
+
+func CloseAll(paths []string) error {
+	for _, p := range paths {
+		f, err := os.Open(p)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+	}
+	return nil
+}

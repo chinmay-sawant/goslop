@@ -1,0 +1,40 @@
+# CWE-1236 vulnerable: CSV formula injection
+lang: go
+file: CWE-1236-vulnerable.go
+---
+package sample
+
+// CWE-1236: Improper Neutralization of Formula Elements in a CSV File.
+// Vulnerable: user comment written directly into CSV cell starting with =.
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Feedback struct {
+	ID      uint
+	Comment string
+}
+
+func ExportFeedbackCSV(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var rows []Feedback
+		if err := db.Find(&rows).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		var b strings.Builder
+		b.WriteString("id,comment\n")
+		for _, row := range rows {
+			line := fmt.Sprintf("%d,%s\n", row.ID, row.Comment)
+			b.WriteString(line)
+		}
+		c.Header("Content-Type", "text/csv")
+		c.String(http.StatusOK, b.String())
+	}
+}

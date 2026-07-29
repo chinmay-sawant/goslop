@@ -1,0 +1,26 @@
+# CWE-356 vulnerable — Product UI does not Warn User of Unsafe Actions
+lang: go
+file: CWE-356-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+	Writer  http.ResponseWriter
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Delete(value interface{}, conds ...interface{}) error { return nil }
+
+func PurgeTenant(c *GinCtx, db *GormDB) error {
+	tenant := c.Request.URL.Query().Get("tenant")
+	db.Delete(nil, "DELETE FROM tenants WHERE slug = ?", tenant)
+	c.Writer.WriteHeader(http.StatusOK)
+	_, _ = c.Writer.Write([]byte(`{"purged":true}`))
+	return nil
+}

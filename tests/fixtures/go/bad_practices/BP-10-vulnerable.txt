@@ -1,0 +1,18 @@
+# BP-10 positive: time.After inside loop
+lang: go
+file: BP-10-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func Poll(stop <-chan struct{}) {
+	for {
+		select {
+		case <-time.After(time.Second):
+		case <-stop:
+			return
+		}
+	}
+}

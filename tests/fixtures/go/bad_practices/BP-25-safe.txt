@@ -1,0 +1,17 @@
+# BP-25 negative: helper owns the failure path
+lang: go
+file: BP-25-safe_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func helper(t *testing.T) {
+	t.Helper()
+	t.Fatal("boom")
+}
+
+func TestHelperError(t *testing.T) {
+	helper(t)
+}

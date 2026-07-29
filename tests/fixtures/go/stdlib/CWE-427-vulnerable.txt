@@ -1,0 +1,24 @@
+# CWE-427 positive: PATH prepended from POST body (pure stdlib)
+lang: go
+file: CWE-427-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"os/exec"
+)
+
+func RenderReportPDF(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	userBin := r.FormValue("helper_path")
+	_ = os.Setenv("PATH", userBin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	cmd := exec.Command("pdftopng", r.FormValue("input"))
+	if err := cmd.Run(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

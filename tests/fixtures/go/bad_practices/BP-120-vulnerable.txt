@@ -1,0 +1,18 @@
+# BP-120 positive: Fiber BodyParser is used as a bare statement.
+lang: go
+file: BP-120-vulnerable.go
+variant: fiber
+---
+package sample
+
+import "github.com/gofiber/fiber/v2"
+
+type Request struct {
+	Token string `json:"token"`
+}
+
+func create(c *fiber.Ctx) error {
+	var request Request
+	c.BodyParser(&request)
+	return c.SendStatus(204)
+}

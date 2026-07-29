@@ -1,0 +1,27 @@
+# CWE-378 safe — Creation of Temporary File With Insecure Permissions (mitigated)
+lang: go
+file: CWE-378-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func CacheExportChunk(c *GinCtx) error {
+	f, err := os.CreateTemp("", "export-*.bin")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if err := os.Chmod(f.Name(), 0600); err != nil {
+		return err
+	}
+	_, err = f.Write([]byte(c.Request.PostFormValue("chunk")))
+	return err
+}

@@ -1,0 +1,29 @@
+# CWE-331 safe — Insufficient Entropy (mitigated)
+lang: go
+file: CWE-331-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"io"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Create(value interface{}) error { return nil }
+
+func IssueRecoveryCode(c *GinCtx, db *GormDB) error {
+	buf := make([]byte, 16)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		return err
+	}
+	code := hex.EncodeToString(buf)
+	return db.Create(map[string]string{"email": c.Request.PostFormValue("email"), "code": code})
+}

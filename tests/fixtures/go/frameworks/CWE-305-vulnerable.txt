@@ -1,0 +1,24 @@
+# CWE-305 — Authentication Bypass by Primary Weakness (vulnerable)
+lang: go
+file: CWE-305-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Vulnerable: debug flag in query skips JWT middleware entirely.
+func AdminDashboard(c *gin.Context, db *gorm.DB) {
+	if c.Query("debug") == "1" {
+		db.Exec("UPDATE settings SET maintenance = 1")
+		c.JSON(200, gin.H{"maintenance": true})
+		return
+	}
+	if c.GetString("jwt_sub") == "" {
+		c.JSON(401, gin.H{"error": "auth"})
+		return
+	}
+	c.JSON(200, gin.H{"panel": "admin"})
+}

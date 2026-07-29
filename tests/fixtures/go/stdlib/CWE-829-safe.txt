@@ -1,0 +1,46 @@
+# CWE-829: Inclusion of Functionality from Untrusted Control Sphere (mitigated, pure stdlib)
+lang: go
+file: CWE-829-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"path/filepath"
+	"plugin"
+)
+
+var allowedModules = map[string]struct{}{
+	"reports.so": {},
+	"metrics.so": {},
+}
+
+const moduleRoot = "/opt/app/modules"
+
+// Safe: only allowlisted modules under a fixed directory may be loaded.
+func LoadExtension(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("module")
+	if _, ok := allowedModules[name]; !ok {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	full := filepath.Join(moduleRoot, filepath.Clean(name))
+	if !filepath.HasPrefix(full, moduleRoot) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	p, err := plugin.Open(full)
+	if err != nil {
+		http.Error(w, "load failed", http.StatusBadRequest)
+		return
+	}
+	sym, err := p.Lookup("Init")
+	if err != nil {
+		http.Error(w, "init missing", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]bool{"loaded": sym != nil})
+}

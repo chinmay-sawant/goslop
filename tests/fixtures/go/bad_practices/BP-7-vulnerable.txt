@@ -1,0 +1,13 @@
+# BP-7 positive: sync.Mutex passed by value
+lang: go
+file: BP-7-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func LockCopy(mu sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
+}

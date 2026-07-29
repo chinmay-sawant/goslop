@@ -1,0 +1,35 @@
+# CWE-425: admin export sits behind explicit authorization middleware.
+lang: go
+file: CWE-425-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func MountAdminExports(r *gin.Engine, db *sqlx.DB) {
+	admin := r.Group("/internal/admin", requireAdmin())
+	admin.GET("/export.csv", func(c *gin.Context) {
+		rows, err := db.Queryx("SELECT email, ssn FROM customers")
+		if err != nil {
+			c.String(http.StatusInternalServerError, "export failed")
+			return
+		}
+		defer rows.Close()
+		c.JSON(http.StatusOK, rows)
+	})
+}
+
+func requireAdmin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.GetString("role") != "admin" {
+			c.AbortWithStatus(http.StatusForbidden)
+			return
+		}
+		c.Next()
+	}
+}

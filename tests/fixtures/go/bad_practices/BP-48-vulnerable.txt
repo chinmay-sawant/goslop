@@ -1,0 +1,12 @@
+# BP-48 positive: library function exits the process
+lang: go
+file: BP-48-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "log"
+
+func stop() {
+	log.Fatal("boom")
+}

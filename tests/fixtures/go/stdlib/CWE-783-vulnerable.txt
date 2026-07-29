@@ -1,0 +1,25 @@
+# CWE-783: Operator Precedence Logic Error (pure stdlib)
+lang: go
+file: CWE-783-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"strconv"
+)
+
+// Vulnerable: && binds tighter than ||, granting access unintentionally.
+// Authorization should require authentication before any ownership exception.
+func EditDocument(w http.ResponseWriter, r *http.Request) {
+	authenticated := r.Header.Get("Authenticated") == "true"
+	isAdmin := r.Header.Get("Is-Admin") == "true"
+	ownerID, _ := strconv.Atoi(r.Header.Get("Owner-ID"))
+	docOwner, _ := strconv.Atoi(r.Header.Get("Doc-Owner"))
+	if !authenticated || isAdmin && ownerID == docOwner {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

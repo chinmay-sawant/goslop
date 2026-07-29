@@ -1,0 +1,15 @@
+# PERF-174 negative: close() in the producer and only the consumer reads
+lang: go
+file: PERF-174-safe.go
+variant: stdlib
+---
+package sample
+
+func Produce(ch chan<- int) {
+	ch <- 1
+	close(ch)
+}
+
+func Consume(ch <-chan int) int {
+	return <-ch
+}

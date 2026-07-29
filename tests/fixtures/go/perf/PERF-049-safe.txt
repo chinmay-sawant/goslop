@@ -1,0 +1,13 @@
+# PERF-049 negative: copy is bounded by an explicit length check
+lang: go
+file: PERF-049-safe.go
+---
+package sample
+
+func CopyBounded(dst, src []byte) []byte {
+	if len(src) > len(dst) {
+		return dst
+	}
+	copy(dst, src)
+	return dst
+}

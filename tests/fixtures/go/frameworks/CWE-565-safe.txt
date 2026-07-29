@@ -1,0 +1,30 @@
+# CWE-565: role cookie validated against signed server session before delete.
+lang: go
+file: CWE-565-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func DeleteTenant(c *gin.Context, db *gorm.DB) {
+	roleCookie, err := c.Cookie("role")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	if roleCookie != c.GetString("role") {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	if c.GetString("role") != "admin" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	db.Exec("DELETE FROM tenants WHERE id = ?", c.Param("id"))
+	c.Status(http.StatusOK)
+}

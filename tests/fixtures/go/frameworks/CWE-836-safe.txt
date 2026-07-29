@@ -1,0 +1,40 @@
+# CWE-836: Use of Password Hash Instead of Password for Authentication (mitigated)
+lang: go
+file: CWE-836-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type UserAuth struct {
+	Username     string
+	PasswordHash string
+}
+
+// Safe: verifies a plaintext password against the stored bcrypt hash.
+func Authenticate(c *gin.Context, db *gorm.DB) {
+	var body struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	var row UserAuth
+	if err := db.Where("username = ?", body.Username).First(&row).Error; err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	if bcrypt.CompareHashAndPassword([]byte(row.PasswordHash), []byte(body.Password)) != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	c.Status(http.StatusOK)
+}

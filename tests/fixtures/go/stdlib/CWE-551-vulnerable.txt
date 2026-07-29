@@ -1,0 +1,24 @@
+# CWE-551 positive: admin check on raw path before unescape (pure stdlib)
+lang: go
+file: CWE-551-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+func AdminPathGate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw := r.URL.Path
+		if !strings.HasPrefix(raw, "/admin") {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		clean := strings.ReplaceAll(raw, "%2f", "/")
+		r.URL.Path = clean
+		next.ServeHTTP(w, r)
+	})
+}

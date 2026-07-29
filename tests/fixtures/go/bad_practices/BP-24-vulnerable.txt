@@ -1,0 +1,12 @@
+# BP-24 positive: _test file without a Test function
+lang: go
+file: BP-24-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func helper(t *testing.T) {
+	t.Helper()
+}

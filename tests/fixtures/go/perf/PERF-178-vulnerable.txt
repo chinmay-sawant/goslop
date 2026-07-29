@@ -1,0 +1,14 @@
+# PERF-178 positive: time.Format called twice with the same format string
+lang: go
+file: PERF-178-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+const layout = "2006-01-02 15:04:05"
+
+func TwoFormats(t time.Time) (string, string) {
+	return t.Format(layout), t.Format(layout)
+}

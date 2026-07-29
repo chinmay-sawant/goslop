@@ -1,0 +1,23 @@
+# CWE-89 safe variant: parameterized query with renamed ids
+lang: go
+file: CWE-89-renamed-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// HandleSearch looks up items with a bound parameter.
+func HandleSearch(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	userInput := r.URL.Query().Get("q")
+	rows, err := db.Query("SELECT * FROM items WHERE name = $1", userInput)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+	_ = rows
+}

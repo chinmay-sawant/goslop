@@ -1,0 +1,27 @@
+# CWE-334 vulnerable — Small Space of Random Values
+lang: go
+file: CWE-334-vulnerable.go
+---
+package sample
+
+import (
+	"math/rand"
+	"net/http"
+	"strconv"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) NamedExec(query string, arg interface{}) error { return nil }
+
+func MintInviteToken(c *GinCtx, db *SqlxDB) error {
+	token := strconv.Itoa(rand.Intn(4096))
+	return db.NamedExec("INSERT INTO invites (token, owner) VALUES (:token, :owner)", map[string]string{
+		"token": token,
+		"owner": c.Request.URL.Query().Get("owner"),
+	})
+}

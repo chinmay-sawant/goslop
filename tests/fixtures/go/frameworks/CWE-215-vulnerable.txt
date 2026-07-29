@@ -1,0 +1,20 @@
+# CWE-215 positive: debug logging prints session secret
+lang: go
+file: CWE-215-vulnerable.go
+---
+package sample
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-215 Insertion of Sensitive Information Into Debugging Code
+// Vulnerable line: debug log includes session secret from header.
+func DebugSession(c *gin.Context) {
+	secret := c.GetHeader("X-Session-Secret")
+	log.Printf("session debug secret=%s path=%s", secret, c.Request.URL.Path)
+	c.JSON(http.StatusOK, gin.H{"status": "logged"})
+}

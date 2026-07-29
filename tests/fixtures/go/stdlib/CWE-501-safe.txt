@@ -1,0 +1,31 @@
+# CWE-501 negative: approval kept separate from request payload (pure stdlib)
+lang: go
+file: CWE-501-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type payoutRequest struct {
+	Amount float64 `json:"amount"`
+	Memo   string  `json:"memo"`
+}
+
+type payoutDecision struct {
+	Approved bool          `json:"approved"`
+	Request  payoutRequest `json:"request"`
+}
+
+func QueuePayout(w http.ResponseWriter, r *http.Request) {
+	var req payoutRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	out := payoutDecision{Approved: true, Request: req}
+	_ = json.NewEncoder(w).Encode(out)
+}

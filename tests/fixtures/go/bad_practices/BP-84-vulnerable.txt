@@ -1,0 +1,11 @@
+# BP-84 positive: integer division truncates before percentage scaling
+lang: go
+file: BP-84-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func completionPercent(completed, total int) int {
+	percent := completed / total * 100
+	return percent
+}

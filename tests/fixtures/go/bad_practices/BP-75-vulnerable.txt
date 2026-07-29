@@ -1,0 +1,12 @@
+# BP-75 positive: copy writes into a destination with statically known length zero
+lang: go
+file: BP-75-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func CopyValues() []int {
+	destination := make([]int, 0)
+	copy(destination, []int{1, 2, 3})
+	return destination
+}

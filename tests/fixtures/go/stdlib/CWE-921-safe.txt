@@ -1,0 +1,36 @@
+# CWE-921 negative: restricted secret file permissions (pure stdlib)
+lang: go
+file: CWE-921-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-921 mitigated: secrets stored under private directory with mode 0600.
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func StoreIntegrationKeySafePure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		key := r.FormValue("api_key")
+		dir := filepath.Join(os.Getenv("APP_SECRET_DIR"), "integrations")
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		path := filepath.Join(dir, "integration.key")
+		if err := os.WriteFile(path, []byte(key), 0600); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"stored":true}`))
+	}
+}

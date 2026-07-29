@@ -1,0 +1,18 @@
+# PERF-043 positive: defer-recover inside a per-request handler
+lang: go
+file: PERF-043-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Handler(c *gin.Context) {
+	defer func() {
+		_ = recover()
+	}()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

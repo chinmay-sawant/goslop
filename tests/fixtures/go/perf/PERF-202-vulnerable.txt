@@ -1,0 +1,21 @@
+# PERF-202 positive: json.MarshalIndent in a request handler
+lang: go
+file: PERF-202-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Response struct {
+	Name string `json:"name"`
+}
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	out, _ := json.MarshalIndent(Response{Name: "x"}, "", "  ")
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
+}

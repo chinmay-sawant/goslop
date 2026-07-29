@@ -1,0 +1,19 @@
+# PERF-241 positive: ASN.1 marshal with time.Now on signing path
+lang: go
+file: PERF-241-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"encoding/asn1"
+	"time"
+)
+
+func SignPayload(digest []byte) ([]byte, error) {
+	_ = time.Now().UTC()
+	type signedData struct {
+		Digest []byte
+	}
+	return asn1.Marshal(signedData{Digest: digest})
+}

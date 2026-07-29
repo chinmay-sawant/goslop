@@ -1,0 +1,18 @@
+# PERF-83 negative: StructScan with a typed destination via db.Select
+lang: go
+file: PERF-083-safe.go
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct {
+	ID    int64  `db:"id"`
+	Email string `db:"email"`
+}
+
+func ListUsers(db *sqlx.DB) ([]User, error) {
+	var users []User
+	err := db.Select(&users, "SELECT id, email FROM users")
+	return users, err
+}

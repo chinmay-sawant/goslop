@@ -1,0 +1,29 @@
+# CWE-209 negative: generic client error without internals (pure stdlib)
+lang: go
+file: CWE-209-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"log"
+	"net/http"
+)
+
+// CWE-209 Generation of Error Message Containing Sensitive Information (mitigated)
+func InsertReservation(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	ref := r.FormValue("ref")
+	_, err := db.Exec("INSERT INTO reservations(ref) VALUES(?)", ref)
+	if err != nil {
+		log.Printf("reservation insert failed: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "could not create reservation"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "created"})
+}

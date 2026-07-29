@@ -1,0 +1,35 @@
+# CWE-213 negative: policy-specific DTO hides salary from guests (pure stdlib)
+lang: go
+file: CWE-213-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type staffProfile struct {
+	FullName string `json:"full_name"`
+	Unit     string `json:"unit"`
+	Comp     int    `json:"comp"`
+}
+
+type directoryEntry struct {
+	FullName string `json:"full_name"`
+	Unit     string `json:"unit"`
+}
+
+// CWE-213 Exposure of Sensitive Information Due to Incompatible Policies (mitigated)
+func ShowColleague(w http.ResponseWriter, r *http.Request, roster map[string]staffProfile) {
+	id := r.PathValue("id")
+	profile, ok := roster[id]
+	if !ok {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(directoryEntry{FullName: profile.FullName, Unit: profile.Unit})
+}

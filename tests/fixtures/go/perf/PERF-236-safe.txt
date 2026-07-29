@@ -1,0 +1,11 @@
+# PERF-236 negative: signing mutates an owned writable buffer
+lang: go
+file: PERF-236-safe.go
+variant: stdlib
+---
+package sample
+
+func SignDocument(doc []byte) []byte {
+	copy(doc[10:20], []byte("patched"))
+	return doc
+}

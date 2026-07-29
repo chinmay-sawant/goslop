@@ -1,0 +1,19 @@
+# PERF-78 negative: query is annotated as index-backed
+lang: go
+file: PERF-078-safe.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Email string
+}
+
+func FindByID(db *gorm.DB, id uint) (User, error) {
+	// index-backed
+	var u User
+	err := db.Raw("SELECT * FROM users WHERE id = ?", id).Scan(&u).Error
+	return u, err
+}

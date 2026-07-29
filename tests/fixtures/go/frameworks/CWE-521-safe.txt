@@ -1,0 +1,52 @@
+# CWE-521: strong password policy enforced before persistence.
+lang: go
+file: CWE-521-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"unicode"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type signupBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func RegisterUser(c *gin.Context, db *gorm.DB) {
+	var body signupBody
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	if !strongPassword(body.Password) {
+		c.String(http.StatusBadRequest, "password too weak")
+		return
+	}
+	hash, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+	db.Exec("INSERT INTO users(email, password_hash) VALUES (?, ?)", body.Email, string(hash))
+	c.Status(http.StatusCreated)
+}
+
+func strongPassword(pw string) bool {
+	if len(pw) < 12 {
+		return false
+	}
+	var upper, lower, digit bool
+	for _, r := range pw {
+		switch {
+		case unicode.IsUpper(r):
+			upper = true
+		case unicode.IsLower(r):
+			lower = true
+		case unicode.IsDigit(r):
+			digit = true
+		}
+	}
+	return upper && lower && digit
+}

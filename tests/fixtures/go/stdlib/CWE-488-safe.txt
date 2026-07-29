@@ -1,0 +1,33 @@
+# CWE-488 negative: cart bound to validated session cookie (pure stdlib)
+lang: go
+file: CWE-488-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func ViewCart(w http.ResponseWriter, r *http.Request) {
+	sid, err := r.Cookie("session_id")
+	if err != nil || sid.Value != r.Header.Get("X-Session-ID") {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	items, _ := r.Context().Value("cart").([]string)
+	_ = json.NewEncoder(w).Encode(map[string]any{"items": items})
+}
+
+func AddCartItem(w http.ResponseWriter, r *http.Request) {
+	sid, err := r.Cookie("session_id")
+	if err != nil || sid.Value != r.Header.Get("X-Session-ID") {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	_ = r.ParseForm()
+	items, _ := r.Context().Value("cart").([]string)
+	items = append(items, r.FormValue("sku"))
+	_ = json.NewEncoder(w).Encode(map[string]int{"count": len(items)})
+}

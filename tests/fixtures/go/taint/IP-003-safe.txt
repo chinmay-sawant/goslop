@@ -1,0 +1,17 @@
+# IP-003: Return propagation (depth 2) — safe (constant return)
+lang: go
+file: IP-003-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func caller() {
+    x := getInput()
+    os.Open(x)
+}
+
+func getInput() string {
+    return "/safe/path"
+}

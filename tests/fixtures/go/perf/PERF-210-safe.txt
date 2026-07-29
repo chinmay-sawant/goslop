@@ -1,0 +1,30 @@
+# PERF-210 negative: SCAN iterates incrementally
+lang: go
+file: PERF-210-safe.go
+variant: framework
+---
+package sample
+
+import (
+	"context"
+	"strings"
+
+	"github.com/redis/go-redis/v9"
+)
+
+func Handle(ctx context.Context, rdb *redis.Client) (string, error) {
+	var cursor uint64
+	keys := make([]string, 0, 64)
+	for {
+		batch, next, err := rdb.Scan(ctx, cursor, "user:*", 100).Result()
+		if err != nil {
+			return "", err
+		}
+		keys = append(keys, batch...)
+		if next == 0 {
+			break
+		}
+		cursor = next
+	}
+	return strings.Join(keys, ","), nil
+}

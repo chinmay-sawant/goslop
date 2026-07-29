@@ -1,0 +1,30 @@
+# CWE-515 negative: quota stored per tenant in database (pure stdlib)
+lang: go
+file: CWE-515-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func SetQuotaCovert(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	_ = r.ParseForm()
+	tenant := r.Header.Get("X-Tenant")
+	over := r.FormValue("over") == "1"
+	_, _ = db.Exec("UPDATE quotas SET over_limit = ? WHERE tenant = ?", over, tenant)
+	w.WriteHeader(http.StatusOK)
+}
+
+func ProbeQuotaCovert(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	tenant := r.Header.Get("X-Tenant")
+	var over bool
+	_ = db.QueryRow("SELECT over_limit FROM quotas WHERE tenant = ?", tenant).Scan(&over)
+	if over {
+		w.Write([]byte("over_limit"))
+		return
+	}
+	w.Write([]byte("ok"))
+}

@@ -1,0 +1,24 @@
+# BP-122 negative variant: Chi middleware emits a terminal response.
+lang: go
+file: BP-122-variant-safe.go
+variant: chi
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+)
+
+func record(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "" {
+			http.Error(w, "missing path", http.StatusBadRequest)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func router() chi.Router { return chi.NewRouter() }

@@ -1,0 +1,28 @@
+# CWE-648: Incorrect Use of Privileged APIs (pure stdlib)
+lang: go
+file: CWE-648-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"strconv"
+)
+
+// Vulnerable: web handler calls chown with client-supplied uid without privilege checks.
+func AssignFileOwner(w http.ResponseWriter, r *http.Request) {
+	path := r.FormValue("path")
+	uidStr := r.FormValue("uid")
+	uid, err := strconv.Atoi(uidStr)
+	if err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if err := os.Chown(path, uid, -1); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

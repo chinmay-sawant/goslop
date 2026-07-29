@@ -1,0 +1,10 @@
+# BP-84 negative variant: an integer ratio is not treated as a percentage
+lang: go
+file: BP-84-variant-safe.go
+variant: stdlib
+---
+package sample
+
+func utilizationRatio(used, capacity int) int {
+	return used / capacity * 2
+}

@@ -1,0 +1,146 @@
+{
+  "CWE-59": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product attempts to access a file based on the filename, but it does not properly prevent that filename from identifying a link or shortcut that resolves to an unintended resource.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 59,
+    "name": "Improper Link Resolution Before File Access ('Link Following')",
+    "original_description": "The product attempts to access a file based on the filename, but it does not properly prevent that filename from identifying a link or shortcut that resolves to an unintended resource.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-76": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation",
+    "description": "The product correctly neutralizes certain special elements, but it improperly neutralizes equivalent special elements.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 76,
+    "name": "Improper Neutralization of Equivalent Special Elements",
+    "original_description": "The product correctly neutralizes certain special elements, but it improperly neutralizes equivalent special elements.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-78": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "The product constructs all or part of an OS command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended OS command when it is sent to a downstream component.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 78,
+    "name": "Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')",
+    "original_description": "The product constructs all or part of an OS command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended OS command when it is sent to a downstream component.",
+    "status": "Stable",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-79": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation",
+    "description": "Improper neutralization of input during web page generation (XSS). Common in Gin when rendering templates with user-controlled data without proper escaping, returning JSON with unescaped HTML, or displaying error messages containing user input.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 79,
+    "name": "Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+    "original_description": "The product does not neutralize or incorrectly neutralizes user-controllable input before it is placed in output that is used as a web page that is served to other users.",
+    "status": "Stable",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-89": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "Improper neutralization of special elements used in an SQL command. In GORM and sqlx, this occurs when developers use Raw(), string formatting, or unsanitized input in Where/Order clauses instead of proper parameterized queries or the built-in escaping mechanisms.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 89,
+    "name": "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+    "original_description": "The product constructs all or part of an SQL command using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended SQL command when it is sent to a downstream component. Without sufficient removal o...",
+    "status": "Stable",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-90": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "The product constructs all or part of an LDAP query using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended LDAP query when it is sent to a downstream component.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 90,
+    "name": "Improper Neutralization of Special Elements used in an LDAP Query ('LDAP Injection')",
+    "original_description": "The product constructs all or part of an LDAP query using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended LDAP query when it is sent to a downstream component.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-91": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "The product does not properly neutralize special elements that are used in XML, allowing attackers to modify the syntax, content, or commands of the XML before it is processed by an end system.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 91,
+    "name": "XML Injection (aka Blind XPath Injection)",
+    "original_description": "The product does not properly neutralize special elements that are used in XML, allowing attackers to modify the syntax, content, or commands of the XML before it is processed by an end system.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-93": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "The product uses CRLF (carriage return line feeds) as a special element, e.g. to separate lines or records, but it does not neutralize or incorrectly neutralizes CRLF sequences from inputs.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 93,
+    "name": "Improper Neutralization of CRLF Sequences ('CRLF Injection')",
+    "original_description": "The product uses CRLF (carriage return line feeds) as a special element, e.g. to separate lines or records, but it does not neutralize or incorrectly neutralizes CRLF sequences from inputs.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  }
+}

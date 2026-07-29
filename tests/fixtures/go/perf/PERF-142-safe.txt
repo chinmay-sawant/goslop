@@ -1,0 +1,21 @@
+# PERF-142 negative: r.Body wrapped in MaxBytesReader
+lang: go
+file: PERF-142-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strconv"
+)
+
+const maxBody = 1 << 20
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxBody)
+	defer r.Body.Close()
+	body := []byte("ok")
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+	_, _ = w.Write(body)
+}

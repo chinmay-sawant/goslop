@@ -1,0 +1,9 @@
+# PERF-032 negative: conversion uses a compile-time literal — no runtime copy
+lang: go
+file: PERF-032-safe.go
+---
+package sample
+
+func EncodeOK() []byte {
+	return []byte("ok")
+}

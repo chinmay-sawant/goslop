@@ -1,0 +1,24 @@
+# PERF-110 positive: sync.Pool New returns a value type
+lang: go
+file: PERF-110-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+type Buf struct {
+	Data []byte
+}
+
+var bufPool = sync.Pool{
+	New: func() Buf {
+		return Buf{Data: make([]byte, 0, 1024)}
+	},
+}
+
+func _() {
+	b := bufPool.Get()
+	_ = b
+	bufPool.Put(b)
+}

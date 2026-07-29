@@ -1,0 +1,21 @@
+# PERF-008 negative: parser cached at function scope
+lang: go
+file: PERF-008-safe.go
+---
+package sample
+
+import (
+	"strings"
+	"time"
+)
+
+var isoDate = "2006-01-02"
+
+func ParseTimestamps(input string) []time.Time {
+	var out []time.Time
+	for _, line := range strings.Split(input, "\n") {
+		t, _ := time.Parse(isoDate, line)
+		out = append(out, t)
+	}
+	return out
+}

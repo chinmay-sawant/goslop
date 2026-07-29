@@ -1,0 +1,20 @@
+# PERF-199 positive: session lookup in a route handler
+lang: go
+file: PERF-199-vulnerable.go
+variant: framework
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Handle(c *gin.Context) {
+	sess, err := c.Cookie("session")
+	if err == nil {
+		_ = sess
+	}
+	c.Status(200)
+}

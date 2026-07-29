@@ -1,0 +1,30 @@
+# PERF-176 negative: use io.CopyBuffer with a pooled buffer
+lang: go
+file: PERF-176-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"sync"
+)
+
+var bufPool = sync.Pool{
+	New: func() any {
+		b := make([]byte, 32*1024)
+		return &b
+	},
+}
+
+func DrainAll(readers []io.Reader, dst io.Writer) error {
+	for _, r := range readers {
+		bufPtr := bufPool.Get().(*[]byte)
+		_, err := io.CopyBuffer(dst, r, *bufPtr)
+		bufPool.Put(bufPtr)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

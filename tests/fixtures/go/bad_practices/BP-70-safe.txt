@@ -1,0 +1,19 @@
+# BP-70 negative: the logged error branch exits before normal execution continues.
+lang: go
+file: BP-70-safe.go
+variant: stdlib
+---
+package sample
+
+import "log"
+
+func loadConfig() (data []byte, err error) {
+	data, err = readConfig()
+	if err != nil {
+		log.Printf("read config failed: %v", err)
+		return
+	}
+	return
+}
+
+func readConfig() ([]byte, error) { return nil, nil }

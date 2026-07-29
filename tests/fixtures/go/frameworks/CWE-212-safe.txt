@@ -1,0 +1,35 @@
+# CWE-212 negative: PAN cleared before marshaling export
+lang: go
+file: CWE-212-safe.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type paymentRecord struct {
+	Customer string `json:"customer"`
+	Card     string `json:"card"`
+}
+
+type paymentExport struct {
+	Customer string `json:"customer"`
+}
+
+// CWE-212 Improper Removal of Sensitive Information Before Storage or Transfer (mitigated)
+func ExportPayments(c *gin.Context, rows []paymentRecord) {
+	out := make([]paymentExport, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, paymentExport{Customer: row.Customer})
+	}
+	payload, err := json.Marshal(out)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "encode"})
+		return
+	}
+	c.Data(http.StatusOK, "application/json", payload)
+}

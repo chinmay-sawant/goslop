@@ -1,0 +1,29 @@
+# PERF-100 negative: cobra.Command with a small RunE and a single flag
+lang: go
+file: PERF-100-safe.go
+---
+package main
+
+import (
+	"github.com/spf13/cobra"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "myapp",
+	Short: "My app",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return runApp()
+	},
+}
+
+func init() {
+	rootCmd.Flags().String("config", "", "config file path")
+}
+
+func runApp() error {
+	return nil
+}
+
+func main() {
+	_ = rootCmd.Execute()
+}

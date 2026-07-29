@@ -1,0 +1,22 @@
+# PERF-106 positive: sync.Map used in a write-heavy workload
+lang: go
+file: PERF-106-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+type Entry struct {
+	Key   string
+	Value int
+}
+
+func UseMap() {
+	var m sync.Map
+	for i := 0; i < 100; i++ {
+		m.Store(Entry{Key: "k", Value: i}, i)
+		m.Delete("k")
+	}
+	_ = m.Load("k")
+}

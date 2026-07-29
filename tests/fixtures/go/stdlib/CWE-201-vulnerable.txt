@@ -1,0 +1,31 @@
+# CWE-201 positive: API echoes internal secret fields (pure stdlib)
+lang: go
+file: CWE-201-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type memberRecord struct {
+	Handle   string `json:"handle"`
+	Contact  string `json:"contact"`
+	TokenKey string `json:"token_key"`
+}
+
+// CWE-201 Insertion of Sensitive Information Into Sent Data
+// Vulnerable line: returns TokenKey to external caller.
+func GetAccountDetails(w http.ResponseWriter, r *http.Request, registry map[string]memberRecord) {
+	handle := r.PathValue("handle")
+	record, ok := registry[handle]
+	if !ok {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(record)
+}

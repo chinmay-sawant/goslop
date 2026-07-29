@@ -1,0 +1,19 @@
+# CWE-454: security flag initialized from untrusted request at startup.
+lang: go
+file: CWE-454-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+var enforceMFA bool
+
+func BootstrapSecurity(r *gin.Engine, db *gorm.DB) {
+	r.POST("/bootstrap", func(c *gin.Context) {
+		enforceMFA = c.PostForm("enforce_mfa") == "true"
+	})
+	db.Exec("UPDATE settings SET mfa = ?", enforceMFA)
+}

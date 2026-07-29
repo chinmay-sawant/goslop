@@ -1,0 +1,48 @@
+# clean-go: well-written Go utility with no rule violations
+lang: go
+file: clean_go_file.go
+variant: stdlib
+---
+package util
+
+import (
+	"errors"
+	"fmt"
+	"os"
+)
+
+var ErrNotFound = errors.New("not found")
+
+// Config holds application configuration.
+type Config struct {
+	Dir    string
+	Logger *Logger
+}
+
+// Logger provides structured info-level logging.
+type Logger struct {
+	prefix string
+}
+
+// NewLogger creates a new logger with the given prefix.
+func NewLogger(prefix string) *Logger {
+	return &Logger{prefix: prefix}
+}
+
+// Info writes a formatted info message to stdout.
+func (l *Logger) Info(msg string) {
+	fmt.Fprintf(os.Stdout, "[%s] %s\n", l.prefix, msg)
+}
+
+// LoadConfig reads and returns a Config from the given path.
+func LoadConfig(path string) (*Config, error) {
+	if path == "" {
+		return nil, ErrNotFound
+	}
+	return &Config{Dir: path, Logger: NewLogger("config")}, nil
+}
+
+// Add returns the sum of two integers.
+func Add(a, b int) int {
+	return a + b
+}

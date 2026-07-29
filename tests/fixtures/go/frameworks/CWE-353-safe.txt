@@ -1,0 +1,39 @@
+# CWE-353 safe — Missing Support for Integrity Check (mitigated)
+lang: go
+file: CWE-353-safe.go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/hex"
+	"errors"
+	"io"
+	"net/http"
+	"os"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func IngestTelemetry(c *GinCtx, db *SqlxDB) error {
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return err
+	}
+	mac := hmac.New(sha256.New, []byte(os.Getenv("TELEMETRY_HMAC_KEY")))
+	mac.Write(body)
+	expected := mac.Sum(nil)
+	got, err := hex.DecodeString(c.Request.Header.Get("X-Body-Mac"))
+	if err != nil || subtle.ConstantTimeCompare(expected, got) != 1 {
+		return errors.New("integrity check failed")
+	}
+	return db.Exec("INSERT INTO telemetry (payload) VALUES (?)", string(body))
+}

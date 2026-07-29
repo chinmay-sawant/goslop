@@ -1,0 +1,31 @@
+# CWE-521: registration accepts single-character passwords.
+lang: go
+file: CWE-521-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type signupBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func RegisterUser(c *gin.Context, db *gorm.DB) {
+	var body signupBody
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	if len(body.Password) < 1 {
+		c.String(http.StatusBadRequest, "password required")
+		return
+	}
+	db.Exec("INSERT INTO users(email, password_hash) VALUES (?, ?)", body.Email, body.Password)
+	c.Status(http.StatusCreated)
+}

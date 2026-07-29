@@ -1,0 +1,15 @@
+# BP-4 positive: recover without logging
+lang: go
+file: BP-4-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Guard(fn func()) {
+	defer func() {
+		if recover() != nil {
+			return
+		}
+	}()
+	fn()
+}

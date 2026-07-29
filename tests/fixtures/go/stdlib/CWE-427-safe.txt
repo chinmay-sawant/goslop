@@ -1,0 +1,23 @@
+# CWE-427 negative: helper invoked via absolute binary path (pure stdlib)
+lang: go
+file: CWE-427-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+)
+
+const pdftopngBinary = "/usr/bin/pdftopng"
+
+func RenderReportPDF(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	cmd := exec.Command(pdftopngBinary, r.FormValue("input"))
+	if err := cmd.Run(); err != nil {
+		http.Error(w, "render failed", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

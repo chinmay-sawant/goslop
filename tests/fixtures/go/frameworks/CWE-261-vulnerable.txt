@@ -1,0 +1,27 @@
+# CWE-261 — Weak Encoding for Password (vulnerable)
+lang: go
+file: CWE-261-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/base64"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID       uint
+	Username string
+	Secret   string
+}
+
+// Vulnerable: stores reversible base64 instead of a password hash.
+func RegisterUser(c *gin.Context, db *gorm.DB) {
+	pw := c.PostForm("password")
+	encoded := base64.StdEncoding.EncodeToString([]byte(pw))
+	acct := Account{Username: c.PostForm("username"), Secret: encoded}
+	db.Create(&acct)
+	c.JSON(201, gin.H{"ok": true})
+}

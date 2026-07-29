@@ -1,0 +1,24 @@
+# PERF-85 positive: sqlx.Named inside a tight loop
+lang: go
+file: PERF-085-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/jmoiron/sqlx"
+)
+
+type Row struct {
+	ID   int64
+	Name string
+}
+
+func InsertAll(db *sqlx.DB, rows []Row) error {
+	for _, r := range rows {
+		_, err := sqlx.NamedExec(db, "INSERT INTO t (id, name) VALUES (:id, :name)", r)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

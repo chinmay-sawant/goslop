@@ -1,0 +1,40 @@
+# CWE-359 safe: Exposure of Private Personal Information to an Unauthorized Actor (mitigated, pure stdlib)
+lang: go
+file: CWE-359-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"net/http"
+)
+
+type PersonRecord struct {
+	Email string `json:"email"`
+	SSN   string `json:"ssn"`
+	Phone string `json:"phone"`
+}
+
+type PublicPersonView struct {
+	Email string `json:"email"`
+}
+
+func RenderAccountDetails(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	requester := r.Header.Get("X-User-ID")
+	target := r.URL.Query().Get("id")
+	if requester != target {
+		return errors.New("forbidden")
+	}
+	var row PersonRecord
+	err := db.QueryRow("SELECT email, ssn, phone FROM people WHERE id = ?", target).Scan(&row.Email, &row.SSN, &row.Phone)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return err
+	}
+	out, _ := json.Marshal(PublicPersonView{Email: row.Email})
+	w.Write(out)
+	return nil
+}

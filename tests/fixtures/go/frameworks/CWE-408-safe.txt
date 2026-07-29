@@ -1,0 +1,29 @@
+# CWE-408 safe — Incorrect Behavior Order: Early Amplification (mitigated)
+lang: go
+file: CWE-408-safe.go
+---
+package sample
+
+import (
+	"errors"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Raw(sql string, values ...interface{}) *GormDB { return db }
+
+func (db *GormDB) Scan(dest interface{}) error { return nil }
+
+func ExportAllOrders(c *GinCtx, db *GormDB) error {
+	auth := c.Request.Header.Get("Authorization")
+	if auth == "" {
+		return errors.New("authentication required")
+	}
+	tenant := c.Request.URL.Query().Get("tenant")
+	return db.Raw("SELECT * FROM orders WHERE tenant_id = ?", tenant).Scan(&[]map[string]interface{}{})
+}

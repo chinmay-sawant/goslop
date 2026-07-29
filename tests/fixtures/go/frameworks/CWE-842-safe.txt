@@ -1,0 +1,26 @@
+# CWE-842: Placement of User into Incorrect Group (mitigated)
+lang: go
+file: CWE-842-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Member struct {
+	ID    uint
+	Email string
+	Group string
+}
+
+// Safe: new accounts receive the standard members group by default.
+func RegisterMember(c *gin.Context, db *gorm.DB) {
+	email := c.PostForm("email")
+	member := Member{Email: email, Group: "members"}
+	db.Create(&member)
+	c.JSON(http.StatusCreated, member)
+}

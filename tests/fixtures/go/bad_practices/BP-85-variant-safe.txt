@@ -1,0 +1,20 @@
+# BP-85 safe variant: ServeHTTP handles a missing or wrong-typed context value.
+lang: go
+file: BP-85-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+type requestHandler struct{}
+type roleKey struct{}
+
+func (requestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	role, ok := r.Context().Value(roleKey{}).(string)
+	if !ok {
+		http.Error(w, "missing role", http.StatusForbidden)
+		return
+	}
+	_ = role
+}

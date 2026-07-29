@@ -1,0 +1,32 @@
+# CWE-182 negative: reject unknown capabilities instead of collapsing (pure stdlib)
+lang: go
+file: CWE-182-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+// CWE-182 Collapse of Data into Unsafe Value (mitigated)
+func GrantCapability(w http.ResponseWriter, r *http.Request, caps map[string]bool) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "form", http.StatusBadRequest)
+		return
+	}
+	capability := strings.ToLower(strings.TrimSpace(r.FormValue("capability")))
+	if capability == "" || !caps[capability] {
+		http.Error(w, "denied", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"capability": capability})
+}

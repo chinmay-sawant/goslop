@@ -1,0 +1,23 @@
+# BP-92 negative variant: the context-aware group is used with a parent
+lang: go
+file: BP-92-variant-safe.go
+---
+package sample
+
+import (
+	"context"
+	"golang.org/x/sync/errgroup"
+)
+
+func run(parent context.Context) error {
+	group, ctx := errgroup.WithContext(parent)
+	group.Go(func() error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			return nil
+		}
+	})
+	return group.Wait()
+}

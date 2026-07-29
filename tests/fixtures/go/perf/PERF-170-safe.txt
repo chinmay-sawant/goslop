@@ -1,0 +1,21 @@
+# PERF-170 negative: use a sync/atomic.Bool for cheap one-time init
+lang: go
+file: PERF-170-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"sync/atomic"
+)
+
+var initialized atomic.Bool
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	if !initialized.Load() {
+		initialized.Store(true)
+	}
+	_ = r
+	_ = w
+}

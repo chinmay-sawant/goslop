@@ -1,0 +1,28 @@
+# perf-real-world: HTTP server with multiple PERF rule violations
+lang: go
+file: http_server-vulnerable.go
+variant: stdlib
+---
+package server
+
+import (
+	"net/http"
+	"strings"
+)
+
+func handleGet(w http.ResponseWriter, r *http.Request) {
+	page := r.URL.Query().Get("page")
+	size := r.URL.Query().Get("size")
+	sort := r.URL.Query().Get("sort")
+
+	name := strings.Replace(r.URL.Path, "/", "", -1)
+	w.Write([]byte("page=" + page + " size=" + size + " sort=" + sort + " name=" + name))
+}
+
+// Serve returns an *http.Server without ReadTimeout or WriteTimeout.
+func Serve(handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:    ":8080",
+		Handler: handler,
+	}
+}

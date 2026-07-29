@@ -1,0 +1,20 @@
+# CWE-290 — Authentication Bypass by Spoofing (vulnerable)
+lang: go
+file: CWE-290-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: trusts X-Remote-User from the client instead of server session state.
+func WhoAmI(c *gin.Context) {
+	user := c.GetHeader("X-Remote-User")
+	if user == "" {
+		c.JSON(401, gin.H{"error": "anonymous"})
+		return
+	}
+	c.Set("user", user)
+	c.JSON(200, gin.H{"user": user})
+}

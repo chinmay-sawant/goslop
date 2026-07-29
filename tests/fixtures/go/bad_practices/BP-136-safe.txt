@@ -1,0 +1,14 @@
+# BP-136 negative: migration runs in startup code without request parameters.
+lang: go
+file: BP-136-safe.go
+variant: gorm-startup
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct{}
+
+func migrateSchema(db *gorm.DB) error {
+	return db.AutoMigrate(&User{})
+}

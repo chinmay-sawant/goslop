@@ -1,0 +1,33 @@
+# CWE-639: Authorization Bypass Through User-Controlled Key (mitigated, pure stdlib)
+lang: go
+file: CWE-639-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+	"strconv"
+)
+
+type Invoice struct {
+	ID     int     `json:"id"`
+	UserID int     `json:"user_id"`
+	Amount float64 `json:"amount"`
+}
+
+// Safe: user-controlled key is scoped to the authenticated owner.
+func GetInvoice(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	invoiceID := r.URL.Query().Get("invoice_id")
+	ownerID, _ := strconv.Atoi(r.Header.Get("X-User-ID"))
+	var inv Invoice
+	err := db.QueryRow("SELECT id, user_id, amount FROM invoices WHERE id = $1 AND user_id = $2", invoiceID, ownerID).Scan(&inv.ID, &inv.UserID, &inv.Amount)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(inv)
+}

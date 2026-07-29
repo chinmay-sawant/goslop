@@ -1,0 +1,18 @@
+# BP-149 negative: the error branch includes the error attribute.
+lang: go
+file: BP-149-safe.go
+variant: slog-error-attribute
+---
+package service
+
+import "log/slog"
+
+func load() error {
+	err := doLoad()
+	if err != nil {
+		slog.Error("load failed", "err", err)
+	}
+	return nil
+}
+
+func doLoad() error { return nil }

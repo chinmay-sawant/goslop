@@ -1,0 +1,27 @@
+# CWE-605 positive: metrics listener sets SO_REUSEADDR (pure stdlib)
+lang: go
+file: CWE-605-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net"
+	"net/http"
+	"syscall"
+)
+
+func ServeMetrics() error {
+	lc := net.ListenConfig{
+		Control: func(network, address string, c syscall.RawConn) error {
+			return c.Control(func(fd uintptr) {
+				_ = syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
+			})
+		},
+	}
+	ln, err := lc.Listen(nil, "tcp", ":9090")
+	if err != nil {
+		return err
+	}
+	return http.Serve(ln, http.DefaultServeMux)
+}

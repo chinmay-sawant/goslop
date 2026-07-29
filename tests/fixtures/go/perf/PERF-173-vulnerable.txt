@@ -1,0 +1,17 @@
+# PERF-173 positive: time.Tick assigned to a variable without a paired Stop
+lang: go
+file: PERF-173-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func Watch() {
+	tk := time.Tick(time.Second)
+	for range tk {
+		_ = doWork()
+	}
+}
+
+func doWork() error { return nil }

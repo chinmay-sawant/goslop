@@ -1,0 +1,20 @@
+# IP-001: Direct call chain (depth 2) — vulnerable
+lang: go
+file: IP-001-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    x := r.URL.Query().Get("input")
+    callee(x)
+}
+
+func callee(s string) {
+    os.Open(s)
+}

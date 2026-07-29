@@ -1,0 +1,34 @@
+# CWE-611: Improper Restriction of XML External Entity Reference
+lang: go
+file: CWE-611-vulnerable.go
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/xml"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: parses untrusted XML with Strict disabled, allowing external entity expansion.
+func ImportCatalog(c *gin.Context) {
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	dec := xml.NewDecoder(bytes.NewReader(body))
+	dec.Strict = false
+	var catalog struct {
+		XMLName xml.Name `xml:"catalog"`
+		Item    string   `xml:"item"`
+	}
+	if err := dec.Decode(&catalog); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"item": catalog.Item})
+}

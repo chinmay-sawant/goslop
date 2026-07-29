@@ -1,0 +1,11 @@
+# PERF-046 negative: no strings.Trim* call in the request path
+lang: go
+file: PERF-046-safe.go
+---
+package sample
+
+import "strings"
+
+func Trim(name string) string {
+	return strings.TrimSpace(name)
+}

@@ -1,0 +1,17 @@
+# PERF-026 positive: base64.EncodeToString inside a loop body
+lang: go
+file: PERF-026-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/base64"
+)
+
+func EncodeAll(values [][]byte) []string {
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		out = append(out, base64.StdEncoding.EncodeToString(v))
+	}
+	return out
+}

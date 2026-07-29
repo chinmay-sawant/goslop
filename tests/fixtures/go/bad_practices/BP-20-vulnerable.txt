@@ -1,0 +1,17 @@
+# BP-20 positive: table-driven loop without t.Run
+lang: go
+file: BP-20-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestTableLoop(t *testing.T) {
+	tests := []int{1, 2}
+	for _, tc := range tests {
+		if tc == 0 {
+			t.Fatal("bad")
+		}
+	}
+}

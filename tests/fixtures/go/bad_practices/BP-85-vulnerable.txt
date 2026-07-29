@@ -1,0 +1,16 @@
+# BP-85 positive: a net/http handler asserts a request context value without checking ok.
+lang: go
+file: BP-85-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+type userKey struct{}
+type User struct{ Name string }
+
+func userHandler(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(userKey{}).(User)
+	_, _ = w, user
+}

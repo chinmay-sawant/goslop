@@ -1,0 +1,22 @@
+# BP-96 negative variant: QueryContext rows are closed
+lang: go
+file: BP-96-variant-safe.go
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+	"fmt"
+)
+
+func load(ctx context.Context, db *sql.DB) error {
+	rs, err := db.QueryContext(ctx, "select 1")
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+	if closeErr := rs.Close(); closeErr != nil {
+		return fmt.Errorf("close rows: %w", closeErr)
+	}
+	return nil
+}

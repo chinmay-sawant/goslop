@@ -1,0 +1,12 @@
+# PERF-118 negative: unnecessary http.NewRequest for simple methods
+lang: go
+file: PERF-118-safe.go
+---
+package sample
+
+import "net/http"
+
+func New() {
+    resp, _ := http.Get("http://example.com")
+    defer resp.Body.Close()
+}

@@ -1,0 +1,19 @@
+# PERF-131 positive: mutex around a single counter increment
+lang: go
+file: PERF-131-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var (
+	mu      sync.Mutex
+	counter int
+)
+
+func Inc() {
+	mu.Lock()
+	counter++
+	mu.Unlock()
+}

@@ -1,0 +1,31 @@
+# CWE-426 positive: plugin path from request query (pure stdlib)
+lang: go
+file: CWE-426-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"plugin"
+)
+
+func LoadExtension(w http.ResponseWriter, r *http.Request) {
+	searchRoot := r.URL.Query().Get("plugin_dir")
+	_ = os.Setenv("PATH", searchRoot+string(os.PathListSeparator)+os.Getenv("PATH"))
+	modPath := filepath.Join(searchRoot, r.PathValue("name")+".so")
+	p, err := plugin.Open(modPath)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	sym, err := p.Lookup("Init")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_ = sym
+}

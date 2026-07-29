@@ -1,0 +1,25 @@
+# CWE-798: Use of Hard-coded Credentials (mitigated)
+lang: go
+file: CWE-798-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Safe: credentials are loaded from environment at runtime.
+func ConnectReporting(c *gin.Context) {
+	dsn := os.Getenv("REPORTING_DSN")
+	db, err := sqlx.Connect("postgres", dsn)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "connection failed")
+		return
+	}
+	defer db.Close()
+	c.JSON(http.StatusOK, gin.H{"connected": true})
+}

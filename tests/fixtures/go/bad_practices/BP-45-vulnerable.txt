@@ -1,0 +1,12 @@
+# BP-45 positive: methods on the same type use different receiver names
+lang: go
+file: BP-45-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type store struct{}
+
+func (s *store) Save() {}
+
+func (this *store) Load() {}

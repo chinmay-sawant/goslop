@@ -1,0 +1,30 @@
+# CWE-420 positive: unprotected alternate debug route (pure stdlib)
+lang: go
+file: CWE-420-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func MountBillingAPI(db *sql.DB) {
+	protected := requireSession(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rows, _ := db.Query("SELECT id, total FROM invoices WHERE tenant_id = ?", sessionTenant(r))
+		defer rows.Close()
+		w.WriteHeader(http.StatusOK)
+	}))
+	http.Handle("/api/invoices", protected)
+	http.HandleFunc("/debug/sqltrace", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = db.Exec("PRAGMA query_only = 0")
+		w.Write([]byte("trace on for " + r.URL.Query().Get("tenant")))
+	})
+}
+
+func requireSession(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { next.ServeHTTP(w, r) })
+}
+
+func sessionTenant(r *http.Request) string { return r.Header.Get("X-Tenant") }

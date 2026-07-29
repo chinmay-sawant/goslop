@@ -1,0 +1,12 @@
+# Project-rule negative: comments and strings do not start servers
+lang: go
+file: cmd/main.go
+---
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("http.ListenAndServe(:8080)")
+	// http.ListenAndServe(":8080", nil)
+}

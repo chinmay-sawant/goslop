@@ -1,0 +1,46 @@
+# CWE-1240 negative: AES-GCM for session sealing (pure stdlib)
+lang: go
+file: CWE-1240-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1240 mitigated: AES-GCM with random nonce seals session tokens.
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"net/http"
+)
+
+func SealSessionTokenSafePure(key []byte) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		token := r.FormValue("token")
+		block, err := aes.NewCipher(key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		nonce := make([]byte, gcm.NonceSize())
+		if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		sealed := gcm.Seal(nonce, nonce, []byte(token), nil)
+		encoded := base64.StdEncoding.EncodeToString(sealed)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"sealed":"` + encoded + `"}`))
+	}
+}

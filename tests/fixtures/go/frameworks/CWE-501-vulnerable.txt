@@ -1,0 +1,27 @@
+# CWE-501: trusted internal flag merged with untrusted JSON in one struct.
+lang: go
+file: CWE-501-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type payoutMessage struct {
+	Approved bool    `json:"approved"`
+	Amount   float64 `json:"amount"`
+	Memo     string  `json:"memo"`
+}
+
+func QueuePayout(c *gin.Context) {
+	var msg payoutMessage
+	if err := c.ShouldBindJSON(&msg); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	msg.Approved = true
+	c.JSON(http.StatusOK, msg)
+}

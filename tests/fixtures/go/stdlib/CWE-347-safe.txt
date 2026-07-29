@@ -1,0 +1,54 @@
+# CWE-347 safe: Improper Verification of Cryptographic Signature (mitigated, pure stdlib)
+lang: go
+file: CWE-347-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
+	"database/sql"
+	"encoding/base64"
+	"encoding/json"
+	"encoding/pem"
+	"errors"
+	"net/http"
+	"os"
+	"strings"
+)
+
+func ApplyWebhookClaims(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	raw := r.Header.Get("X-Webhook-JWT")
+	parts := strings.Split(raw, ".")
+	if len(parts) != 3 {
+		return errors.New("malformed token")
+	}
+	sig, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return err
+	}
+	block, _ := pem.Decode([]byte(os.Getenv("WEBHOOK_JWT_PUB")))
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return err
+	}
+	rsaPub := pub.(*rsa.PublicKey)
+	signed := parts[0] + "." + parts[1]
+	sum := sha256.Sum256([]byte(signed))
+	if rsa.VerifyPKCS1v15(rsaPub, crypto.SHA256, sum[:], sig) != nil {
+		return errors.New("invalid signature")
+	}
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	var claims map[string]interface{}
+	_ = json.Unmarshal(payload, &claims)
+	_, err = db.Exec("UPDATE operators SET role = ? WHERE id = ?", claims["role"], claims["sub"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

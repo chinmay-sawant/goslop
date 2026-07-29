@@ -1,0 +1,14 @@
+# BP-5 positive: assigning Close error to _ still discards it
+lang: go
+file: BP-5-blank-identifier-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type closer struct{}
+
+func (closer) Close() error { return nil }
+
+func CloseAndDiscard(c closer) {
+	_ = c.Close()
+}

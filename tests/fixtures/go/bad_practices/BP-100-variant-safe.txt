@@ -1,0 +1,18 @@
+# BP-100 negative variant: a worker receives range items through a queue
+lang: go
+file: BP-100-variant-safe.go
+---
+package sample
+
+type job struct {
+	name string
+}
+
+func handleJobs(items []job, queue chan<- job) {
+	for _, item := range items {
+		queue <- item
+	}
+	go worker(queue)
+}
+
+func worker(queue <-chan job) {}

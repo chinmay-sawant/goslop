@@ -1,0 +1,27 @@
+# CWE-826: Premature Release of Resource During Expected Lifetime (mitigated)
+lang: go
+file: CWE-826-safe.go
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: waits for the worker to finish before releasing the database handle.
+func WarmCache(c *gin.Context, db *sql.DB) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+	defer cancel()
+	done := make(chan struct{})
+	go func() {
+		_, _ = db.QueryContext(ctx, "SELECT 1")
+		close(done)
+	}()
+	<-done
+	c.Status(http.StatusOK)
+}

@@ -1,0 +1,22 @@
+# IP-006: Sanitized in callee — safe (callee sanitizes)
+lang: go
+file: IP-006-safe.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+    "path/filepath"
+)
+
+func caller() {
+    x := r.URL.Query().Get("input")
+    safe := callee(x)
+    os.Open(safe)
+}
+
+func callee(s string) string {
+    return filepath.Base(s)
+}

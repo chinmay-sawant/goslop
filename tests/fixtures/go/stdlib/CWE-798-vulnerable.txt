@@ -1,0 +1,25 @@
+# CWE-798: Use of Hard-coded Credentials (pure stdlib)
+lang: go
+file: CWE-798-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: database credentials are embedded directly in source code.
+// Secrets in the repository are exposed to anyone with read access to the tree.
+func ConnectReporting(w http.ResponseWriter, r *http.Request) {
+	dsn := "postgres://reporting:Tr4ck3rP@ss@db.internal:5432/reports?sslmode=disable"
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"connected":true}`))
+}

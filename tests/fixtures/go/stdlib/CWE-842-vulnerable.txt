@@ -1,0 +1,28 @@
+# CWE-842: Placement of User into Incorrect Group (pure stdlib)
+lang: go
+file: CWE-842-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type Member struct {
+	Email string `json:"email"`
+	Group string `json:"group"`
+}
+
+var members []Member
+
+// Vulnerable: newly registered users are placed into the administrators group.
+func RegisterMember(w http.ResponseWriter, r *http.Request) {
+	email := r.FormValue("email")
+	member := Member{Email: email, Group: "administrators"}
+	members = append(members, member)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(member)
+}

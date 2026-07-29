@@ -1,0 +1,33 @@
+# CWE-708: Incorrect Ownership Assignment (mitigated)
+lang: go
+file: CWE-708-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+const serviceUID = 1000
+const serviceGID = 1000
+const spoolDir = "/var/app/spool"
+
+// Safe: files are owned by the service account inside the controlled spool directory.
+func FinishUpload(c *gin.Context) {
+	name := c.PostForm("filename")
+	clean := filepath.Clean(name)
+	full := filepath.Join(spoolDir, clean)
+	if !filepath.HasPrefix(full, spoolDir) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	if err := os.Chown(full, serviceUID, serviceGID); err != nil {
+		c.String(http.StatusInternalServerError, "upload failed")
+		return
+	}
+	c.Status(http.StatusOK)
+}

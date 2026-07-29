@@ -1,0 +1,11 @@
+# PERF-116 positive: strings.Index used for contains
+lang: go
+file: PERF-116-vulnerable.go
+---
+package sample
+
+import "strings"
+
+func Has(s, sub string) bool {
+    return strings.Index(s, sub) != -1
+}

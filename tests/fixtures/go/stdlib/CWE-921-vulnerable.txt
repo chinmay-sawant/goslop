@@ -1,0 +1,31 @@
+# CWE-921 positive: world-readable secret file (pure stdlib)
+lang: go
+file: CWE-921-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-921: Storage of Sensitive Data without Access Control.
+// Vulnerable: API key written to /tmp with permissive mode 0644.
+
+import (
+	"net/http"
+	"os"
+)
+
+func StoreIntegrationKeyPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		key := r.FormValue("api_key")
+		path := "/tmp/integration.key"
+		if err := os.WriteFile(path, []byte(key), 0644); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"stored":"/tmp/integration.key"}`))
+	}
+}

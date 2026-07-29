@@ -1,0 +1,13 @@
+# BP-131 positive: database/sql Query is used for a DML statement with no returned rows.
+lang: go
+file: BP-131-vulnerable.go
+variant: database-sql
+---
+package sample
+
+import "database/sql"
+
+func archive(db *sql.DB, id int) error {
+	_, err := db.Query("UPDATE accounts SET archived = TRUE WHERE id = ?", id)
+	return err
+}

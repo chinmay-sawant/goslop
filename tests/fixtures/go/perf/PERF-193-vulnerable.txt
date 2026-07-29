@@ -1,0 +1,19 @@
+# PERF-193 positive: time.After inside a loop without a Reset
+lang: go
+file: PERF-193-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func Poll(items []int) {
+	for range items {
+		select {
+		case <-time.After(time.Second):
+			_ = tick()
+		}
+	}
+}
+
+func tick() error { return nil }

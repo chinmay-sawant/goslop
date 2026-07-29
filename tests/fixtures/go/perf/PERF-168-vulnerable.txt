@@ -1,0 +1,26 @@
+# PERF-168 positive: large struct sent by value over a channel
+lang: go
+file: PERF-168-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type Event struct {
+	ID       int64
+	UserID   int64
+	Action   string
+	Payload  []byte
+	Metadata map[string]string
+	Tags     []string
+}
+
+func Emit(ch chan<- Event) {
+	ch <- Event{
+		ID:       1,
+		UserID:   42,
+		Action:   "login",
+		Payload:  []byte("hello"),
+		Metadata: map[string]string{"ip": "127.0.0.1"},
+		Tags:     []string{"a", "b"},
+	}
+}

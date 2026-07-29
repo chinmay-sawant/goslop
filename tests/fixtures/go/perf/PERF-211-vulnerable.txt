@@ -1,0 +1,19 @@
+# PERF-211 positive: GORM db.Not() in a hot-path query
+lang: go
+file: PERF-211-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func FindUsers(db *gorm.DB, ids []uint) ([]User, error) {
+	var users []User
+	err := db.Where("active = ?", true).Not("id IN ?", ids).Find(&users).Error
+	return users, err
+}

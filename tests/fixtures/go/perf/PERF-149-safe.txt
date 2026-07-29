@@ -1,0 +1,16 @@
+# PERF-149 negative: conn.Read with a deadline set
+lang: go
+file: PERF-149-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net"
+	"time"
+)
+
+func Read(conn net.Conn, buf []byte) (int, error) {
+	_ = conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	return conn.Read(buf)
+}

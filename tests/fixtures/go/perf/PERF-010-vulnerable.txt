@@ -1,0 +1,22 @@
+# PERF-010 positive: template.New(...).Parse inside Gin handler
+lang: go
+file: PERF-010-vulnerable.go
+---
+package sample
+
+import (
+	"html/template"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func RenderReport(c *gin.Context) {
+	tmpl, err := template.New("report").Parse(`<h1>{{.Title}}</h1>`)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	_ = tmpl.Execute(c.Writer, gin.H{"Title": "Hello"})
+}

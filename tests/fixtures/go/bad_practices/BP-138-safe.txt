@@ -1,0 +1,18 @@
+# BP-138 negative: the GORM hook stays local and does not perform external I/O.
+lang: go
+file: BP-138-safe.go
+variant: gorm-local-hook
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	AuditReady bool
+}
+
+// AfterCreate marks the user ready for local auditing.
+func (u *User) AfterCreate(tx *gorm.DB) error {
+	u.AuditReady = true
+	return nil
+}

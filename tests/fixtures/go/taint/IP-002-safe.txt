@@ -1,0 +1,22 @@
+# IP-002: Filename-only call chain — safe before cross-function call
+lang: go
+file: IP-002-safe.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+    "path/filepath"
+)
+
+func caller() {
+    x := r.URL.Query().Get("input")
+    safe := filepath.Base(x)
+    callee(safe)
+}
+
+func callee(s string) {
+    os.Open(s)
+}

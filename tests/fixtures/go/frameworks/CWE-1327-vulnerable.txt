@@ -1,0 +1,26 @@
+# CWE-1327 vulnerable: binds all interfaces
+lang: go
+file: CWE-1327-vulnerable.go
+---
+package sample
+
+// CWE-1327: Binding to an Unrestricted IP Address.
+// Vulnerable: gin.Run listens on :9090 which binds 0.0.0.0.
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func StartPublicAPI(db *gorm.DB) error {
+	r := gin.Default()
+	r.GET("/status", func(c *gin.Context) {
+		sqlDB, err := db.DB()
+		if err != nil || sqlDB.Ping() != nil {
+			c.String(503, "db down")
+			return
+		}
+		c.String(200, "ok")
+	})
+	return r.Run(":9090")
+}

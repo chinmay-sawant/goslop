@@ -1,0 +1,26 @@
+# PERF-053 negative: math/rand.New used to avoid the global mutex
+lang: go
+file: PERF-053-safe.go
+---
+package sample
+
+import (
+	"math/rand"
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	rngMu sync.Mutex
+	rng   = rand.New(rand.NewSource(1))
+)
+
+func RollDiceSafe(c *gin.Context) {
+	rngMu.Lock()
+	n := rng.Intn(6) + 1
+	rngMu.Unlock()
+	c.JSON(http.StatusOK, gin.H{"roll": n})
+	_ = http.StatusOK
+}

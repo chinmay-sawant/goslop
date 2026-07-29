@@ -1,0 +1,21 @@
+# PERF-133 positive: sort.Slice in a loop
+lang: go
+file: PERF-133-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sort"
+
+func TopK(buckets [][]int, k int) [][]int {
+	for i := range buckets {
+		// Closure + reflect per call.
+		sort.Slice(buckets[i], func(a, b int) bool {
+			return buckets[i][a] > buckets[i][b]
+		})
+		if len(buckets[i]) > k {
+			buckets[i] = buckets[i][:k]
+		}
+	}
+	return buckets
+}

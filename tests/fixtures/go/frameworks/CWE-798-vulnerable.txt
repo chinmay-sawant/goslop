@@ -1,0 +1,24 @@
+# CWE-798: Use of Hard-coded Credentials
+lang: go
+file: CWE-798-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Vulnerable: database credentials are embedded directly in source code.
+func ConnectReporting(c *gin.Context) {
+	dsn := "postgres://reporting:Tr4ck3rP@ss@db.internal:5432/reports?sslmode=disable"
+	db, err := sqlx.Connect("postgres", dsn)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer db.Close()
+	c.JSON(http.StatusOK, gin.H{"connected": true})
+}

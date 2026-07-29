@@ -1,0 +1,30 @@
+# CWE-551 negative: path unescaped before authorization (pure stdlib)
+lang: go
+file: CWE-551-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"net/url"
+	"strings"
+)
+
+func AdminPathGate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw := r.URL.Path
+		clean, err := url.PathUnescape(raw)
+		if err != nil {
+			http.Error(w, "bad path", http.StatusBadRequest)
+			return
+		}
+		clean = strings.ReplaceAll(clean, "//", "/")
+		if !strings.HasPrefix(clean, "/admin") {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		r.URL.Path = clean
+		next.ServeHTTP(w, r)
+	})
+}

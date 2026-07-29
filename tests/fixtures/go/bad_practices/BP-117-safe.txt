@@ -1,0 +1,25 @@
+# BP-117 negative: Echo Bind errors are returned to the framework.
+lang: go
+file: BP-117-safe.go
+variant: echo
+---
+package sample
+
+import (
+	"fmt"
+	"github.com/labstack/echo/v4"
+)
+
+// echo.Binder is configured by the application for this path.
+
+type Request struct {
+	Name string `json:"name"`
+}
+
+func create(c echo.Context) error {
+	var request Request
+	if err := c.Bind(&request); err != nil {
+		return fmt.Errorf("bind request: %w", err)
+	}
+	return nil
+}

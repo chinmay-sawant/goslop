@@ -1,0 +1,25 @@
+# PERF-165 positive: rows.Scan into a primitive followed by manual conversion
+lang: go
+file: PERF-165-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"strconv"
+)
+
+type MyID int64
+
+func LoadID(rows *sql.Rows) (MyID, error) {
+	var raw string
+	if err := rows.Scan(&raw); err != nil {
+		return 0, err
+	}
+	n, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return MyID(n), nil
+}

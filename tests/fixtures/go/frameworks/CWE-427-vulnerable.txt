@@ -1,0 +1,19 @@
+# CWE-427: attacker-controlled directory prepended to PATH for helper lookup.
+lang: go
+file: CWE-427-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+	"os/exec"
+
+	"github.com/gin-gonic/gin"
+)
+
+func RunReportRenderer(c *gin.Context) error {
+	userBin := c.PostForm("helper_path")
+	_ = os.Setenv("PATH", userBin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	cmd := exec.Command("pdftopng", c.PostForm("input"))
+	return cmd.Run()
+}

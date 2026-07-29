@@ -1,0 +1,18 @@
+# BP-87 positive: read lock is held across a blocking sleep
+lang: go
+file: BP-87-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"sync"
+	"time"
+)
+
+func refresh() {
+	var mu sync.RWMutex
+	mu.RLock()
+	time.Sleep(time.Millisecond)
+	mu.RUnlock()
+}

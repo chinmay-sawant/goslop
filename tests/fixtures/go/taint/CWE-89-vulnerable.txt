@@ -1,0 +1,16 @@
+# CWE-89 positive: taint-tracked SQL injection (identifier flow)
+lang: go
+file: CWE-89-taint-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func LookupUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	_ = db.Query(name)
+}

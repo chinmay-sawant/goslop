@@ -1,0 +1,20 @@
+# CWE-79 positive: reflected XSS via text/template
+lang: go
+file: CWE-79-vulnerable.go
+---
+package sample
+
+import (
+	"text/template"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-79 Improper Neutralization of Input During Web Page Generation
+// Vulnerable line: user input rendered into HTML template without escaping
+// (text/template doesn't auto-escape unlike html/template).
+func GreetVisitor(c *gin.Context) {
+	name := c.Query("name")
+	tmpl := template.Must(template.New("page").Parse("<html><body><h1>Hello {{.}}</h1></body></html>"))
+	tmpl.Execute(c.Writer, name)
+}

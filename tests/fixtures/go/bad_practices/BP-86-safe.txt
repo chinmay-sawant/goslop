@@ -1,0 +1,15 @@
+# BP-86 negative: deferred unlock covers the function
+lang: go
+file: BP-86-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func update(value int) {
+	var mu sync.Mutex
+	mu.Lock()
+	defer mu.Unlock()
+	_ = value
+}

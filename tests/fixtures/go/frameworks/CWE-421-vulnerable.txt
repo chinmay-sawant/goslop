@@ -1,0 +1,27 @@
+# CWE-421: alternate SSE channel races with unprotected shared transfer state.
+lang: go
+file: CWE-421-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var transferToken string
+
+func WireTransferNotify(r *gin.Engine) {
+	r.POST("/transfer/authorize", func(c *gin.Context) {
+		transferToken = c.PostForm("token")
+		c.Status(http.StatusOK)
+	})
+	r.GET("/transfer/events", func(c *gin.Context) {
+		c.Stream(func(w io.Writer) bool {
+			_, _ = w.Write([]byte("event: status\ndata: " + transferToken + "\n\n"))
+			return false
+		})
+	})
+}

@@ -1,0 +1,13 @@
+# BP-3 positive: panic outside main
+lang: go
+file: BP-3-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func MustParse(s string) int {
+	if s == "" {
+		panic("empty string")
+	}
+	return 0
+}

@@ -1,0 +1,20 @@
+# BP-155 positive variant: a renamed request body reaches a decoder directly.
+lang: go
+file: BP-155-variant-vulnerable.go
+variant: renamed-request-body
+---
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func create(w http.ResponseWriter, request *http.Request) {
+	var payload map[string]string
+	if err := json.NewDecoder(request.Body).Decode(&payload); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+}

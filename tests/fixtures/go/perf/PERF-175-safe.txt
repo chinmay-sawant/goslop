@@ -1,0 +1,19 @@
+# PERF-175 negative: a select-based receive
+lang: go
+file: PERF-175-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func Receive(ch chan int, done <-chan struct{}) (int, bool) {
+	select {
+	case v := <-ch:
+		return v, true
+	case <-done:
+		return 0, false
+	case <-time.After(time.Second):
+		return 0, false
+	}
+}

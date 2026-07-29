@@ -1,0 +1,12 @@
+# PERF-147 positive: strings.Replace with -1
+lang: go
+file: PERF-147-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func Normalize(s string) string {
+	return strings.Replace(s, "-", "_", -1)
+}

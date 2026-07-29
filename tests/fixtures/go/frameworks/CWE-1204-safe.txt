@@ -1,0 +1,49 @@
+# CWE-1204 safe: random IV per encryption
+lang: go
+file: CWE-1204-safe.go
+---
+package sample
+
+// CWE-1204 mitigated: crypto/rand fills a unique IV for each ciphertext.
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func EncryptFieldSafe(key []byte) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		plain := c.PostForm("value")
+		block, err := aes.NewCipher(key)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		iv := make([]byte, block.BlockSize())
+		if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		mode := cipher.NewCBCEncrypter(block, iv)
+		padded := pkcs7PadSafe([]byte(plain), block.BlockSize())
+		out := make([]byte, len(padded))
+		mode.CryptBlocks(out, padded)
+		payload := append(iv, out...)
+		c.JSON(http.StatusOK, gin.H{"ciphertext": base64.StdEncoding.EncodeToString(payload)})
+	}
+}
+
+func pkcs7PadSafe(data []byte, blockSize int) []byte {
+	pad := blockSize - len(data)%blockSize
+	padding := make([]byte, pad)
+	for i := range padding {
+		padding[i] = byte(pad)
+	}
+	return append(data, padding...)
+}

@@ -1,0 +1,13 @@
+# BP-27 positive: exported function returns an unexported type
+lang: go
+file: BP-27-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type client struct{}
+
+// NewClient returns a package-private implementation type.
+func NewClient() *client {
+	return &client{}
+}

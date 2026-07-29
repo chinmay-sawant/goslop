@@ -1,0 +1,31 @@
+# PERF-010 negative: template parsed once via sync.Once at package scope
+lang: go
+file: PERF-010-safe.go
+---
+package sample
+
+import (
+	"html/template"
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	reportTmpl *template.Template
+	reportOnce sync.Once
+)
+
+func loadReport() *template.Template {
+	reportOnce.Do(func() {
+		reportTmpl, _ = template.New("report").Parse(`<h1>{{.Title}}</h1>`)
+	})
+	return reportTmpl
+}
+
+func RenderReport(c *gin.Context) {
+	tmpl := loadReport()
+	c.Header("Content-Type", "text/html; charset=utf-8")
+	_ = tmpl.Execute(c.Writer, gin.H{"Title": "Hello"})
+}

@@ -1,0 +1,15 @@
+# BP-16 positive: time.Sleep used directly in a test
+lang: go
+file: BP-16-vulnerable_test.go
+variant: stdlib
+---
+package sample
+
+import (
+	"testing"
+	"time"
+)
+
+func TestSleep(t *testing.T) {
+	time.Sleep(5 * time.Millisecond)
+}

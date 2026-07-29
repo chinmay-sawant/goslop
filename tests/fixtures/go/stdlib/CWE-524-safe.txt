@@ -1,0 +1,30 @@
+# CWE-524 negative: token kept in request context only (pure stdlib)
+lang: go
+file: CWE-524-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+)
+
+type ctxKey string
+
+const sessionTokenKey ctxKey = "session_token"
+
+func StoreSessionToken(w http.ResponseWriter, r *http.Request) {
+	ctx := context.WithValue(r.Context(), sessionTokenKey, r.Header.Get("Authorization"))
+	*r = *r.WithContext(ctx)
+	w.WriteHeader(http.StatusOK)
+}
+
+func FetchSessionToken(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("X-UID") != r.URL.Query().Get("uid") {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	tok, _ := r.Context().Value(sessionTokenKey).(string)
+	w.Write([]byte(tok))
+}

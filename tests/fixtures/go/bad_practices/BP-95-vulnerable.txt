@@ -1,0 +1,20 @@
+# BP-95 positive: the client response body has no close or ownership transfer
+lang: go
+file: BP-95-vulnerable.go
+variant: net-http
+---
+package sample
+
+import "net/http"
+
+func fetch() {
+	req, err := http.NewRequest("GET", "https://example.com", nil)
+	if err != nil {
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return
+	}
+	_ = resp
+}

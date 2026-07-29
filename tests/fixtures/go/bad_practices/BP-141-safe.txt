@@ -1,0 +1,22 @@
+# BP-141 negative: named query fields have explicit db tags.
+lang: go
+file: BP-141-safe.go
+variant: sqlx-named-tagged
+---
+package sample
+
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+)
+
+type User struct {
+	UserID int    `db:"user_id"`
+	Name   string `db:"name"`
+}
+
+func insertUser(db *sqlx.DB, user User) error {
+	_, err := db.NamedExec("INSERT INTO users (user_id, name) VALUES (:user_id, :name)", user)
+	return fmt.Errorf("insert user: %w", err)
+}

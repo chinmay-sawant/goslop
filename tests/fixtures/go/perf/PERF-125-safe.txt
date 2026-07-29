@@ -1,0 +1,17 @@
+# PERF-125 negative: append called directly without nil check
+lang: go
+file: PERF-125-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Add(s []int, v int) []int {
+	return append(s, v)
+}
+
+func _() {
+	out := Add(nil, 1)
+	fmt.Println(out)
+}

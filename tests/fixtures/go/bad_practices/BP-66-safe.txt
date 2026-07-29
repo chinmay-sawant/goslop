@@ -1,0 +1,21 @@
+# BP-66 negative: errors.Is preserves the wrapped sentinel relationship.
+lang: go
+file: BP-66-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrMissing = errors.New("missing")
+
+func lookup() error {
+	err := fmt.Errorf("lookup: %w", ErrMissing)
+	if errors.Is(err, ErrMissing) {
+		return nil
+	}
+	return fmt.Errorf("lookup failed: %w", err)
+}

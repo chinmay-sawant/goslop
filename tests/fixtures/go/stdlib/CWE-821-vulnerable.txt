@@ -1,0 +1,25 @@
+# CWE-821: Incorrect Synchronization (pure stdlib)
+lang: go
+file: CWE-821-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var cacheMu sync.RWMutex
+var tokenCache = map[string]string{}
+
+// Vulnerable: read lock is taken while mutating shared state.
+// Writers must hold an exclusive lock to avoid data races on the cache map.
+func StoreToken(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("session")
+	value := r.URL.Query().Get("token")
+	cacheMu.RLock()
+	tokenCache[key] = value
+	cacheMu.RUnlock()
+	w.WriteHeader(http.StatusOK)
+}

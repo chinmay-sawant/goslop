@@ -1,0 +1,43 @@
+# CWE-257 negative: one-way hash instead of reversible encryption (pure stdlib)
+lang: go
+file: CWE-257-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
+	"encoding/json"
+	"net/http"
+)
+
+func digestSecret(plain string) (string, error) {
+	salt := make([]byte, 16)
+	if _, err := rand.Read(salt); err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(append(salt, []byte(plain)...))
+	return hex.EncodeToString(salt) + ":" + hex.EncodeToString(sum[:]), nil
+}
+
+// CWE-257 Storing Passwords in a Recoverable Format (mitigated)
+func PersistLoginSecret(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	plain := r.FormValue("pass")
+	digest, err := digestSecret(plain)
+	if err != nil {
+		http.Error(w, "hash", http.StatusInternalServerError)
+		return
+	}
+	login := r.FormValue("login")
+	_, err = db.Exec("INSERT INTO logins(login, secret) VALUES(?, ?)", login, digest)
+	if err != nil {
+		http.Error(w, "save", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "stored"})
+}

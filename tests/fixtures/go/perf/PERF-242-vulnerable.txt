@@ -1,0 +1,16 @@
+# PERF-242 positive: per-iteration make([]byte, len*N)
+lang: go
+file: PERF-242-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func EncodeAll(items []string) [][]byte {
+	out := make([][]byte, 0, len(items))
+	for _, text := range items {
+		buf := make([]byte, 0, len(text)*4+2)
+		buf = append(buf, text...)
+		out = append(out, buf)
+	}
+	return out
+}

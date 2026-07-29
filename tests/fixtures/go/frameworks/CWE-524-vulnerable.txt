@@ -1,0 +1,31 @@
+# CWE-524: process-wide cache stores raw session tokens for all users.
+lang: go
+file: CWE-524-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var (
+	tokenCache   = map[string]string{}
+	tokenCacheMu sync.Mutex
+)
+
+func CacheSessionToken(c *gin.Context) {
+	tokenCacheMu.Lock()
+	tokenCache[c.GetString("uid")] = c.GetHeader("Authorization")
+	tokenCacheMu.Unlock()
+	c.Status(http.StatusOK)
+}
+
+func FetchCachedToken(c *gin.Context) {
+	tokenCacheMu.Lock()
+	tok := tokenCache[c.Query("uid")]
+	tokenCacheMu.Unlock()
+	c.String(http.StatusOK, tok)
+}

@@ -1,0 +1,25 @@
+# PERF-72 positive: db.Transaction inside an Echo handler
+lang: go
+file: PERF-072-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
+
+func CreateUser(c echo.Context, db *gorm.DB) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&User{Name: "x"}).Error
+	})
+	if err != nil {
+		return c.String(500, "err")
+	}
+	return c.String(200, "ok")
+}
+
+type User struct {
+	gorm.Model
+	Name string
+}

@@ -1,0 +1,11 @@
+# PERF-115 negative: strings.Compare used for equality
+lang: go
+file: PERF-115-safe.go
+---
+package sample
+
+import "strings"
+
+func Eq(a, b string) bool {
+    return a == b
+}

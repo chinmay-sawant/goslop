@@ -1,0 +1,17 @@
+# BP-109 negative variant: a non-Gin context with the same method names is ignored.
+lang: go
+file: BP-109-variant-safe.go
+variant: non-gin
+---
+package sample
+
+import "net/http"
+
+type Context struct{}
+
+func (Context) json(int, any) {}
+
+func update(ctx Context) {
+	ctx.json(http.StatusInternalServerError, map[string]string{"error": "failed"})
+	ctx.json(http.StatusOK, map[string]bool{"updated": true})
+}

@@ -1,0 +1,51 @@
+# CWE-916 negative: salted iterative SHA-256 password storage (pure stdlib)
+lang: go
+file: CWE-916-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-916 mitigated: random salt plus 100k SHA-256 iterations before storage.
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+	"sync"
+)
+
+const hashIterations = 100_000
+
+var accountsSafeMu sync.Mutex
+var accountsSafe = map[string]string{}
+
+func stretchPassword(password string, salt []byte) string {
+	digest := append(salt, []byte(password)...)
+	for i := 0; i < hashIterations; i++ {
+		sum := sha256.Sum256(digest)
+		digest = sum[:]
+	}
+	return hex.EncodeToString(salt) + ":" + hex.EncodeToString(digest)
+}
+
+func RegisterStrongHashPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+		salt := make([]byte, 16)
+		if _, err := rand.Read(salt); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		stored := stretchPassword(password, salt)
+		accountsSafeMu.Lock()
+		accountsSafe[username] = stored
+		accountsSafeMu.Unlock()
+		w.WriteHeader(http.StatusCreated)
+	}
+}

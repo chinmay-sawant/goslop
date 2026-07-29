@@ -1,0 +1,29 @@
+# CWE-277 — Insecure Inherited Permissions (safe) (pure stdlib)
+lang: go
+file: CWE-277-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"syscall"
+)
+
+// Safe: restrictive umask so created directories are not world-writable.
+func ProvisionWorkspace(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	dir := r.URL.Query().Get("dir")
+	if dir == "" {
+		http.Error(w, "missing dir", http.StatusBadRequest)
+		return
+	}
+	old := syscall.Umask(027)
+	defer syscall.Umask(old)
+	_ = os.MkdirAll(dir, 0750)
+	w.WriteHeader(http.StatusCreated)
+}

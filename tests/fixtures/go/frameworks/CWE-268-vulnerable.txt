@@ -1,0 +1,31 @@
+# CWE-268 — Privilege Chaining (vulnerable)
+lang: go
+file: CWE-268-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Vulnerable: read + export scopes together leak full credential table.
+func ExportUsers(c *gin.Context, db *sqlx.DB) {
+	perms := c.GetStringSlice("scopes")
+	hasRead, hasExport := false, false
+	for _, p := range perms {
+		if p == "read" {
+			hasRead = true
+		}
+		if p == "export" {
+			hasExport = true
+		}
+	}
+	if hasRead && hasExport {
+		rows, _ := db.Queryx("SELECT email, password_hash FROM users")
+		defer rows.Close()
+		c.JSON(200, gin.H{"dump": rows})
+		return
+	}
+	c.JSON(403, gin.H{"error": "forbidden"})
+}

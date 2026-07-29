@@ -1,0 +1,21 @@
+# IP-007: Recursive chain — vulnerable
+lang: go
+file: IP-007-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func process(s string, depth int) {
+    if depth > 5 { return }
+    os.Open(s)
+    process(s, depth + 1)
+}
+
+func caller() {
+    process(r.URL.Query().Get("input"), 0)
+}

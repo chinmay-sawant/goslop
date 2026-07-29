@@ -1,0 +1,28 @@
+# CWE-212 positive: backup JSON still contains card number
+lang: go
+file: CWE-212-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type paymentRecord struct {
+	Customer string `json:"customer"`
+	Card     string `json:"card"`
+}
+
+// CWE-212 Improper Removal of Sensitive Information Before Storage or Transfer
+// Vulnerable line: exports full struct including Card field.
+func ExportPayments(c *gin.Context, rows []paymentRecord) {
+	payload, err := json.Marshal(rows)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "encode"})
+		return
+	}
+	c.Data(http.StatusOK, "application/json", payload)
+}

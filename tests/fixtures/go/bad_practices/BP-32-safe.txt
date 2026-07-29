@@ -1,0 +1,14 @@
+# BP-32 negative: error type is a struct
+lang: go
+file: BP-32-safe.go
+variant: stdlib
+---
+package sample
+
+type messageError struct {
+	msg string
+}
+
+func (e messageError) Error() string {
+	return e.msg
+}

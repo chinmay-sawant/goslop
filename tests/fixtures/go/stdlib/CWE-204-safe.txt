@@ -1,0 +1,27 @@
+# CWE-204 negative: uniform response for auth failures (pure stdlib)
+lang: go
+file: CWE-204-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+// CWE-204 Observable Response Discrepancy (mitigated)
+func AuthenticateUser(w http.ResponseWriter, r *http.Request, accounts map[string]string) {
+	login := r.FormValue("login")
+	secret := r.FormValue("secret")
+	stored, ok := accounts[login]
+	if !ok || stored != secret {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "invalid credentials"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}

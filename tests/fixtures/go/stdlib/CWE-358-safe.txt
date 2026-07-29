@@ -1,0 +1,37 @@
+# CWE-358 safe: Improperly Implemented Security Check for Standard (mitigated, pure stdlib)
+lang: go
+file: CWE-358-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
+)
+
+func ExtractBearerClaims(w http.ResponseWriter, r *http.Request) error {
+	raw := r.Header.Get("Authorization")
+	token := strings.TrimPrefix(raw, "Bearer ")
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return errors.New("invalid jwt structure")
+	}
+	headerJSON, _ := base64.RawURLEncoding.DecodeString(parts[0])
+	var header struct {
+		Alg string `json:"alg"`
+	}
+	_ = json.Unmarshal(headerJSON, &header)
+	if header.Alg != "RS256" {
+		return errors.New("unsupported jwt algorithm")
+	}
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	var claims map[string]interface{}
+	_ = json.Unmarshal(payload, &claims)
+	out, _ := json.Marshal(claims)
+	w.Write(out)
+	return nil
+}

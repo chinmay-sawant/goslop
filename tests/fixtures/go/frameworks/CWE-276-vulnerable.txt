@@ -1,0 +1,19 @@
+# CWE-276 — Incorrect Default Permissions (vulnerable)
+lang: go
+file: CWE-276-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: writes session file world-readable/writable.
+func SaveSessionBlob(c *gin.Context) {
+	body := c.GetString("session_data")
+	path := "/var/lib/codehound/sessions/" + c.GetString("sid")
+	_ = os.WriteFile(path, []byte(body), 0666)
+	c.JSON(200, gin.H{"saved": path})
+}

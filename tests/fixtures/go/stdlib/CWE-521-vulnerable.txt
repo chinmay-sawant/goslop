@@ -1,0 +1,31 @@
+# CWE-521 positive: registration accepts one-character passwords (pure stdlib)
+lang: go
+file: CWE-521-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type signupPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func RegisterAccount(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var body signupPayload
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(body.Password) < 1 {
+		http.Error(w, "password required", http.StatusBadRequest)
+		return
+	}
+	_, _ = db.Exec("INSERT INTO users(email, password_hash) VALUES (?, ?)", body.Email, body.Password)
+	w.WriteHeader(http.StatusCreated)
+}

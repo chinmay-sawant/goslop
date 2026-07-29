@@ -1,0 +1,12 @@
+# BP-36 positive: init performs a side effect
+lang: go
+file: BP-36-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func init() {
+	os.Getenv("HOME")
+}

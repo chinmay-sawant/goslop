@@ -1,0 +1,29 @@
+# CWE-379 safe — Creation of Temporary File in Directory with Insecure Permissions (mitigated)
+lang: go
+file: CWE-379-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func StageReportDraft(c *GinCtx) error {
+	dir, err := os.MkdirTemp("", "reports-*")
+	if err != nil {
+		return err
+	}
+	if err := os.Chmod(dir, 0700); err != nil {
+		return err
+	}
+	raw := c.Request.URL.Query().Get("id")
+	id := filepath.Base(raw)
+	path := filepath.Join(dir, "draft-"+id+".json")
+	return os.WriteFile(path, []byte(c.Request.PostFormValue("body")), 0600)
+}

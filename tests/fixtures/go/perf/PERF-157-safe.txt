@@ -1,0 +1,12 @@
+# PERF-157 negative: fmt.Sprint combines values
+lang: go
+file: PERF-157-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Label(id int) string {
+	return fmt.Sprint("ready-", id)
+}

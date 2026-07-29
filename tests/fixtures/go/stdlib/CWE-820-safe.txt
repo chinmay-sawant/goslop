@@ -1,0 +1,26 @@
+# CWE-820: Missing Synchronization (mitigated, pure stdlib)
+lang: go
+file: CWE-820-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"sync"
+)
+
+var visitMu sync.Mutex
+var visitCounts = map[string]int{}
+
+// Safe: mutex protects concurrent updates to the shared counter map.
+func TrackVisit(w http.ResponseWriter, r *http.Request) {
+	key := r.RemoteAddr
+	visitMu.Lock()
+	visitCounts[key] = visitCounts[key] + 1
+	count := visitCounts[key]
+	visitMu.Unlock()
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]int{"visits": count})
+}

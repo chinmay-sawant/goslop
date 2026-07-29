@@ -1,0 +1,27 @@
+# CWE-618: Exposed Unsafe ActiveX Method (mitigated, pure stdlib)
+lang: go
+file: CWE-618-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+var allowedPluginMethods = map[string]struct{}{
+	"GetVersion": {},
+	"Ping":       {},
+}
+
+// Safe: only allowlisted, non-privileged plugin methods are reachable.
+func InvokePluginMethod(w http.ResponseWriter, r *http.Request) {
+	method := r.URL.Query().Get("method")
+	if _, ok := allowedPluginMethods[method]; !ok {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"method": method, "result": "ok"})
+}

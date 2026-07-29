@@ -1,0 +1,15 @@
+# BP-29 positive: interface has more than five methods
+lang: go
+file: BP-29-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type repository interface {
+	Save()
+	Load()
+	Delete()
+	List()
+	Watch()
+	Close()
+}

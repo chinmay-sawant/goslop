@@ -1,0 +1,19 @@
+# PERF-211 negative: use a positive WHERE list instead of NOT IN
+lang: go
+file: PERF-211-safe.go
+variant: stdlib
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func FindUsers(db *gorm.DB, ids []uint) ([]User, error) {
+	var users []User
+	err := db.Where("active = ? AND id IN ?", true, ids).Find(&users).Error
+	return users, err
+}

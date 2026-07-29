@@ -1,0 +1,29 @@
+# CWE-412: lock path is fixed server-side, not client-controlled.
+lang: go
+file: CWE-412-safe.go
+---
+package sample
+
+import (
+	"os"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+const jobLockPath = "/var/run/codehound/job.lock"
+
+var gate sync.Mutex
+
+func AcquireJobLock(c *gin.Context) error {
+	_ = c
+	data, err := os.ReadFile(jobLockPath)
+	if err != nil {
+		return err
+	}
+	if string(data) != "free" {
+		return err
+	}
+	gate.Lock()
+	return os.WriteFile(jobLockPath, []byte("held"), 0o600)
+}

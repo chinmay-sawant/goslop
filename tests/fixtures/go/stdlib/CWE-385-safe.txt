@@ -1,0 +1,32 @@
+# CWE-385 safe: Covert Timing Channel (mitigated, pure stdlib)
+lang: go
+file: CWE-385-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/subtle"
+	"net/http"
+)
+
+func ValidateWebhookSecret(w http.ResponseWriter, r *http.Request, expected string) bool {
+	provided := r.Header.Get("X-Webhook-Secret")
+	if provided == "" || expected == "" {
+		http.Error(w, "missing secret", http.StatusUnauthorized)
+		return false
+	}
+	if subtle.ConstantTimeCompare([]byte(provided), []byte(expected)) != 1 {
+		return false
+	}
+	w.WriteHeader(http.StatusOK)
+	return true
+}
+
+func WebhookAuthHandler(expected string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !ValidateWebhookSecret(w, r, expected) {
+			http.Error(w, "forbidden", http.StatusForbidden)
+		}
+	}
+}

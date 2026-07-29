@@ -1,0 +1,12 @@
+# BP-82 positive: time.Parse uses a layout without an explicit location.
+lang: go
+file: BP-82-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func parseDate(value string) (time.Time, error) {
+	return time.Parse("2006-01-02 15:04:05", value)
+}

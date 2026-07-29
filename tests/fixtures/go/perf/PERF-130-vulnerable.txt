@@ -1,0 +1,14 @@
+# PERF-130 positive: unnecessary IIFE wrapping a single call
+lang: go
+file: PERF-130-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Run() {
+	func() {
+		fmt.Println("hi")
+	}()
+}

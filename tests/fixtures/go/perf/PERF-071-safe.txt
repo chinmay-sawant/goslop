@@ -1,0 +1,25 @@
+# PERF-71 negative: relation is Preloaded up front
+lang: go
+file: PERF-071-safe.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Orders []Order
+}
+
+type Order struct {
+	gorm.Model
+	UserID uint
+}
+
+func ListUserOrders(db *gorm.DB) {
+	var users []User
+	db.Preload("Orders").Find(&users)
+	for _, u := range users {
+		_ = u.Orders
+	}
+}

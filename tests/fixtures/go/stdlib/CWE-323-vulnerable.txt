@@ -1,0 +1,29 @@
+# CWE-323 vulnerable: Reusing a Nonce, Key Pair in Encryption (positive, pure stdlib)
+lang: go
+file: CWE-323-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"database/sql"
+)
+
+var relaySessionNonce = []byte("static-nonce12")
+
+func StoreEncryptedNote(db *sql.DB, userID string, plaintext []byte) error {
+	key := []byte("0123456789abcdef0123456789abcdef")
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return err
+	}
+	aead, err := cipher.NewGCM(block)
+	if err != nil {
+		return err
+	}
+	ciphertext := aead.Seal(nil, relaySessionNonce, plaintext, nil)
+	_, err = db.Exec("UPDATE notes SET blob = ? WHERE owner = ?", ciphertext, userID)
+	return err
+}

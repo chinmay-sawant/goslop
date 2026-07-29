@@ -1,0 +1,25 @@
+# CWE-343 vulnerable: Predictable Value Range from Previous Values (positive, pure stdlib)
+lang: go
+file: CWE-343-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+)
+
+var doorPrizeState int = 11
+
+func DrawDoorPrize(w http.ResponseWriter, r *http.Request) {
+	participant := r.URL.Query().Get("participant")
+	if participant == "" {
+		http.Error(w, "participant required", http.StatusBadRequest)
+		return
+	}
+	doorPrizeState = (doorPrizeState*5 + 3) % 101
+	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("X-Participant", participant)
+	fmt.Fprintf(w, "%d", doorPrizeState)
+}

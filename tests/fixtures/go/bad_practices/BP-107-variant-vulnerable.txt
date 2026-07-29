@@ -1,0 +1,17 @@
+# BP-107 positive variant: a differently named downstream handler is ignored.
+lang: go
+file: BP-107-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"log"
+	"net/http"
+)
+
+func audit(downstream http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.Method)
+	})
+}

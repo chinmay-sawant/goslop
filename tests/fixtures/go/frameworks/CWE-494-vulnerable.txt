@@ -1,0 +1,31 @@
+# CWE-494: remote plugin bytes executed without integrity verification.
+lang: go
+file: CWE-494-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"os"
+	"os/exec"
+
+	"github.com/gin-gonic/gin"
+)
+
+func InstallWorker(c *gin.Context) {
+	url := c.Query("bundle_url")
+	resp, err := http.Get(url)
+	if err != nil {
+		c.String(http.StatusBadGateway, err.Error())
+		return
+	}
+	defer resp.Body.Close()
+	path := "/tmp/worker.bin"
+	f, _ := os.Create(path)
+	_, _ = io.Copy(f, resp.Body)
+	_ = f.Close()
+	cmd := exec.Command(path)
+	_ = cmd.Run()
+	c.Status(http.StatusOK)
+}

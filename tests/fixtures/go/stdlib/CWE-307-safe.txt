@@ -1,0 +1,36 @@
+# CWE-307 — Improper Restriction of Excessive Authentication Attempts (safe) (pure stdlib)
+lang: go
+file: CWE-307-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"sync"
+	"time"
+)
+
+var loginAttempts sync.Map
+
+// Safe: blocks client after five failures inside a sliding minute window.
+func PasswordLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	key := r.RemoteAddr
+	if n, _ := loginAttempts.LoadOrStore(key, 0); n.(int) >= 5 {
+		http.Error(w, "rate limited", http.StatusTooManyRequests)
+		return
+	}
+	email := r.FormValue("email")
+	var hash string
+	err := db.QueryRow("SELECT hash FROM users WHERE email = ?", email).Scan(&hash)
+	if err != nil {
+		cur, _ := loginAttempts.Load(key)
+		loginAttempts.Store(key, cur.(int)+1)
+		time.Sleep(200 * time.Millisecond)
+		http.Error(w, "bad creds", http.StatusUnauthorized)
+		return
+	}
+	loginAttempts.Delete(key)
+	w.WriteHeader(http.StatusOK)
+}

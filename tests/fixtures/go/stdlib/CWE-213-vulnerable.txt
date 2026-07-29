@@ -1,0 +1,31 @@
+# CWE-213 positive: exposes staff-only salary in public profile API (pure stdlib)
+lang: go
+file: CWE-213-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type staffProfile struct {
+	FullName string `json:"full_name"`
+	Unit     string `json:"unit"`
+	Comp     int    `json:"comp"`
+}
+
+// CWE-213 Exposure of Sensitive Information Due to Incompatible Policies
+// Vulnerable line: comp included in response for any authenticated user.
+func ShowColleague(w http.ResponseWriter, r *http.Request, roster map[string]staffProfile) {
+	id := r.PathValue("id")
+	profile, ok := roster[id]
+	if !ok {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(profile)
+}

@@ -1,0 +1,24 @@
+# BP-116 negative: Echo writes the error response and returns nil.
+lang: go
+file: BP-116-safe.go
+variant: echo
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
+
+func create(c echo.Context) error {
+	if err := save(); err != nil {
+		if responseErr := c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()}); responseErr != nil {
+			return responseErr
+		}
+		return nil
+	}
+	return c.JSON(http.StatusCreated, map[string]bool{"ok": true})
+}
+
+func save() error { return nil }

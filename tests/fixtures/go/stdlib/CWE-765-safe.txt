@@ -1,0 +1,30 @@
+# CWE-765: Multiple Unlocks of a Critical Resource (mitigated, pure stdlib)
+lang: go
+file: CWE-765-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strconv"
+	"sync"
+)
+
+var walletMu sync.Mutex
+var walletBalance int
+
+// Safe: single unlock via defer on every exit path.
+func DebitWallet(w http.ResponseWriter, r *http.Request) {
+	amount, _ := strconv.Atoi(r.URL.Query().Get("amount"))
+	walletMu.Lock()
+	defer walletMu.Unlock()
+	if amount <= 0 {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	walletBalance -= amount
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]int{"balance": walletBalance})
+}

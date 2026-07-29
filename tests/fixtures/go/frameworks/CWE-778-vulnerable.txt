@@ -1,0 +1,29 @@
+# CWE-778: Insufficient Logging
+lang: go
+file: CWE-778-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type LoginRow struct {
+	Username string
+	Password string
+}
+
+// Vulnerable: failed authentication attempts are not recorded.
+func SignIn(c *gin.Context, db *gorm.DB) {
+	user := c.PostForm("username")
+	pass := c.PostForm("password")
+	var row LoginRow
+	if err := db.Where("username = ? AND password = ?", user, pass).First(&row).Error; err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	c.Status(http.StatusOK)
+}

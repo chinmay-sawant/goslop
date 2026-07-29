@@ -1,0 +1,27 @@
+# CWE-547: signing material loaded from environment at runtime.
+lang: go
+file: CWE-547-safe.go
+---
+package sample
+
+import (
+	"os"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+func IssueSession(c *gin.Context) {
+	secret := os.Getenv("JWT_SIGNING_KEY")
+	if secret == "" {
+		c.AbortWithStatus(500)
+		return
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": c.GetString("uid"),
+		"exp": time.Now().Add(time.Hour).Unix(),
+	})
+	signed, _ := token.SignedString([]byte(secret))
+	c.String(200, signed)
+}

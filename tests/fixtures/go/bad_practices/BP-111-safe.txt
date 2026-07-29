@@ -1,0 +1,15 @@
+# BP-111 negative: the Gin context is copied before goroutine use.
+lang: go
+file: BP-111-safe.go
+variant: gin
+---
+package sample
+
+import "github.com/gin-gonic/gin"
+
+func handle(c *gin.Context) {
+	copy := c.Copy()
+	go func() {
+		_ = copy.Request.URL.Path
+	}()
+}

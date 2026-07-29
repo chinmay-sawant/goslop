@@ -1,0 +1,28 @@
+# CWE-22 positive: path traversal via user-controlled filename (pure stdlib)
+lang: go
+file: CWE-22-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+// CWE-22 Improper Limitation of a Pathname to a Restricted Directory
+// Vulnerable line: ReadFile joins user segment without confining to vaultRoot.
+func ServeDocument(w http.ResponseWriter, r *http.Request) {
+	vaultRoot := "/var/data/vault"
+	docName := r.URL.Query().Get("name")
+	target := filepath.Join(vaultRoot, docName)
+	data, err := os.ReadFile(target)
+	if err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(data)
+}

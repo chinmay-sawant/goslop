@@ -1,0 +1,10 @@
+# BP-156 positive: a password field disappears when its value is empty.
+lang: go
+file: BP-156-vulnerable.go
+variant: password-omitempty
+---
+package api
+
+type Credentials struct {
+	Password string `json:"password,omitempty"`
+}

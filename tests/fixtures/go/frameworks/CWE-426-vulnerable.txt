@@ -1,0 +1,24 @@
+# CWE-426: plugin search path is taken from the HTTP request.
+lang: go
+file: CWE-426-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+	"path/filepath"
+	"plugin"
+
+	"github.com/gin-gonic/gin"
+)
+
+func LoadTenantPlugin(c *gin.Context) (plugin.Symbol, error) {
+	searchRoot := c.Query("plugin_dir")
+	_ = os.Setenv("PATH", searchRoot+string(os.PathListSeparator)+os.Getenv("PATH"))
+	modPath := filepath.Join(searchRoot, c.Param("name")+".so")
+	p, err := plugin.Open(modPath)
+	if err != nil {
+		return nil, err
+	}
+	return p.Lookup("Init")
+}

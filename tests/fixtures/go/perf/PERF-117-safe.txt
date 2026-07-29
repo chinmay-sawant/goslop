@@ -1,0 +1,11 @@
+# PERF-117 negative: bytes.Compare used for equality
+lang: go
+file: PERF-117-safe.go
+---
+package sample
+
+import "bytes"
+
+func Eq(a, b []byte) bool {
+    return bytes.Equal(a, b)
+}

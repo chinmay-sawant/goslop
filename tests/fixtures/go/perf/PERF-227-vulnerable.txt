@@ -1,0 +1,40 @@
+# PERF-227 positive: zlib.NewWriterLevel without pool, even when a file-level
+# GetZlibWriter pool exists (must not silence other functions). BestSpeed so
+# this is pool-only (PERF-233 does not fire).
+lang: go
+file: PERF-227-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"compress/zlib"
+	"io"
+	"sync"
+)
+
+var zwPool = sync.Pool{
+	New: func() any {
+		w, _ := zlib.NewWriterLevel(io.Discard, zlib.BestSpeed)
+		return w
+	},
+}
+
+func GetZlibWriter(buf *bytes.Buffer) *zlib.Writer {
+	w := zwPool.Get().(*zlib.Writer)
+	w.Reset(buf)
+	return w
+}
+
+func CompressPage(page []byte) []byte {
+	var buf bytes.Buffer
+	// Unpooled: file-level GetZlibWriter must not silence this site.
+	w, err := zlib.NewWriterLevel(&buf, zlib.BestSpeed)
+	if err != nil {
+		return nil
+	}
+	_, _ = w.Write(page)
+	_ = w.Close()
+	return buf.Bytes()
+}

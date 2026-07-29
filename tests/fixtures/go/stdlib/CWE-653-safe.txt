@@ -1,0 +1,42 @@
+# CWE-653: Improper Isolation or Compartmentalization (mitigated, pure stdlib)
+lang: go
+file: CWE-653-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+type AuditLog struct {
+	ID      int    `json:"id"`
+	Message string `json:"message"`
+}
+
+// Safe: read-only replica serves public queries; admin mutations use a separate store.
+var readOnlyAuditStore []AuditLog
+var adminAuditStore []AuditLog
+
+func PublicSearch(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("q")
+	var out []AuditLog
+	for _, row := range readOnlyAuditStore {
+		if q == "" || strings.Contains(row.Message, q) {
+			out = append(out, row)
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(out)
+}
+
+func AdminPurge(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("X-Admin-Token") == "" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	adminAuditStore = nil
+	w.WriteHeader(http.StatusOK)
+}

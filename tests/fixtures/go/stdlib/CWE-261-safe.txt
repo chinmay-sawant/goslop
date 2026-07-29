@@ -1,0 +1,28 @@
+# CWE-261 — Weak Encoding for Password (safe) (pure stdlib)
+lang: go
+file: CWE-261-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+	"sync"
+)
+
+var accountVault sync.Map
+
+// Safe: stores salted SHA-256 digest, not reversible encoding.
+func SignupHandler(w http.ResponseWriter, r *http.Request) {
+	user := r.FormValue("username")
+	pw := r.FormValue("password")
+	salt := make([]byte, 16)
+	_, _ = rand.Read(salt)
+	sum := sha256.Sum256(append(salt, []byte(pw)...))
+	record := hex.EncodeToString(salt) + ":" + hex.EncodeToString(sum[:])
+	accountVault.Store(user, record)
+	w.WriteHeader(http.StatusCreated)
+}

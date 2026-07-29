@@ -1,0 +1,18 @@
+# PERF-046 positive: strings.TrimSpace used in a request handler
+lang: go
+file: PERF-046-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Trim(c *gin.Context) {
+	name := c.Param("name")
+	clean := strings.TrimSpace(name)
+	c.String(http.StatusOK, clean)
+}

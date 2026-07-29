@@ -1,0 +1,12 @@
+# BP-75 negative variant: destination length matches a known source value
+lang: go
+file: BP-75-variant-safe.go
+variant: stdlib
+---
+package sample
+
+func copyValues(source []int) []int {
+	destination := make([]int, len(source))
+	copy(destination, source)
+	return destination
+}

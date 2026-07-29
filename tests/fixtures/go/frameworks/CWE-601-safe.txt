@@ -1,0 +1,21 @@
+# CWE-601: redirect targets limited to same-site relative paths.
+lang: go
+file: CWE-601-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func OAuthCallback(c *gin.Context) {
+	target := c.Query("next")
+	if !strings.HasPrefix(target, "/") || strings.Contains(target, "//") {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.Redirect(http.StatusFound, target)
+}

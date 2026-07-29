@@ -1,0 +1,31 @@
+# CWE-334 safe: Small Space of Random Values (mitigated, pure stdlib)
+lang: go
+file: CWE-334-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/base64"
+	"io"
+	"net/http"
+)
+
+func GenerateRegistrationPin(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	buf := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, buf); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	pin := base64.RawURLEncoding.EncodeToString(buf)
+	owner := r.URL.Query().Get("owner")
+	_, err := db.Exec("INSERT INTO registrations (pin, owner) VALUES (?, ?)", pin, owner)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusCreated)
+	return nil
+}

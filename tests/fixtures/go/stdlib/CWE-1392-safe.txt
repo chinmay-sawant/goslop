@@ -1,0 +1,41 @@
+# CWE-1392 negative: admin password from secret env var (pure stdlib)
+lang: go
+file: CWE-1392-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1392 mitigated: initial admin password loaded from environment, not a default literal.
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"net/http"
+	"os"
+	"sync"
+)
+
+type AdminUserSafePure struct {
+	Username string
+	Password string
+}
+
+var adminSafeMu sync.Mutex
+var adminUserSafePure AdminUserSafePure
+
+func BootstrapAdminSafePure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		secret := os.Getenv("BOOTSTRAP_ADMIN_PASSWORD")
+		if secret == "" {
+			http.Error(w, "bootstrap password not configured", http.StatusServiceUnavailable)
+			return
+		}
+		sum := sha256.Sum256([]byte(secret))
+		hash := hex.EncodeToString(sum[:])
+		adminSafeMu.Lock()
+		adminUserSafePure = AdminUserSafePure{Username: "admin", Password: hash}
+		adminSafeMu.Unlock()
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"admin_ready":true}`))
+	}
+}

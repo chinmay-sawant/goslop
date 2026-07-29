@@ -1,0 +1,35 @@
+# CWE-523: credentials only accepted after TLS redirect middleware.
+lang: go
+file: CWE-523-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func requireTLS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Request.TLS == nil {
+			c.Redirect(http.StatusMovedPermanently, "https://"+c.Request.Host+c.Request.URL.String())
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func StartLoginService(db *sqlx.DB) *http.Server {
+	r := gin.New()
+	r.Use(requireTLS())
+	r.POST("/login", func(c *gin.Context) {
+		user := c.PostForm("username")
+		pass := c.PostForm("password")
+		_ = db.QueryRowx("SELECT id FROM users WHERE email = ? AND password_hash = crypt(?, password_hash)", user, pass)
+		c.String(http.StatusOK, "welcome")
+	})
+	return &http.Server{Addr: ":8443", Handler: r, TLSConfig: nil}
+}

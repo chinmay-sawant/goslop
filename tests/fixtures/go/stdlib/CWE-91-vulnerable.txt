@@ -1,0 +1,32 @@
+# CWE-91 positive: XML document assembled from user fields (pure stdlib)
+lang: go
+file: CWE-91-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"encoding/xml"
+	"fmt"
+	"net/http"
+)
+
+// CWE-91 XML Injection
+// Vulnerable line: user label concatenated into XML payload.
+func ParseTicketXML(w http.ResponseWriter, r *http.Request) {
+	label := r.FormValue("label")
+	detail := r.FormValue("detail")
+	doc := fmt.Sprintf("<ticket><label>%s</label><detail>%s</detail></ticket>", label, detail)
+	var parsed struct {
+		Label  string `xml:"label"`
+		Detail string `xml:"detail"`
+	}
+	if err := xml.Unmarshal([]byte(doc), &parsed); err != nil {
+		http.Error(w, "xml", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"label": parsed.Label})
+}

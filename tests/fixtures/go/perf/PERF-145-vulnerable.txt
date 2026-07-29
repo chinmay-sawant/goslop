@@ -1,0 +1,19 @@
+# PERF-145 positive: r.WithContext in a middleware
+lang: go
+file: PERF-145-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+)
+
+func Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "userID", 42)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}

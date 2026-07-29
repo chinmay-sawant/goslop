@@ -1,0 +1,36 @@
+# CWE-212 negative: PAN cleared before marshaling export (pure stdlib)
+lang: go
+file: CWE-212-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type chargeRecord struct {
+	Payer string `json:"payer"`
+	PAN   string `json:"pan"`
+}
+
+type chargeExport struct {
+	Payer string `json:"payer"`
+}
+
+// CWE-212 Improper Removal of Sensitive Information Before Storage or Transfer (mitigated)
+func PublishReceipts(w http.ResponseWriter, r *http.Request, rows []chargeRecord) {
+	out := make([]chargeExport, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, chargeExport{Payer: row.Payer})
+	}
+	payload, err := json.Marshal(out)
+	if err != nil {
+		http.Error(w, "encode", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(payload)
+}

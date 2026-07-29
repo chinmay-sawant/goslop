@@ -1,0 +1,15 @@
+# BP-162 variant: a parallel test increments package-level state.
+lang: go
+file: BP-162-variant-vulnerable_test.go
+variant: shared-parallel-counter
+---
+package sample
+
+import "testing"
+
+var completed int
+
+func TestParallelCounter(t *testing.T) {
+	t.Parallel()
+	completed++
+}

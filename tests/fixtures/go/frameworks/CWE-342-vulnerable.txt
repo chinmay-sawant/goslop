@@ -1,0 +1,25 @@
+# CWE-342 vulnerable — Predictable Exact Value from Previous Values
+lang: go
+file: CWE-342-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+var lastOTP uint64 = 918273
+
+type GormDB struct{}
+
+func (db *GormDB) Updates(values interface{}) error { return nil }
+
+func SendLoginOTP(c *GinCtx, db *GormDB) error {
+	lastOTP++
+	code := lastOTP
+	return db.Updates(map[string]interface{}{"email": c.Request.PostFormValue("email"), "otp": code})
+}

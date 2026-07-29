@@ -1,0 +1,46 @@
+# CWE registry — domain: cryptography
+
+[[detector]]
+cwe = 325
+domain = "cryptography"
+function = "detect_cwe_325"
+
+[[detector]]
+cwe = 334
+domain = "cryptography"
+function = "detect_cwe_334"
+
+[[detector]]
+cwe = 335
+domain = "cryptography"
+function = "detect_cwe_335"
+
+[[detector]]
+cwe = 338
+domain = "cryptography"
+function = "detect_cwe_338"
+
+[[detector]]
+cwe = 342
+domain = "cryptography"
+function = "detect_cwe_342"
+
+[[detector]]
+cwe = 343
+domain = "cryptography"
+function = "detect_cwe_343"
+
+[[detector]]
+cwe = 347
+domain = "cryptography"
+function = "detect_cwe_347"
+
+[[detector]]
+cwe = 1204
+domain = "cryptography"
+function = "detect_cwe_1204"
+
+[[detector]]
+cwe = 1240
+domain = "cryptography"
+function = "detect_cwe_1240"

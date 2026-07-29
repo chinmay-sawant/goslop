@@ -1,0 +1,19 @@
+# PERF-204 negative: db.Updates with .Select to project only the intended columns
+lang: go
+file: PERF-204-safe.go
+variant: stdlib
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func RenameUser(db *gorm.DB, id uint, name string) error {
+	return db.Model(&User{}).Where("id = ?", id).
+		Select("name").
+		Updates(map[string]interface{}{"name": name}).Error
+}

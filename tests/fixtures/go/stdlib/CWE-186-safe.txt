@@ -1,0 +1,26 @@
+# CWE-186 negative: regex matches realistic hostnames (pure stdlib)
+lang: go
+file: CWE-186-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"regexp"
+)
+
+var peerHostPattern = regexp.MustCompile(`^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$`)
+
+// CWE-186 Overly Restrictive Regular Expression (mitigated)
+func CheckPeerHost(w http.ResponseWriter, r *http.Request) {
+	peer := r.URL.Query().Get("peer")
+	if !peerHostPattern.MatchString(peer) {
+		http.Error(w, "invalid", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"peer": peer})
+}

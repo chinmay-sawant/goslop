@@ -1,0 +1,29 @@
+# CWE-93 negative: CRLF stripped from header input (pure stdlib)
+lang: go
+file: CWE-93-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+)
+
+// CWE-93 Improper Neutralization of CRLF Sequences (mitigated)
+func SendContinueRedirect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	returnURL := r.URL.Query().Get("return")
+	if returnURL == "" {
+		returnURL = "/home"
+	}
+	returnURL = strings.ReplaceAll(returnURL, "\r", "")
+	returnURL = strings.ReplaceAll(returnURL, "\n", "")
+	base := "https://portal.example/auth?next="
+	w.Header().Set("Location", base+returnURL)
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusFound)
+}

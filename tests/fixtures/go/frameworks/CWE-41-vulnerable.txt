@@ -1,0 +1,32 @@
+# CWE-41 positive: path equivalence via dot segments
+lang: go
+file: CWE-41-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-41 Improper Resolution of Path Equivalence
+// Vulnerable line: rejects ".." but allows "./" and "//" aliases.
+func ReadSharedNote(c *gin.Context) {
+	root := "/srv/notes"
+	rel := c.Query("path")
+	if strings.Contains(rel, "..") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bad path"})
+		return
+	}
+	full := filepath.Join(root, rel)
+	body, err := os.ReadFile(full)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.String(http.StatusOK, string(body))
+}

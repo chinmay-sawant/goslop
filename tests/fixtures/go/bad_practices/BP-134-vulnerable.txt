@@ -1,0 +1,17 @@
+# BP-134 positive: First errors are treated uniformly.
+lang: go
+file: BP-134-vulnerable.go
+variant: gorm-first-uniform-error
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct{}
+
+func loadUser(db *gorm.DB, user *User) error {
+	if err := db.First(user).Error; err != nil {
+		return err
+	}
+	return nil
+}

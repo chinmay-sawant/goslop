@@ -1,0 +1,25 @@
+# CWE-15 positive: external control of configuration setting
+lang: go
+file: CWE-15-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// CWE-15 External Control of System or Configuration Setting
+// Vulnerable line: gorm.Open uses client-supplied DSN from the request.
+func ApplyRuntimeDSN(c *gin.Context, factory func(string) (*gorm.DB, error)) {
+	dsn := c.Query("dsn")
+	db, err := factory(dsn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database"})
+		return
+	}
+	c.Set("db", db)
+	c.Status(http.StatusOK)
+}

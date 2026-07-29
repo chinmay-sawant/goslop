@@ -1,0 +1,11 @@
+# PERF-018 positive: append(dst, src...) full-slice copy after make
+lang: go
+file: PERF-018-vulnerable.go
+---
+package sample
+
+func CopyAll(items []int) []int {
+	result := make([]int, 0, len(items))
+	result = append(result, items...)
+	return result
+}

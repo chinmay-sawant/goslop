@@ -1,0 +1,21 @@
+# CWE-455: process exits when security-relevant TLS material cannot load.
+lang: go
+file: CWE-455-safe.go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"log"
+
+	"github.com/gin-gonic/gin"
+)
+
+func StartAPI() *gin.Engine {
+	cert, err := tls.LoadX509KeyPair("/etc/hsm/tls.crt", "/etc/hsm/tls.key")
+	if err != nil {
+		log.Fatalf("hsm tls required at startup: %v", err)
+	}
+	_ = cert
+	return gin.Default()
+}

@@ -1,0 +1,20 @@
+# PERF-231 negative: PEM parsed once at package init
+lang: go
+file: PERF-231-safe.go
+variant: stdlib
+---
+package sample
+
+import "encoding/pem"
+
+var cachedBlock *pem.Block
+
+func init() {
+	// In real code: load from file/env once.
+	cachedBlock, _ = pem.Decode([]byte("-----BEGIN PRIVATE KEY-----\nMIIE\n-----END PRIVATE KEY-----"))
+}
+
+func SignPDF(doc []byte, _ []byte) []byte {
+	_ = cachedBlock
+	return doc
+}

@@ -1,0 +1,23 @@
+# PERF-172 negative: wg.Wait but write happens inside goroutine
+lang: go
+file: PERF-172-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"strings"
+	"sync"
+)
+
+func NonBlockingHandler(w http.ResponseWriter, r *http.Request) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		_, _ = io.Copy(w, strings.NewReader("done"))
+		wg.Done()
+	}()
+	wg.Wait()
+}

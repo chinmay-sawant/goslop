@@ -1,0 +1,10 @@
+# BP-41 positive: package has no package doc comment
+lang: go
+file: bp41/BP-41-vulnerable.go
+variant: stdlib
+---
+package bp41
+
+func local() string {
+	return ""
+}

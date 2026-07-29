@@ -1,0 +1,15 @@
+# PERF-004 positive: make(map[K]V) inside loop
+lang: go
+file: PERF-004-vulnerable.go
+---
+package sample
+
+func GroupByKey(items []string) []map[string]int {
+	out := make([]map[string]int, 0, len(items))
+	for _, item := range items {
+		counts := make(map[string]int)
+		counts[item] = 1
+		out = append(out, counts)
+	}
+	return out
+}

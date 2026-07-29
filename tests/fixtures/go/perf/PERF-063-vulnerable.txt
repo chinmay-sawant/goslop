@@ -1,0 +1,19 @@
+# PERF-063 positive: binding.Validator.Engine() invoked inside a request handler
+lang: go
+file: PERF-063-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+)
+
+func ValidateInHandler(c *gin.Context) {
+	engine := binding.Validator.Engine()
+	_ = engine
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

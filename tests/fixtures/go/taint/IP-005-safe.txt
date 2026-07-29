@@ -1,0 +1,18 @@
+# IP-005: Method call chain — safe (constant arg)
+lang: go
+file: IP-005-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+type Handler struct{}
+
+func (h *Handler) Serve() {
+    h.openFile("/safe/path")
+}
+
+func (h *Handler) openFile(p string) {
+    os.Open(p)
+}

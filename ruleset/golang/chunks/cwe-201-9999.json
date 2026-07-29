@@ -1,0 +1,2828 @@
+{
+  "CWE-1051": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Configuration",
+    "description": "The product initializes data using hard-coded values that act as network resource identifiers.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1051,
+    "name": "Initialization with Hard-Coded Network Resource Configuration Data",
+    "original_description": "The product initializes data using hard-coded values that act as network resource identifiers.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1052": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product initializes a data element using a hard-coded literal that is not a simple integer or static constant element.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1052,
+    "name": "Excessive Use of Hard-Coded Literals in Initialization",
+    "original_description": "The product initializes a data element using a hard-coded literal that is not a simple integer or static constant element.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1067": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Configuration",
+    "description": "The product contains a data query against an SQL table or view that is configured in a way that does not utilize an index and may cause sequential searches to be performed.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1067,
+    "name": "Excessive Execution of Sequential Searches of Data Resource",
+    "original_description": "The product contains a data query against an SQL table or view that is configured in a way that does not utilize an index and may cause sequential searches to be performed.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1125": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product has an attack surface whose quantitative measurement exceeds a desirable maximum.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1125,
+    "name": "Excessive Attack Surface",
+    "original_description": "The product has an attack surface whose quantitative measurement exceeds a desirable maximum.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1173": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation",
+    "description": "The product does not use, or incorrectly uses, an input validation framework that is provided by the source language or an independent library.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1173,
+    "name": "Improper Use of Validation Framework",
+    "original_description": "The product does not use, or incorrectly uses, an input validation framework that is provided by the source language or an independent library.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1204": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The product uses a cryptographic primitive that uses an Initialization Vector (IV), but the product does not generate IVs that are sufficiently unpredictable or unique according to the expected cryptographic requirements for that primitive.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1204,
+    "name": "Generation of Weak Initialization Vector (IV)",
+    "original_description": "The product uses a cryptographic primitive that uses an Initialization Vector (IV), but the product does not generate IVs that are sufficiently unpredictable or unique according to the expected cryptographic requirements for that primitive.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1220": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product implements access controls via a policy or other feature with the intention to disable or restrict accesses (reads and/or writes) to assets in a system from untrusted agents. However, implemented access controls lack required granularity, which renders the control policy too broad becaus...",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1220,
+    "name": "Insufficient Granularity of Access Control",
+    "original_description": "The product implements access controls via a policy or other feature with the intention to disable or restrict accesses (reads and/or writes) to assets in a system from untrusted agents. However, implemented access controls lack required granularity, which renders the control policy too broad becaus...",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1230": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product prevents direct access to a resource containing sensitive information, but it does not sufficiently limit access to metadata that is derived from the original, sensitive information.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1230,
+    "name": "Exposure of Sensitive Information Through Metadata",
+    "original_description": "The product prevents direct access to a resource containing sensitive information, but it does not sufficiently limit access to metadata that is derived from the original, sensitive information.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1236": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation",
+    "description": "The product saves user-provided information into a Comma-Separated Value (CSV) file, but it does not neutralize or incorrectly neutralizes special elements that could be interpreted as a command when the file is opened by a spreadsheet product.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1236,
+    "name": "Improper Neutralization of Formula Elements in a CSV File",
+    "original_description": "The product saves user-provided information into a Comma-Separated Value (CSV) file, but it does not neutralize or incorrectly neutralizes special elements that could be interpreted as a command when the file is opened by a spreadsheet product.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1240": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "To fulfill the need for a cryptographic primitive, the product implements a cryptographic algorithm using a non-standard, unproven, or disallowed/non-compliant cryptographic implementation.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1240,
+    "name": "Use of a Cryptographic Primitive with a Risky Implementation",
+    "original_description": "To fulfill the need for a cryptographic primitive, the product implements a cryptographic algorithm using a non-standard, unproven, or disallowed/non-compliant cryptographic implementation.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1265": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product invokes code that is believed to be reentrant, but the code performs a call that unintentionally produces a nested invocation of the non-reentrant code.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1265,
+    "name": "Unintended Reentrant Invocation of Non-reentrant Code Via Nested Calls",
+    "original_description": "The product invokes code that is believed to be reentrant, but the code performs a call that unintentionally produces a nested invocation of the non-reentrant code.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1286": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product receives input that is expected to be well-formed - i.e., to comply with a certain syntax - but it does not validate or incorrectly validates that the input complies with the syntax.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1286,
+    "name": "Improper Validation of Syntactic Correctness of Input",
+    "original_description": "The product receives input that is expected to be well-formed - i.e., to comply with a certain syntax - but it does not validate or incorrectly validates that the input complies with the syntax.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1289": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product receives an input value that is used as a resource identifier or other type of reference, but it does not validate or incorrectly validates that the input is equivalent to a potentially-unsafe value.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1289,
+    "name": "Improper Validation of Unsafe Equivalence in Input",
+    "original_description": "The product receives an input value that is used as a resource identifier or other type of reference, but it does not validate or incorrectly validates that the input is equivalent to a potentially-unsafe value.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1322": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses a non-blocking model that relies on a single threaded process for features such as scalability, but it contains code that can block when it is invoked.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1322,
+    "name": "Use of Blocking Code in Single-threaded, Non-blocking Context",
+    "original_description": "The product uses a non-blocking model that relies on a single threaded process for features such as scalability, but it contains code that can block when it is invoked.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1327": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Network Binding",
+    "description": "Binding to an unrestricted IP address. Very common Go mistake: calling http.ListenAndServe(\":8080\", router) or similar, which binds to 0.0.0.0 and exposes the service (including database ports) to the entire network.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 1327,
+    "name": "Binding to an Unrestricted IP Address",
+    "original_description": "The product assigns the address 0.0.0.0 for a database server, a cloud service/instance, or any computing resource that communicates remotely.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1333": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Input Validation (ReDoS)",
+    "description": "Inefficient regular expression complexity (ReDoS). Go's regexp package can suffer from catastrophic backtracking when evil regex patterns are used to validate or filter user input in Gin handlers or GORM query builders.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 1333,
+    "name": "Inefficient Regular Expression Complexity",
+    "original_description": "The product uses a regular expression with a worst-case computational complexity that is inefficient and possibly exponential.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1389": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product parses numeric input assuming base 10 (decimal) values, but it does not account for inputs that use a different base number (radix).",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1389,
+    "name": "Incorrect Parsing of Numbers with Different Radices",
+    "original_description": "The product parses numeric input assuming base 10 (decimal) values, but it does not account for inputs that use a different base number (radix).",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-1392": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product uses default credentials (such as passwords or cryptographic keys) for potentially critical functionality.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 1392,
+    "name": "Use of Default Credentials",
+    "original_description": "The product uses default credentials (such as passwords or cryptographic keys) for potentially critical functionality.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-201": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The code transmits data to another actor, but a portion of the data includes sensitive information that should not be accessible to that actor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 201,
+    "name": "Insertion of Sensitive Information Into Sent Data",
+    "original_description": "The code transmits data to another actor, but a portion of the data includes sensitive information that should not be accessible to that actor.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-204": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product provides different responses to incoming requests in a way that reveals internal state information to an unauthorized actor outside of the intended control sphere.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 204,
+    "name": "Observable Response Discrepancy",
+    "original_description": "The product provides different responses to incoming requests in a way that reveals internal state information to an unauthorized actor outside of the intended control sphere.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-208": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "Two separate operations in a product require different amounts of time to complete, in a way that is observable to an actor and reveals security-relevant information about the state of the product, such as whether a particular operation was successful or not.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 208,
+    "name": "Observable Timing Discrepancy",
+    "original_description": "Two separate operations in a product require different amounts of time to complete, in a way that is observable to an actor and reveals security-relevant information about the state of the product, such as whether a particular operation was successful or not.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-209": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product generates an error message that includes sensitive information about its environment, users, or associated data.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 209,
+    "name": "Generation of Error Message Containing Sensitive Information",
+    "original_description": "The product generates an error message that includes sensitive information about its environment, users, or associated data.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-212": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product stores, transfers, or shares a resource that contains sensitive information, but it does not properly remove that information before the product makes the resource available to unauthorized actors.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 212,
+    "name": "Improper Removal of Sensitive Information Before Storage or Transfer",
+    "original_description": "The product stores, transfers, or shares a resource that contains sensitive information, but it does not properly remove that information before the product makes the resource available to unauthorized actors.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-213": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product's intended functionality exposes information to certain actors in accordance with the developer's security policy, but this information is regarded as sensitive according to the intended security policies of other stakeholders such as the product's administrator, users, or others whose i...",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 213,
+    "name": "Exposure of Sensitive Information Due to Incompatible Policies",
+    "original_description": "The product's intended functionality exposes information to certain actors in accordance with the developer's security policy, but this information is regarded as sensitive according to the intended security policies of other stakeholders such as the product's administrator, users, or others whose i...",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-214": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "A process is invoked with sensitive command-line arguments, environment variables, or other elements that can be seen by other processes on the operating system.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 214,
+    "name": "Invocation of Process Using Visible Sensitive Information",
+    "original_description": "A process is invoked with sensitive command-line arguments, environment variables, or other elements that can be seen by other processes on the operating system.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-215": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product inserts sensitive information into debugging code, which could expose this information if the debugging code is not disabled in production.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 215,
+    "name": "Insertion of Sensitive Information Into Debugging Code",
+    "original_description": "The product inserts sensitive information into debugging code, which could expose this information if the debugging code is not disabled in production.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-250": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product performs an operation at a privilege level that is higher than the minimum level required, which creates new weaknesses or amplifies the consequences of other weaknesses.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 250,
+    "name": "Execution with Unnecessary Privileges",
+    "original_description": "The product performs an operation at a privilege level that is higher than the minimum level required, which creates new weaknesses or amplifies the consequences of other weaknesses.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-252": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not check the return value from a method or function, which can prevent it from detecting unexpected states and conditions.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 252,
+    "name": "Unchecked Return Value",
+    "original_description": "The product does not check the return value from a method or function, which can prevent it from detecting unexpected states and conditions.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-256": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product stores a password in plaintext within resources such as memory or files.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 256,
+    "name": "Plaintext Storage of a Password",
+    "original_description": "The product stores a password in plaintext within resources such as memory or files.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-257": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The storage of passwords in a recoverable format makes them subject to password reuse attacks by malicious users. In fact, it should be noted that recoverable encrypted passwords provide no significant benefit over plaintext passwords since they are subject not only to reuse by malicious attackers b...",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 257,
+    "name": "Storing Passwords in a Recoverable Format",
+    "original_description": "The storage of passwords in a recoverable format makes them subject to password reuse attacks by malicious users. In fact, it should be noted that recoverable encrypted passwords provide no significant benefit over plaintext passwords since they are subject not only to reuse by malicious attackers b...",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-260": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Configuration",
+    "description": "The product stores a password in a configuration file that might be accessible to actors who do not know the password.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 260,
+    "name": "Password in Configuration File",
+    "original_description": "The product stores a password in a configuration file that might be accessible to actors who do not know the password.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-261": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "Obscuring a password with a trivial encoding does not protect the password.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 261,
+    "name": "Weak Encoding for Password",
+    "original_description": "Obscuring a password with a trivial encoding does not protect the password.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-262": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product does not have a mechanism in place for managing password aging.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 262,
+    "name": "Not Using Password Aging",
+    "original_description": "The product does not have a mechanism in place for managing password aging.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-263": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product supports password aging, but the expiration period is too long.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 263,
+    "name": "Password Aging with Long Expiration",
+    "original_description": "The product supports password aging, but the expiration period is too long.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-266": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A product incorrectly assigns a privilege to a particular actor, creating an unintended sphere of control for that actor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 266,
+    "name": "Incorrect Privilege Assignment",
+    "original_description": "A product incorrectly assigns a privilege to a particular actor, creating an unintended sphere of control for that actor.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-267": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A particular privilege, role, capability, or right can be used to perform unsafe actions that were not intended, even when it is assigned to the correct entity.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 267,
+    "name": "Privilege Defined With Unsafe Actions",
+    "original_description": "A particular privilege, role, capability, or right can be used to perform unsafe actions that were not intended, even when it is assigned to the correct entity.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-268": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "Two distinct privileges, roles, capabilities, or rights can be combined in a way that allows an entity to perform unsafe actions that would not be allowed without that combination.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 268,
+    "name": "Privilege Chaining",
+    "original_description": "Two distinct privileges, roles, capabilities, or rights can be combined in a way that allows an entity to perform unsafe actions that would not be allowed without that combination.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-270": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly manage privileges while it is switching between different contexts that have different privileges or spheres of control.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 270,
+    "name": "Privilege Context Switching Error",
+    "original_description": "The product does not properly manage privileges while it is switching between different contexts that have different privileges or spheres of control.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-272": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The elevated privilege level required to perform operations such as chroot() should be dropped immediately after the operation is performed.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 272,
+    "name": "Least Privilege Violation",
+    "original_description": "The elevated privilege level required to perform operations such as chroot() should be dropped immediately after the operation is performed.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-273": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product attempts to drop privileges but does not check or incorrectly checks to see if the drop succeeded.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 273,
+    "name": "Improper Check for Dropped Privileges",
+    "original_description": "The product attempts to drop privileges but does not check or incorrectly checks to see if the drop succeeded.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-274": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not handle or incorrectly handles when it has insufficient privileges to perform an operation, leading to resultant weaknesses.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 274,
+    "name": "Improper Handling of Insufficient Privileges",
+    "original_description": "The product does not handle or incorrectly handles when it has insufficient privileges to perform an operation, leading to resultant weaknesses.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-276": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "During installation, installed file permissions are set to allow anyone to modify those files.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 276,
+    "name": "Incorrect Default Permissions",
+    "original_description": "During installation, installed file permissions are set to allow anyone to modify those files.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-277": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "A product defines a set of insecure permissions that are inherited by objects that are created by the program.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 277,
+    "name": "Insecure Inherited Permissions",
+    "original_description": "A product defines a set of insecure permissions that are inherited by objects that are created by the program.",
+    "status": "Draft",
+    "weakness_abstraction": "Variant"
+  },
+  "CWE-278": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "A product inherits a set of insecure permissions for an object, e.g. when copying from an archive file, without user awareness or involvement.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 278,
+    "name": "Insecure Preserved Inherited Permissions",
+    "original_description": "A product inherits a set of insecure permissions for an object, e.g. when copying from an archive file, without user awareness or involvement.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Variant"
+  },
+  "CWE-279": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "While it is executing, the product sets the permissions of an object in a way that violates the intended permissions that have been specified by the user.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 279,
+    "name": "Incorrect Execution-Assigned Permissions",
+    "original_description": "While it is executing, the product sets the permissions of an object in a way that violates the intended permissions that have been specified by the user.",
+    "status": "Draft",
+    "weakness_abstraction": "Variant"
+  },
+  "CWE-280": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product does not handle or incorrectly handles when it has insufficient privileges to access resources or functionality as specified by their permissions. This may cause it to follow unexpected code paths that may leave the product in an invalid state.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 280,
+    "name": "Improper Handling of Insufficient Permissions or Privileges",
+    "original_description": "The product does not handle or incorrectly handles when it has insufficient privileges to access resources or functionality as specified by their permissions. This may cause it to follow unexpected code paths that may leave the product in an invalid state.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-281": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product does not preserve permissions or incorrectly preserves permissions when copying, restoring, or sharing objects, which can cause them to have less restrictive permissions than intended.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 281,
+    "name": "Improper Preservation of Permissions",
+    "original_description": "The product does not preserve permissions or incorrectly preserves permissions when copying, restoring, or sharing objects, which can cause them to have less restrictive permissions than intended.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-283": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly verify that a critical resource is owned by the proper entity.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 283,
+    "name": "Unverified Ownership",
+    "original_description": "The product does not properly verify that a critical resource is owned by the proper entity.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-289": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product performs authentication based on the name of a resource being accessed, or the name of the actor performing the access, but it does not properly check all possible names for that resource or actor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 289,
+    "name": "Authentication Bypass by Alternate Name",
+    "original_description": "The product performs authentication based on the name of a resource being accessed, or the name of the actor performing the access, but it does not properly check all possible names for that resource or actor.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-290": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "This attack-focused weakness is caused by incorrectly implemented authentication schemes that are subject to spoofing attacks.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 290,
+    "name": "Authentication Bypass by Spoofing",
+    "original_description": "This attack-focused weakness is caused by incorrectly implemented authentication schemes that are subject to spoofing attacks.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-294": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "A capture-replay flaw exists when the design of the product makes it possible for a malicious user to sniff network traffic and bypass authentication by replaying it to the server in question to the same effect as the original message (or with minor changes).",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 294,
+    "name": "Authentication Bypass by Capture-replay",
+    "original_description": "A capture-replay flaw exists when the design of the product makes it possible for a malicious user to sniff network traffic and bypass authentication by replaying it to the server in question to the same effect as the original message (or with minor changes).",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-301": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "Simple authentication protocols are subject to reflection attacks if a malicious user can use the target machine to impersonate a trusted user.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 301,
+    "name": "Reflection Attack in an Authentication Protocol",
+    "original_description": "Simple authentication protocols are subject to reflection attacks if a malicious user can use the target machine to impersonate a trusted user.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-303": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The requirements for the product dictate the use of an established authentication algorithm, but the implementation of the algorithm is incorrect.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 303,
+    "name": "Incorrect Implementation of Authentication Algorithm",
+    "original_description": "The requirements for the product dictate the use of an established authentication algorithm, but the implementation of the algorithm is incorrect.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-305": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The authentication algorithm is sound, but the implemented mechanism can be bypassed as the result of a separate weakness that is primary to the authentication error.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 305,
+    "name": "Authentication Bypass by Primary Weakness",
+    "original_description": "The authentication algorithm is sound, but the implemented mechanism can be bypassed as the result of a separate weakness that is primary to the authentication error.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-306": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product does not perform any authentication for functionality that requires a provable user identity or consumes a significant amount of resources.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 306,
+    "name": "Missing Authentication for Critical Function",
+    "original_description": "The product does not perform any authentication for functionality that requires a provable user identity or consumes a significant amount of resources.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-307": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product does not implement sufficient measures to prevent multiple failed authentication attempts within a short time frame.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 307,
+    "name": "Improper Restriction of Excessive Authentication Attempts",
+    "original_description": "The product does not implement sufficient measures to prevent multiple failed authentication attempts within a short time frame.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-308": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product uses an authentication algorithm that uses a single factor (e.g., a password) in a security context that should require more than one factor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 308,
+    "name": "Use of Single-factor Authentication",
+    "original_description": "The product uses an authentication algorithm that uses a single factor (e.g., a password) in a security context that should require more than one factor.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-309": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The use of password systems as the primary means of authentication may be subject to several flaws or shortcomings, each reducing the effectiveness of the mechanism.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 309,
+    "name": "Use of Password System for Primary Authentication",
+    "original_description": "The use of password systems as the primary means of authentication may be subject to several flaws or shortcomings, each reducing the effectiveness of the mechanism.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-312": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product stores sensitive information in cleartext within a resource that might be accessible to another control sphere.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 312,
+    "name": "Cleartext Storage of Sensitive Information",
+    "original_description": "The product stores sensitive information in cleartext within a resource that might be accessible to another control sphere.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-319": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product transmits sensitive or security-critical data in cleartext in a communication channel that can be sniffed by unauthorized actors.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 319,
+    "name": "Cleartext Transmission of Sensitive Information",
+    "original_description": "The product transmits sensitive or security-critical data in cleartext in a communication channel that can be sniffed by unauthorized actors.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-322": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product performs a key exchange with an actor without verifying the identity of that actor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 322,
+    "name": "Key Exchange without Entity Authentication",
+    "original_description": "The product performs a key exchange with an actor without verifying the identity of that actor.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-323": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "Nonces should be used for the present occasion and only once.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 323,
+    "name": "Reusing a Nonce, Key Pair in Encryption",
+    "original_description": "Nonces should be used for the present occasion and only once.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-324": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product uses a cryptographic key or password past its expiration date, which diminishes its safety significantly by increasing the timing window for cracking attacks against that key.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 324,
+    "name": "Use of a Key Past its Expiration Date",
+    "original_description": "The product uses a cryptographic key or password past its expiration date, which diminishes its safety significantly by increasing the timing window for cracking attacks against that key.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-325": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The product does not implement a required step in a cryptographic algorithm, resulting in weaker encryption than advertised by the algorithm.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 325,
+    "name": "Missing Cryptographic Step",
+    "original_description": "The product does not implement a required step in a cryptographic algorithm, resulting in weaker encryption than advertised by the algorithm.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-328": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses an algorithm that produces a digest (output value) that does not meet security expectations for a hash function that allows an adversary to reasonably determine the original input (preimage attack), find another input that can produce the same hash (2nd preimage attack), or find mul...",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 328,
+    "name": "Use of Weak Hash",
+    "original_description": "The product uses an algorithm that produces a digest (output value) that does not meet security expectations for a hash function that allows an adversary to reasonably determine the original input (preimage attack), find another input that can produce the same hash (2nd preimage attack), or find mul...",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-331": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses an algorithm or scheme that produces insufficient entropy, leaving patterns or clusters of values that are more likely to occur than others.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 331,
+    "name": "Insufficient Entropy",
+    "original_description": "The product uses an algorithm or scheme that produces insufficient entropy, leaving patterns or clusters of values that are more likely to occur than others.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-334": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The number of possible random values is smaller than needed by the product, making it more susceptible to brute force attacks.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 334,
+    "name": "Small Space of Random Values",
+    "original_description": "The number of possible random values is smaller than needed by the product, making it more susceptible to brute force attacks.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-335": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The product uses a Pseudo-Random Number Generator (PRNG) but does not correctly manage seeds.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 335,
+    "name": "Incorrect Usage of Seeds in Pseudo-Random Number Generator (PRNG)",
+    "original_description": "The product uses a Pseudo-Random Number Generator (PRNG) but does not correctly manage seeds.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-338": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The product uses a Pseudo-Random Number Generator (PRNG) in a security context, but the PRNG's algorithm is not cryptographically strong.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 338,
+    "name": "Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)",
+    "original_description": "The product uses a Pseudo-Random Number Generator (PRNG) in a security context, but the PRNG's algorithm is not cryptographically strong.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-341": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A number or object is predictable based on observations that the attacker can make about the state of the system or network, such as time, process ID, etc.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 341,
+    "name": "Predictable from Observable State",
+    "original_description": "A number or object is predictable based on observations that the attacker can make about the state of the system or network, such as time, process ID, etc.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-342": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "An exact value or random number can be precisely predicted by observing previous values.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 342,
+    "name": "Predictable Exact Value from Previous Values",
+    "original_description": "An exact value or random number can be precisely predicted by observing previous values.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-343": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The product's random number generator produces a series of values which, when observed, can be used to infer a relatively small range of possibilities for the next value that could be generated.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 343,
+    "name": "Predictable Value Range from Previous Values",
+    "original_description": "The product's random number generator produces a series of values which, when observed, can be used to infer a relatively small range of possibilities for the next value that could be generated.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-344": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses a constant value, name, or reference, but this value can (or should) vary across different environments.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 344,
+    "name": "Use of Invariant Value in Dynamically Changing Context",
+    "original_description": "The product uses a constant value, name, or reference, but this value can (or should) vary across different environments.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-346": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly verify that the source of data or communication is valid.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 346,
+    "name": "Origin Validation Error",
+    "original_description": "The product does not properly verify that the source of data or communication is valid.",
+    "status": "Draft",
+    "weakness_abstraction": "Class"
+  },
+  "CWE-347": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Cryptography",
+    "description": "The product does not verify, or incorrectly verifies, the cryptographic signature for data.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 347,
+    "name": "Improper Verification of Cryptographic Signature",
+    "original_description": "The product does not verify, or incorrectly verifies, the cryptographic signature for data.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-349": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Deserialization",
+    "description": "The product, when processing trusted data, accepts any untrusted data that is also included with the trusted data, treating the untrusted data as if it were trusted.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 349,
+    "name": "Acceptance of Extraneous Untrusted Data With Trusted Data",
+    "original_description": "The product, when processing trusted data, accepts any untrusted data that is also included with the trusted data, treating the untrusted data as if it were trusted.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-353": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses a transmission protocol that does not include a mechanism for verifying the integrity of the data during transmission, such as a checksum.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 353,
+    "name": "Missing Support for Integrity Check",
+    "original_description": "The product uses a transmission protocol that does not include a mechanism for verifying the integrity of the data during transmission, such as a checksum.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-356": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product's user interface does not warn the user before undertaking an unsafe action on behalf of that user. This makes it easier for attackers to trick users into inflicting damage to their system.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 356,
+    "name": "Product UI does not Warn User of Unsafe Actions",
+    "original_description": "The product's user interface does not warn the user before undertaking an unsafe action on behalf of that user. This makes it easier for attackers to trick users into inflicting damage to their system.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-358": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not implement or incorrectly implements one or more security-relevant checks as specified by the design of a standardized algorithm, protocol, or technique.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 358,
+    "name": "Improperly Implemented Security Check for Standard",
+    "original_description": "The product does not implement or incorrectly implements one or more security-relevant checks as specified by the design of a standardized algorithm, protocol, or technique.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-359": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly prevent a person's private, personal information from being accessed by actors who either (1) are not explicitly authorized to access the information or (2) do not have the implicit consent of the person about whom the information is collected.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 359,
+    "name": "Exposure of Private Personal Information to an Unauthorized Actor",
+    "original_description": "The product does not properly prevent a person's private, personal information from being accessed by actors who either (1) are not explicitly authorized to access the information or (2) do not have the implicit consent of the person about whom the information is collected.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-360": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "Security based on event locations are insecure and can be spoofed.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 360,
+    "name": "Trust of System Event Data",
+    "original_description": "Security based on event locations are insecure and can be spoofed.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-366": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Concurrency",
+    "description": "If two threads of execution use a resource simultaneously, there exists the possibility that resources may be used while invalid, in turn making the state of execution undefined.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 366,
+    "name": "Race Condition within a Thread",
+    "original_description": "If two threads of execution use a resource simultaneously, there exists the possibility that resources may be used while invalid, in turn making the state of execution undefined.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-367": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Concurrency",
+    "description": "The product checks the state of a resource before using that resource, but the resource's state can change between the check and the use in a way that invalidates the results of the check.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 367,
+    "name": "Time-of-check Time-of-use (TOCTOU) Race Condition",
+    "original_description": "The product checks the state of a resource before using that resource, but the resource's state can change between the check and the use in a way that invalidates the results of the check.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-368": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Concurrency",
+    "description": "A product performs a series of non-atomic actions to switch between contexts that cross privilege or other security boundaries, but a race condition allows an attacker to modify or misrepresent the product's behavior during the switch.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 368,
+    "name": "Context Switching Race Condition",
+    "original_description": "A product performs a series of non-atomic actions to switch between contexts that cross privilege or other security boundaries, but a race condition allows an attacker to modify or misrepresent the product's behavior during the switch.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-378": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "Opening temporary files without appropriate measures or controls can leave the file, its contents and any function that it impacts vulnerable to attack.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 378,
+    "name": "Creation of Temporary File With Insecure Permissions",
+    "original_description": "Opening temporary files without appropriate measures or controls can leave the file, its contents and any function that it impacts vulnerable to attack.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-379": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product creates a temporary file in a directory whose permissions allow unintended actors to determine the file's existence or otherwise access that file.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 379,
+    "name": "Creation of Temporary File in Directory with Insecure Permissions",
+    "original_description": "The product creates a temporary file in a directory whose permissions allow unintended actors to determine the file's existence or otherwise access that file.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-385": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "Covert timing channels convey information by modulating some aspect of system behavior over time, so that the program receiving the information can observe system behavior and infer protected information.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 385,
+    "name": "Covert Timing Channel",
+    "original_description": "Covert timing channels convey information by modulating some aspect of system behavior over time, so that the program receiving the information can observe system behavior and infer protected information.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-393": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A function or operation returns an incorrect return value or status code that does not indicate the true result of execution, causing the product to modify its behavior based on the incorrect result.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 393,
+    "name": "Return of Wrong Status Code",
+    "original_description": "A function or operation returns an incorrect return value or status code that does not indicate the true result of execution, causing the product to modify its behavior based on the incorrect result.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-403": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A process does not close sensitive file descriptors before invoking a child process, which allows the child to perform unauthorized I/O operations using those descriptors.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 403,
+    "name": "Exposure of File Descriptor to Unintended Control Sphere ('File Descriptor Leak')",
+    "original_description": "A process does not close sensitive file descriptors before invoking a child process, which allows the child to perform unauthorized I/O operations using those descriptors.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-408": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product allows an entity to perform a legitimate but expensive operation before authentication or authorization has taken place.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 408,
+    "name": "Incorrect Behavior Order: Early Amplification",
+    "original_description": "The product allows an entity to perform a legitimate but expensive operation before authentication or authorization has taken place.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-412": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product properly checks for the existence of a lock, but the lock can be externally controlled or influenced by an actor that is outside of the intended sphere of control.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 412,
+    "name": "Unrestricted Externally Accessible Lock",
+    "original_description": "The product properly checks for the existence of a lock, but the lock can be externally controlled or influenced by an actor that is outside of the intended sphere of control.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-420": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product protects a primary channel, but it does not use the same level of protection for an alternate channel.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 420,
+    "name": "Unprotected Alternate Channel",
+    "original_description": "The product protects a primary channel, but it does not use the same level of protection for an alternate channel.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-421": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Concurrency",
+    "description": "The product opens an alternate channel to communicate with an authorized user, but the channel is accessible to other actors.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 421,
+    "name": "Race Condition During Access to Alternate Channel",
+    "original_description": "The product opens an alternate channel to communicate with an authorized user, but the channel is accessible to other actors.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-425": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The web application does not adequately enforce appropriate authorization on all restricted URLs, scripts, or files.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 425,
+    "name": "Direct Request ('Forced Browsing')",
+    "original_description": "The web application does not adequately enforce appropriate authorization on all restricted URLs, scripts, or files.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-426": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product searches for critical resources using an externally-supplied search path that can point to resources that are not under the product's direct control.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 426,
+    "name": "Untrusted Search Path",
+    "original_description": "The product searches for critical resources using an externally-supplied search path that can point to resources that are not under the product's direct control.",
+    "status": "Stable",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-427": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses a fixed or controlled search path to find resources, but one or more locations in that path can be under the control of unintended actors.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 427,
+    "name": "Uncontrolled Search Path Element",
+    "original_description": "The product uses a fixed or controlled search path to find resources, but one or more locations in that path can be under the control of unintended actors.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-434": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "File Handling",
+    "description": "The product allows the upload or transfer of dangerous file types that are automatically processed within its environment.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 434,
+    "name": "Unrestricted Upload of File with Dangerous Type",
+    "original_description": "The product allows the upload or transfer of dangerous file types that are automatically processed within its environment.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-454": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product initializes critical internal variables or data stores using inputs that can be modified by untrusted actors.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 454,
+    "name": "External Initialization of Trusted Variables or Data Stores",
+    "original_description": "The product initializes critical internal variables or data stores using inputs that can be modified by untrusted actors.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-455": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Configuration",
+    "description": "The product does not exit or otherwise modify its operation when security-relevant errors occur during initialization, such as when a configuration file has a format error or a hardware security module (HSM) cannot be activated, which can cause the product to execute in a less secure fashion than in...",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 455,
+    "name": "Non-exit on Failed Initialization",
+    "original_description": "The product does not exit or otherwise modify its operation when security-relevant errors occur during initialization, such as when a configuration file has a format error or a hardware security module (HSM) cannot be activated, which can cause the product to execute in a less secure fashion than in...",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-459": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly clean up and remove temporary or supporting resources after they have been used.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 459,
+    "name": "Incomplete Cleanup",
+    "original_description": "The product does not properly clean up and remove temporary or supporting resources after they have been used.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-472": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Configuration",
+    "description": "The web application does not sufficiently verify inputs that are assumed to be immutable but are actually externally controllable, such as hidden form fields.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 472,
+    "name": "External Control of Assumed-Immutable Web Parameter",
+    "original_description": "The web application does not sufficiently verify inputs that are assumed to be immutable but are actually externally controllable, such as hidden form fields.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-488": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not sufficiently enforce boundaries between the states of different sessions, causing data to be provided to, or used by, the wrong session.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 488,
+    "name": "Exposure of Data Element to Wrong Session",
+    "original_description": "The product does not sufficiently enforce boundaries between the states of different sessions, causing data to be provided to, or used by, the wrong session.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-494": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product downloads source code or an executable from a remote location and executes the code without sufficiently verifying the origin and integrity of the code.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 494,
+    "name": "Download of Code Without Integrity Check",
+    "original_description": "The product downloads source code or an executable from a remote location and executes the code without sufficiently verifying the origin and integrity of the code.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-497": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not properly prevent sensitive system-level information from being accessed by unauthorized actors who do not have the same level of access to the underlying system as the product does.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 497,
+    "name": "Exposure of Sensitive System Information to an Unauthorized Control Sphere",
+    "original_description": "The product does not properly prevent sensitive system-level information from being accessed by unauthorized actors who do not have the same level of access to the underlying system as the product does.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-501": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Deserialization",
+    "description": "The product mixes trusted and untrusted data in the same data structure or structured message.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 501,
+    "name": "Trust Boundary Violation",
+    "original_description": "The product mixes trusted and untrusted data in the same data structure or structured message.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-502": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Deserialization",
+    "description": "Deserialization of untrusted data. In Go + Gin, this occurs when unmarshaling JSON, gob, or XML from user requests into structs (including GORM models) without validation, potentially leading to object injection or logic bypass.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 502,
+    "name": "Deserialization of Untrusted Data",
+    "original_description": "The product deserializes untrusted data without sufficiently ensuring that the resulting data will be valid.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-515": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A covert storage channel transfers information through the setting of bits by one program and the reading of those bits by another. What distinguishes this case from that of ordinary operation is that the bits are used to convey encoded information.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 515,
+    "name": "Covert Storage Channel",
+    "original_description": "A covert storage channel transfers information through the setting of bits by one program and the reading of those bits by another. What distinguishes this case from that of ordinary operation is that the bits are used to convey encoded information.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-521": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product does not require that users should have strong passwords.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 521,
+    "name": "Weak Password Requirements",
+    "original_description": "The product does not require that users should have strong passwords.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-523": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "Login pages do not use adequate measures to protect the user name and password while they are in transit from the client to the server.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 523,
+    "name": "Unprotected Transport of Credentials",
+    "original_description": "Login pages do not use adequate measures to protect the user name and password while they are in transit from the client to the server.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-524": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The code uses a cache that contains sensitive information, but the cache can be read by an actor outside of the intended control sphere.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 524,
+    "name": "Use of Cache Containing Sensitive Information",
+    "original_description": "The code uses a cache that contains sensitive information, but the cache can be read by an actor outside of the intended control sphere.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-538": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product places sensitive information into files or directories that are accessible to actors who are allowed to have access to the files, but not to the sensitive information.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 538,
+    "name": "Insertion of Sensitive Information into Externally-Accessible File or Directory",
+    "original_description": "The product places sensitive information into files or directories that are accessible to actors who are allowed to have access to the files, but not to the sensitive information.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-544": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not use a standardized method for handling errors throughout the code, which might introduce inconsistent error handling and resultant weaknesses.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 544,
+    "name": "Missing Standardized Error Handling Mechanism",
+    "original_description": "The product does not use a standardized method for handling errors throughout the code, which might introduce inconsistent error handling and resultant weaknesses.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-547": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product uses hard-coded constants instead of symbolic names for security-critical values, which increases the likelihood of mistakes during code maintenance or security policy change.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 547,
+    "name": "Use of Hard-coded, Security-relevant Constants",
+    "original_description": "The product uses hard-coded constants instead of symbolic names for security-critical values, which increases the likelihood of mistakes during code maintenance or security policy change.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-549": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product does not mask passwords during entry, increasing the potential for attackers to observe and capture passwords.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 549,
+    "name": "Missing Password Field Masking",
+    "original_description": "The product does not mask passwords during entry, increasing the potential for attackers to observe and capture passwords.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-551": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "If a web server does not fully parse requested URLs before it examines them for authorization, it may be possible for an attacker to bypass authorization protection.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 551,
+    "name": "Incorrect Behavior Order: Authorization Before Parsing and Canonicalization",
+    "original_description": "If a web server does not fully parse requested URLs before it examines them for authorization, it may be possible for an attacker to bypass authorization protection.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-552": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product makes files or directories accessible to unauthorized actors, even though they should not be.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 552,
+    "name": "Files or Directories Accessible to External Parties",
+    "original_description": "The product makes files or directories accessible to unauthorized actors, even though they should not be.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-565": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product relies on the existence or values of cookies when performing security-critical operations, but it does not properly ensure that the setting is valid for the associated user.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 565,
+    "name": "Reliance on Cookies without Validation and Integrity Checking",
+    "original_description": "The product relies on the existence or values of cookies when performing security-critical operations, but it does not properly ensure that the setting is valid for the associated user.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-601": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Request Handling",
+    "description": "The web application accepts a user-controlled input that specifies a link to an external site, and uses that link in a redirect.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 601,
+    "name": "URL Redirection to Untrusted Site ('Open Redirect')",
+    "original_description": "The web application accepts a user-controlled input that specifies a link to an external site, and uses that link in a redirect.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-603": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "A client/server product performs authentication within client code but not in server code, allowing server-side authentication to be bypassed via a modified client that omits the authentication check.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 603,
+    "name": "Use of Client-Side Authentication",
+    "original_description": "A client/server product performs authentication within client code but not in server code, allowing server-side authentication to be bypassed via a modified client that omits the authentication check.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-605": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "When multiple sockets are allowed to bind to the same port, other services on that port may be stolen or spoofed.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 605,
+    "name": "Multiple Binds to the Same Port",
+    "original_description": "When multiple sockets are allowed to bind to the same port, other services on that port may be stolen or spoofed.",
+    "status": "Draft",
+    "weakness_abstraction": "Variant"
+  },
+  "CWE-611": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product processes an XML document that can contain XML entities with URIs that resolve to documents outside of the intended sphere of control, causing the product to embed incorrect documents into its output.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 611,
+    "name": "Improper Restriction of XML External Entity Reference",
+    "original_description": "The product processes an XML document that can contain XML entities with URIs that resolve to documents outside of the intended sphere of control, causing the product to embed incorrect documents into its output.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-613": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "According to WASC, Insufficient Session Expiration is when a web site permits an attacker to reuse old session credentials or session IDs for authorization.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 613,
+    "name": "Insufficient Session Expiration",
+    "original_description": "According to WASC, Insufficient Session Expiration is when a web site permits an attacker to reuse old session credentials or session IDs for authorization.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-618": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "An ActiveX control is intended for use in a web browser, but it exposes dangerous methods that perform actions that are outside of the browser's security model (e.g. the zone or domain).",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 618,
+    "name": "Exposed Unsafe ActiveX Method",
+    "original_description": "An ActiveX control is intended for use in a web browser, but it exposes dangerous methods that perform actions that are outside of the browser's security model (e.g. the zone or domain).",
+    "status": "Incomplete",
+    "weakness_abstraction": "Variant"
+  },
+  "CWE-619": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "If a database cursor is not closed properly, then it could become accessible to other users while retaining the same privileges that were originally assigned, leaving the cursor dangling.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 619,
+    "name": "Dangling Database Cursor ('Cursor Injection')",
+    "original_description": "If a database cursor is not closed properly, then it could become accessible to other users while retaining the same privileges that were originally assigned, leaving the cursor dangling.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-620": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "When setting a new password for a user, the product does not require knowledge of the original password, or using another form of authentication.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 620,
+    "name": "Unverified Password Change",
+    "original_description": "When setting a new password for a user, the product does not require knowledge of the original password, or using another form of authentication.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-639": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The system's authorization functionality does not prevent one user from gaining access to another user's data or record by modifying the key value identifying the data.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 639,
+    "name": "Authorization Bypass Through User-Controlled Key",
+    "original_description": "The system's authorization functionality does not prevent one user from gaining access to another user's data or record by modifying the key value identifying the data.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-640": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product contains a mechanism for users to recover or change their passwords without knowing the original password, but the mechanism is weak.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 640,
+    "name": "Weak Password Recovery Mechanism for Forgotten Password",
+    "original_description": "The product contains a mechanism for users to recover or change their passwords without knowing the original password, but the mechanism is weak.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-645": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product contains an account lockout protection mechanism, but the mechanism is too restrictive and can be triggered too easily, which allows attackers to deny service to legitimate users by causing their accounts to be locked out.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 645,
+    "name": "Overly Restrictive Account Lockout Mechanism",
+    "original_description": "The product contains an account lockout protection mechanism, but the mechanism is too restrictive and can be triggered too easily, which allows attackers to deny service to legitimate users by causing their accounts to be locked out.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-648": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not conform to the API requirements for a function call that requires extra privileges. This could allow attackers to gain privileges by causing the function to be called incorrectly.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 648,
+    "name": "Incorrect Use of Privileged APIs",
+    "original_description": "The product does not conform to the API requirements for a function call that requires extra privileges. This could allow attackers to gain privileges by causing the function to be called incorrectly.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-649": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses obfuscation or encryption of inputs that should not be mutable by an external actor, but the product does not use integrity checks to detect if those inputs have been modified.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 649,
+    "name": "Reliance on Obfuscation or Encryption of Security-Relevant Inputs without Integrity Checking",
+    "original_description": "The product uses obfuscation or encryption of inputs that should not be mutable by an external actor, but the product does not use integrity checks to detect if those inputs have been modified.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-653": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product does not properly compartmentalize or isolate functionality, processes, or resources that require different privilege levels, rights, or permissions.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 653,
+    "name": "Improper Isolation or Compartmentalization",
+    "original_description": "The product does not properly compartmentalize or isolate functionality, processes, or resources that require different privilege levels, rights, or permissions.",
+    "status": "Draft",
+    "weakness_abstraction": "Class"
+  },
+  "CWE-654": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "A protection mechanism relies exclusively, or to a large extent, on the evaluation of a single condition or the integrity of a single object or entity in order to make a decision about granting access to restricted resources or functionality.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 654,
+    "name": "Reliance on a Single Factor in a Security Decision",
+    "original_description": "A protection mechanism relies exclusively, or to a large extent, on the evaluation of a single condition or the integrity of a single object or entity in order to make a decision about granting access to restricted resources or functionality.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-656": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses a protection mechanism whose strength depends heavily on its obscurity, such that knowledge of its algorithms or key data is sufficient to defeat the mechanism.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 656,
+    "name": "Reliance on Security Through Obscurity",
+    "original_description": "The product uses a protection mechanism whose strength depends heavily on its obscurity, such that knowledge of its algorithms or key data is sufficient to defeat the mechanism.",
+    "status": "Draft",
+    "weakness_abstraction": "Class"
+  },
+  "CWE-708": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product assigns an owner to a resource, but the owner is outside of the intended control sphere.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 708,
+    "name": "Incorrect Ownership Assignment",
+    "original_description": "The product assigns an owner to a resource, but the owner is outside of the intended control sphere.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-756": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Information Exposure",
+    "description": "The product does not return custom error pages to the user, possibly exposing sensitive information.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 756,
+    "name": "Missing Custom Error Page",
+    "original_description": "The product does not return custom error pages to the user, possibly exposing sensitive information.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-765": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product unlocks a critical resource more times than intended, leading to an unexpected state in the system.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 765,
+    "name": "Multiple Unlocks of a Critical Resource",
+    "original_description": "The product unlocks a critical resource more times than intended, leading to an unexpected state in the system.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-778": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 778,
+    "name": "Insufficient Logging",
+    "original_description": "When a security-critical event occurs, the product either does not record the event or omits important details about the event when logging it.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-783": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses an expression in which operator precedence causes incorrect logic to be used.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 783,
+    "name": "Operator Precedence Logic Error",
+    "original_description": "The product uses an expression in which operator precedence causes incorrect logic to be used.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-798": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 798,
+    "name": "Use of Hard-coded Credentials",
+    "original_description": "The product contains hard-coded credentials, such as a password or cryptographic key.",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-807": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses a protection mechanism that relies on the existence or values of an input, but the input can be modified by an untrusted actor in a way that bypasses the protection mechanism.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 807,
+    "name": "Reliance on Untrusted Inputs in a Security Decision",
+    "original_description": "The product uses a protection mechanism that relies on the existence or values of an input, but the input can be modified by an untrusted actor in a way that bypasses the protection mechanism.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-820": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Concurrency",
+    "description": "The product utilizes a shared resource in a concurrent manner but does not attempt to synchronize access to the resource.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 820,
+    "name": "Missing Synchronization",
+    "original_description": "The product utilizes a shared resource in a concurrent manner but does not attempt to synchronize access to the resource.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-821": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Concurrency",
+    "description": "The product utilizes a shared resource in a concurrent manner, but it does not correctly synchronize access to the resource.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 821,
+    "name": "Incorrect Synchronization",
+    "original_description": "The product utilizes a shared resource in a concurrent manner, but it does not correctly synchronize access to the resource.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-826": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product releases a resource that is still intended to be used by itself or another actor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 826,
+    "name": "Premature Release of Resource During Expected Lifetime",
+    "original_description": "The product releases a resource that is still intended to be used by itself or another actor.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-829": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product imports, requires, or includes executable functionality (such as a library) from a source that is outside of the intended control sphere.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 829,
+    "name": "Inclusion of Functionality from Untrusted Control Sphere",
+    "original_description": "The product imports, requires, or includes executable functionality (such as a library) from a source that is outside of the intended control sphere.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-836": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product records password hashes in a data store, receives a hash of a password from a client, and compares the supplied hash to the hash obtained from the data store.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 836,
+    "name": "Use of Password Hash Instead of Password for Authentication",
+    "original_description": "The product records password hashes in a data store, receives a hash of a password from a client, and compares the supplied hash to the hash obtained from the data store.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-838": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product uses or specifies an encoding when generating output to a downstream component, but the specified encoding is not the same as the encoding that is expected by the downstream component.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 838,
+    "name": "Inappropriate Encoding for Output Context",
+    "original_description": "The product uses or specifies an encoding when generating output to a downstream component, but the specified encoding is not the same as the encoding that is expected by the downstream component.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-841": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product supports a session in which more than one behavior must be performed by an actor, but it does not properly ensure that the actor performs the behaviors in the required sequence.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 841,
+    "name": "Improper Enforcement of Behavioral Workflow",
+    "original_description": "The product supports a session in which more than one behavior must be performed by an actor, but it does not properly ensure that the actor performs the behaviors in the required sequence.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Class"
+  },
+  "CWE-842": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product or the administrator places a user into an incorrect group.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 842,
+    "name": "Placement of User into Incorrect Group",
+    "original_description": "The product or the administrator places a user into an incorrect group.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-909": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product does not initialize a critical resource.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 909,
+    "name": "Missing Initialization of Resource",
+    "original_description": "The product does not initialize a critical resource.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Class"
+  },
+  "CWE-915": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product receives input from an upstream component that specifies multiple attributes, properties, or fields that are to be initialized or updated in an object, but it does not properly control which attributes can be modified.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 915,
+    "name": "Improperly Controlled Modification of Dynamically-Determined Object Attributes",
+    "original_description": "The product receives input from an upstream component that specifies multiple attributes, properties, or fields that are to be initialized or updated in an object, but it does not properly control which attributes can be modified.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-916": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Credentials & Secrets",
+    "description": "The product generates a hash for a password, but it uses a scheme that does not provide a sufficient level of computational effort that would make password cracking attacks infeasible or expensive.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 916,
+    "name": "Use of Password Hash With Insufficient Computational Effort",
+    "original_description": "The product generates a hash for a password, but it uses a scheme that does not provide a sufficient level of computational effort that would make password cracking attacks infeasible or expensive.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-917": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Injection",
+    "description": "The product constructs all or part of an expression language (EL) statement in a framework such as a Java Server Page (JSP) using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended EL statement...",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 917,
+    "name": "Improper Neutralization of Special Elements used in an Expression Language Statement ('Expression Language Injection')",
+    "original_description": "The product constructs all or part of an expression language (EL) statement in a framework such as a Java Server Page (JSP) using externally-influenced input from an upstream component, but it does not neutralize or incorrectly neutralizes special elements that could modify the intended EL statement...",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-918": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Request Handling",
+    "description": "Server-Side Request Forgery (SSRF). Common when Gin handlers make outgoing HTTP requests using URLs or hosts supplied by the client without proper allowlisting or validation.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "High",
+    "id": 918,
+    "name": "Server-Side Request Forgery (SSRF)",
+    "original_description": "The web server receives a URL or similar request from an upstream component and retrieves the contents of this URL, but it does not sufficiently ensure that the request is being sent to the expected destination.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-921": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Access Control",
+    "description": "The product stores sensitive information in a file system or device that does not have built-in access control.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 921,
+    "name": "Storage of Sensitive Data in a Mechanism without Access Control",
+    "original_description": "The product stores sensitive information in a file system or device that does not have built-in access control.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-924": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product establishes a communication channel with an endpoint and receives a message from that endpoint, but it does not sufficiently ensure that the message was not modified during transmission.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 924,
+    "name": "Improper Enforcement of Message Integrity During Transmission in a Communication Channel",
+    "original_description": "The product establishes a communication channel with an endpoint and receives a message from that endpoint, but it does not sufficiently ensure that the message was not modified during transmission.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-940": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product establishes a communication channel to handle an incoming request that has been initiated by an actor, but it does not properly verify that the request is coming from the expected origin.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 940,
+    "name": "Improper Verification of Source of a Communication Channel",
+    "original_description": "The product establishes a communication channel to handle an incoming request that has been initiated by an actor, but it does not properly verify that the request is coming from the expected origin.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  },
+  "CWE-941": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "General Security",
+    "description": "The product creates a communication channel to initiate an outgoing request to an actor, but it does not correctly specify the intended destination for that actor.",
+    "detection_notes": "Statically detectable via taint analysis, config parsing, handler inspection, and regex on dangerous patterns (e.g., .Raw( with + or fmt.Sprintf in query context).",
+    "go_relevance": "Medium",
+    "id": 941,
+    "name": "Incorrectly Specified Destination in a Communication Channel",
+    "original_description": "The product creates a communication channel to initiate an outgoing request to an actor, but it does not correctly specify the intended destination for that actor.",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base"
+  }
+}

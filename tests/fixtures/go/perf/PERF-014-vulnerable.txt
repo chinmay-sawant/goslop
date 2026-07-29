@@ -1,0 +1,20 @@
+# PERF-014 positive: filepath.Glob inside a loop
+lang: go
+file: PERF-014-vulnerable.go
+---
+package sample
+
+import (
+	"path/filepath"
+	"sort"
+)
+
+func Collect(root string, patterns []string) []string {
+	all := make([]string, 0)
+	for _, p := range patterns {
+		matches, _ := filepath.Glob(filepath.Join(root, p))
+		all = append(all, matches...)
+	}
+	sort.Strings(all)
+	return all
+}

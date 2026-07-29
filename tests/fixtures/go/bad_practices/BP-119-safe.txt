@@ -1,0 +1,12 @@
+# BP-119 negative: the Fiber context is used synchronously.
+lang: go
+file: BP-119-safe.go
+variant: fiber
+---
+package sample
+
+import "github.com/gofiber/fiber/v2"
+
+func handle(c *fiber.Ctx) string {
+	return c.Path()
+}

@@ -1,0 +1,21 @@
+# PERF-206 positive: sqlx.Unsafe with a runtime-built query name
+lang: go
+file: PERF-206-vulnerable.go
+variant: framework
+---
+package sample
+
+import (
+	"fmt"
+	"gorm.io/gorm"
+)
+
+type Order struct {
+	ID uint
+}
+
+func Load(db *gorm.DB, table string, id uint) error {
+	name := fmt.Sprintf("%s.idx", table)
+	db.Unsafe().Where(name+" = ?", id).First(&Order{})
+	return nil
+}

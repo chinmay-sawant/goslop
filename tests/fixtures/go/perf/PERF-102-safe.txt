@@ -1,0 +1,27 @@
+# PERF-102 negative: w.WriteHeader called exactly once
+lang: go
+file: PERF-102-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = r
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "text/plain")
+}
+
+func HandleError(w http.ResponseWriter, r *http.Request) {
+	_ = r
+	w.WriteHeader(http.StatusInternalServerError)
+}
+
+func HandleMethod(w http.ResponseWriter, accepted bool) {
+	if accepted {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.WriteHeader(http.StatusMethodNotAllowed)
+}

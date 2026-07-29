@@ -1,0 +1,23 @@
+# BP-110 negative: Gin checks the ShouldBindJSON error before continuing.
+lang: go
+file: BP-110-safe.go
+variant: gin
+---
+package sample
+
+import "github.com/gin-gonic/gin"
+
+type Login struct {
+	Email string `json:"email"`
+}
+
+func login(c *gin.Context) {
+	var request Login
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.AbortWithStatus(400)
+		return
+	}
+	use(request)
+}
+
+func use(Login) {}

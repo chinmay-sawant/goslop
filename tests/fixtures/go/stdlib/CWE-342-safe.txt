@@ -1,0 +1,29 @@
+# CWE-342 safe: Predictable Exact Value from Previous Values (mitigated, pure stdlib)
+lang: go
+file: CWE-342-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"database/sql"
+	"encoding/binary"
+	"net/http"
+)
+
+func AdvanceSmsCode(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	var code uint32
+	if err := binary.Read(rand.Reader, binary.BigEndian, &code); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	email := r.FormValue("email")
+	_, err := db.Exec("UPDATE login_codes SET otp = ? WHERE email = ?", code, email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

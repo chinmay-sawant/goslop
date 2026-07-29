@@ -1,0 +1,36 @@
+# CWE-260 — Password in Configuration File (safe)
+lang: go
+file: CWE-260-safe.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gopkg.in/yaml.v3"
+)
+
+type dbConfig struct {
+	Host string `yaml:"host"`
+}
+
+// Safe: credentials come from environment, not from the config file body.
+func LoadDBConfig(c *gin.Context) {
+	data, err := os.ReadFile("/etc/codehound/config.yaml")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "config"})
+		return
+	}
+	var cfg dbConfig
+	if yaml.Unmarshal(data, &cfg) != nil {
+		c.JSON(500, gin.H{"error": "parse"})
+		return
+	}
+	pw := os.Getenv("DB_PASSWORD")
+	if pw == "" {
+		c.JSON(500, gin.H{"error": "missing secret"})
+		return
+	}
+	c.Set("db_password", pw)
+}

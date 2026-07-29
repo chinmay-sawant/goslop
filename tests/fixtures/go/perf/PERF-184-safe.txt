@@ -1,0 +1,14 @@
+# PERF-184 negative: mime.TypeByExtension called once in a startup hook
+lang: go
+file: PERF-184-safe.go
+variant: stdlib
+---
+package sample
+
+import "mime"
+
+var htmlType = mime.TypeByExtension(".html")
+
+func ContentType(ext string) string {
+	return mime.TypeByExtension(ext)
+}

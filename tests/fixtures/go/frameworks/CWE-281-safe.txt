@@ -1,0 +1,29 @@
+# CWE-281 — Improper Preservation of Permissions (safe)
+lang: go
+file: CWE-281-safe.go
+---
+package sample
+
+import (
+	"io"
+	"os"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Safe: copies content then reapplies source permission bits.
+func BackupConfig(c *gin.Context) {
+	src := "/etc/app/config.toml"
+	dst := "/backups/config.toml"
+	info, err := os.Stat(src)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "stat"})
+		return
+	}
+	in, _ := os.Open(src)
+	out, _ := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+	_, _ = io.Copy(out, in)
+	in.Close()
+	out.Close()
+	c.JSON(200, gin.H{"backup": dst})
+}

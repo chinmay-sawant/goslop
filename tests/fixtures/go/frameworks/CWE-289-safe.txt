@@ -1,0 +1,25 @@
+# CWE-289 — Authentication Bypass by Alternate Name (safe)
+lang: go
+file: CWE-289-safe.go
+---
+package sample
+
+import (
+	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Safe: matches canonical principal id including realm suffix.
+func LookupPrincipal(c *gin.Context, db *sqlx.DB) {
+	who := strings.ToLower(strings.TrimSpace(c.Query("user")))
+	var count int
+	err := db.Get(&count, "SELECT COUNT(*) FROM principals WHERE canonical_name = ?", who)
+	if err != nil || count == 0 {
+		c.JSON(401, gin.H{"error": "unknown principal"})
+		return
+	}
+	c.Set("authenticated", true)
+	c.JSON(200, gin.H{"ok": true})
+}

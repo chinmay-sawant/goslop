@@ -1,0 +1,22 @@
+# BP-154 negative: json.Unmarshal error is checked
+lang: go
+file: BP-154-safe.go
+variant: encoding-json
+---
+package sample
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func decode(data []byte, cfg *Config) error {
+	if err := json.Unmarshal(data, cfg); err != nil {
+		return fmt.Errorf("decode config: %w", err)
+	}
+	return nil
+}
+
+type Config struct {
+	Name string `json:"name"`
+}

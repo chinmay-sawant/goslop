@@ -1,0 +1,19 @@
+# PERF-038 positive: unbuffered channel in a producer/consumer pipeline
+lang: go
+file: PERF-038-vulnerable.go
+---
+package sample
+
+import "fmt"
+
+func Pipeline(input []int) {
+	ch := make(chan int)
+	go func() {
+		for v := range ch {
+			fmt.Println(v)
+		}
+	}()
+	for _, v := range input {
+		ch <- v
+	}
+}

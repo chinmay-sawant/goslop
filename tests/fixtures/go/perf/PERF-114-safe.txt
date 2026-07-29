@@ -1,0 +1,20 @@
+# PERF-114 negative: intermediate conversion is not a pure memmove copy
+lang: go
+file: PERF-114-safe.go
+variant: stdlib
+---
+package sample
+
+func convert(value int64) int64 {
+	return value
+}
+
+// Convert maps each source value through a required element conversion.
+func Convert(src []int64) []int64 {
+	dst := make([]int64, len(src))
+	for i, value := range src {
+		converted := convert(value)
+		dst[i] = converted
+	}
+	return dst
+}

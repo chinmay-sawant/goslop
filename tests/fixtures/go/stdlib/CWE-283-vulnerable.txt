@@ -1,0 +1,27 @@
+# CWE-283 — Unverified Ownership (vulnerable) (pure stdlib)
+lang: go
+file: CWE-283-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+// Vulnerable: deletes user file without confirming the inode owner matches caller.
+func DeleteUserFile(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	path := r.URL.Query().Get("path")
+	if path == "" {
+		http.Error(w, "missing path", http.StatusBadRequest)
+		return
+	}
+	_ = os.Remove(path)
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"removed":true}`))
+}

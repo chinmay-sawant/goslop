@@ -1,0 +1,31 @@
+# CWE-472: hidden form field trusted as immutable role for authorization.
+lang: go
+file: CWE-472-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type refundForm struct {
+	OrderID string `form:"order_id"`
+	Role    string `form:"role"`
+}
+
+func RefundOrder(c *gin.Context, db *gorm.DB) {
+	var body refundForm
+	if err := c.ShouldBind(&body); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	if body.Role != "manager" {
+		c.String(http.StatusForbidden, "forbidden")
+		return
+	}
+	db.Exec("UPDATE orders SET status = 'refunded' WHERE id = ?", body.OrderID)
+	c.Status(http.StatusOK)
+}

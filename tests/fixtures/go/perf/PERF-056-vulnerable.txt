@@ -1,0 +1,19 @@
+# PERF-056 positive: c.JSON called inside a for-range loop in a Gin handler
+lang: go
+file: PERF-056-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ListUsers(c *gin.Context) {
+	users := []string{"alice", "bob", "carol"}
+	for _, u := range users {
+		c.JSON(http.StatusOK, gin.H{"user": u})
+	}
+	_ = http.StatusOK
+}

@@ -1,0 +1,15 @@
+# BP-162 positive: a parallel test mutates package-level state.
+lang: go
+file: BP-162-vulnerable_test.go
+variant: shared-parallel-state
+---
+package sample
+
+import "testing"
+
+var sharedResults = map[string]int{}
+
+func TestParallelWritesSharedState(t *testing.T) {
+	t.Parallel()
+	sharedResults["ready"] = 1
+}

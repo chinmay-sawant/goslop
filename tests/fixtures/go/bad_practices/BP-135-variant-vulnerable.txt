@@ -1,0 +1,21 @@
+# BP-135 variant positive: a GORM handler uses the global handle for First.
+lang: go
+file: BP-135-variant-vulnerable.go
+variant: gorm-global-first
+---
+package sample
+
+import (
+	"net/http"
+
+	"gorm.io/gorm"
+)
+
+var DB *gorm.DB
+
+type User struct{}
+
+func getUser(w http.ResponseWriter, r *http.Request) {
+	var user User
+	DB.First(&user)
+}

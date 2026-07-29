@@ -1,0 +1,16 @@
+# BP-51 negative: main package owns the recovery path
+lang: go
+file: BP-51-safe.go
+variant: stdlib
+---
+package main
+
+import "log"
+
+func main() {
+	defer func() {
+		if recover() != nil {
+			log.Printf("recovered panic")
+		}
+	}()
+}

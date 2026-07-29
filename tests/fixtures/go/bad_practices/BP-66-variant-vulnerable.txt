@@ -1,0 +1,19 @@
+# BP-66 positive variant: a package-qualified wrapped sentinel is compared with !=.
+lang: go
+file: BP-66-variant-vulnerable.go
+variant: qualified-sentinel
+---
+package sample
+
+import (
+	"fmt"
+	"io/fs"
+)
+
+func load() error {
+	err := fmt.Errorf("load: %w", fs.ErrNotExist)
+	if err != fs.ErrNotExist {
+		return err
+	}
+	return nil
+}

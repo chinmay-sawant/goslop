@@ -1,0 +1,31 @@
+# CWE-22 negative: filename-only policy under baseDir
+lang: go
+file: CWE-22-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-22 Improper Limitation of a Pathname to a Restricted Directory (mitigated)
+func DownloadArtifact(c *gin.Context) {
+	baseDir := "/var/app/storage"
+	name := c.Param("name")
+	target := filepath.Join(baseDir, filepath.Base(name))
+	if !strings.HasPrefix(target, baseDir+string(os.PathSeparator)) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid"})
+		return
+	}
+	data, err := os.ReadFile(target)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "missing"})
+		return
+	}
+	c.Data(http.StatusOK, "application/octet-stream", data)
+}

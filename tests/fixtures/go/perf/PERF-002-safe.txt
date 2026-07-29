@@ -1,0 +1,41 @@
+# PERF-002 negative: strconv.AppendInt with reused buffer; numeric sum must not trigger string-concat rule
+lang: go
+file: PERF-002-safe.go
+---
+package sample
+
+import (
+	"strconv"
+	"strings"
+)
+
+func JoinNumbers(values []int) string {
+	parts := make([]string, len(values))
+	buf := make([]byte, 0, 16)
+	for i, v := range values {
+		buf = strconv.AppendInt(buf[:0], int64(v), 10)
+		parts[i] = strings.Clone(string(buf))
+	}
+	var b strings.Builder
+	for _, p := range parts {
+		b.WriteString(p)
+		b.WriteByte(',')
+	}
+	return b.String()
+}
+
+func SumDoubles(durations []float64) float64 {
+	totalDur := 0.0
+	for _, d := range durations {
+		totalDur += d
+	}
+	return totalDur
+}
+
+func SumInts(values []int) int {
+	var total int
+	for _, v := range values {
+		total += v
+	}
+	return total
+}

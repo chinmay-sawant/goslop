@@ -1,0 +1,15 @@
+# PERF-217 positive: static computation rebuilt on hot generate path
+lang: go
+file: PERF-217-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func buildStaticConfig() []byte {
+	return []byte("static-config")
+}
+
+func GenerateReport() []byte {
+	// Deterministic config rebuilt on every generate call.
+	return buildStaticConfig()
+}

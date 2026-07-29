@@ -1,0 +1,41 @@
+# CWE-1265 negative: lock scope avoids nested acquisition (pure stdlib)
+lang: go
+file: CWE-1265-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1265 mitigated: helper performs SQL update; handler holds lock only once per path.
+
+import (
+	"database/sql"
+	"net/http"
+	"sync"
+)
+
+var ledgerMuSafePure sync.Mutex
+
+func applyBalanceDeltaPure(db *sql.DB, userID int, delta float64) error {
+	_, err := db.Exec(
+		"UPDATE balances SET amount = amount + $1 WHERE user_id = $2", delta, userID,
+	)
+	return err
+}
+
+func PostTransferSafePure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fromID, toID := 1, 2
+		amount := 10.0
+		ledgerMuSafePure.Lock()
+		defer ledgerMuSafePure.Unlock()
+		if err := applyBalanceDeltaPure(db, fromID, -amount); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := applyBalanceDeltaPure(db, toID, amount); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}

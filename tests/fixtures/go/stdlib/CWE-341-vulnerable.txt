@@ -1,0 +1,26 @@
+# CWE-341 vulnerable: Predictable from Observable State (positive, pure stdlib)
+lang: go
+file: CWE-341-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+)
+
+func BuildPairingCode(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	device := r.URL.Query().Get("device")
+	code := fmt.Sprintf("%d-%d-%s", os.Getpid(), time.Now().Unix(), device)
+	_, err := db.Exec("INSERT INTO pairing_codes (code) VALUES (?)", code)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusCreated)
+	return nil
+}

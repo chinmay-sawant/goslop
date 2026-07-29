@@ -1,0 +1,29 @@
+# CWE-324 vulnerable: Use of a Key Past its Expiration Date (positive, pure stdlib)
+lang: go
+file: CWE-324-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"net/http"
+	"time"
+)
+
+type SigningKey struct {
+	Secret    string
+	ExpiresAt time.Time
+}
+
+func VerifyPartnerSignature(w http.ResponseWriter, r *http.Request, key SigningKey) {
+	body := []byte(r.URL.Query().Get("payload"))
+	mac := hmac.New(sha256.New, []byte(key.Secret))
+	mac.Write(body)
+	expected := mac.Sum(nil)
+	provided := []byte(r.Header.Get("X-Signature"))
+	if len(provided) == len(expected) {
+		w.WriteHeader(http.StatusOK)
+	}
+}

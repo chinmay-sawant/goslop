@@ -1,0 +1,14 @@
+# BP-133 positive: a GORM chain result is used without checking Error.
+lang: go
+file: BP-133-vulnerable.go
+variant: gorm-find-chain
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct{}
+
+func listUsers(db *gorm.DB, users *[]User) {
+	db.Where("active = ?", true).Find(users)
+}

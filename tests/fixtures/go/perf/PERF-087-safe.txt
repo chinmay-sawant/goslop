@@ -1,0 +1,24 @@
+# PERF-87 negative: handler uses a custom binder for the trusted path
+lang: go
+file: PERF-087-safe.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+)
+
+type LoginRequest struct {
+	User string `json:"user"`
+	Pass string `json:"pass"`
+}
+
+type TrustedBinder struct{}
+
+func (TrustedBinder) Bind(i interface{}, c echo.Context) error { return nil }
+
+func Login(c echo.Context) error {
+	var req LoginRequest
+	_ = TrustedBinder{}.Bind(&req, c)
+	return c.String(200, req.User)
+}

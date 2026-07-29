@@ -1,0 +1,40 @@
+# CWE-425 negative: admin export gated by role middleware (pure stdlib)
+lang: go
+file: CWE-425-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+func ServeAdminExport(db *sql.DB) {
+	http.Handle("/internal/admin/export.csv", requireAdmin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rows, err := db.Query("SELECT email, ssn FROM customers")
+		if err != nil {
+			http.Error(w, "export failed", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		out := []map[string]string{}
+		for rows.Next() {
+			var email, ssn string
+			_ = rows.Scan(&email, &ssn)
+			out = append(out, map[string]string{"email": email, "ssn": ssn})
+		}
+		_ = json.NewEncoder(w).Encode(out)
+	})))
+}
+
+func requireAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-Role") != "admin" {
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

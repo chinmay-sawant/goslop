@@ -1,0 +1,31 @@
+# CWE-544: inconsistent ad-hoc error handling across handlers.
+lang: go
+file: CWE-544-vulnerable.go
+---
+package sample
+
+import (
+	"log"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func FetchProfile(c *gin.Context, db *sqlx.DB) {
+	var name string
+	err := db.Get(&name, "SELECT name FROM users WHERE id = ?", c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+	c.String(http.StatusOK, name)
+}
+
+func FetchBalance(c *gin.Context, db *sqlx.DB) {
+	var balance float64
+	err := db.Get(&balance, "SELECT balance FROM accounts WHERE id = ?", c.Param("id"))
+	if err != nil {
+		log.Println(err)
+	}
+	c.JSON(http.StatusOK, gin.H{"balance": balance})
+}

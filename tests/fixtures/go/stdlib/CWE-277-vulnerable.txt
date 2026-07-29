@@ -1,0 +1,29 @@
+# CWE-277 — Insecure Inherited Permissions (vulnerable) (pure stdlib)
+lang: go
+file: CWE-277-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"syscall"
+)
+
+// Vulnerable: clears umask so child files inherit overly permissive modes.
+func ProvisionWorkspace(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	dir := r.URL.Query().Get("dir")
+	if dir == "" {
+		http.Error(w, "missing dir", http.StatusBadRequest)
+		return
+	}
+	old := syscall.Umask(0)
+	defer syscall.Umask(old)
+	_ = os.MkdirAll(dir, 0777)
+	w.WriteHeader(http.StatusCreated)
+}

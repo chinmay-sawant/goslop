@@ -1,0 +1,28 @@
+# CWE-281 — Improper Preservation of Permissions (vulnerable) (pure stdlib)
+lang: go
+file: CWE-281-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"os"
+)
+
+// Vulnerable: copy recreates file with default permissive mode.
+func BackupConfig(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	src := "/etc/app/config.toml"
+	dst := "/backups/config.toml"
+	in, _ := os.Open(src)
+	out, _ := os.Create(dst)
+	_, _ = io.Copy(out, in)
+	in.Close()
+	out.Close()
+	w.WriteHeader(http.StatusOK)
+}

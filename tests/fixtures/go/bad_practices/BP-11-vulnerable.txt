@@ -1,0 +1,15 @@
+# BP-11 positive: defer inside loop
+lang: go
+file: BP-11-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func OpenMany(paths []string) {
+	for _, p := range paths {
+		f, _ := os.Open(p)
+		defer f.Close()
+	}
+}

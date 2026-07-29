@@ -1,0 +1,10 @@
+# BP-156 positive variant: an API token is tagged with omitempty.
+lang: go
+file: BP-156-variant-vulnerable.go
+variant: token-omitempty
+---
+package api
+
+type Session struct {
+	Token string `json:"token,omitempty"`
+}

@@ -1,0 +1,16 @@
+# BP-66 negative variant: direct comparison is against nil, not a wrapped sentinel.
+lang: go
+file: BP-66-variant-safe.go
+variant: nil-comparison
+---
+package sample
+
+import "fmt"
+
+func load() error {
+	wrapped := fmt.Errorf("load failed: %w", fmt.Errorf("inner"))
+	if wrapped != nil {
+		return fmt.Errorf("load failed: %w", wrapped)
+	}
+	return nil
+}

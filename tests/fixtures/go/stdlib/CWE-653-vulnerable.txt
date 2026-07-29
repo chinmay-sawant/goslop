@@ -1,0 +1,37 @@
+# CWE-653: Improper Isolation or Compartmentalization (pure stdlib)
+lang: go
+file: CWE-653-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+type AuditLog struct {
+	ID      int    `json:"id"`
+	Message string `json:"message"`
+}
+
+var sharedAuditStore []AuditLog
+
+// Vulnerable: public and admin routes share the same privileged data store.
+func PublicSearch(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query().Get("q")
+	var out []AuditLog
+	for _, row := range sharedAuditStore {
+		if q == "" || strings.Contains(row.Message, q) {
+			out = append(out, row)
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(out)
+}
+
+func AdminPurge(w http.ResponseWriter, r *http.Request) {
+	sharedAuditStore = nil
+	w.WriteHeader(http.StatusOK)
+}

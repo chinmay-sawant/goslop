@@ -1,0 +1,31 @@
+# CWE-502 negative: JSON role change validated before update (pure stdlib)
+lang: go
+file: CWE-502-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type roleChangeRequest struct {
+	UserID uint   `json:"user_id"`
+	Grant  string `json:"grant"`
+}
+
+func ApplyPrivilege(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var req roleChangeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if req.Grant != "viewer" && req.Grant != "editor" {
+		http.Error(w, "invalid grant", http.StatusBadRequest)
+		return
+	}
+	_, _ = db.Exec("UPDATE users SET role = ? WHERE id = ?", req.Grant, req.UserID)
+	w.WriteHeader(http.StatusOK)
+}

@@ -1,0 +1,21 @@
+# PERF-119 positive: consecutive appends to the same slice
+lang: go
+file: PERF-119-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Build(parts []string) []string {
+	var out []string
+	out = append(out, "a")
+	out = append(out, "b")
+	out = append(out, "c")
+	return out
+}
+
+func _() {
+	out := Build(nil)
+	fmt.Println(out)
+}

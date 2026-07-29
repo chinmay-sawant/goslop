@@ -1,0 +1,22 @@
+# PERF-025 positive: rsa.GenerateKey in a request handler
+lang: go
+file: PERF-025-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func IssueToken(c *gin.Context) {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"n": priv.N.String()})
+}

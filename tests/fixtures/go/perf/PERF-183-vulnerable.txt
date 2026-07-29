@@ -1,0 +1,22 @@
+# PERF-183 positive: context.WithTimeout inside a loop
+lang: go
+file: PERF-183-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"time"
+)
+
+func PerCall(items []int) []int {
+	out := make([]int, 0, len(items))
+	for _, item := range items {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		_ = ctx
+		_ = cancel
+		out = append(out, item)
+	}
+	return out
+}

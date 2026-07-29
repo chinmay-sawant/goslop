@@ -1,0 +1,9 @@
+# go.mod-less dependency fixture: importer
+lang: go
+file: cache/no_go_mod/pkg/handler.go
+---
+package handler
+
+import "pkg/db"
+
+func Handle() { db.Run() }

@@ -1,0 +1,32 @@
+# CWE-260 — Password in Configuration File (vulnerable)
+lang: go
+file: CWE-260-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gopkg.in/yaml.v3"
+)
+
+type dbConfig struct {
+	Host     string `yaml:"host"`
+	Password string `yaml:"password"`
+}
+
+// Vulnerable: loads database password from a world-readable config file on disk.
+func LoadDBConfig(c *gin.Context) {
+	data, err := os.ReadFile("/etc/codehound/config.yaml")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "config"})
+		return
+	}
+	var cfg dbConfig
+	if yaml.Unmarshal(data, &cfg) != nil {
+		c.JSON(500, gin.H{"error": "parse"})
+		return
+	}
+	c.Set("db_password", cfg.Password)
+}

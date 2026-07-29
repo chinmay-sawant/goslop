@@ -1,0 +1,17 @@
+# PERF-184 positive: mime.TypeByExtension in a handler
+lang: go
+file: PERF-184-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"mime"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	t := mime.TypeByExtension(".html")
+	w.Header().Set("Content-Type", t)
+	w.WriteHeader(200)
+}

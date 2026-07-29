@@ -1,0 +1,21 @@
+# BP-10 negative: ticker reused outside loop
+lang: go
+file: BP-10-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+// Poll reuses one ticker across loop iterations.
+func Poll(stop <-chan struct{}) {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+		case <-stop:
+			return
+		}
+	}
+}

@@ -1,0 +1,15 @@
+# PERF-002 positive: s += part inside loop
+lang: go
+file: PERF-002-vulnerable.go
+---
+package sample
+
+import "strconv"
+
+func JoinNumbers(values []int) string {
+	s := ""
+	for _, v := range values {
+		s += strconv.Itoa(v) + ","
+	}
+	return s
+}

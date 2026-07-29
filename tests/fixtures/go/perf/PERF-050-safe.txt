@@ -1,0 +1,17 @@
+# PERF-050 negative: the pattern is compiled once at package scope
+lang: go
+file: PERF-050-safe.go
+---
+package sample
+
+import "regexp"
+
+var headerRE = regexp.MustCompile(`^[A-Z]+$`)
+
+func FindHits(rows []string) []bool {
+	hits := make([]bool, 0, len(rows))
+	for _, r := range rows {
+		hits = append(hits, headerRE.MatchString(r))
+	}
+	return hits
+}

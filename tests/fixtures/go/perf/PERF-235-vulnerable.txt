@@ -1,0 +1,19 @@
+# PERF-235 positive: temporary builder flushed through .String() into sink
+lang: go
+file: PERF-235-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"strings"
+)
+
+func Render(dst *bytes.Buffer, parts []string) {
+	var sb strings.Builder
+	for _, p := range parts {
+		sb.WriteString(p)
+	}
+	dst.WriteString(sb.String())
+}

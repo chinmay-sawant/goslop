@@ -1,0 +1,19 @@
+# PERF-119 negative: single variadic append
+lang: go
+file: PERF-119-safe.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Build(parts []string) []string {
+	out := make([]string, 0, 3)
+	out = append(out, "a", "b", "c")
+	return out
+}
+
+func _() {
+	out := Build(nil)
+	fmt.Println(out)
+}

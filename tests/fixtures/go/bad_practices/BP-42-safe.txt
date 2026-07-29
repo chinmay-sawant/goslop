@@ -1,0 +1,13 @@
+# BP-42 negative: import alias is used repeatedly
+lang: go
+file: BP-42-safe.go
+variant: stdlib
+---
+package sample
+
+import jsonpkg "encoding/json"
+
+func useAlias(data []byte) ([]byte, bool, error) {
+	encoded, err := jsonpkg.Marshal(map[string]bool{"ok": jsonpkg.Valid(data)})
+	return encoded, jsonpkg.Valid(data), err
+}

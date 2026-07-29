@@ -1,0 +1,10 @@
+# BP-3 negative: panic in main is allowed
+lang: go
+file: BP-3-safe.go
+variant: stdlib
+---
+package main
+
+func main() {
+	panic("fatal startup error")
+}

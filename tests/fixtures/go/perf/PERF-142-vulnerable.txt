@@ -1,0 +1,16 @@
+# PERF-142 positive: r.Body read without MaxBytesReader
+lang: go
+file: PERF-142-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	body, _ := io.ReadAll(r.Body)
+	_, _ = w.Write(body)
+}

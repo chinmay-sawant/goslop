@@ -1,0 +1,18 @@
+# PERF-88 negative: static handler sets explicit cache headers
+lang: go
+file: PERF-088-safe.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"net/http"
+)
+
+func Register(e *echo.Echo) {
+	e.Static("/assets", "./public")
+	e.GET("/robots.txt", func(c echo.Context) error {
+		c.Response().Header().Set("Cache-Control", "public, max-age=86400")
+		return c.NoContent(http.StatusOK)
+	})
+}

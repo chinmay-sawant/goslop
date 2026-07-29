@@ -1,0 +1,11 @@
+# BP-94 positive variant: a named map is written from fire-and-forget code
+lang: go
+file: BP-94-variant-vulnerable.go
+---
+package sample
+
+func update(values map[string]string) {
+	go func() {
+		values["ready"] = "yes"
+	}()
+}

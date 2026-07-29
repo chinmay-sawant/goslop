@@ -1,0 +1,25 @@
+# CWE-524: sensitive tokens stored in request-scoped context, not shared cache.
+lang: go
+file: CWE-524-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func CacheSessionToken(c *gin.Context) {
+	c.Set("session_token", c.GetHeader("Authorization"))
+	c.Status(http.StatusOK)
+}
+
+func FetchCachedToken(c *gin.Context) {
+	if c.GetString("uid") != c.Query("uid") {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	tok, _ := c.Get("session_token")
+	c.String(http.StatusOK, tok.(string))
+}

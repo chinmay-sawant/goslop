@@ -1,0 +1,16 @@
+# PERF-238 negative: compact bitset for BMP membership
+lang: go
+file: PERF-238-safe.go
+variant: stdlib
+---
+package sample
+
+func MarkUsed(text string, bits *[8192]uint64) {
+	for _, r := range text {
+		if r > 0xFFFF {
+			continue
+		}
+		u := uint32(r)
+		bits[u>>6] |= 1 << (u & 63)
+	}
+}

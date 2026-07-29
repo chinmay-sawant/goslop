@@ -1,0 +1,27 @@
+# CWE-263 — Password Aging with Long Expiration (safe)
+lang: go
+file: CWE-263-safe.go
+---
+package sample
+
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Policy struct {
+	MaxAgeDays int
+}
+
+// Safe: enforces a 90-day maximum password lifetime.
+func CheckPasswordPolicy(c *gin.Context, db *gorm.DB) {
+	policy := Policy{MaxAgeDays: 90}
+	changed := c.GetTime("password_changed")
+	if time.Since(changed) < time.Duration(policy.MaxAgeDays)*24*time.Hour {
+		c.JSON(200, gin.H{"ok": true})
+		return
+	}
+	c.JSON(403, gin.H{"error": "expired"})
+}

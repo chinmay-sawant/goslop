@@ -1,0 +1,27 @@
+# CWE-93 positive: CRLF injected into HTTP header value (pure stdlib)
+lang: go
+file: CWE-93-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+// CWE-93 Improper Neutralization of CRLF Sequences
+// Vulnerable line: return URL copied into Location header raw.
+func SendContinueRedirect(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	returnURL := r.URL.Query().Get("return")
+	if returnURL == "" {
+		returnURL = "/home"
+	}
+	base := "https://portal.example/auth?next="
+	w.Header().Set("Location", base+returnURL)
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusFound)
+}

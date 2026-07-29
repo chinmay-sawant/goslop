@@ -1,0 +1,17 @@
+# BP-94 negative: the map write is protected by a mutex
+lang: go
+file: BP-94-safe.go
+---
+package sample
+
+import "sync"
+
+func update() {
+	cache := make(map[string]int)
+	var mu sync.Mutex
+	go func() {
+		mu.Lock()
+		cache["ready"] = 1
+		mu.Unlock()
+	}()
+}

@@ -1,0 +1,22 @@
+# CWE-454: MFA policy loaded from server config, not client POST body.
+lang: go
+file: CWE-454-safe.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+var enforceMFA bool
+
+func BootstrapSecurity(r *gin.Engine, db *gorm.DB) {
+	enforceMFA = os.Getenv("ENFORCE_MFA") == "true"
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"mfa": enforceMFA})
+	})
+	db.Exec("UPDATE settings SET mfa = ?", enforceMFA)
+}

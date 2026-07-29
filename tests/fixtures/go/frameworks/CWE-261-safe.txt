@@ -1,0 +1,30 @@
+# CWE-261 — Weak Encoding for Password (safe)
+lang: go
+file: CWE-261-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID       uint
+	Username string
+	Secret   string
+}
+
+// Safe: bcrypt one-way hash, not reversible encoding.
+func RegisterUser(c *gin.Context, db *gorm.DB) {
+	pw := c.PostForm("password")
+	hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "hash"})
+		return
+	}
+	acct := Account{Username: c.PostForm("username"), Secret: string(hash)}
+	db.Create(&acct)
+	c.JSON(201, gin.H{"ok": true})
+}

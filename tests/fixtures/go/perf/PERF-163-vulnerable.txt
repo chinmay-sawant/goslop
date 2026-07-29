@@ -1,0 +1,24 @@
+# PERF-163 positive: db.Query for a single-row query
+lang: go
+file: PERF-163-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "database/sql"
+
+func FindUser(db *sql.DB, id int) (string, error) {
+	rows, err := db.Query("SELECT name FROM users WHERE id = ?", id)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+	if rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return "", err
+		}
+		return name, nil
+	}
+	return "", sql.ErrNoRows
+}

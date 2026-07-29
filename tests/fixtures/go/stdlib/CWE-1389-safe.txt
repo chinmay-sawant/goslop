@@ -1,0 +1,35 @@
+# CWE-1389 negative: explicit base-10 parsing (pure stdlib)
+lang: go
+file: CWE-1389-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1389 mitigated: ParseInt with base 10 rejects octal and hex prefixes.
+
+import (
+	"database/sql"
+	"net/http"
+	"strconv"
+)
+
+func ReserveSeatsSafePure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		raw := r.URL.Query().Get("count")
+		seats, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil || seats <= 0 {
+			http.Error(w, "invalid count", http.StatusBadRequest)
+			return
+		}
+		showID := r.URL.Query().Get("show")
+		_, err = db.Exec(
+			"UPDATE shows SET reserved = reserved + $1 WHERE id = $2", seats, showID,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"reserved":true}`))
+	}
+}

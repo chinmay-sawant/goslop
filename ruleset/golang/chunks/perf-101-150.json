@@ -1,0 +1,729 @@
+{
+  "PERF-101": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "echo",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "An http.Server is created without ReadTimeout, WriteTimeout, or IdleTimeout configured. Without these timeouts, slow clients can hold connections indefinitely, exhausting goroutines and file descriptors under load. This is a Slowloris-style DoS vector in production Go services.",
+    "detection_notes": "Match http.Server composite literals that do not set ReadTimeout, WriteTimeout, or IdleTimeout fields.",
+    "go_relevance": "High",
+    "id": 101,
+    "name": "HTTP Server Timeouts Not Configured",
+    "original_description": "http.Server missing ReadTimeout/WriteTimeout/IdleTimeout configuration",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-102": {
+    "applicable_to": [
+      "golang",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Creates a new http.Transport instance per http.Client instead of sharing a single transport across clients. The http.Transport maintains a connection pool for keep-alive and TLS session resumption; creating new transports fragments this pool and causes redundant TLS handshakes.",
+    "detection_notes": "Match http.Transport{} composite literals; check if they are assigned to a globally shared variable or recreated per-client.",
+    "go_relevance": "High",
+    "id": 102,
+    "name": "HTTP Transport Not Shared Across Requests",
+    "original_description": "http.Transport created per-client instead of shared globally",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-103": {
+    "applicable_to": [
+      "golang",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Failing to close http.Response.Body leaks TCP connections from the connection pool. Even if all bytes are read, the connection cannot be reused for keep-alive unless the body is fully consumed AND closed. Over time this causes connection pool exhaustion and file descriptor leaks.",
+    "detection_notes": "Heuristic: find calls to client.Do, client.Get, http.Get, http.Post, http.PostForm, client.Post, or client.Post and flag when the source after the call does not contain '.Body.Close('. A precise control-flow check would be ideal; this substring scan trades a small false-negative rate for Category-A simplicity.",
+    "go_relevance": "High",
+    "id": 103,
+    "name": "HTTP Response Body Not Closed",
+    "original_description": "http.Response.Body not closed after client.Do/Get/Post",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-104": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls w.WriteHeader() multiple times in a single HTTP handler. The first call sets the status code; subsequent calls are silently ignored but still execute, wasting CPU on a no-op. This often indicates confused error-handling logic.",
+    "detection_notes": "Match two or more w.WriteHeader calls on the same http.ResponseWriter in a single handler function.",
+    "go_relevance": "Medium",
+    "id": 104,
+    "name": "WriteHeader Called Multiple Times In Handler",
+    "original_description": "Multiple WriteHeader calls on the same ResponseWriter in one handler",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-105": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses runtime.SetFinalizer on objects created frequently in hot paths. Objects with finalizers require an extra GC cycle to collect. Each finalizer-eligible object is resurrected for the finalizer call, then collected on the next cycle, doubling GC work.",
+    "detection_notes": "Match runtime.SetFinalizer calls reachable from request handlers or hot loops. Prefer explicit Close methods with finalizers only as safety nets.",
+    "go_relevance": "Medium",
+    "id": 105,
+    "name": "runtime.SetFinalizer On Hot Path Object",
+    "original_description": "runtime.SetFinalizer on hot-path objects causing extra GC cycles",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-106": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses sync.Map for workloads dominated by writes (Store) and updates. sync.Map is optimized for read-heavy, key-stable workloads with its internal read/dirty dual-map structure. Under frequent writes, a plain map with sync.Mutex outperforms sync.Map. Additionally, any map or sync.Map used as a cache without eviction bounds (entry cap, byte cap, or TTL) can cause unbounded memory growth under concurrent load, leading to process OOM. Always pair caches with an eviction strategy and validate memory usage under concurrent load, not only in-process micro-benchmarks.",
+    "detection_notes": "Match sync.Map declarations where Store/LoadAndDelete calls outnumber Load calls in the same scope. Additionally flag sync.Map or map caches used without entry count limit, byte size cap, or TTL-based eviction when they persist for the process lifetime.",
+    "go_relevance": "Medium",
+    "id": 106,
+    "name": "sync.Map Used For Write-Heavy Workload",
+    "original_description": "sync.Map in write-heavy patterns where plain map + mutex is faster",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-107": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses encoding/binary.Write or binary.Read inside a loop. These functions use reflection to determine the size and layout of the target type on every call. For fixed-size types, manual BigEndian methods avoid reflection and are 10-20x faster.",
+    "detection_notes": "Heuristic: find binary.Read or binary.Write call sites where is_in_loop reports true. The detector does not inspect the data type; it flags any encoding/binary call inside a loop body.",
+    "go_relevance": "Medium",
+    "id": 107,
+    "name": "encoding/binary Write Or Read Inside Loop",
+    "original_description": "binary.Read or binary.Write inside loop bodies where manual endian methods avoid reflection",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-108": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Calls sort.Search inside a loop with a function literal closure, allocating a new closure on every iteration. For repeated binary searches on the same sorted data, extract the predicate as a named function or pre-build a lookup structure.",
+    "detection_notes": "Match sort.Search calls inside for/range loop bodies where the second argument is a function literal.",
+    "go_relevance": "Medium",
+    "id": 108,
+    "name": "sort.Search Repeated In Loop",
+    "original_description": "sort.Search with closure inside loop bodies causing per-iteration allocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-109": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Recomputes a map key inside a loop by calling an expensive function on every iteration when the key could be computed once and stored. Each recomputation adds CPU overhead proportional to the key computation cost times the loop count.",
+    "detection_notes": "Match fmt.Sprintf or custom function calls used as map index keys inside loop bodies where the arguments do not change across iterations.",
+    "go_relevance": "Medium",
+    "id": 109,
+    "name": "Map Key Recomputed In Loop Without Caching",
+    "original_description": "Repeated expensive map key computation inside loops without caching",
+    "status": "Implemented",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-110": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Stores non-pointer value types in sync.Pool (e.g., bytes.Buffer, not *bytes.Buffer). Each Get and Put operation boxes the value into interface{}, causing a heap allocation. Store pointer types instead to avoid the interface boxing allocation per pool operation.",
+    "detection_notes": "Match sync.Pool New functions returning non-pointer struct types. Flag if New returns a value type rather than a pointer.",
+    "go_relevance": "Medium",
+    "id": 110,
+    "name": "sync.Pool Element Type Causes Allocation On Put",
+    "original_description": "sync.Pool storing non-pointer value types causing interface boxing allocations",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-111": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Converting a string to []rune(s) before ranging allocates a full rune slice on the heap. Ranging over the string directly with for _, r := range s decodes UTF-8 incrementally without allocating, cutting memory usage by 4x.",
+    "detection_notes": "Match RangeStmt where the range expression is a CallExpr to []rune with a string argument.",
+    "go_relevance": "Medium",
+    "id": 111,
+    "name": "Range Over String Produces Rune Allocation",
+    "original_description": "[]rune conversion of strings before range loops where direct string range avoids allocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-112": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Compares strings with strings.ToLower(s1) == strings.ToLower(s2), allocating two intermediate strings even if they differ on the first byte. strings.EqualFold compares character-by-character without allocation and returns early on mismatch, up to 100x faster.",
+    "detection_notes": "Match BinaryExpr with == or != where both operands are calls to strings.ToLower or strings.ToUpper.",
+    "go_relevance": "Medium",
+    "id": 112,
+    "name": "strings.ToLower Before Comparison Instead Of EqualFold",
+    "original_description": "Case-insensitive string comparison using ToLower/ToUpper instead of EqualFold",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-113": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses a select statement with a single case instead of a plain channel send or receive. The select adds goroutine scheduling overhead and a runtime.selectgo call. A direct channel operation compiles to fewer instructions.",
+    "detection_notes": "Match SelectStmt containing exactly one CommClause with no default branch.",
+    "go_relevance": "Low",
+    "id": 113,
+    "name": "Single-Case Select Statement Instead Of Channel Op",
+    "original_description": "Single-case select where direct channel send/receive would be simpler and faster",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-114": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses a for loop to copy elements from one slice to another index-by-index instead of the copy() builtin. copy() uses optimized memory routines (often memmove in assembly) that are 3-10x faster and handle memory overlap detection.",
+    "detection_notes": "Match ForStmt with := range assigning index i and value, body containing single assignment dst[i] = val or dst[i] = src[i].",
+    "go_relevance": "Medium",
+    "id": 114,
+    "name": "Manual Loop Copy Instead Of copy() Builtin",
+    "original_description": "Manual for-loop slice copying where the copy builtin would be faster",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-115": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses strings.Compare(a, b) == 0 to check string equality. strings.Compare performs a full three-way comparison before the result is checked; a direct == comparison short-circuits at the first differing byte and avoids the function call overhead.",
+    "detection_notes": "Heuristic: find strings.Compare call sites whose surrounding line contains '== 0' or '!= 0'.",
+    "go_relevance": "Medium",
+    "id": 115,
+    "name": "strings.Compare Used For Equality Check",
+    "original_description": "strings.Compare used for equality or ordering where direct comparison is cheaper",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-116": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses strings.Index(s, sub) != -1 to check substring containment. strings.Contains(s, sub) communicates intent more clearly and has equivalent performance, but Index comparison patterns are often vestigial and obscure the boolean check.",
+    "detection_notes": "Heuristic: find strings.Index call sites whose surrounding line contains '!= -1' or '== -1'.",
+    "go_relevance": "Low",
+    "id": 116,
+    "name": "strings.Index Used For Contains Check",
+    "original_description": "strings.Index compared to -1 where strings.Contains would be clearer",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-117": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses bytes.Compare(a, b) == 0 to check byte slice equality. bytes.Equal(a, b) returns a boolean directly after the first difference, short-circuiting faster than a full three-way comparison.",
+    "detection_notes": "Heuristic: find bytes.Compare call sites whose surrounding line contains '== 0' or '!= 0'.",
+    "go_relevance": "Medium",
+    "id": 117,
+    "name": "bytes.Compare Used For Equality Check",
+    "original_description": "bytes.Compare used for equality where bytes.Equal is faster and clearer",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-118": {
+    "applicable_to": [
+      "golang",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses http.NewRequest for simple GET/HEAD/POST requests when http.Get, http.Head, or http.Post would suffice. The convenience functions avoid manual request construction overhead when custom headers or body handling are not needed.",
+    "detection_notes": "Heuristic: find http.NewRequest calls whose first argument is the string literal 'GET', 'HEAD', or 'POST'. The detector does not inspect headers or body handling.",
+    "go_relevance": "Low",
+    "id": 118,
+    "name": "Unnecessary http.NewRequest For Simple Methods",
+    "original_description": "http.NewRequest for simple methods where http.Get/Post/Head wrappers are simpler",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-119": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses multiple sequential append calls to the same slice instead of a single variadic append. Each separate append may trigger independent capacity growth and reallocation; combining them into append(s, a, b, c) grows once if needed.",
+    "detection_notes": "Match 2+ sequential append calls to the same slice variable in the same block without intervening reads.",
+    "go_relevance": "Medium",
+    "id": 119,
+    "name": "Multiple Separate Appends Instead Of Spread Concatenation",
+    "original_description": "Consecutive append calls to the same slice that can be merged into one variadic call",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-120": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses time.Now().Sub(t) instead of time.Since(t). Both have identical behavior, but time.Since reads more naturally. When time.Now() has already been called in the function, using the cached value avoids a second syscall.",
+    "detection_notes": "Heuristic: find time.Now() calls followed within 32 bytes by '.Sub('. Does not parse the receiver of Sub().",
+    "go_relevance": "Low",
+    "id": 120,
+    "name": "time.Now().Sub Instead Of time.Since",
+    "original_description": "time.Now().Sub where time.Since is clearer and avoids duplicate syscall",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-121": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Manually copies struct fields between types with identical underlying structures instead of using a direct type conversion T(v). The conversion is compile-time checked and zero-cost, while manual copying risks bugs from missed fields.",
+    "detection_notes": "Match sequential AssignStmt nodes assigning fields from one struct to another with identical field types.",
+    "go_relevance": "Low",
+    "id": 121,
+    "name": "Struct Literal Instead Of Direct Type Conversion",
+    "original_description": "Manual struct field copying where direct type conversion is zero-cost",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-122": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Checks strings.HasPrefix(s, prefix) and then slices s[len(prefix):] to extract the remainder. strings.TrimPrefix(s, prefix) returns the string with the prefix removed if present in a single call with clearer intent.",
+    "detection_notes": "Heuristic: find strings.HasPrefix calls whose surrounding 320-byte window contains both 'len(' and ']:'. Does not verify that the slice uses the same prefix length.",
+    "go_relevance": "Low",
+    "id": 122,
+    "name": "HasPrefix Followed By Slice Instead Of TrimPrefix",
+    "original_description": "HasPrefix + manual slice instead of TrimPrefix",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-123": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Calls make([]T, 0, cap) or make(map[K]V, 0) with an explicit zero length or capacity argument. The zero value is the default; omitting it produces identical behavior with less code.",
+    "detection_notes": "Match make(T, 0) or make(T, 0, N) where the zero argument could be omitted.",
+    "go_relevance": "Low",
+    "id": 123,
+    "name": "Redundant make Argument With Zero Value",
+    "original_description": "make calls with explicit zero length or capacity arguments",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-124": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses strings.Replace(s, old, new, -1) with the magic number -1 to replace all occurrences. Since Go 1.12, strings.ReplaceAll(s, old, new) is available and communicates intent more clearly with identical performance.",
+    "detection_notes": "Heuristic: find strings.Replace calls where any argument is the integer literal -1.",
+    "go_relevance": "Low",
+    "id": 124,
+    "name": "strings.Replace With -1 Instead Of ReplaceAll",
+    "original_description": "strings.Replace with -1 where ReplaceAll is clearer",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-125": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Checks if a slice is nil before appending to it. append works correctly on nil slices (treating them as zero-length), so the nil check is unnecessary and adds a branch the compiler may not optimize away.",
+    "detection_notes": "Match if s != nil blocks whose body contains append(s, ...) or s = append(s, ...).",
+    "go_relevance": "Low",
+    "id": 125,
+    "name": "Redundant nil Check Before append",
+    "original_description": "Nil checks on slices before append where append handles nil natively",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-126": {
+    "applicable_to": [
+      "golang",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls http.CanonicalHeaderKey on a header key that is already in canonical form. Methods like Header.Get and Header.Set already canonicalize internally, making the explicit call redundant.",
+    "detection_notes": "Heuristic: find http.CanonicalHeaderKey calls whose argument is a string literal matching a curated allowlist of common canonical headers (Accept, Content-Type, etc.). Less-common headers may be missed.",
+    "go_relevance": "Low",
+    "id": 126,
+    "name": "Redundant http.CanonicalHeaderKey Call",
+    "original_description": "Redundant http.CanonicalHeaderKey calls on already-canonical keys",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-127": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Wraps a static string in fmt.Sprintf before passing it to a log function. The log package Printf-style methods (log.Printf, log.Fatalf) handle formatting internally; wrapping in Sprintf first allocates an intermediate string.",
+    "detection_notes": "Heuristic: find log.* calls whose first argument text contains 'fmt.Sprintf' and whose first quoted format string contains no format verb (coarse '%' scan, not a full fmt parser).",
+    "go_relevance": "Medium",
+    "id": 127,
+    "name": "Unnecessary fmt.Sprintf In Log Call",
+    "original_description": "fmt.Sprintf with static string passed directly to log functions",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-128": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Performs append on a slice in multiple consecutive statements when all appended values are available at once. Each separate append may independently grow the backing array. Combining into a single variadic append reduces amortized growth overhead.",
+    "detection_notes": "Match 3+ sequential append calls to the same slice variable without intervening reads or conditional logic.",
+    "go_relevance": "Medium",
+    "id": 128,
+    "name": "Multiple Independent Appends Can Be Combined",
+    "original_description": "Consecutive independent append calls that can be merged",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-129": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Ranges over a slice with for _, v := range and uses only the index or ignores v entirely. Even when the value is discarded, the runtime still copies each element. For large structs, the copy cost adds up. Use for i := range to iterate indices only.",
+    "detection_notes": "Match RangeStmt with key and value variables where the value variable is underscore or never read in the loop body.",
+    "go_relevance": "Medium",
+    "id": 129,
+    "name": "Range Loop Copies Value When Only Index Needed",
+    "original_description": "Range loops that copy values when only the index is used",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-130": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Wraps a function call in an anonymous function literal for no reason: func() { f(args) }(). This adds a closure allocation and indirect call overhead. If wrapping is needed for argument adaptation, use a minimal wrapper.",
+    "detection_notes": "Match func() { someFunc(args) }() patterns where the wrapper provides no additional logic.",
+    "go_relevance": "Medium",
+    "id": 130,
+    "name": "Unnecessary Function Wrapper Adding Call Overhead",
+    "original_description": "Unnecessary anonymous function wrappers that add call overhead",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-131": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses sync.Mutex to protect a simple integer counter incremented in concurrent goroutines. atomic.AddInt64 is lock-free and significantly faster for simple arithmetic on integral types, avoiding lock/unlock overhead and goroutine blocking.",
+    "detection_notes": "Match mu.Lock/mu.Unlock blocks where guarded operations are only simple integer increments, decrements, or reads.",
+    "go_relevance": "Medium",
+    "id": 131,
+    "name": "sync.Mutex Used Where sync/atomic Suffices",
+    "original_description": "sync.Mutex guarding simple integer operations where atomic is lock-free",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-132": {
+    "applicable_to": [
+      "golang",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Launches a goroutine that performs work (HTTP calls, DB queries) without receiving a context.Context from the parent. Without context propagation, the goroutine cannot be cancelled when the parent request times out, leading to wasted work and goroutine leaks.",
+    "detection_notes": "Match go func() without ctx parameter where the body contains HTTP, DB, or other cancellable I/O operations.",
+    "go_relevance": "High",
+    "id": 132,
+    "name": "Goroutine Spawned Without Context Propagation",
+    "original_description": "Goroutines doing I/O work without context propagation from parent",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-133": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses sort.Slice with a closure inside a loop or repeatedly-called function, causing a heap allocation for the closure on every call. For basic types, sort.Ints/sort.Strings/sort.Float64s avoid the closure allocation entirely.",
+    "detection_notes": "Match sort.Slice inside loop bodies or request handlers with basic slice types.",
+    "go_relevance": "Medium",
+    "id": 133,
+    "name": "sort.Slice Closure Allocation Inside Loop",
+    "original_description": "sort.Slice with closure in hot paths where type-specific sort functions avoid allocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-134": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Implements a manual read-write loop with io.Reader and io.Writer instead of using io.Copy. io.Copy uses an internal 32KB buffer and handles EOF, short reads, and errors correctly. Manual implementations often use suboptimal buffer sizes.",
+    "detection_notes": "Match for loops containing Read and Write calls in the body where the pattern matches io.Copy semantics.",
+    "go_relevance": "Medium",
+    "id": 134,
+    "name": "Manual io.Read/Write Loop Instead Of io.Copy",
+    "original_description": "Manual read/write loops where io.Copy is both simpler and more efficient",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-135": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Creates a new gob.NewEncoder or gob.NewDecoder for every message on a persistent connection instead of reusing one encoder/decoder pair per stream. gob encoders maintain internal type info caches and buffers; reusing avoids re-transmitting type definitions.",
+    "detection_notes": "Match gob.NewEncoder or gob.NewDecoder in functions containing for/range with net.Conn Read/Write patterns.",
+    "go_relevance": "Medium",
+    "id": 135,
+    "name": "encoding/gob Encoder Or Decoder Not Reused",
+    "original_description": "gob encoder/decoder created per message on persistent connections",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-136": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Calls filepath.Join(basePath, variant) repeatedly in a loop when the base path is constant across iterations. filepath.Join allocates a new string each call. Compute the joined path once by pre-joining with a placeholder or use direct concatenation.",
+    "detection_notes": "Match filepath.Join inside loop bodies where the first argument is a string literal or loop-invariant variable.",
+    "go_relevance": "Medium",
+    "id": 136,
+    "name": "filepath.Join Repeatedly Called With Same Base",
+    "original_description": "filepath.Join with constant base path called repeatedly in loops",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-137": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Calls runtime.Caller on hot paths to determine the calling function. runtime.Caller walks the stack, reading stack frames and program counter tables. On hot paths this adds measurable overhead; cache the result or use a compile-time constant.",
+    "detection_notes": "Match runtime.Caller call expressions inside request handlers or for/range loop bodies.",
+    "go_relevance": "Medium",
+    "id": 137,
+    "name": "runtime.Caller Used In Hot Path",
+    "original_description": "runtime.Caller in request handlers or hot loops where it adds stack-walking overhead",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-138": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Calls runtime.Stack on hot paths to capture goroutine stack traces. This allocates a buffer and formats the stack, which is expensive. Stack traces should be captured only for error reporting or debugging, not on production hot paths.",
+    "detection_notes": "Match runtime.Stack call expressions inside request handlers or production code paths.",
+    "go_relevance": "Medium",
+    "id": 138,
+    "name": "runtime.Stack Used In Hot Path",
+    "original_description": "runtime.Stack in request handlers where stack trace formatting adds latency",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-139": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "A closure captures multiple large outer variables, causing each to escape to the heap as separate allocations. Grouping captured variables into a single struct reduces N allocations to 1, since the struct itself escapes but fields are stored contiguously.",
+    "detection_notes": "Match func() literals inside loops or hot functions referencing 2+ outer-scope variables of non-trivial size.",
+    "go_relevance": "Medium",
+    "id": 139,
+    "name": "Closure Allocates Due To Variable Escape",
+    "original_description": "Closures capturing multiple large variables causing separate heap allocations",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-140": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Calls debug.SetGCPercent with aggressive values (very low or -1 to disable) in production code without corresponding GOMEMLIMIT. Setting GCPercent too low increases GC frequency; setting to -1 disables GC entirely and risks OOM.",
+    "detection_notes": "Match debug.SetGCPercent call expressions; flag when value set below 50 or to -1 without nearby GOMEMLIMIT configuration.",
+    "go_relevance": "High",
+    "id": 140,
+    "name": "debug.SetGCPercent Misuse Or Tuning In Production",
+    "original_description": "debug.SetGCPercent calls in production code without memory limit safeguards",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-141": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls r.URL.Query() or r.URL.Query().Get(key) multiple times in a single handler. Each call to URL.Query() parses the raw query string and allocates a new url.Values map. Cache the result in a local variable to parse once.",
+    "detection_notes": "Match 2+ r.URL.Query().Get or r.URL.Query() calls on the same *http.Request in one handler function.",
+    "go_relevance": "Medium",
+    "id": 141,
+    "name": "URL.Query() Called Repeatedly Without Caching",
+    "original_description": "Repeated calls to URL.Query() in the same handler without caching",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-142": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "echo",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Reads from an HTTP request body (r.Body) without wrapping it in http.MaxBytesReader. A malicious client can send unbounded data, causing the server to allocate memory until OOM. MaxBytesReader limits the body to a configured maximum.",
+    "detection_notes": "Match io.ReadAll(r.Body) or json.NewDecoder(r.Body) without a preceding http.MaxBytesReader wrapper.",
+    "go_relevance": "High",
+    "id": 142,
+    "name": "http.MaxBytesReader Not Used For Untrusted Body",
+    "original_description": "Request body reads without MaxBytesReader protection against unbounded input",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-143": {
+    "applicable_to": [
+      "golang",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Exposes HTTP endpoints without per-route timeout enforcement via http.TimeoutHandler, relying solely on server-level timeouts. Per-route timeouts allow different deadlines for fast endpoints vs slow ones.",
+    "detection_notes": "Match mux.Handle or mux.HandleFunc calls without surrounding http.TimeoutHandler in the handler chain.",
+    "go_relevance": "Medium",
+    "id": 143,
+    "name": "http.TimeoutHandler Not Used For Route-Level Timeouts",
+    "original_description": "Route handlers without TimeoutHandler wrapping where per-route timeouts would improve resilience",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-144": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "echo",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Serves HTTP responses with known body sizes but does not set Content-Length header. Without Content-Length, Go uses chunked transfer encoding, which adds per-chunk overhead. Setting Content-Length enables client progress bars and connection reuse.",
+    "detection_notes": "Match w.Write calls in handlers where body size is known from a byte slice and Content-Length is not set before Write.",
+    "go_relevance": "Medium",
+    "id": 144,
+    "name": "Content-Length Not Set In HTTP Response",
+    "original_description": "HTTP responses with known body size missing Content-Length header",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-145": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls r.WithContext(ctx) in middleware or request chains, which shallow-copies the entire http.Request struct (~2KB). Each WithContext call in the chain allocates a fresh copy. Prefer passing context values through other mechanisms.",
+    "detection_notes": "Match r.WithContext in functions named middleware or registered via Use/Group in multiple chain layers.",
+    "go_relevance": "Medium",
+    "id": 145,
+    "name": "http.Request.WithContext Allocation On Hot Path",
+    "original_description": "r.WithContext called repeatedly in middleware chains causing per-request allocations",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-146": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses fmt.Sprintf(\"%s\", s) where s is already a string. This parses the format string, builds an argument list, and copies s to a new string. The fmt overhead is 20-50x more expensive than using s directly.",
+    "detection_notes": "Match fmt.Sprintf calls where the first argument is %s and there is exactly one additional argument of type string.",
+    "go_relevance": "Medium",
+    "id": 146,
+    "name": "fmt.Sprintf With Single String And No Verbs",
+    "original_description": "fmt.Sprintf with literal format containing only %s and a single string argument",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-147": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Uses strings.Replace with a negative count to replace all occurrences instead of strings.ReplaceAll. While performance is identical, the magic-number pattern obscures the 'replace all' intention and is a common source of bugs.",
+    "detection_notes": "Match strings.Replace calls where the fourth argument is a negative integer literal.",
+    "go_relevance": "Low",
+    "id": 147,
+    "name": "strings.Replace Call Where ReplaceAll Suffices",
+    "original_description": "strings.Replace with negative count where ReplaceAll is cleaner",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-148": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Sends to an unbuffered channel from a goroutine without guaranteeing a corresponding receive on all code paths. If the receiver exits early via error return or context cancellation, the sender blocks forever on the unbuffered channel, leaking the goroutine.",
+    "detection_notes": "Match ch <- value inside goroutine where the receive is guarded by select with default or conditional logic that may skip.",
+    "go_relevance": "High",
+    "id": 148,
+    "name": "Goroutine Leak Via Channel Send Without Guaranteed Receiver",
+    "original_description": "Unbuffered channel sends in goroutines without guaranteed receive on all exit paths",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-149": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Performs network I/O (Read, Write) on net.Conn without setting deadlines. Without deadlines, a stalled peer can block the goroutine indefinitely. SetReadDeadline and SetWriteDeadline ensure I/O operations time out rather than hanging.",
+    "detection_notes": "Match conn.Read or conn.Write calls where SetReadDeadline or SetWriteDeadline is not called on the same connection.",
+    "go_relevance": "High",
+    "id": 149,
+    "name": "net.Conn Deadlines Not Set For Network Operations",
+    "original_description": "Network Read/Write operations without configured deadlines",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  },
+  "PERF-150": {
+    "applicable_to": [
+      "golang"
+    ],
+    "category": "Performance",
+    "description": "Declares large arrays or many local variables that exceed the compiler stack frame threshold, preventing the function from being inlined. Functions that cannot be inlined add call overhead at every invocation.",
+    "detection_notes": "Find functions exceeding ~40 lines called from hot paths or loops.",
+    "go_relevance": "Medium",
+    "id": 150,
+    "name": "Large Stack Frame From Local Variables",
+    "original_description": "Functions with large stack frames that prevent compiler inlining on hot paths",
+    "status": "Draft",
+    "weakness_abstraction": "Base"
+  }
+}

@@ -1,0 +1,29 @@
+# CWE-15 negative: DSN not taken from untrusted request input
+lang: go
+file: CWE-15-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// CWE-15 External Control of System or Configuration Setting (mitigated)
+func ApplyRuntimeDSN(c *gin.Context, factory func(string) (*gorm.DB, error)) {
+	dsn := os.Getenv("APP_DATABASE_URL")
+	if dsn == "" {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "database"})
+		return
+	}
+	db, err := factory(dsn)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "database"})
+		return
+	}
+	c.Set("db", db)
+	c.Status(http.StatusOK)
+}

@@ -1,0 +1,21 @@
+# PERF-92 negative: Fiber handler uses c.UserContext() inside the goroutine
+lang: go
+file: PERF-092-safe.go
+---
+package sample
+
+import (
+	"context"
+	"github.com/gofiber/fiber/v2"
+)
+
+func FireAndForget(c *fiber.Ctx) error {
+	go func() {
+		process(c.UserContext())
+	}()
+	return c.SendString("queued")
+}
+
+func process(ctx context.Context) {
+	_ = ctx
+}

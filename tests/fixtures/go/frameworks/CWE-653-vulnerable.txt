@@ -1,0 +1,32 @@
+# CWE-653: Improper Isolation or Compartmentalization
+lang: go
+file: CWE-653-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type AuditLog struct {
+	ID      uint
+	Message string
+}
+
+// Vulnerable: public and admin routes share the same superuser database handle.
+var sharedDB *gorm.DB
+
+func PublicSearch(c *gin.Context) {
+	q := c.Query("q")
+	var logs []AuditLog
+	sharedDB.Raw("SELECT id, message FROM audit_logs WHERE message LIKE ?", "%"+q+"%").Scan(&logs)
+	c.JSON(http.StatusOK, logs)
+}
+
+func AdminPurge(c *gin.Context) {
+	sharedDB.Exec("DELETE FROM audit_logs")
+	c.Status(http.StatusOK)
+}

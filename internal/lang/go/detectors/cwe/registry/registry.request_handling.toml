@@ -1,0 +1,11 @@
+# CWE registry — domain: request_handling
+
+[[detector]]
+cwe = 601
+domain = "request_handling"
+function = "detect_cwe_601"
+
+[[detector]]
+cwe = 918
+domain = "request_handling"
+function = "detect_cwe_918"

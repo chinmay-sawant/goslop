@@ -1,0 +1,28 @@
+# CWE-656: Reliance on Security Through Obscurity (mitigated, pure stdlib)
+lang: go
+file: CWE-656-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type ConfigEntry struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+var configEntries = []ConfigEntry{{Key: "debug", Value: "true"}}
+
+// Safe: configuration access requires authenticated admin authorization.
+func HiddenConfigPanel(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("X-User-Role") != "admin" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(configEntries)
+}

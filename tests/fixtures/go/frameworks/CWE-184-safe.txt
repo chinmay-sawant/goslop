@@ -1,0 +1,24 @@
+# CWE-184 negative: allowlist of permitted filter tokens
+lang: go
+file: CWE-184-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"regexp"
+
+	"github.com/gin-gonic/gin"
+)
+
+var allowedFilter = regexp.MustCompile(`^[a-z0-9_]{1,32}$`)
+
+// CWE-184 Incomplete List of Disallowed Inputs (mitigated)
+func RunReportQuery(c *gin.Context) {
+	sqlish := c.PostForm("filter")
+	if !allowedFilter.MatchString(sqlish) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "blocked"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"accepted": sqlish})
+}

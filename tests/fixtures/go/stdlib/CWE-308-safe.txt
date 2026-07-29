@@ -1,0 +1,26 @@
+# CWE-308 — Use of Single-factor Authentication (safe) (pure stdlib)
+lang: go
+file: CWE-308-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Safe: requires password plus TOTP for high-value transfers.
+func InitiateWire(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.FormValue("password") == "" || r.FormValue("totp") == "" {
+		http.Error(w, "mfa required", http.StatusUnauthorized)
+		return
+	}
+	if r.Header.Get("X-TOTP-Valid") != "true" {
+		http.Error(w, "invalid second factor", http.StatusUnauthorized)
+		return
+	}
+	amount := r.FormValue("amount")
+	_, _ = db.Exec("INSERT INTO wires (amount) VALUES (?)", amount)
+	w.WriteHeader(http.StatusOK)
+}

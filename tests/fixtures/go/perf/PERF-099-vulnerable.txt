@@ -1,0 +1,21 @@
+# PERF-99 positive: prometheus counter with a user_id label
+lang: go
+file: PERF-099-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
+
+var requestCounter = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Total HTTP requests",
+	},
+	[]string{"user_id", "endpoint"},
+)
+
+func init() {
+	prometheus.MustRegister(requestCounter)
+}

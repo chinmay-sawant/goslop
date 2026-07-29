@@ -1,0 +1,13 @@
+# BP-51 positive: library recover path does not re-panic
+lang: go
+file: BP-51-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func guard() {
+	defer func() {
+		if recover() != nil {
+		}
+	}()
+}

@@ -1,0 +1,20 @@
+# CWE-601 positive: open redirect via next query (pure stdlib)
+lang: go
+file: CWE-601-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+// OAuthReturn forwards the browser to the caller-supplied next URL.
+func OAuthReturn(w http.ResponseWriter, r *http.Request) {
+	target := r.URL.Query().Get("next")
+	if target == "" {
+		http.Error(w, "missing next", http.StatusBadRequest)
+		return
+	}
+	http.Redirect(w, r, target, http.StatusFound)
+}

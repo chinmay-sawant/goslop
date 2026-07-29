@@ -1,0 +1,21 @@
+# BP-101 negative: the status is committed before the response body.
+lang: go
+file: BP-101-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+)
+
+func serve(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintln(w, "created")
+}
+
+func render(out io.Writer) {
+	out.Write([]byte("not an HTTP response"))
+}

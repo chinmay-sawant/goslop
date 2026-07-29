@@ -1,0 +1,32 @@
+# CWE-15 negative: configuration not taken from untrusted request (pure stdlib)
+lang: go
+file: CWE-15-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"os"
+)
+
+// CWE-15 External Control of System or Configuration Setting (mitigated)
+func ConfigureDatabase(w http.ResponseWriter, r *http.Request) {
+	dsn := os.Getenv("APP_DATABASE_URL")
+	if dsn == "" {
+		http.Error(w, "database", http.StatusServiceUnavailable)
+		return
+	}
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		http.Error(w, "database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+	if err := db.Ping(); err != nil {
+		http.Error(w, "database", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

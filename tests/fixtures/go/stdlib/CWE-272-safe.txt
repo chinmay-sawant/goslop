@@ -1,0 +1,29 @@
+# CWE-272 — Least Privilege Violation (safe) (pure stdlib)
+lang: go
+file: CWE-272-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"syscall"
+)
+
+// Safe: drops elevated uid immediately after the privileged syscall.
+func RepairOwnership(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	_ = syscall.Setuid(0)
+	path := r.URL.Query().Get("file")
+	if path == "" {
+		http.Error(w, "missing file", http.StatusBadRequest)
+		return
+	}
+	_ = os.Chown(path, 1000, 1000)
+	_ = syscall.Setuid(1000)
+	w.WriteHeader(http.StatusOK)
+}

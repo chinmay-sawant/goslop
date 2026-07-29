@@ -1,0 +1,14 @@
+# PERF-179 positive: strings.Replace with the same old/new pair used twice
+lang: go
+file: PERF-179-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func Cleanup(s string) string {
+	s = strings.Replace(s, "foo", "bar", -1)
+	s = strings.Replace(s, "foo", "bar", -1)
+	return s
+}

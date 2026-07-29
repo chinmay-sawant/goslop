@@ -1,0 +1,20 @@
+# CWE-277 — Insecure Inherited Permissions (vulnerable)
+lang: go
+file: CWE-277-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+	"syscall"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: clears umask so child files inherit overly permissive modes.
+func CreateWorkspace(c *gin.Context) {
+	old := syscall.Umask(0)
+	defer syscall.Umask(old)
+	_ = os.MkdirAll(c.Query("dir"), 0777)
+	c.JSON(201, gin.H{"dir": c.Query("dir")})
+}

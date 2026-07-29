@@ -1,0 +1,54 @@
+# CWE-1204 negative: random IV per encryption (pure stdlib)
+lang: go
+file: CWE-1204-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1204 mitigated: crypto/rand fills a unique IV for each ciphertext.
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"net/http"
+)
+
+func EncryptFieldSafePure(key []byte) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		plain := r.FormValue("value")
+		block, err := aes.NewCipher(key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		iv := make([]byte, block.BlockSize())
+		if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		mode := cipher.NewCBCEncrypter(block, iv)
+		padded := pkcs7PadSafePure([]byte(plain), block.BlockSize())
+		out := make([]byte, len(padded))
+		mode.CryptBlocks(out, padded)
+		payload := append(iv, out...)
+		encoded := base64.StdEncoding.EncodeToString(payload)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ciphertext":"` + encoded + `"}`))
+	}
+}
+
+func pkcs7PadSafePure(data []byte, blockSize int) []byte {
+	pad := blockSize - len(data)%blockSize
+	padding := make([]byte, pad)
+	for i := range padding {
+		padding[i] = byte(pad)
+	}
+	return append(data, padding...)
+}

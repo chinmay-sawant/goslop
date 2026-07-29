@@ -1,0 +1,19 @@
+# PERF-76 positive: db.Create inside a for loop without batching
+lang: go
+file: PERF-076-vulnerable.go
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func BulkInsert(db *gorm.DB, names []string) error {
+	for _, n := range names {
+		db.Create(&User{Name: n})
+	}
+	return nil
+}

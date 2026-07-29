@@ -1,0 +1,12 @@
+# PERF-198 negative: Content-Type compared directly
+lang: go
+file: PERF-198-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func IsJSON(r *http.Request) bool {
+	return r.Header.Get("Content-Type") == "application/json"
+}

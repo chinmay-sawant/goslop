@@ -1,0 +1,44 @@
+# PERF-230 negative: pure helper hoisted; stdlib Parse* / pool.Get must not fire
+lang: go
+file: PERF-230-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"strconv"
+	"sync"
+	"time"
+)
+
+func parseProps(props string) int {
+	return len(props)
+}
+
+func EstimateTextWidth(font string, text string, size float64) float64 {
+	return float64(len(text)) * size * 0.5
+}
+
+func GetTextWidth(font string, text string) float64 {
+	return float64(len(text))
+}
+
+var bufPool = sync.Pool{New: func() any { return new([]byte) }}
+
+func DrawCells(cells []string, props string, font string, size float64) float64 {
+	// Hoisted pure helpers — not re-evaluated per cell.
+	w := parseProps(props)
+	base := EstimateTextWidth(font, "", size)
+	_ = GetTextWidth(font, "")
+	total := float64(w) + base
+	for _, cell := range cells {
+		total += float64(len(cell))
+		// Must NOT trip PERF-230: stdlib parse and pool accessors.
+		_, _ = time.Parse(time.RFC3339, cell)
+		_, _ = strconv.ParseInt(cell, 10, 64)
+		_, _ = strconv.Atoi(cell)
+		b := bufPool.Get().(*[]byte)
+		bufPool.Put(b)
+	}
+	return total
+}

@@ -1,0 +1,51 @@
+# PERF registry — domain: protocols
+
+[[detector]]
+perf = 91
+domain = "protocols"
+function = "detect_perf_91"
+
+[[detector]]
+perf = 92
+domain = "protocols"
+function = "detect_perf_92"
+
+[[detector]]
+perf = 93
+domain = "protocols"
+function = "detect_perf_93"
+
+[[detector]]
+perf = 94
+domain = "protocols"
+function = "detect_perf_94"
+
+[[detector]]
+perf = 95
+domain = "protocols"
+function = "detect_perf_95"
+
+[[detector]]
+perf = 96
+domain = "protocols"
+function = "detect_perf_96"
+
+[[detector]]
+perf = 97
+domain = "protocols"
+function = "detect_perf_97"
+
+[[detector]]
+perf = 98
+domain = "protocols"
+function = "detect_perf_98"
+
+[[detector]]
+perf = 99
+domain = "protocols"
+function = "detect_perf_99"
+
+[[detector]]
+perf = 100
+domain = "protocols"
+function = "detect_perf_100"

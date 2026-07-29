@@ -1,0 +1,31 @@
+# CWE-940 vulnerable: no origin verification on callback
+lang: go
+file: CWE-940-vulnerable.go
+---
+package sample
+
+// CWE-940: Improper Verification of Source of a Communication Channel.
+// Vulnerable: OAuth callback trusts any redirect without state/origin checks.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+func OAuthCallback(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		code := c.Query("code")
+		userID := c.Query("user_id")
+		_, err := db.Exec(
+			"INSERT INTO oauth_tokens (user_id, code) VALUES ($1, $2)",
+			userID, code,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.Redirect(http.StatusFound, "/dashboard")
+	}
+}

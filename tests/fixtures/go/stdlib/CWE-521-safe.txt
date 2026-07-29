@@ -1,0 +1,54 @@
+# CWE-521 negative: strong password policy before persistence (pure stdlib)
+lang: go
+file: CWE-521-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
+	"encoding/json"
+	"net/http"
+	"unicode"
+)
+
+type signupPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func RegisterAccount(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	var body signupPayload
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if !strongPassword(body.Password) {
+		http.Error(w, "password too weak", http.StatusBadRequest)
+		return
+	}
+	sum := sha256.Sum256([]byte(body.Password))
+	hash := hex.EncodeToString(sum[:])
+	_, _ = db.Exec("INSERT INTO users(email, password_hash) VALUES (?, ?)", body.Email, hash)
+	w.WriteHeader(http.StatusCreated)
+}
+
+func strongPassword(pw string) bool {
+	if len(pw) < 12 {
+		return false
+	}
+	var upper, lower, digit bool
+	for _, r := range pw {
+		switch {
+		case unicode.IsUpper(r):
+			upper = true
+		case unicode.IsLower(r):
+			lower = true
+		case unicode.IsDigit(r):
+			digit = true
+		}
+	}
+	return upper && lower && digit
+}

@@ -1,0 +1,12 @@
+# PERF-240 positive: len-sized scratch without pool on hot encode path
+lang: go
+file: PERF-240-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func EncodePayload(src []byte) []byte {
+	scratch := make([]byte, len(src))
+	copy(scratch, src)
+	return scratch
+}

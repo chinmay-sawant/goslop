@@ -1,0 +1,24 @@
+# IP-004: Depth 3 chain — vulnerable
+lang: go
+file: IP-004-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func funcA() {
+    x := r.URL.Query().Get("input")
+    funcB(x)
+}
+
+func funcB(s string) {
+    funcC(s)
+}
+
+func funcC(s string) {
+    os.Open(s)
+}

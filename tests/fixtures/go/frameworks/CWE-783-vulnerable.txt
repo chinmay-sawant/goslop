@@ -1,0 +1,24 @@
+# CWE-783: Operator Precedence Logic Error
+lang: go
+file: CWE-783-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: && binds tighter than ||, granting access unintentionally.
+func EditDocument(c *gin.Context) {
+	authenticated := c.GetBool("authenticated")
+	isAdmin := c.GetBool("is_admin")
+	ownerID := c.GetInt("owner_id")
+	docOwner := c.GetInt("doc_owner")
+	if !authenticated || isAdmin && ownerID == docOwner {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	c.Status(http.StatusOK)
+}

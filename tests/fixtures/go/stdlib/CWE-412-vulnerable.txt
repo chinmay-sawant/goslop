@@ -1,0 +1,30 @@
+# CWE-412 positive: client-chosen lock file path (pure stdlib)
+lang: go
+file: CWE-412-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"sync"
+)
+
+var jobGate sync.Mutex
+
+func HandleAcquireLock(w http.ResponseWriter, r *http.Request) {
+	lockPath := r.URL.Query().Get("lockfile")
+	data, err := os.ReadFile(lockPath)
+	if err != nil {
+		http.Error(w, "lock read failed", http.StatusInternalServerError)
+		return
+	}
+	if string(data) != "free" {
+		http.Error(w, "busy", http.StatusConflict)
+		return
+	}
+	jobGate.Lock()
+	_ = os.WriteFile(lockPath, []byte("held"), 0o644)
+	w.WriteHeader(http.StatusOK)
+}

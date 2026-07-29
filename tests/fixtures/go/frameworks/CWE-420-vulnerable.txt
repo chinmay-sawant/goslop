@@ -1,0 +1,29 @@
+# CWE-420: primary API is authenticated; alternate debug route is not.
+lang: go
+file: CWE-420-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func RegisterBillingRoutes(r *gin.Engine, db *gorm.DB) {
+	api := r.Group("/api", requireJWT())
+	api.GET("/invoices", func(c *gin.Context) {
+		var rows []map[string]interface{}
+		db.Raw("SELECT id, total FROM invoices WHERE tenant_id = ?", c.GetString("tenant")).Scan(&rows)
+		c.JSON(http.StatusOK, rows)
+	})
+	r.GET("/debug/sqltrace", func(c *gin.Context) {
+		db.Exec("PRAGMA query_only = 0")
+		c.String(http.StatusOK, "trace enabled for %s", c.Query("tenant"))
+	})
+}
+
+func requireJWT() gin.HandlerFunc {
+	return func(c *gin.Context) { c.Next() }
+}

@@ -1,0 +1,21 @@
+# BP-155 negative variant: a renamed request body is bounded before decoding.
+lang: go
+file: BP-155-variant-safe.go
+variant: bounded-renamed-request-body
+---
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func create(w http.ResponseWriter, request *http.Request) {
+	body := http.MaxBytesReader(w, request.Body, 1<<20)
+	var payload map[string]string
+	if err := json.NewDecoder(body).Decode(&payload); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
+}

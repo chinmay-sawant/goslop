@@ -1,0 +1,18 @@
+# BP-70 positive: the error is logged, but execution continues past the error branch.
+lang: go
+file: BP-70-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "log"
+
+func loadConfig() []byte {
+	data, err := readConfig()
+	if err != nil {
+		log.Printf("read config failed: %v", err)
+	}
+	return data
+}
+
+func readConfig() ([]byte, error) { return nil, nil }

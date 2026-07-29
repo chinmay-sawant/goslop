@@ -1,0 +1,18 @@
+# BP-105 negative: a session cookie sets both security flags.
+lang: go
+file: BP-105-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func login(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    "opaque",
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+	})
+}

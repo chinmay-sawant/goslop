@@ -1,0 +1,17 @@
+# PERF-108 positive: sort.Search in a loop
+lang: go
+file: PERF-108-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sort"
+
+func Lookup(values []int, queries []int) []int {
+	out := make([]int, len(queries))
+	for i, q := range queries {
+		idx := sort.Search(len(values), func(j int) bool { return values[j] >= q })
+		out[i] = idx
+	}
+	return out
+}

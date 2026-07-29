@@ -1,0 +1,15 @@
+# PERF-005 negative: encode each item once at the boundary, no per-iteration JSON in hot loop
+lang: go
+file: PERF-005-safe.go
+---
+package sample
+
+import "encoding/json"
+
+type Item struct {
+	Name string `json:"name"`
+}
+
+func EncodeOne(item Item) ([]byte, error) {
+	return json.Marshal(item)
+}

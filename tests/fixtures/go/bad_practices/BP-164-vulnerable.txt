@@ -1,0 +1,23 @@
+# BP-164 positive: a functional option mutates a package-level default.
+lang: go
+file: BP-164-vulnerable.go
+variant: option-global-default
+---
+package sample
+
+import "time"
+
+type Config struct {
+	Timeout time.Duration
+}
+
+type Option func(*Config)
+
+var defaultConfig = Config{Timeout: time.Second}
+
+func WithTimeout(timeout time.Duration) Option {
+	return func(config *Config) {
+		defaultConfig.Timeout = timeout
+		config.Timeout = timeout
+	}
+}

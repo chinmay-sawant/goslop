@@ -1,0 +1,15 @@
+# BP-68 positive variant: an explicit blank assignment discards errors.Join.
+lang: go
+file: BP-68-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "errors"
+
+func combine(first, second error) error {
+	if first != nil {
+		errors.Join(first, second)
+	}
+	return nil
+}

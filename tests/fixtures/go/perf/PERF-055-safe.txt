@@ -1,0 +1,25 @@
+# PERF-055 negative: scanner.Buffer is configured explicitly
+lang: go
+file: PERF-055-safe.go
+---
+package sample
+
+import (
+	"bufio"
+	"bytes"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ScanLinesSafe(c *gin.Context) {
+	src := bytes.NewBufferString("hello\nworld\n")
+	scanner := bufio.NewScanner(src)
+	scanner.Buffer(src.Bytes(), 1024*1024)
+	for scanner.Scan() {
+		line := scanner.Text()
+		_ = line
+	}
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

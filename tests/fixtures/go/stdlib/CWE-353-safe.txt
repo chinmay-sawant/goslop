@@ -1,0 +1,40 @@
+# CWE-353 safe: Missing Support for Integrity Check (mitigated, pure stdlib)
+lang: go
+file: CWE-353-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"crypto/subtle"
+	"database/sql"
+	"encoding/hex"
+	"errors"
+	"io"
+	"net/http"
+	"os"
+)
+
+func ReceiveAgentReport(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return err
+	}
+	mac := hmac.New(sha256.New, []byte(os.Getenv("AGENT_HMAC_KEY")))
+	mac.Write(body)
+	expected := mac.Sum(nil)
+	got, err := hex.DecodeString(r.Header.Get("X-Body-Mac"))
+	if err != nil || subtle.ConstantTimeCompare(expected, got) != 1 {
+		return errors.New("integrity check failed")
+	}
+	_, err = db.Exec("INSERT INTO agent_reports (payload) VALUES (?)", string(body))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusAccepted)
+	return nil
+}

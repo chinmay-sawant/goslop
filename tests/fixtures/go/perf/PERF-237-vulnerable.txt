@@ -1,0 +1,24 @@
+# PERF-237 positive: errgroup always fans out with no tiny-N serial path
+lang: go
+file: PERF-237-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+func ProcessItems(items []Item) error {
+	var group errgroup.Group
+	group.SetLimit(8)
+	for _, item := range items {
+		item := item
+		group.Go(func() error {
+			return work(item)
+		})
+	}
+	return group.Wait()
+}
+
+type Item struct{}
+
+func work(Item) error { return nil }

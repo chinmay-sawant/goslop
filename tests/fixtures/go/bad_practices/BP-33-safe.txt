@@ -1,0 +1,19 @@
+# BP-33 negative: sentinel error type implements Is
+lang: go
+file: BP-33-safe.go
+variant: stdlib
+---
+package sample
+
+type notFoundError struct{}
+
+func (e notFoundError) Error() string {
+	return "not found"
+}
+
+func (e notFoundError) Is(target error) bool {
+	actual, ok := target.(notFoundError)
+	return ok && actual == e
+}
+
+var ErrNotFound = notFoundError{}

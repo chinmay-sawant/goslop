@@ -1,0 +1,20 @@
+# BP-85 safe: the handler checks whether the request context value has the expected type.
+lang: go
+file: BP-85-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+type userKey struct{}
+type User struct{ Name string }
+
+func userHandler(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(userKey{}).(User)
+	if !ok {
+		http.Error(w, "missing user", http.StatusUnauthorized)
+		return
+	}
+	_ = user
+}

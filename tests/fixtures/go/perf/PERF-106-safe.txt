@@ -1,0 +1,26 @@
+# PERF-106 negative: plain map guarded by sync.Mutex
+lang: go
+file: PERF-106-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+type Entry struct {
+	Key   string
+	Value int
+}
+
+func UseMap() {
+	var mu sync.Mutex
+	m := make(map[Entry]int, 1024)
+	for i := 0; i < 1000; i++ {
+		mu.Lock()
+		m[Entry{Key: "k", Value: i}] = i
+		mu.Unlock()
+	}
+	mu.Lock()
+	_ = m[Entry{Key: "k"}]
+	mu.Unlock()
+}

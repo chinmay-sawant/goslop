@@ -1,0 +1,20 @@
+# IP-009: Multiple returns — vulnerable
+lang: go
+file: IP-009-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    path, _ := lookup()
+    os.Open(path)
+}
+
+func lookup() (string, error) {
+    return r.URL.Query().Get("input"), nil
+}

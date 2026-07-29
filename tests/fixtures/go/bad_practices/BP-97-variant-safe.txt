@@ -1,0 +1,20 @@
+# BP-97 negative variant: gzip output is read after Close
+lang: go
+file: BP-97-variant-safe.go
+---
+package sample
+
+import (
+	"bufio"
+	"bytes"
+)
+
+func encode() int {
+	buf := &bytes.Buffer{}
+	writer := bufio.NewWriter(buf)
+	writer.Write([]byte("payload"))
+	if err := writer.Flush(); err != nil {
+		return 0
+	}
+	return buf.Len()
+}

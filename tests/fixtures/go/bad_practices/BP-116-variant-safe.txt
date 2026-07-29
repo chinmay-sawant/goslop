@@ -1,0 +1,24 @@
+# BP-116 negative variant: a non-Echo context with the same JSON method is ignored.
+lang: go
+file: BP-116-variant-safe.go
+variant: non-echo
+---
+package sample
+
+import "net/http"
+
+type Context struct{}
+
+func (Context) json(int, any) error { return nil }
+
+func remove(c Context) error {
+	if err := removeRecord(); err != nil {
+		if responseErr := c.json(http.StatusNotFound, map[string]string{"error": "missing"}); responseErr != nil {
+			return responseErr
+		}
+		return nil
+	}
+	return nil
+}
+
+func removeRecord() error { return nil }

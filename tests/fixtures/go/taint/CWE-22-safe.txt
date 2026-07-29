@@ -1,0 +1,18 @@
+# CWE-22 negative: filename-only policy with filepath.Base
+lang: go
+file: CWE-22-taint-safe.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func ServeFile(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Query().Get("path")
+	safe := filepath.Base(path)
+	_ = os.Open(safe)
+}

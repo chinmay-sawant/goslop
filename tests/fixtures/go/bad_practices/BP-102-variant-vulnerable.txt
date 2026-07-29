@@ -1,0 +1,18 @@
+# BP-102 positive variant: reordered handler parameters retain the same gap.
+lang: go
+file: BP-102-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func serve(request *http.Request, writer http.ResponseWriter) {
+	result, loadErr := load(request)
+	if loadErr != nil {
+		return
+	}
+	writer.Write(result)
+}
+
+func load(*http.Request) ([]byte, error) { return []byte("ok"), nil }

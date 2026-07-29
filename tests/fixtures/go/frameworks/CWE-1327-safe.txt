@@ -1,0 +1,25 @@
+# CWE-1327 safe: loopback-only bind address
+lang: go
+file: CWE-1327-safe.go
+---
+package sample
+
+// CWE-1327 mitigated: server listens on 127.0.0.1 instead of all interfaces.
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func StartLocalAPI(db *gorm.DB) error {
+	r := gin.Default()
+	r.GET("/status", func(c *gin.Context) {
+		sqlDB, err := db.DB()
+		if err != nil || sqlDB.Ping() != nil {
+			c.String(503, "db down")
+			return
+		}
+		c.String(200, "ok")
+	})
+	return r.Run("127.0.0.1:9090")
+}

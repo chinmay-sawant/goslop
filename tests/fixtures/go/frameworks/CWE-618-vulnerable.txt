@@ -1,0 +1,25 @@
+# CWE-618: Exposed Unsafe ActiveX Method (browser plugin analogue)
+lang: go
+file: CWE-618-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: HTTP endpoint exposes a privileged native helper without sandbox checks.
+func InvokePluginMethod(c *gin.Context) {
+	method := c.Query("method")
+	args := c.Query("args")
+	cmd := exec.Command("/opt/vendor/activex-bridge", method, args)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		c.String(http.StatusInternalServerError, string(out))
+		return
+	}
+	c.String(http.StatusOK, string(out))
+}

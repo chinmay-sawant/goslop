@@ -1,0 +1,29 @@
+# CWE-829: Inclusion of Functionality from Untrusted Control Sphere (pure stdlib)
+lang: go
+file: CWE-829-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"plugin"
+)
+
+// Vulnerable: loads a shared object from a user-supplied filesystem path.
+func LoadExtension(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Query().Get("module_path")
+	p, err := plugin.Open(path)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	sym, err := p.Lookup("Init")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]bool{"loaded": sym != nil})
+}

@@ -1,0 +1,20 @@
+# PERF-040-loop-demo negative: demo/main timing with for-loop is not a request handler
+lang: go
+file: PERF-040-loop-demo-safe.go
+---
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	start := time.Now()
+	for i := 1; i <= 3; i++ {
+		elapsed := time.Since(start).Seconds()
+		timestamp := time.Now().Format("15:04:05")
+		fmt.Printf("[%s +%.1fs] tick %d\n", timestamp, elapsed, i)
+		time.Sleep(10 * time.Millisecond)
+	}
+}

@@ -1,0 +1,17 @@
+# BP-99 negative variant: locker is acquired before signaling and waiting
+lang: go
+file: BP-99-variant-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func signalReady() {
+	mu := &sync.Mutex{}
+	cond := sync.NewCond(mu)
+	mu.Lock()
+	cond.Signal()
+	cond.Wait()
+	mu.Unlock()
+}

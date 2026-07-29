@@ -1,0 +1,49 @@
+# CWE-1204 positive: static AES-CBC initialization vector (pure stdlib)
+lang: go
+file: CWE-1204-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1204: Generation of Weak Initialization Vector (IV).
+// Vulnerable: cipher.NewCBCEncrypter reuses fixed iv bytes for every request.
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
+	"net/http"
+)
+
+var weakIVPure = []byte("1234567890123456")
+
+func EncryptFieldPure(key []byte) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		plain := r.FormValue("value")
+		block, err := aes.NewCipher(key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		mode := cipher.NewCBCEncrypter(block, weakIVPure)
+		padded := pkcs7PadPure([]byte(plain), block.BlockSize())
+		out := make([]byte, len(padded))
+		mode.CryptBlocks(out, padded)
+		encoded := base64.StdEncoding.EncodeToString(out)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"ciphertext":"` + encoded + `"}`))
+	}
+}
+
+func pkcs7PadPure(data []byte, blockSize int) []byte {
+	pad := blockSize - len(data)%blockSize
+	padding := make([]byte, pad)
+	for i := range padding {
+		padding[i] = byte(pad)
+	}
+	return append(data, padding...)
+}

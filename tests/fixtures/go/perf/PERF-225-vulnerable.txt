@@ -1,0 +1,15 @@
+# PERF-225 positive: double full-buffer clone
+lang: go
+file: PERF-225-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "slices"
+
+func Finalize(buf []byte) []byte {
+	owned := slices.Clone(buf)
+	// Redundant second full clone of the same logical buffer.
+	signed := slices.Clone(owned)
+	return signed
+}

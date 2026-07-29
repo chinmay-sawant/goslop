@@ -1,0 +1,39 @@
+# CWE-1125 negative: minimal authenticated surface (pure stdlib)
+lang: go
+file: CWE-1125-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1125 mitigated: only health and authenticated profile routes are registered.
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+func authRequiredPure(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") == "" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func MountMinimalSurfacePure(db *sql.DB) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	profile := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userID := r.Header.Get("X-User-ID")
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"user_id": userID})
+	})
+	mux.Handle("/api/profile", authRequiredPure(profile))
+	_ = db
+	return mux
+}

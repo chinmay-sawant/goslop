@@ -1,0 +1,12 @@
+# PERF-112 negative: EqualFold for case-insensitive comparison
+lang: go
+file: PERF-112-safe.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func SameIgnoreCase(a, b string) bool {
+	return strings.EqualFold(a, b)
+}

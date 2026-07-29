@@ -1,0 +1,35 @@
+# CWE-90 negative: LDAP filter metacharacters escaped
+lang: go
+file: CWE-90-safe.go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func escapeLDAP(value string) string {
+	replacer := strings.NewReplacer(
+		`\`, `\5c`,
+		`*`, `\2a`,
+		`(`, `\28`,
+		`)`, `\29`,
+		"\x00", `\00`,
+	)
+	return replacer.Replace(value)
+}
+
+// CWE-90 Improper Neutralization of Special Elements used in an LDAP Query (mitigated)
+func SearchDirectory(c *gin.Context, dial func(string) error) {
+	uid := c.Query("uid")
+	filter := fmt.Sprintf("(&(objectClass=user)(uid=%s))", escapeLDAP(uid))
+	if err := dial(filter); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "ldap"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

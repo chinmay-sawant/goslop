@@ -1,0 +1,11 @@
+# PERF-126 positive: redundant http.CanonicalHeaderKey call
+lang: go
+file: PERF-126-vulnerable.go
+---
+package sample
+
+import "net/http"
+
+func Canonical() string {
+    return http.CanonicalHeaderKey("Content-Type")
+}

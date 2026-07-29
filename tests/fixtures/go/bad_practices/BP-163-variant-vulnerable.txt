@@ -1,0 +1,22 @@
+# BP-163 positive variant: a renamed update flag writes a snapshot unguarded.
+lang: go
+file: BP-163-variant-vulnerable_test.go
+variant: renamed-update-without-short
+---
+package snapshots
+
+import (
+	"flag"
+	"os"
+	"testing"
+)
+
+var updateGolden = flag.Bool("update-golden", false, "rewrite snapshots")
+
+func TestSnapshot(t *testing.T) {
+	if *updateGolden {
+		if err := os.Create("testdata/snapshot.json"); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

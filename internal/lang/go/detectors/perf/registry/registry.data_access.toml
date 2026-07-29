@@ -1,0 +1,101 @@
+# PERF registry — domain: data_access
+
+[[detector]]
+perf = 71
+domain = "data_access"
+function = "detect_perf_71"
+
+[[detector]]
+perf = 72
+domain = "data_access"
+function = "detect_perf_72"
+
+[[detector]]
+perf = 73
+domain = "data_access"
+function = "detect_perf_73"
+
+[[detector]]
+perf = 74
+domain = "data_access"
+function = "detect_perf_74"
+
+[[detector]]
+perf = 75
+domain = "data_access"
+function = "detect_perf_75"
+
+[[detector]]
+perf = 76
+domain = "data_access"
+function = "detect_perf_76"
+
+[[detector]]
+perf = 77
+domain = "data_access"
+function = "detect_perf_77"
+
+[[detector]]
+perf = 78
+domain = "data_access"
+function = "detect_perf_78"
+
+[[detector]]
+perf = 79
+domain = "data_access"
+function = "detect_perf_79"
+
+[[detector]]
+perf = 80
+domain = "data_access"
+function = "detect_perf_80"
+
+[[detector]]
+perf = 81
+domain = "data_access"
+function = "detect_perf_81"
+
+[[detector]]
+perf = 82
+domain = "data_access"
+function = "detect_perf_82"
+
+[[detector]]
+perf = 83
+domain = "data_access"
+function = "detect_perf_83"
+
+[[detector]]
+perf = 84
+domain = "data_access"
+function = "detect_perf_84"
+
+[[detector]]
+perf = 85
+domain = "data_access"
+function = "detect_perf_85"
+
+[[detector]]
+perf = 86
+domain = "data_access"
+function = "detect_perf_86"
+
+[[detector]]
+perf = 87
+domain = "data_access"
+function = "detect_perf_87"
+
+[[detector]]
+perf = 88
+domain = "data_access"
+function = "detect_perf_88"
+
+[[detector]]
+perf = 89
+domain = "data_access"
+function = "detect_perf_89"
+
+[[detector]]
+perf = 90
+domain = "data_access"
+function = "detect_perf_90"

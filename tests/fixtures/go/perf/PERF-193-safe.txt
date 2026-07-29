@@ -1,0 +1,20 @@
+# PERF-193 negative: a reusable *time.Timer is reset on each iteration
+lang: go
+file: PERF-193-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func Poll(items []int) {
+	t := time.NewTimer(time.Second)
+	defer t.Stop()
+	for range items {
+		t.Reset(time.Second)
+		<-t.C
+		_ = tick()
+	}
+}
+
+func tick() error { return nil }

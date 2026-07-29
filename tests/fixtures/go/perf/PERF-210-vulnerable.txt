@@ -1,0 +1,29 @@
+# PERF-210 positive: go-redis KEYS used in a request handler
+lang: go
+file: PERF-210-vulnerable.go
+variant: framework
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/redis/go-redis/v9"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request, rdb *redis.Client) error {
+	keys, err := rdb.Keys(r.Context(), "user:*").Result()
+	if err != nil {
+		return err
+	}
+	_, _ = w.Write([]byte(join(keys)))
+	return nil
+}
+
+func join(s []string) string {
+	out := ""
+	for _, v := range s {
+		out += v
+	}
+	return out
+}

@@ -1,0 +1,22 @@
+# CWE-454 positive: MFA flag set from client POST at bootstrap (pure stdlib)
+lang: go
+file: CWE-454-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+var enforceMFA bool
+
+func RegisterBootstrap(db *sql.DB) {
+	http.HandleFunc("/bootstrap", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		enforceMFA = r.FormValue("enforce_mfa") == "true"
+		_, _ = db.Exec("UPDATE settings SET mfa = ?", enforceMFA)
+		w.WriteHeader(http.StatusOK)
+	})
+}

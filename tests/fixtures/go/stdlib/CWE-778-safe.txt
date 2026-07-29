@@ -1,0 +1,26 @@
+# CWE-778: Insufficient Logging (mitigated, pure stdlib)
+lang: go
+file: CWE-778-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"log"
+	"net/http"
+)
+
+// Safe: security-relevant failures are logged with actor and source metadata.
+func SignIn(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	user := r.FormValue("username")
+	pass := r.FormValue("password")
+	var stored string
+	err := db.QueryRow("SELECT password FROM users WHERE username = $1", user).Scan(&stored)
+	if err != nil || stored != pass {
+		log.Printf("auth failure user=%s ip=%s", user, r.RemoteAddr)
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

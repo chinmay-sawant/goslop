@@ -1,0 +1,33 @@
+# CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes (mitigated)
+lang: go
+file: CWE-915-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type Profile struct {
+	ID      uint
+	Name    string
+	Role    string
+	Balance int
+}
+
+// Safe: only explicitly allowed attributes may be updated from client input.
+func UpdateProfile(c *gin.Context, db *gorm.DB) {
+	id := c.Param("id")
+	var body struct {
+		Name string `json:"name"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	db.Model(&Profile{}).Where("id = ?", id).Update("name", body.Name)
+	c.Status(http.StatusOK)
+}

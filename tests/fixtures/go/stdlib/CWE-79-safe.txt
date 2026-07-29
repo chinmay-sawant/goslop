@@ -1,0 +1,29 @@
+# CWE-79 negative: escaped user data in HTML (pure stdlib)
+lang: go
+file: CWE-79-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"fmt"
+	"html"
+	"net/http"
+)
+
+// CWE-79 Improper Neutralization of Input During Web Page Generation (mitigated)
+func ShowWelcome(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	visitor := r.URL.Query().Get("name")
+	if visitor == "" {
+		visitor = "guest"
+	}
+	title := "Visitor Greeting"
+	page := fmt.Sprintf("<html><head><title>%s</title></head><body><p>Welcome, %s!</p></body></html>", title, html.EscapeString(visitor))
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(page))
+}

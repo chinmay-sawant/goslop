@@ -1,0 +1,23 @@
+# CWE-1289 safe: filename-only public asset lookup
+lang: go
+file: CWE-1289-safe.go
+---
+package sample
+
+// CWE-1289 mitigated: only a final filename component is accepted.
+
+import (
+	"net/http"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func FetchSharedAssetSafe() gin.HandlerFunc {
+	root := "/srv/assets/public"
+	return func(c *gin.Context) {
+		requested := c.Param("path")
+		asset := filepath.Join(root, filepath.Base(requested))
+		c.File(asset)
+	}
+}

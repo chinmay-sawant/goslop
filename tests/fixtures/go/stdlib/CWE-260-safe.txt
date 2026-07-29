@@ -1,0 +1,37 @@
+# CWE-260 — Password in Configuration File (safe) (pure stdlib)
+lang: go
+file: CWE-260-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+)
+
+type serviceConfig struct {
+	Endpoint string `json:"endpoint"`
+}
+
+// Safe: non-secret settings from disk; credential only from environment.
+func ConfigSecretHandler(w http.ResponseWriter, r *http.Request) {
+	raw, err := os.ReadFile("/etc/codehound/service.json")
+	if err != nil {
+		http.Error(w, "config", http.StatusInternalServerError)
+		return
+	}
+	var cfg serviceConfig
+	if json.Unmarshal(raw, &cfg) != nil {
+		http.Error(w, "parse", http.StatusInternalServerError)
+		return
+	}
+	secret := os.Getenv("SERVICE_SECRET")
+	if secret == "" {
+		http.Error(w, "missing secret", http.StatusInternalServerError)
+		return
+	}
+	r.Header.Set("X-Internal-Secret", secret)
+	w.WriteHeader(http.StatusOK)
+}

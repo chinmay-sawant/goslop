@@ -1,0 +1,17 @@
+# PERF-056 negative: c.JSON called once outside any loop
+lang: go
+file: PERF-056-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ListUsersSafe(c *gin.Context) {
+	users := []string{"alice", "bob", "carol"}
+	c.JSON(http.StatusOK, gin.H{"users": users})
+	_ = http.StatusOK
+}

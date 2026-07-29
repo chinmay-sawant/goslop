@@ -1,0 +1,11 @@
+# BP-88 positive: direct operation on a zero-value local channel
+lang: go
+file: BP-88-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func send(work int) {
+	var ready chan int
+	ready <- work
+}

@@ -1,0 +1,23 @@
+# CWE-343 safe — Predictable Value Range from Previous Values (mitigated)
+lang: go
+file: CWE-343-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/binary"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func NextRaffleNumber(c *GinCtx) (int, error) {
+	var n uint32
+	if err := binary.Read(rand.Reader, binary.BigEndian, &n); err != nil {
+		return 0, err
+	}
+	return int(n % 97), nil
+}

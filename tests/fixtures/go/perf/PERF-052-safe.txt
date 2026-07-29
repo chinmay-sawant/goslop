@@ -1,0 +1,16 @@
+# PERF-052 negative: no manual runtime.GC() call
+lang: go
+file: PERF-052-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+	_ = http.StatusOK
+}

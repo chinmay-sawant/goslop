@@ -1,0 +1,24 @@
+# PERF-205 positive: db.Count + db.Offset.Limit.Find in same handler
+lang: go
+file: PERF-205-vulnerable.go
+variant: framework
+---
+package sample
+
+import "gorm.io/gorm"
+
+type Order struct {
+	ID uint
+}
+
+func ListPage(db *gorm.DB, page, size int) (int64, []Order, error) {
+	var total int64
+	if err := db.Model(&Order{}).Count(&total).Error; err != nil {
+		return 0, nil, err
+	}
+	var orders []Order
+	if err := db.Offset(page * size).Limit(size).Find(&orders).Error; err != nil {
+		return 0, nil, err
+	}
+	return total, orders, nil
+}

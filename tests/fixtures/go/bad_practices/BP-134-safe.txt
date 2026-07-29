@@ -1,0 +1,23 @@
+# BP-134 negative: ErrRecordNotFound is mapped separately.
+lang: go
+file: BP-134-safe.go
+variant: gorm-first-not-found
+---
+package sample
+
+import (
+	"errors"
+	"fmt"
+
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func loadUser(db *gorm.DB, user *User) error {
+	err := db.First(user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil
+	}
+	return fmt.Errorf("load user: %w", err)
+}

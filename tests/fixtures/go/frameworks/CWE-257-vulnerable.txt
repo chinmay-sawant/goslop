@@ -1,0 +1,47 @@
+# CWE-257 positive: reversible AES encryption for passwords
+lang: go
+file: CWE-257-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// CWE-257 Storing Passwords in a Recoverable Format
+// Vulnerable line: encrypts password with static key for later decryption.
+func StoreRecoverablePassword(c *gin.Context, db *gorm.DB, key []byte) {
+	plain := []byte(c.PostForm("password"))
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "crypto"})
+		return
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "crypto"})
+		return
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "crypto"})
+		return
+	}
+	ciphertext := gcm.Seal(nil, nonce, plain, nil)
+	ciphertext = append(nonce, ciphertext...)
+	encoded := base64.StdEncoding.EncodeToString(ciphertext)
+	row := map[string]interface{}{"username": c.PostForm("username"), "password": encoded}
+	if err := db.Table("accounts").Create(row).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "save"})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"status": "stored"})
+}

@@ -1,0 +1,21 @@
+# PERF-013 positive: time.After inside a long-running loop
+lang: go
+file: PERF-013-vulnerable.go
+---
+package sample
+
+import "time"
+
+func PollUntilReady() bool {
+	for i := 0; i < 1000; i++ {
+		select {
+		case <-time.After(100 * time.Millisecond):
+		}
+		if ready() {
+			return true
+		}
+	}
+	return false
+}
+
+func ready() bool { return false }

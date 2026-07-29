@@ -1,0 +1,36 @@
+# CWE-91 negative: typed XML marshaling avoids injection
+lang: go
+file: CWE-91-safe.go
+---
+package sample
+
+import (
+	"encoding/xml"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-91 XML Injection (mitigated)
+func ImportProfile(c *gin.Context) {
+	title := c.PostForm("title")
+	body := c.PostForm("body")
+	doc, err := xml.Marshal(struct {
+		XMLName xml.Name `xml:"profile"`
+		Title   string   `xml:"title"`
+		Body    string   `xml:"body"`
+	}{Title: title, Body: body})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "xml"})
+		return
+	}
+	var parsed struct {
+		Title string `xml:"title"`
+		Body  string `xml:"body"`
+	}
+	if err := xml.Unmarshal(doc, &parsed); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "xml"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"title": parsed.Title})
+}

@@ -1,0 +1,33 @@
+# CWE-41 positive: path equivalence via dot segments (pure stdlib)
+lang: go
+file: CWE-41-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// CWE-41 Improper Resolution of Path Equivalence
+// Vulnerable line: rejects ".." but allows "./" and "//" aliases.
+func FetchMemo(w http.ResponseWriter, r *http.Request) {
+	root := "/srv/memos"
+	rel := r.URL.Query().Get("path")
+	if strings.Contains(rel, "..") {
+		http.Error(w, "bad path", http.StatusBadRequest)
+		return
+	}
+	full := filepath.Join(root, rel)
+	body, err := os.ReadFile(full)
+	if err != nil {
+		http.Error(w, "missing", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(body)
+}

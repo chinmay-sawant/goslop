@@ -1,0 +1,29 @@
+# CWE-343 safe: Predictable Value Range from Previous Values (mitigated, pure stdlib)
+lang: go
+file: CWE-343-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/binary"
+	"fmt"
+	"net/http"
+)
+
+func DrawDoorPrize(w http.ResponseWriter, r *http.Request) error {
+	participant := r.URL.Query().Get("participant")
+	if participant == "" {
+		http.Error(w, "participant required", http.StatusBadRequest)
+		return http.ErrMissingFile
+	}
+	var n uint32
+	if err := binary.Read(rand.Reader, binary.BigEndian, &n); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, "%d", n%101)
+	return nil
+}

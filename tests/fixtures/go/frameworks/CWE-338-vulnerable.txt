@@ -1,0 +1,26 @@
+# CWE-338 vulnerable — Use of Cryptographically Weak PRNG
+lang: go
+file: CWE-338-vulnerable.go
+---
+package sample
+
+import (
+	"math/rand"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type GormDB struct{}
+
+func (db *GormDB) Save(model interface{}) error { return nil }
+
+func RotateSessionID(c *GinCtx, db *GormDB) error {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	sid := strconv.FormatInt(rng.Int63(), 10)
+	return db.Save(map[string]string{"user": c.Request.URL.Query().Get("user"), "sid": sid})
+}

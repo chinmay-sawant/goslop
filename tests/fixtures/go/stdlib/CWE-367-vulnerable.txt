@@ -1,0 +1,28 @@
+# CWE-367 vulnerable: Time-of-check Time-of-use (TOCTOU) Race Condition (positive, pure stdlib)
+lang: go
+file: CWE-367-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func OpenPatientScan(w http.ResponseWriter, r *http.Request) error {
+	name := r.URL.Query().Get("scan")
+	target := filepath.Join("/var/scans/inbox", name)
+	if _, err := os.Stat(target); os.IsNotExist(err) {
+		http.Error(w, "missing scan", http.StatusNotFound)
+		return err
+	}
+	data, err := os.ReadFile(target)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.Write(data)
+	return nil
+}

@@ -1,0 +1,34 @@
+# CWE-1322 positive: blocking sleep in async worker (pure stdlib)
+lang: go
+file: CWE-1322-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1322: Use of Blocking Code in Single-threaded, Non-blocking Context.
+// Vulnerable: event loop goroutine calls time.Sleep while draining webhook queue.
+
+import (
+	"database/sql"
+	"net/http"
+	"time"
+)
+
+func StartWebhookWorkerPure(db *sql.DB) http.HandlerFunc {
+	queue := make(chan string, 32)
+	go func() {
+		for payload := range queue {
+			time.Sleep(2 * time.Second)
+			_, _ = db.Exec("INSERT INTO webhook_events (payload) VALUES ($1)", payload)
+		}
+	}()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		queue <- r.FormValue("payload")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"queued":true}`))
+	}
+}

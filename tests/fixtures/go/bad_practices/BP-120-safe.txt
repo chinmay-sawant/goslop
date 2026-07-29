@@ -1,0 +1,23 @@
+# BP-120 negative: Fiber BodyParser errors stop the handler.
+lang: go
+file: BP-120-safe.go
+variant: fiber
+---
+package sample
+
+import (
+	"fmt"
+	"github.com/gofiber/fiber/v2"
+ )
+
+type Request struct {
+	Token string `json:"token"`
+}
+
+func create(c *fiber.Ctx) error {
+	var request Request
+	if err := c.BodyParser(&request); err != nil {
+		return fmt.Errorf("parse request: %w", err)
+	}
+	return c.SendStatus(204)
+}

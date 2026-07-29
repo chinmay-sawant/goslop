@@ -1,0 +1,23 @@
+# BP-73 negative: local map is initialized before the write
+lang: go
+file: BP-73-safe.go
+variant: stdlib
+---
+package sample
+
+func collect() map[string]int {
+	counts := make(map[string]int)
+	counts["ok"] = 1
+	return counts
+}
+
+func update(existing map[string]int) {
+	existing["ok"] = 1
+}
+
+func initializeLater() map[string]int {
+	var counts map[string]int
+	counts = make(map[string]int)
+	counts["ok"] = 1
+	return counts
+}

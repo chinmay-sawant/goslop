@@ -1,0 +1,26 @@
+# CWE-290 — Authentication Bypass by Spoofing (vulnerable) (pure stdlib)
+lang: go
+file: CWE-290-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+// Vulnerable: trusts X-Remote-User from the client instead of server session state.
+func IdentityHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	user := r.Header.Get("X-Remote-User")
+	if user == "" {
+		http.Error(w, "anonymous", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"user": user})
+}

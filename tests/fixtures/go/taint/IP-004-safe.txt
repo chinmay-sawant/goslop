@@ -1,0 +1,20 @@
+# IP-004: Depth 3 chain — safe (constant arg)
+lang: go
+file: IP-004-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func funcA() {
+    funcB("/safe/path")
+}
+
+func funcB(s string) {
+    funcC(s)
+}
+
+func funcC(s string) {
+    os.Open(s)
+}

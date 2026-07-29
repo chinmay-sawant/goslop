@@ -1,0 +1,30 @@
+# PERF-161 positive: rows.Next() loop without rows.Err() check
+lang: go
+file: PERF-161-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "database/sql"
+
+type User struct {
+	ID   int
+	Name string
+}
+
+func LoadUsers(db *sql.DB) ([]User, error) {
+	rows, err := db.Query("SELECT id, name FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Name); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, nil
+}

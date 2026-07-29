@@ -1,0 +1,17 @@
+# BP-159 positive: a flag pointer is read before flag.Parse.
+lang: go
+file: BP-159-vulnerable.go
+variant: flag-order
+---
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+func main() {
+	port := flag.Int("port", 8080, "listen port")
+	fmt.Println(*port)
+	flag.Parse()
+}

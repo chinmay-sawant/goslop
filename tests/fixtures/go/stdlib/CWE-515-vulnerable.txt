@@ -1,0 +1,30 @@
+# CWE-515 positive: covert quota flag shared across handlers (pure stdlib)
+lang: go
+file: CWE-515-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+var quotaCovertFlag int
+
+func SetQuotaCovert(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseForm()
+	if r.FormValue("over") == "1" {
+		quotaCovertFlag = 1
+	} else {
+		quotaCovertFlag = 0
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func ProbeQuotaCovert(w http.ResponseWriter, r *http.Request) {
+	if quotaCovertFlag == 1 {
+		w.Write([]byte("over_limit"))
+		return
+	}
+	w.Write([]byte("ok"))
+}

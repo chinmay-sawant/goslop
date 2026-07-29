@@ -1,0 +1,17 @@
+# PERF-107 positive: encoding/binary read/write inside loop
+lang: go
+file: PERF-107-vulnerable.go
+---
+package sample
+
+import (
+    "bytes"
+    "encoding/binary"
+)
+
+func ReadLoop(r *bytes.Reader) {
+    for {
+        var x int32
+        binary.Read(r, binary.LittleEndian, &x)
+    }
+}

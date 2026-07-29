@@ -1,0 +1,18 @@
+# PERF-82 negative: single StructScan via QueryRowx avoids the loop
+lang: go
+file: PERF-082-safe.go
+---
+package sample
+
+import "github.com/jmoiron/sqlx"
+
+type User struct {
+	ID    int64  `db:"id"`
+	Email string `db:"email"`
+}
+
+func GetUser(db *sqlx.DB, id int64) (User, error) {
+	var u User
+	err := db.QueryRowx("SELECT id, email FROM users WHERE id = ?", id).StructScan(&u)
+	return u, err
+}

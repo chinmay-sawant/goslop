@@ -1,0 +1,36 @@
+# CWE-434: upload allowlist blocks executable/script extensions.
+lang: go
+file: CWE-434-safe.go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"net/http"
+	"path/filepath"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+func UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	ext := strings.ToLower(filepath.Ext(file.Filename))
+	if ext != ".png" && ext != ".jpg" {
+		c.String(http.StatusBadRequest, "unsupported file type")
+		return
+	}
+	var nonce [16]byte
+	_, _ = rand.Read(nonce[:])
+	dest := filepath.Join("/var/www/static/avatars", hex.EncodeToString(nonce[:])+ext)
+	if err := c.SaveUploadedFile(file, dest); err != nil {
+		c.String(http.StatusInternalServerError, "upload failed")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"path": dest})
+}

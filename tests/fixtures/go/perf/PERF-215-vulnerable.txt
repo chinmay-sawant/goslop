@@ -1,0 +1,16 @@
+# PERF-215 positive: bytes.Buffer writes without Grow when len is known
+lang: go
+file: PERF-215-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func Encode(payload string) string {
+	var out bytes.Buffer
+	size := len(payload)
+	_ = size
+	out.WriteString(payload)
+	return out.String()
+}

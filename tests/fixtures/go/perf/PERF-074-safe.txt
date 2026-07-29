@@ -1,0 +1,21 @@
+# PERF-74 negative: Select clause projects only the needed columns
+lang: go
+file: PERF-074-safe.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
+
+type User struct {
+	gorm.Model
+	Name string
+}
+
+func ListUsers(c echo.Context, db *gorm.DB) error {
+	var users []User
+	db.Select("id, name").Find(&users)
+	return c.String(200, "ok")
+}

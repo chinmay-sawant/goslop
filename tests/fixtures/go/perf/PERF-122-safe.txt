@@ -1,0 +1,11 @@
+# PERF-122 negative: HasPrefix followed by slice instead of TrimPrefix
+lang: go
+file: PERF-122-safe.go
+---
+package sample
+
+import "strings"
+
+func Trim(s, p string) string {
+    return strings.TrimPrefix(s, p)
+}

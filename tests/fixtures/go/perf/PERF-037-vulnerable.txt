@@ -1,0 +1,20 @@
+# PERF-037 positive: append in a request path without a make+cap hint
+lang: go
+file: PERF-037-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func List(c *gin.Context) {
+	rows := c.GetStringSlice("rows")
+	var out []int
+	for _, v := range rows {
+		out = append(out, len(v))
+	}
+	c.JSON(http.StatusOK, gin.H{"sizes": out})
+}

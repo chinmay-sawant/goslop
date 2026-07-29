@@ -1,0 +1,46 @@
+# PERF registry — domain: request_path
+
+[[detector]]
+perf = 17
+domain = "request_path"
+function = "detect_perf_17"
+
+[[detector]]
+perf = 18
+domain = "request_path"
+function = "detect_perf_18"
+
+[[detector]]
+perf = 19
+domain = "request_path"
+function = "detect_perf_19"
+
+[[detector]]
+perf = 20
+domain = "request_path"
+function = "detect_perf_20"
+
+[[detector]]
+perf = 21
+domain = "request_path"
+function = "detect_perf_21"
+
+[[detector]]
+perf = 22
+domain = "request_path"
+function = "detect_perf_22"
+
+[[detector]]
+perf = 23
+domain = "request_path"
+function = "detect_perf_23"
+
+[[detector]]
+perf = 24
+domain = "request_path"
+function = "detect_perf_24"
+
+[[detector]]
+perf = 25
+domain = "request_path"
+function = "detect_perf_25"

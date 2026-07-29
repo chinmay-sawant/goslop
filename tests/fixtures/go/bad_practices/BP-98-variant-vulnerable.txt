@@ -1,0 +1,17 @@
+# BP-98 positive variant: OpenFile result is not released
+lang: go
+file: BP-98-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "os"
+
+func writeConfig(path string, data []byte) error {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(data)
+	return err
+}

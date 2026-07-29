@@ -1,0 +1,14 @@
+# BP-16 negative: test uses deterministic synchronization instead of sleep
+lang: go
+file: BP-16-safe_test.go
+variant: stdlib
+---
+package sample
+
+import "testing"
+
+func TestNoSleep(t *testing.T) {
+	done := make(chan struct{}, 1)
+	done <- struct{}{}
+	<-done
+}

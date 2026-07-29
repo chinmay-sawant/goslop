@@ -1,0 +1,25 @@
+# CWE-289 — Authentication Bypass by Alternate Name (safe) (pure stdlib)
+lang: go
+file: CWE-289-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+	"strings"
+)
+
+// Safe: matches canonical principal id including realm suffix.
+func LookupPrincipal(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	who := strings.ToLower(strings.TrimSpace(r.URL.Query().Get("user")))
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM principals WHERE canonical_name = ?", who).Scan(&count)
+	if err != nil || count == 0 {
+		http.Error(w, "unknown principal", http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("X-Authenticated", "true")
+	w.WriteHeader(http.StatusOK)
+}

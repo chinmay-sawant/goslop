@@ -1,0 +1,18 @@
+# PERF-062 negative: middleware uses c.Param without regex/json parsing
+lang: go
+file: PERF-062-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func MiddlewareTrace(c *gin.Context) {
+	id := c.Param("id")
+	_ = id
+	c.Next()
+	_ = http.StatusOK
+}

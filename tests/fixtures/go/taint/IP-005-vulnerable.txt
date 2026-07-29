@@ -1,0 +1,22 @@
+# IP-005: Method call chain — vulnerable
+lang: go
+file: IP-005-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+type Handler struct{}
+
+func (h *Handler) Serve() {
+    path := r.URL.Query().Get("path")
+    h.openFile(path)
+}
+
+func (h *Handler) openFile(p string) {
+    os.Open(p)
+}

@@ -1,0 +1,18 @@
+# PERF-79 negative: SetMaxOpenConns / SetMaxIdleConns configured
+lang: go
+file: PERF-079-safe.go
+---
+package sample
+
+import (
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+func OpenDB() *sql.DB {
+	db, _ := sql.Open("sqlite3", ":memory:")
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(0)
+	return db
+}

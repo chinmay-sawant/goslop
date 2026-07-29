@@ -1,0 +1,29 @@
+# CWE-412: Unrestricted Externally Accessible Lock
+lang: go
+file: CWE-412-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-412: lock file path comes from the client; any actor can point the lock elsewhere.
+var gate sync.Mutex
+
+func AcquireJobLock(c *gin.Context) error {
+	lockPath := c.Query("lockfile")
+	data, err := os.ReadFile(lockPath)
+	if err != nil {
+		return err
+	}
+	if string(data) != "free" {
+		return err
+	}
+	gate.Lock()
+	_ = os.WriteFile(lockPath, []byte("held"), 0o644)
+	return nil
+}

@@ -1,0 +1,44 @@
+# CWE-1220 negative: owner-scoped invoice access (pure stdlib)
+lang: go
+file: CWE-1220-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1220 mitigated: query filters by authenticated owner_id and invoice id.
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+	"strconv"
+)
+
+type InvoiceScopedPure struct {
+	ID     int     `json:"id"`
+	Owner  int     `json:"owner_id"`
+	Amount float64 `json:"amount"`
+}
+
+func GetInvoiceScopedPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ownerHeader := r.Header.Get("X-User-ID")
+		ownerID, err := strconv.Atoi(ownerHeader)
+		if err != nil || ownerID == 0 {
+			http.Error(w, "login required", http.StatusUnauthorized)
+			return
+		}
+		id := r.URL.Query().Get("id")
+		var inv InvoiceScopedPure
+		err = db.QueryRow(
+			"SELECT id, owner_id, amount FROM invoices WHERE id = $1 AND owner_id = $2",
+			id, ownerID,
+		).Scan(&inv.ID, &inv.Owner, &inv.Amount)
+		if err != nil {
+			http.Error(w, "not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(inv)
+	}
+}

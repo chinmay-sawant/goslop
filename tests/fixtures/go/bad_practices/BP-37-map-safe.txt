@@ -1,0 +1,12 @@
+# BP-37 negative: package-level map is initialized once and only read
+lang: go
+file: BP-37-map-safe.go
+variant: stdlib
+---
+package sample
+
+var registry = map[string]bool{"active": true}
+
+func enabled(key string) bool {
+	return registry[key]
+}

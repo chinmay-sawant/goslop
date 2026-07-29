@@ -1,0 +1,36 @@
+# CWE-359 vulnerable — Exposure of Private Personal Information
+lang: go
+file: CWE-359-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type GinCtx struct {
+	Writer http.ResponseWriter
+	Request *http.Request
+}
+
+type UserPII struct {
+	Email string `json:"email"`
+	SSN   string `json:"ssn"`
+	Phone string `json:"phone"`
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Get(dest interface{}, query string, args ...interface{}) error {
+	*(dest.(*UserPII)) = UserPII{Email: "a@b.c", SSN: "123-45-6789", Phone: "555-0100"}
+	return nil
+}
+
+func FetchProfile(c *GinCtx, db *SqlxDB) error {
+	var row UserPII
+	_ = db.Get(&row, "SELECT email, ssn, phone FROM users WHERE id = ?", c.Request.URL.Query().Get("id"))
+	out, _ := json.Marshal(row)
+	_, _ = c.Writer.Write(out)
+	return nil
+}

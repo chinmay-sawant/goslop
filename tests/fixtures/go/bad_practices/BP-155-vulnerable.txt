@@ -1,0 +1,22 @@
+# BP-155 positive: an HTTP request body is decoded without a size limit.
+lang: go
+file: BP-155-vulnerable.go
+variant: decoder-request-body
+---
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+func update(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

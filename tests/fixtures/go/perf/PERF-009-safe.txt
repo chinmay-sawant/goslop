@@ -1,0 +1,29 @@
+# PERF-009 negative: url.Parse hoisted out of the loop
+lang: go
+file: PERF-009-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"net/url"
+	"strings"
+)
+
+func FetchAll(raws []string) ([]int, error) {
+	parsed := make([]*url.URL, 0, len(raws))
+	for _, raw := range raws {
+		raw = strings.TrimSpace(raw)
+		parsed = append(parsed, &url.URL{Scheme: "https", Host: "example.com", Path: raw})
+	}
+	statuses := make([]int, 0, len(parsed))
+	for _, u := range parsed {
+		resp, err := http.Get(u.String())
+		if err != nil {
+			return nil, err
+		}
+		statuses = append(statuses, resp.StatusCode)
+		resp.Body.Close()
+	}
+	return statuses, nil
+}

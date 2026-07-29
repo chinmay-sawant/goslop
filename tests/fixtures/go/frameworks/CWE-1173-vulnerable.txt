@@ -1,0 +1,45 @@
+# CWE-1173 vulnerable: manual validation bypasses framework
+lang: go
+file: CWE-1173-vulnerable.go
+---
+package sample
+
+// CWE-1173: Improper Use of Validation Framework.
+// Vulnerable: signup handler ignores gin binding tags and accepts any JSON shape.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+type SignupPayload struct {
+	Email    string `binding:"required,email"`
+	Password string `binding:"required,min=12"`
+}
+
+type Customer struct {
+	ID       uint
+	Email    string
+	Password string
+}
+
+func SignupManual(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var raw map[string]interface{}
+		if err := c.ShouldBindJSON(&raw); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		email, _ := raw["email"].(string)
+		password, _ := raw["password"].(string)
+		rec := Customer{Email: email, Password: password}
+		if err := db.Create(&rec).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusCreated, gin.H{"id": rec.ID})
+		_ = SignupPayload{}
+	}
+}

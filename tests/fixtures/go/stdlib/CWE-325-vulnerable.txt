@@ -1,0 +1,31 @@
+# CWE-325 vulnerable: Missing Cryptographic Step (positive, pure stdlib)
+lang: go
+file: CWE-325-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"database/sql"
+	"io"
+)
+
+func EncryptFieldPayload(db *sql.DB, owner, pan string) error {
+	key := []byte("0123456789abcdef0123456789abcdef")
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return err
+	}
+	iv := make([]byte, aes.BlockSize)
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return err
+	}
+	stream := cipher.NewCTR(block, iv)
+	out := make([]byte, len(pan))
+	stream.XORKeyStream(out, []byte(pan))
+	_, err = db.Exec("UPDATE cards SET cipher = ? WHERE owner = ?", out, owner)
+	return err
+}

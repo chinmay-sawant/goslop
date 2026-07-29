@@ -1,0 +1,32 @@
+# CWE-412 negative: server-fixed lock path (pure stdlib)
+lang: go
+file: CWE-412-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"sync"
+)
+
+const fixedJobLock = "/var/run/codehound/job.lock"
+
+var jobGate sync.Mutex
+
+func HandleAcquireLock(w http.ResponseWriter, r *http.Request) {
+	_ = r
+	data, err := os.ReadFile(fixedJobLock)
+	if err != nil {
+		http.Error(w, "lock read failed", http.StatusInternalServerError)
+		return
+	}
+	if string(data) != "free" {
+		http.Error(w, "busy", http.StatusConflict)
+		return
+	}
+	jobGate.Lock()
+	_ = os.WriteFile(fixedJobLock, []byte("held"), 0o600)
+	w.WriteHeader(http.StatusOK)
+}

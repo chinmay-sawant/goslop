@@ -1,0 +1,12 @@
+# BP-90 positive: an infinite loop receives without a local escape
+lang: go
+file: BP-90-vulnerable.go
+---
+package sample
+
+func drain(ch <-chan int) {
+	for {
+		value := <-ch
+		_ = value
+	}
+}

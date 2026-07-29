@@ -1,0 +1,22 @@
+# BP-163 positive: the golden update path writes without a short-test guard.
+lang: go
+file: BP-163-vulnerable_test.go
+variant: update-without-short
+---
+package snapshots
+
+import (
+	"flag"
+	"os"
+	"testing"
+)
+
+var update = flag.Bool("update", false, "rewrite golden files")
+
+func TestGolden(t *testing.T) {
+	if *update {
+		if err := os.WriteFile("testdata/golden.json", []byte(`{}`), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

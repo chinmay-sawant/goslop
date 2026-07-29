@@ -1,0 +1,30 @@
+# CWE-267 — Privilege Defined With Unsafe Actions (vulnerable) (pure stdlib)
+lang: go
+file: CWE-267-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+)
+
+// Vulnerable: reviewer role may delete arbitrary paths from disk.
+func ReviewerPurge(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	if r.Header.Get("X-Role") != "reviewer" {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	target := r.URL.Query().Get("path")
+	if target == "" {
+		http.Error(w, "missing path", http.StatusBadRequest)
+		return
+	}
+	_ = os.Remove(target)
+	w.WriteHeader(http.StatusOK)
+}

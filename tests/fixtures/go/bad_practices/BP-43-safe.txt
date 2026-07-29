@@ -1,0 +1,12 @@
+# BP-43 negative: regular import keeps the qualifier
+lang: go
+file: BP-43-safe.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func trim(value string) string {
+	return strings.TrimSpace(value)
+}

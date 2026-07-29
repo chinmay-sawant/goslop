@@ -1,0 +1,27 @@
+# PERF-186 negative: strings.IndexByte walks whitespace and slices in place
+lang: go
+file: PERF-186-safe.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func Tokens(s string) []string {
+	out := make([]string, 0, 8)
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == ' ' || s[i] == '\t' {
+			if start < i {
+				out = append(out, s[start:i])
+			}
+			start = i + 1
+		}
+	}
+	if start < len(s) {
+		out = append(out, s[start:])
+	}
+	return out
+}
+
+var _ = strings.IndexByte

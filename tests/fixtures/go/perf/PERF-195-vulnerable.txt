@@ -1,0 +1,23 @@
+# PERF-195 positive: log.Fatal in a goroutine
+lang: go
+file: PERF-195-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"log"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = w
+	_ = r
+	go func() {
+		if err := connect(); err != nil {
+			log.Fatal(err)
+		}
+	}()
+}
+
+func connect() error { return nil }

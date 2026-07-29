@@ -1,0 +1,20 @@
+# BP-2 negative: wrapped error return
+lang: go
+file: BP-2-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"os"
+)
+
+// Load reads a file and wraps any read failure with path context.
+func Load(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("load %s: %w", path, err)
+	}
+	return data, nil
+}

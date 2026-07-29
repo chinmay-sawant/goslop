@@ -1,0 +1,37 @@
+# BP-37 negative: read-only map and shadowed local are not global writes
+lang: go
+file: BP-37-safe.go
+variant: stdlib
+---
+package sample
+
+var staticRegistry = map[string]string{"first": "one"}
+var counter int
+
+func lookup(key string) string {
+	return staticRegistry[key]
+}
+
+func bump(counter int) int {
+	counter++
+	return counter
+}
+
+func shadowedOnly(value int) {
+	{
+		counter := 0
+		counter++
+	}
+	for counter := 0; counter < 1; counter++ {
+		counter++
+	}
+	switch value {
+	case 1:
+		counter := 0
+		counter++
+	}
+	switch counter := any(value).(type) {
+	case int:
+		counter++
+	}
+}

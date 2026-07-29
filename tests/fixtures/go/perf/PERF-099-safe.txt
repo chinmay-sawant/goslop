@@ -1,0 +1,21 @@
+# PERF-99 negative: prometheus counter with bounded labels only
+lang: go
+file: PERF-099-safe.go
+---
+package sample
+
+import (
+	"github.com/prometheus/client_golang/prometheus"
+)
+
+var requestCounter = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Total HTTP requests",
+	},
+	[]string{"method", "status"},
+)
+
+func init() {
+	prometheus.MustRegister(requestCounter)
+}

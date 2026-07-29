@@ -1,0 +1,44 @@
+# CWE-1322 negative: non-blocking worker with timer channel (pure stdlib)
+lang: go
+file: CWE-1322-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1322 mitigated: worker schedules retries with time.AfterFunc instead of Sleep.
+
+import (
+	"database/sql"
+	"net/http"
+	"time"
+)
+
+type webhookJobPure struct {
+	payload string
+	attempt int
+}
+
+func StartWebhookWorkerSafePure(db *sql.DB) http.HandlerFunc {
+	queue := make(chan webhookJobPure, 32)
+	go func() {
+		for job := range queue {
+			if _, err := db.Exec(
+				"INSERT INTO webhook_events (payload) VALUES ($1)", job.payload,
+			); err != nil && job.attempt < 3 {
+				delay := time.Duration(job.attempt+1) * time.Second
+				time.AfterFunc(delay, func() {
+					queue <- webhookJobPure{payload: job.payload, attempt: job.attempt + 1}
+				})
+			}
+		}
+	}()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		queue <- webhookJobPure{payload: r.FormValue("payload")}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"queued":true}`))
+	}
+}

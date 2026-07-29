@@ -1,0 +1,14 @@
+# BP-33 positive: sentinel error type does not implement Is
+lang: go
+file: BP-33-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type notFoundError struct{}
+
+func (e notFoundError) Error() string {
+	return "not found"
+}
+
+var ErrNotFound = notFoundError{}

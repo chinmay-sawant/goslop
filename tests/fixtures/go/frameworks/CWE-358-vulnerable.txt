@@ -1,0 +1,26 @@
+# CWE-358 vulnerable — Improperly Implemented Security Check for Standard
+lang: go
+file: CWE-358-vulnerable.go
+---
+package sample
+
+import (
+	"encoding/base64"
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func ParseAccessToken(c *GinCtx) map[string]interface{} {
+	raw := c.Request.Header.Get("Authorization")
+	token := strings.TrimPrefix(raw, "Bearer ")
+	parts := strings.Split(token, ".")
+	payload, _ := base64.RawURLEncoding.DecodeString(parts[1])
+	var claims map[string]interface{}
+	_ = json.Unmarshal(payload, &claims)
+	return claims
+}

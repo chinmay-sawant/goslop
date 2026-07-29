@@ -1,0 +1,16 @@
+# BP-99 positive variant: Signal is used with no visible locker discipline
+lang: go
+file: BP-99-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func signalReady() {
+	mu := &sync.Mutex{}
+	cond := sync.NewCond(mu)
+	_ = mu
+	cond.Wait()
+	cond.Signal()
+}

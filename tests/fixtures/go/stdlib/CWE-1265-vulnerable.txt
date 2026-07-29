@@ -1,0 +1,42 @@
+# CWE-1265 positive: nested lock on same mutex (pure stdlib)
+lang: go
+file: CWE-1265-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1265: Unintended Reentrant Invocation of Non-reentrant Code Via Nested Calls.
+// Vulnerable: transfer handler re-enters UpdateBalance while mutex is already held.
+
+import (
+	"database/sql"
+	"net/http"
+	"sync"
+)
+
+var ledgerMuPure sync.Mutex
+
+func UpdateBalancePure(db *sql.DB, userID int, delta float64) error {
+	ledgerMuPure.Lock()
+	defer ledgerMuPure.Unlock()
+	_, err := db.Exec(
+		"UPDATE balances SET amount = amount + $1 WHERE user_id = $2", delta, userID,
+	)
+	return err
+}
+
+func PostTransferPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		from := r.Header.Get("X-From-User")
+		amount := r.Header.Get("X-Amount")
+		ledgerMuPure.Lock()
+		_, _ = from, amount
+		if err := UpdateBalancePure(db, 1, -10); err != nil {
+			ledgerMuPure.Unlock()
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		ledgerMuPure.Unlock()
+		w.WriteHeader(http.StatusOK)
+	}
+}

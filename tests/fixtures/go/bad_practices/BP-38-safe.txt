@@ -1,0 +1,14 @@
+# BP-38 negative: unexported helper has a caller
+lang: go
+file: BP-38-safe.go
+variant: stdlib
+---
+package sample
+
+func helper() int {
+	return 1
+}
+
+func useValue() int {
+	return helper()
+}

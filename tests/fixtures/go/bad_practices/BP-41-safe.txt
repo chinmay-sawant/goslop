@@ -1,0 +1,11 @@
+# BP-41 negative: package has a package doc comment
+lang: go
+file: bp41/BP-41-safe.go
+variant: stdlib
+---
+// Package bp41 demonstrates a documented package.
+package bp41
+
+func local() string {
+	return ""
+}

@@ -1,0 +1,39 @@
+# CWE-940 negative: state parameter validates callback (pure stdlib)
+lang: go
+file: CWE-940-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-940 mitigated: callback rejected when state cookie does not match request.
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func OAuthCallbackVerifiedPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		code := r.URL.Query().Get("code")
+		state := r.URL.Query().Get("state")
+		cookie, err := r.Cookie("oauth_state")
+		if err != nil || cookie.Value != state {
+			http.Error(w, "invalid oauth state", http.StatusForbidden)
+			return
+		}
+		userID := r.Header.Get("X-Authenticated-User")
+		if userID == "" {
+			http.Error(w, "login required", http.StatusUnauthorized)
+			return
+		}
+		_, err = db.Exec(
+			"INSERT INTO oauth_tokens (user_id, code) VALUES ($1, $2)",
+			userID, code,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		http.Redirect(w, r, "/dashboard", http.StatusFound)
+	}
+}

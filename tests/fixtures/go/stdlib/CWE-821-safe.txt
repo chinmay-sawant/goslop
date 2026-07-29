@@ -1,0 +1,25 @@
+# CWE-821: Incorrect Synchronization (mitigated, pure stdlib)
+lang: go
+file: CWE-821-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var cacheMu sync.RWMutex
+var tokenCache = map[string]string{}
+
+// Safe: exclusive lock protects write operations to the cache.
+// Lock is released promptly after the map update completes.
+func StoreToken(w http.ResponseWriter, r *http.Request) {
+	key := r.URL.Query().Get("session")
+	value := r.URL.Query().Get("token")
+	cacheMu.Lock()
+	tokenCache[key] = value
+	cacheMu.Unlock()
+	w.WriteHeader(http.StatusOK)
+}

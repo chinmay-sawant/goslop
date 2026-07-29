@@ -1,0 +1,25 @@
+# CWE-140 negative: encoding/csv handles delimiters
+lang: go
+file: CWE-140-safe.go
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/csv"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-140 Improper Neutralization of Delimiters (mitigated)
+func ExportRows(c *gin.Context) {
+	name := c.Query("name")
+	role := c.Query("role")
+	var buf bytes.Buffer
+	w := csv.NewWriter(&buf)
+	_ = w.Write([]string{"name", "role", "status"})
+	_ = w.Write([]string{name, role, "active"})
+	w.Flush()
+	c.Data(http.StatusOK, "text/csv", buf.Bytes())
+}

@@ -1,0 +1,20 @@
+# PERF-033 positive: range over a large slice in a request handler
+lang: go
+file: PERF-033-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Process(c *gin.Context) {
+	items := c.GetStringSlice("items")
+	total := 0
+	for _, item := range items {
+		total += len(item)
+	}
+	c.JSON(http.StatusOK, gin.H{"total": total})
+}

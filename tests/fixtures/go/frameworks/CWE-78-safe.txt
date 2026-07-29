@@ -1,0 +1,29 @@
+# CWE-78 negative: fixed argv without shell interpolation
+lang: go
+file: CWE-78-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+	"regexp"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-78 Improper Neutralization of Special Elements used in an OS Command (mitigated)
+func PingHost(c *gin.Context) {
+	host := c.Query("host")
+	if !regexp.MustCompile(`^[a-zA-Z0-9.-]+$`).MatchString(host) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid host"})
+		return
+	}
+	cmd := exec.Command("ping", "-c", "1", host)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ping failed"})
+		return
+	}
+	c.String(http.StatusOK, string(out))
+}

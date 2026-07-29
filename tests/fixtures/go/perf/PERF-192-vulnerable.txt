@@ -1,0 +1,20 @@
+# PERF-192 positive: make(map) without size hint before population
+lang: go
+file: PERF-192-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "fmt"
+
+func Index(names []string) map[string]int {
+	idx := make(map[string]int)
+	for _, n := range names {
+		idx[n] = len(n)
+	}
+	return idx
+}
+
+func _() {
+	fmt.Println(Index([]string{"a", "b"}))
+}

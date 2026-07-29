@@ -1,0 +1,16 @@
+# suppressed inline-ignore fixture
+lang: go
+file: suppressed_inline.go
+---
+package main
+
+import (
+	"net/http"
+	"os/exec"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	cmd := r.URL.Query().Get("cmd")
+	// codehound-ignore: CWE-78
+	exec.Command("sh", "-c", cmd).Run()
+}

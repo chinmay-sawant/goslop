@@ -1,0 +1,38 @@
+# CWE-1220 vulnerable: coarse role gate on all records
+lang: go
+file: CWE-1220-vulnerable.go
+---
+package sample
+
+// CWE-1220: Insufficient Granularity of Access Control.
+// Vulnerable: any authenticated user may read any invoice by numeric id.
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+type Invoice struct {
+	ID     int     `db:"id"`
+	Owner  int     `db:"owner_id"`
+	Amount float64 `db:"amount"`
+}
+
+func GetInvoice(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.GetHeader("Authorization") == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "login required"})
+			return
+		}
+		id := c.Param("id")
+		var inv Invoice
+		err := db.Get(&inv, "SELECT id, owner_id, amount FROM invoices WHERE id = $1", id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "not found"})
+			return
+		}
+		c.JSON(http.StatusOK, inv)
+	}
+}

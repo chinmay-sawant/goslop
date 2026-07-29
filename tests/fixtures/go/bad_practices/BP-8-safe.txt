@@ -1,0 +1,14 @@
+# BP-8 negative: deferred unlock on mutex pointer
+lang: go
+file: BP-8-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+// UnlockOriginal locks and unlocks the same mutex pointer.
+func UnlockOriginal(mu *sync.Mutex) {
+	mu.Lock()
+	defer mu.Unlock()
+}

@@ -1,0 +1,18 @@
+# PERF-177 positive: (*os.File).Readdir() instead of os.ReadDir
+lang: go
+file: PERF-177-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"fmt"
+	"os"
+)
+
+func ListDir(path string) {
+	f, _ := os.Open(path)
+	defer f.Close()
+	names, _ := f.Readdir(-1)
+	fmt.Println(len(names))
+}

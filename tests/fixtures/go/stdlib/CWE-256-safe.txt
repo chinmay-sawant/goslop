@@ -1,0 +1,43 @@
+# CWE-256 negative: salted hash stored instead of plaintext (pure stdlib)
+lang: go
+file: CWE-256-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
+	"encoding/json"
+	"net/http"
+)
+
+func hashPassphrase(plain string) (string, error) {
+	salt := make([]byte, 16)
+	if _, err := rand.Read(salt); err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(append(salt, []byte(plain)...))
+	return hex.EncodeToString(salt) + ":" + hex.EncodeToString(sum[:]), nil
+}
+
+// CWE-256 Plaintext Storage of a Password (mitigated)
+func CreateCredential(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	login := r.FormValue("login")
+	pass := r.FormValue("pass")
+	digest, err := hashPassphrase(pass)
+	if err != nil {
+		http.Error(w, "hash", http.StatusInternalServerError)
+		return
+	}
+	_, err = db.Exec("INSERT INTO credentials(login, pass) VALUES(?, ?)", login, digest)
+	if err != nil {
+		http.Error(w, "save", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(map[string]string{"login": login})
+}

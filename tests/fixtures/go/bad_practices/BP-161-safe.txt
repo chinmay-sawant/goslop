@@ -1,0 +1,19 @@
+# BP-161 negative: a test opens a local database target.
+lang: go
+file: BP-161-safe_test.go
+variant: local-sql-dsn
+---
+package dbtest
+
+import (
+	"database/sql"
+	"testing"
+)
+
+func TestDatabase(t *testing.T) {
+	db, err := sql.Open("postgres", "postgres://app:secret@localhost:5432/orders_test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = db
+}

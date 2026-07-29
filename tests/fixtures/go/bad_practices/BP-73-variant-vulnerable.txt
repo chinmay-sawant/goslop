@@ -1,0 +1,12 @@
+# BP-73 variant positive: identifier-independent local map write
+lang: go
+file: BP-73-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func build() map[int]string {
+	var labels map[int]string
+	labels[0] = "ready"
+	return labels
+}

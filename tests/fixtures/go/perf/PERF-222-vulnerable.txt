@@ -1,0 +1,22 @@
+# PERF-222 positive: generic function instantiation in loop
+lang: go
+file: PERF-222-vulnerable.go
+variant: stdlib
+---
+package sample
+
+type Item struct {
+	Value int
+}
+
+func processItem[T any](v T) int {
+	return 1
+}
+
+func Render(items []Item) int {
+	total := 0
+	for _, item := range items {
+		total += processItem[Item](item)
+	}
+	return total
+}

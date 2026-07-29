@@ -1,0 +1,16 @@
+# BP-52 negative: allocation size is guarded before multiplication
+lang: go
+file: BP-52-safe.go
+variant: stdlib
+---
+package sample
+
+import "math"
+
+func alloc(width, height int) []byte {
+	if width > math.MaxInt/height {
+		return nil
+	}
+	buf := make([]byte, width*height)
+	return buf
+}

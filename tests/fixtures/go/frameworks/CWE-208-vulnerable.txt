@@ -1,0 +1,28 @@
+# CWE-208 positive: early return on failed secret compare
+lang: go
+file: CWE-208-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-208 Observable Timing Discrepancy
+// Vulnerable line: returns immediately when bytes differ.
+func CheckResetToken(c *gin.Context, expected []byte) {
+	provided := []byte(c.PostForm("token"))
+	if len(provided) != len(expected) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "denied"})
+		return
+	}
+	for i := range expected {
+		if provided[i] != expected[i] {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "denied"})
+			return
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

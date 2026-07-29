@@ -1,0 +1,22 @@
+# PERF-060 positive: render.JSON composite literal allocated directly inside a Gin handler
+lang: go
+file: PERF-060-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"net/http/httptest"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
+)
+
+func RenderDirect(c *gin.Context) {
+	rec := httptest.NewRecorder()
+	r := render.JSON{Data: gin.H{"ok": true}}
+	r.WriteContentType(rec)
+	r.Render(rec)
+	c.JSON(http.StatusOK, gin.H{"status": rec.Code})
+	_ = http.StatusOK
+}

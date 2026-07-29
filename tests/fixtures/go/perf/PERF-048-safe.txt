@@ -1,0 +1,16 @@
+# PERF-048 negative: bytes.Equal is only used in a setup function
+lang: go
+file: PERF-048-safe.go
+---
+package sample
+
+import "bytes"
+
+var marker = []byte("expected")
+
+func Setup() []byte {
+	if bytes.Equal(marker, []byte("expected")) {
+		return marker
+	}
+	return nil
+}

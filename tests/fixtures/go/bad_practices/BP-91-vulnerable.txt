@@ -1,0 +1,12 @@
+# BP-91 positive: a bool channel carries only a notification
+lang: go
+file: BP-91-vulnerable.go
+---
+package sample
+
+func notify(done chan bool) {
+	done <- true
+	select {
+	case <-done:
+	}
+}

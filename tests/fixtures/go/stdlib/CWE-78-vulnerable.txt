@@ -1,0 +1,26 @@
+# CWE-78 positive: shell command built from request input (pure stdlib)
+lang: go
+file: CWE-78-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os/exec"
+)
+
+// CWE-78 Improper Neutralization of Special Elements used in an OS Command
+// Vulnerable line: host value interpolated into sh -c.
+func TraceRoute(w http.ResponseWriter, r *http.Request) {
+	host := r.URL.Query().Get("host")
+	cmd := exec.Command("sh", "-c", "traceroute -m 1 "+host)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		http.Error(w, string(out), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write(out)
+}

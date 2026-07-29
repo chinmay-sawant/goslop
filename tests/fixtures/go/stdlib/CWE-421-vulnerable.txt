@@ -1,0 +1,31 @@
+# CWE-421 positive: SSE alternate channel races shared token (pure stdlib)
+lang: go
+file: CWE-421-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+)
+
+var wireTransferCode string
+
+func RegisterWireHandlers() {
+	http.HandleFunc("/wire/authorize", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		wireTransferCode = r.FormValue("token")
+		w.WriteHeader(http.StatusOK)
+	})
+	http.HandleFunc("/wire/events", func(w http.ResponseWriter, r *http.Request) {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		fmt.Fprintf(w, "event: status\ndata: %s\n\n", wireTransferCode)
+		flusher.Flush()
+	})
+}

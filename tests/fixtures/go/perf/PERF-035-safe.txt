@@ -1,0 +1,9 @@
+# PERF-035 negative: no fmt.Sprintf / fmt.Errorf in a hot path
+lang: go
+file: PERF-035-safe.go
+---
+package sample
+
+func Greet(name string) string {
+	return "hello " + name
+}

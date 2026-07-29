@@ -1,0 +1,25 @@
+# PERF-021 negative: stream the body via json.NewDecoder instead of io.ReadAll
+lang: go
+file: PERF-021-safe.go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+type payload struct {
+	Name string `json:"name"`
+}
+
+func Upload(c *gin.Context) {
+	var p payload
+	if err := json.NewDecoder(c.Request.Body).Decode(&p); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"name": p.Name})
+}

@@ -1,0 +1,33 @@
+# CWE-918 vulnerable: client-controlled fetch URL
+lang: go
+file: CWE-918-vulnerable.go
+---
+package sample
+
+// CWE-918: Server-Side Request Forgery — handler fetches arbitrary client URL.
+// Vulnerable: http.Get uses c.Query("url") without host allowlisting.
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ProxyPreview() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		target := c.Query("url")
+		resp, err := http.Get(target)
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+			return
+		}
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.Data(resp.StatusCode, resp.Header.Get("Content-Type"), body)
+	}
+}

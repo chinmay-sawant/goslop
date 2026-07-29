@@ -1,0 +1,15 @@
+# PERF-029 positive: go func() inside a loop without a worker pool
+lang: go
+file: PERF-029-vulnerable.go
+---
+package sample
+
+import "fmt"
+
+func FanOut(items []int) {
+	for _, v := range items {
+		go func(x int) {
+			fmt.Println(x)
+		}(v)
+	}
+}

@@ -1,0 +1,18 @@
+# PERF-84 negative: single Exec statement with an indexed lookup
+lang: go
+file: PERF-084-safe.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"github.com/jmoiron/sqlx"
+)
+
+func UpdateUser(c echo.Context, db *sqlx.DB) error {
+	// index-backed
+	if _, err := db.Exec("UPDATE users SET name = ? WHERE id = ?", "x", 1); err != nil {
+		return c.String(500, "err")
+	}
+	return c.String(200, "ok")
+}

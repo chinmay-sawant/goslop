@@ -1,0 +1,21 @@
+# CWE-93 negative: CRLF stripped from header input
+lang: go
+file: CWE-93-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-93 Improper Neutralization of CRLF Sequences (mitigated)
+func SetRedirect(c *gin.Context) {
+	next := c.Query("next")
+	next = strings.ReplaceAll(next, "\r", "")
+	next = strings.ReplaceAll(next, "\n", "")
+	c.Header("Location", "https://app.example/login?continue="+next)
+	c.Status(http.StatusFound)
+}

@@ -1,0 +1,13 @@
+# PERF-047 negative: strings.Split is the range iterable — runs once
+lang: go
+file: PERF-047-safe.go
+---
+package sample
+
+import "strings"
+
+func ForEachLine(text string, fn func(string)) {
+	for _, line := range strings.Split(text, "\n") {
+		fn(line)
+	}
+}

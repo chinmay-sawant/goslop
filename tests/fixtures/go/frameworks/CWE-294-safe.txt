@@ -1,0 +1,29 @@
+# CWE-294 — Authentication Bypass by Capture-replay (safe)
+lang: go
+file: CWE-294-safe.go
+---
+package sample
+
+import (
+	"sync"
+
+	"github.com/gin-gonic/gin"
+)
+
+var spentNonces sync.Map
+
+// Safe: rejects tokens whose nonce was already consumed.
+func TokenLogin(c *gin.Context) {
+	token := c.PostForm("auth_token")
+	nonce := c.PostForm("nonce")
+	if token == "" || nonce == "" {
+		c.JSON(401, gin.H{"error": "missing token"})
+		return
+	}
+	if _, loaded := spentNonces.LoadOrStore(nonce, true); loaded {
+		c.JSON(401, gin.H{"error": "replay"})
+		return
+	}
+	c.Set("user", "alice")
+	c.JSON(200, gin.H{"ok": true})
+}

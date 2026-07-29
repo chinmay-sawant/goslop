@@ -1,0 +1,35 @@
+# CWE-178 negative: case-insensitive comparison via EqualFold (pure stdlib)
+lang: go
+file: CWE-178-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+var permittedVolumes = []string{"archive", "shared"}
+
+func volumeAllowed(name string) bool {
+	for _, allowed := range permittedVolumes {
+		if strings.EqualFold(name, allowed) {
+			return true
+		}
+	}
+	return false
+}
+
+// CWE-178 Improper Handling of Case Sensitivity (mitigated)
+func AccessVolume(w http.ResponseWriter, r *http.Request) {
+	volume := r.PathValue("volume")
+	if !volumeAllowed(volume) {
+		http.Error(w, "denied", http.StatusForbidden)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"volume": volume})
+}

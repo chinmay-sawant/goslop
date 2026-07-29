@@ -1,0 +1,17 @@
+# PERF-189 positive: Body.Close before io.Copy(io.Discard, body) — wrong order
+lang: go
+file: PERF-189-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	resp, _ := http.Get("https://example.com")
+	resp.Body.Close()
+	io.Copy(io.Discard, resp.Body)
+}

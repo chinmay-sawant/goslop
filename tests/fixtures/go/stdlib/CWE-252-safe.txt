@@ -1,0 +1,36 @@
+# CWE-252 negative: propagates write failure to client (pure stdlib)
+lang: go
+file: CWE-252-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+	"os"
+)
+
+// CWE-252 Unchecked Return Value (mitigated)
+func AppendJournal(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method", http.StatusMethodNotAllowed)
+		return
+	}
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "form", http.StatusBadRequest)
+		return
+	}
+	line := []byte(r.FormValue("line"))
+	if len(line) == 0 {
+		http.Error(w, "empty", http.StatusBadRequest)
+		return
+	}
+	if err := os.WriteFile("/var/log/journal.log", line, 0o600); err != nil {
+		http.Error(w, "write", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "stored"})
+}

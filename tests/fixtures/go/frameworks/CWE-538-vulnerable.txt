@@ -1,0 +1,19 @@
+# CWE-538: database DSN written to world-readable static export file.
+lang: go
+file: CWE-538-vulnerable.go
+---
+package sample
+
+import (
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func DumpConfigSnapshot(c *gin.Context, db *gorm.DB) error {
+	_ = db
+	dsn := os.Getenv("DATABASE_URL")
+	path := "/var/www/html/public/config-snapshot.txt"
+	return os.WriteFile(path, []byte("dsn="+dsn), 0o644)
+}

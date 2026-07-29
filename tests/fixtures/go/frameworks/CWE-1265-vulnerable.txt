@@ -1,0 +1,40 @@
+# CWE-1265 vulnerable: nested lock on same mutex
+lang: go
+file: CWE-1265-vulnerable.go
+---
+package sample
+
+// CWE-1265: Unintended Reentrant Invocation of Non-reentrant Code Via Nested Calls.
+// Vulnerable: audit hook re-enters UpdateBalance while mutex is already held.
+
+import (
+	"net/http"
+	"sync"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+var ledgerMu sync.Mutex
+
+func UpdateBalance(db *sqlx.DB, userID int, delta float64) error {
+	ledgerMu.Lock()
+	defer ledgerMu.Unlock()
+	_, err := db.Exec("UPDATE balances SET amount = amount + $1 WHERE user_id = $2", delta, userID)
+	return err
+}
+
+func PostTransfer(db *sqlx.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		from := c.GetInt("from_user")
+		amount := c.GetFloat64("amount")
+		ledgerMu.Lock()
+		if err := UpdateBalance(db, from, -amount); err != nil {
+			ledgerMu.Unlock()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		ledgerMu.Unlock()
+		c.JSON(http.StatusOK, gin.H{"ok": true})
+	}
+}

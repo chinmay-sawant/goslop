@@ -1,0 +1,27 @@
+# CWE-305 — Authentication Bypass by Primary Weakness (vulnerable) (pure stdlib)
+lang: go
+file: CWE-305-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"sync"
+)
+
+var maintenanceFlag sync.Map
+
+// Vulnerable: debug flag in query skips JWT middleware entirely.
+func AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Query().Get("debug") == "1" {
+		maintenanceFlag.Store("enabled", true)
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if r.Header.Get("X-JWT-Sub") == "" {
+		http.Error(w, "auth", http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

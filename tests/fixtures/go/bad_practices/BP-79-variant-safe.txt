@@ -1,0 +1,15 @@
+# BP-79 negative variant: renamed local cancellation function is deferred
+lang: go
+file: BP-79-variant-safe.go
+variant: renamed-cancel
+---
+package sample
+
+import "context"
+
+// Derive derives a context and releases its renamed cancellation function.
+func Derive(parent context.Context) context.Context {
+	ctx, stop := context.WithCancel(parent)
+	defer stop()
+	return ctx
+}

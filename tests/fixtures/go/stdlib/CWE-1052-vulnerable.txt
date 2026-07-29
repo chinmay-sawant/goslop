@@ -1,0 +1,36 @@
+# CWE-1052 positive: hard-coded database DSN literal (pure stdlib)
+lang: go
+file: CWE-1052-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1052: Excessive Use of Hard-Coded Literals in Initialization.
+// Vulnerable: Open called with embedded username, password, and host strings.
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+const appDSNPure = "host=db.internal user=app_admin password=SuperSecret99 dbname=orders sslmode=disable"
+
+func OpenAppDBPure() (*sql.DB, error) {
+	return sql.Open("postgres", appDSNPure)
+}
+
+func HealthWithDBPure() http.HandlerFunc {
+	db, _ := OpenAppDBPure()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if db == nil {
+			http.Error(w, `{"db":"down"}`, http.StatusServiceUnavailable)
+			return
+		}
+		if err := db.Ping(); err != nil {
+			http.Error(w, `{"db":"down"}`, http.StatusServiceUnavailable)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"db":"up"}`))
+	}
+}

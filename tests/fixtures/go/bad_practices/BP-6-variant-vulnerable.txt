@@ -1,0 +1,17 @@
+# BP-6 positive variant: braces in a string do not end the goroutine body
+lang: go
+file: BP-6-variant-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+func Run() {
+	var wg sync.WaitGroup
+	go func() {
+		_ = "{"
+		wg.Add(1)
+		wg.Done()
+	}()
+}

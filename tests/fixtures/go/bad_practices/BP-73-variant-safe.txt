@@ -1,0 +1,16 @@
+# BP-73 variant negative: identifier-independent initialized map
+lang: go
+file: BP-73-variant-safe.go
+variant: stdlib
+---
+package sample
+
+func build() map[int]string {
+	labels := make(map[int]string)
+	labels[0] = "ready"
+	return labels
+}
+
+func main() {
+	build()
+}

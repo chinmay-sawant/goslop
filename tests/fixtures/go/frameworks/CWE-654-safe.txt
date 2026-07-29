@@ -1,0 +1,38 @@
+# CWE-654: Reliance on a Single Factor in a Security Decision (mitigated)
+lang: go
+file: CWE-654-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Safe: requires authenticated session role in addition to a service credential.
+func ExportUsers(c *gin.Context, db *sqlx.DB) {
+	role, _ := c.Get("role")
+	if role != "admin" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	if c.GetHeader("X-Api-Key") == "" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	rows, err := db.Queryx("SELECT id, email FROM users")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var out []map[string]interface{}
+	for rows.Next() {
+		row := map[string]interface{}{}
+		_ = rows.MapScan(row)
+		out = append(out, row)
+	}
+	c.JSON(http.StatusOK, out)
+}

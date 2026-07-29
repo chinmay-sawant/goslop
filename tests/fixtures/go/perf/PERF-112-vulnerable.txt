@@ -1,0 +1,12 @@
+# PERF-112 positive: ToLower before equality comparison
+lang: go
+file: PERF-112-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "strings"
+
+func SameIgnoreCase(a, b string) bool {
+	return strings.ToLower(a) == strings.ToLower(b)
+}

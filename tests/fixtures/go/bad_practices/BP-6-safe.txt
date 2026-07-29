@@ -1,0 +1,21 @@
+# BP-6 negative: WaitGroup Add before goroutine
+lang: go
+file: BP-6-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+// Run schedules work after incrementing the WaitGroup in the parent goroutine.
+func Run(items []int) {
+	var wg sync.WaitGroup
+	for _, item := range items {
+		wg.Add(1)
+		go func(v int) {
+			_ = v
+			wg.Done()
+		}(item)
+	}
+	wg.Wait()
+}

@@ -1,0 +1,28 @@
+# CWE-368 vulnerable — Context Switching Race Condition
+lang: go
+file: CWE-368-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"os/user"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+var actingAsRoot bool
+
+func RunMaintenanceShell(c *GinCtx) error {
+	if c.Request.Header.Get("X-Maintainer") == "yes" {
+		actingAsRoot = true
+	}
+	if actingAsRoot {
+		return os.Setenv("SHELL", "/bin/sh")
+	}
+	_, _ = user.Current()
+	return nil
+}

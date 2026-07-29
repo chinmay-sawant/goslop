@@ -1,0 +1,16 @@
+# BP-151 negative: only secret presence is logged, never the secret value.
+lang: go
+file: BP-151-safe.go
+variant: secret-env-log
+---
+package main
+
+import (
+	"log"
+	"os"
+)
+
+func main() {
+	token := os.Getenv("API_TOKEN")
+	log.Printf("token configured=%t", token != "")
+}

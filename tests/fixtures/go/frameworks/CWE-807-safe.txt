@@ -1,0 +1,23 @@
+# CWE-807: Reliance on Untrusted Inputs in a Security Decision (mitigated)
+lang: go
+file: CWE-807-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var blockedIPs = map[string]struct{}{"203.0.113.50": {}}
+
+// Safe: uses RemoteAddr from the trusted connection rather than a spoofable header.
+func GateSensitiveAction(c *gin.Context) {
+	clientIP := c.Request.RemoteAddr
+	if _, blocked := blockedIPs[clientIP]; blocked {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	c.Status(http.StatusOK)
+}

@@ -1,0 +1,26 @@
+# CWE-273 — Improper Check for Dropped Privileges (safe) (pure stdlib)
+lang: go
+file: CWE-273-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"syscall"
+)
+
+// Safe: verifies privilege drop before continuing request handling.
+func ServeAfterDrop(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := syscall.Setuid(1000); err != nil {
+		http.Error(w, "privilege drop failed", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"serving":true}`))
+}

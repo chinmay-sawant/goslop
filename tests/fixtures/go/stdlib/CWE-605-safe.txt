@@ -1,0 +1,23 @@
+# CWE-605 negative: metrics listener without address reuse (pure stdlib)
+lang: go
+file: CWE-605-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net"
+	"net/http"
+)
+
+func ServeMetrics() error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	ln, err := net.Listen("tcp", ":9090")
+	if err != nil {
+		return err
+	}
+	return http.Serve(ln, mux)
+}

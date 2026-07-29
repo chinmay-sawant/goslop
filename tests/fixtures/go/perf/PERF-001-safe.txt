@@ -1,0 +1,23 @@
+# PERF-001 negative: regex compiled once at package scope
+lang: go
+file: PERF-001-safe.go
+---
+package sample
+
+import (
+	"regexp"
+	"strings"
+)
+
+var headerRE = regexp.MustCompile(`^[A-Z]+$`)
+
+func CountMatches(text string) int {
+	parts := strings.Split(text, "\n")
+	count := 0
+	for _, line := range parts {
+		if headerRE.MatchString(line) {
+			count++
+		}
+	}
+	return count
+}

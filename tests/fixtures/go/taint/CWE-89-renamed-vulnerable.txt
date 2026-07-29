@@ -1,0 +1,24 @@
+# CWE-89 variant: renamed identifiers / wrapper (taint core oracle)
+lang: go
+file: CWE-89-renamed-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+func HandleSearch(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	userInput := r.URL.Query().Get("q")
+	// renamed locals — still a classic string-concat SQL sink
+	queryText := "SELECT * FROM items WHERE name = '" + userInput + "'"
+	rows, err := db.Query(queryText)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	defer rows.Close()
+	_ = rows
+}

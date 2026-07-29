@@ -1,0 +1,8 @@
+# BP-36 negative: init does not perform work
+lang: go
+file: BP-36-safe.go
+variant: stdlib
+---
+package sample
+
+func init() {}

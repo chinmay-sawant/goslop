@@ -1,0 +1,33 @@
+# CWE-1236 positive: CSV formula injection (pure stdlib)
+lang: go
+file: CWE-1236-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1236: Improper Neutralization of Formula Elements in a CSV File.
+// Vulnerable: user comment written directly into CSV cell starting with =.
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+)
+
+type FeedbackPure struct {
+	ID      int
+	Comment string
+}
+
+func ExportFeedbackCSVPure(rows []FeedbackPure) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var b strings.Builder
+		b.WriteString("id,comment\n")
+		for _, row := range rows {
+			line := fmt.Sprintf("%d,%s\n", row.ID, row.Comment)
+			b.WriteString(line)
+		}
+		w.Header().Set("Content-Type", "text/csv")
+		w.Write([]byte(b.String()))
+	}
+}

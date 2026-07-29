@@ -1,0 +1,17 @@
+# PERF-144 negative: Content-Length is set before w.Write
+lang: go
+file: PERF-144-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+	"strconv"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	body := []byte("hello world")
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
+	_, _ = w.Write(body)
+}

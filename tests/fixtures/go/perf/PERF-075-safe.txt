@@ -1,0 +1,22 @@
+# PERF-75 negative: session options hoisted to package scope
+lang: go
+file: PERF-075-safe.go
+---
+package sample
+
+import (
+	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
+)
+
+var sessionOpts = &gorm.Session{SkipDefaultTransaction: true}
+
+func ListUsers(c echo.Context, db *gorm.DB) error {
+	var users []User
+	db.Session(sessionOpts).Select("id").Find(&users)
+	return c.String(200, "ok")
+}
+
+type User struct {
+	gorm.Model
+}

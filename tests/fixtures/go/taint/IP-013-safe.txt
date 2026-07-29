@@ -1,0 +1,22 @@
+# IP-013: Outer function after closure — sanitized Base stays silent
+lang: go
+file: IP-013-safe.go
+variant: taint
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func handler(r *http.Request) {
+	_ = func() {
+		local := "inner"
+		_ = local
+	}
+	path := r.URL.Query().Get("path")
+	safe := filepath.Base(path)
+	os.Open(safe)
+}

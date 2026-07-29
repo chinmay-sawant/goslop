@@ -1,0 +1,13 @@
+# PERF-229 positive: Itoa then append string into byte buffer
+lang: go
+file: PERF-229-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "strconv"
+
+func AppendID(dst []byte, id int) []byte {
+	s := strconv.Itoa(id)
+	return append(dst, s...)
+}

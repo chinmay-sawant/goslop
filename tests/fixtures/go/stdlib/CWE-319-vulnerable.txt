@@ -1,0 +1,27 @@
+# CWE-319 — Cleartext Transmission of Sensitive Information (vulnerable) (pure stdlib)
+lang: go
+file: CWE-319-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+type cardPayload struct {
+	Number string `json:"number"`
+	CVV    string `json:"cvv"`
+}
+
+// Vulnerable: serves PAN/CVV over plain HTTP listener.
+func StartPaymentsAPI() error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/pay", func(w http.ResponseWriter, r *http.Request) {
+		var p cardPayload
+		_ = json.NewDecoder(r.Body).Decode(&p)
+		w.WriteHeader(http.StatusOK)
+	})
+	return http.ListenAndServe(":8080", mux)
+}

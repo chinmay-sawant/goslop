@@ -1,0 +1,19 @@
+# BP-102 negative: the error path writes an explicit HTTP error response.
+lang: go
+file: BP-102-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func serve(w http.ResponseWriter, r *http.Request) {
+	payload, err := loadPayload(r)
+	if err != nil {
+		http.Error(w, "could not load payload", http.StatusInternalServerError)
+		return
+	}
+	w.Write(payload)
+}
+
+func loadPayload(*http.Request) ([]byte, error) { return []byte("ok"), nil }

@@ -1,0 +1,26 @@
+# CWE-434: dangerous upload extension stored and served for execution.
+lang: go
+file: CWE-434-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"path/filepath"
+
+	"github.com/gin-gonic/gin"
+)
+
+func UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	dest := filepath.Join("/var/www/static/avatars", file.Filename)
+	if err := c.SaveUploadedFile(file, dest); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Redirect(http.StatusFound, "/static/avatars/"+file.Filename)
+}

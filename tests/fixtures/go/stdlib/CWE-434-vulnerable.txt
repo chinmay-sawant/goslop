@@ -1,0 +1,32 @@
+# CWE-434 positive: upload stores client filename unchanged (pure stdlib)
+lang: go
+file: CWE-434-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func HandleAvatarUpload(w http.ResponseWriter, r *http.Request) {
+	_ = r.ParseMultipartForm(8 << 20)
+	file, hdr, err := r.FormFile("avatar")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+	dest := filepath.Join("/var/www/static/avatars", hdr.Filename)
+	out, err := os.Create(dest)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, _ = io.Copy(out, file)
+	_ = out.Close()
+	http.Redirect(w, r, "/static/avatars/"+hdr.Filename, http.StatusFound)
+}

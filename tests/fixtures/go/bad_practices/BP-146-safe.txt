@@ -1,0 +1,14 @@
+# BP-146 negative: the logger records only that the credential was redacted.
+lang: go
+file: BP-146-safe.go
+variant: slog-redacted-field
+---
+package main
+
+import "log/slog"
+
+func recordLogin(password string) {
+	slog.Info("login", "credential_redacted", redact(password))
+}
+
+func redact(value string) string { return "[redacted]" }

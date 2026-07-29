@@ -1,0 +1,25 @@
+# CWE-820: Missing Synchronization (pure stdlib)
+lang: go
+file: CWE-820-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+var visitCounts = map[string]int{}
+
+// Vulnerable: shared map is updated from concurrent handlers without locking.
+// Concurrent HTTP handlers may corrupt map state or lose counter updates.
+func TrackVisit(w http.ResponseWriter, r *http.Request) {
+	key := r.RemoteAddr
+	if key == "" {
+		key = "unknown"
+	}
+	visitCounts[key] = visitCounts[key] + 1
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]int{"visits": visitCounts[key]})
+}

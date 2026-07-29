@@ -1,0 +1,25 @@
+# CWE-268 — Privilege Chaining (safe)
+lang: go
+file: CWE-268-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Safe: export requires explicit admin role, not a combination of weak scopes.
+func ExportUsers(c *gin.Context, db *sqlx.DB) {
+	if c.GetString("role") != "admin" {
+		c.JSON(403, gin.H{"error": "forbidden"})
+		return
+	}
+	rows, err := db.Queryx("SELECT email FROM users")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "db"})
+		return
+	}
+	defer rows.Close()
+	c.JSON(200, gin.H{"status": "queued"})
+}

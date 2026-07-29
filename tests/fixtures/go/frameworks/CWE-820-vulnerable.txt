@@ -1,0 +1,20 @@
+# CWE-820: Missing Synchronization
+lang: go
+file: CWE-820-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var visitCounts = map[string]int{}
+
+// Vulnerable: shared map is updated from concurrent handlers without locking.
+func TrackVisit(c *gin.Context) {
+	key := c.ClientIP()
+	visitCounts[key] = visitCounts[key] + 1
+	c.JSON(http.StatusOK, gin.H{"visits": visitCounts[key]})
+}

@@ -1,0 +1,14 @@
+# BP-133 variant negative: a GORM Save chain checks Error.
+lang: go
+file: BP-133-variant-safe.go
+variant: gorm-save-chain-checked
+---
+package sample
+
+import "gorm.io/gorm"
+
+type User struct{}
+
+func saveUser(db *gorm.DB, user *User) error {
+	return db.Save(user).Error
+}

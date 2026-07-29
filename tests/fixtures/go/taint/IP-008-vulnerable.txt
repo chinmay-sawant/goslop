@@ -1,0 +1,19 @@
+# IP-008: Closure capture — vulnerable
+lang: go
+file: IP-008-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+    "net/http"
+    "os"
+)
+
+func caller() {
+    x := r.URL.Query().Get("input")
+    fn := func() {
+        os.Open(x)
+    }
+    fn()
+}

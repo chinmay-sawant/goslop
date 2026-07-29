@@ -1,0 +1,15 @@
+# BP-5 negative: Close error returned to the caller
+lang: go
+file: BP-5-variant-safe.go
+variant: stdlib
+---
+package sample
+
+type closer struct{}
+
+func (closer) Close() error { return nil }
+
+// CloseAndReturn propagates cleanup failure to the caller.
+func CloseAndReturn(c closer) error {
+	return c.Close()
+}

@@ -1,0 +1,20 @@
+# PERF-049 positive: copy(dst, src) without length validation
+lang: go
+file: PERF-049-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Copy(c *gin.Context) {
+	body := c.Request.Body
+	buf := make([]byte, 1024)
+	payload := make([]byte, 4096)
+	n, _ := body.Read(payload)
+	copy(buf, payload)
+	c.Data(http.StatusOK, "application/octet-stream", buf[:n])
+}

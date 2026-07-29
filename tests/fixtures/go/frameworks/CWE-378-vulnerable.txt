@@ -1,0 +1,20 @@
+# CWE-378 vulnerable — Creation of Temporary File With Insecure Permissions
+lang: go
+file: CWE-378-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func CacheExportChunk(c *GinCtx) error {
+	tmp := filepath.Join(os.TempDir(), "export-"+c.Request.URL.Query().Get("job")+".bin")
+	return os.WriteFile(tmp, []byte(c.Request.PostFormValue("chunk")), 0666)
+}

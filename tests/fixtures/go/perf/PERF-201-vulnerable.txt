@@ -1,0 +1,18 @@
+# PERF-201 positive: custom CORS preflight handler
+lang: go
+file: PERF-201-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST")
+		w.WriteHeader(204)
+		return
+	}
+	w.WriteHeader(200)
+}

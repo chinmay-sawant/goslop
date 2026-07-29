@@ -1,0 +1,21 @@
+# BP-164 variant: a functional option overwrites a package-level defaults map.
+lang: go
+file: BP-164-variant-vulnerable.go
+variant: option-global-map
+---
+package sample
+
+type Config struct {
+	Retries int
+}
+
+type Option func(*Config)
+
+var defaultRetries = map[string]int{"api": 2}
+
+func WithRetries(retries int) Option {
+	return func(config *Config) {
+		defaultRetries["api"] = retries
+		config.Retries = retries
+	}
+}

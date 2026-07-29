@@ -1,0 +1,38 @@
+# CWE-611: Improper Restriction of XML External Entity Reference (mitigated, pure stdlib)
+lang: go
+file: CWE-611-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/xml"
+	"io"
+	"net/http"
+)
+
+// Safe: rejects DOCTYPE and keeps Strict parsing on bounded payloads.
+func ImportCatalog(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(io.LimitReader(r.Body, 1<<20))
+	if err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	if bytes.Contains(bytes.ToUpper(body), []byte("<!DOCTYPE")) {
+		http.Error(w, "DOCTYPE not allowed", http.StatusBadRequest)
+		return
+	}
+	dec := xml.NewDecoder(bytes.NewReader(body))
+	dec.Strict = true
+	var catalog struct {
+		XMLName xml.Name `xml:"catalog"`
+		Item    string   `xml:"item"`
+	}
+	if err := dec.Decode(&catalog); err != nil {
+		http.Error(w, "invalid catalog", http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(catalog.Item))
+}

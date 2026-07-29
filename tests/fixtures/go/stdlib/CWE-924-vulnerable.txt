@@ -1,0 +1,40 @@
+# CWE-924 positive: webhook without integrity check (pure stdlib)
+lang: go
+file: CWE-924-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-924: Message integrity not verified on inbound payment webhook.
+// Vulnerable: JSON body trusted without HMAC validation.
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type PaymentEventPure struct {
+	InvoiceID string  `json:"invoice_id"`
+	Amount    float64 `json:"amount"`
+}
+
+func AcceptWebhookPure(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var evt PaymentEventPure
+		if err := json.NewDecoder(r.Body).Decode(&evt); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		_, err := db.Exec(
+			"UPDATE invoices SET paid = true, amount = $1 WHERE id = $2",
+			evt.Amount, evt.InvoiceID,
+		)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"status":"applied"}`))
+	}
+}

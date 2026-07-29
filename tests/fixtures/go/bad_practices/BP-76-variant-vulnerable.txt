@@ -1,0 +1,19 @@
+# BP-76 positive variant: values collected from a map are joined unsorted.
+lang: go
+file: BP-76-variant-vulnerable.go
+variant: range-value
+---
+package sample
+
+import "strings"
+
+func values() string {
+	entries := make(map[string]string)
+	entries["first"] = "one"
+	entries["second"] = "two"
+	values := make([]string, 0, len(entries))
+	for _, value := range entries {
+		values = append(values, value)
+	}
+	return strings.Join(values, ";")
+}

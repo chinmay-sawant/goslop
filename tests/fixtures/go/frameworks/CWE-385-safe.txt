@@ -1,0 +1,19 @@
+# CWE-385 safe — Covert Timing Channel (mitigated)
+lang: go
+file: CWE-385-safe.go
+---
+package sample
+
+import (
+	"crypto/subtle"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func CheckApiSecret(c *GinCtx, expected string) bool {
+	provided := c.Request.Header.Get("X-Api-Secret")
+	return subtle.ConstantTimeCompare([]byte(provided), []byte(expected)) == 1
+}

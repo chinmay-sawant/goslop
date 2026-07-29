@@ -1,0 +1,12 @@
+# BP-42 positive: import alias is only used once
+lang: go
+file: BP-42-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import jsonpkg "encoding/json"
+
+func useAlias(data []byte) bool {
+	return jsonpkg.Valid(data)
+}

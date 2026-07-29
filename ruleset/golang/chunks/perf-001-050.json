@@ -1,0 +1,902 @@
+{
+  "PERF-001": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Compiles a regular expression inside a Go loop body instead of compiling once and reusing the compiled pattern.",
+    "detection_notes": "Future Go performance heuristic. Match regexp.MustCompile or regexp.Compile inside loop bodies and suppress when compilation is hoisted outside the loop.",
+    "go_relevance": "High",
+    "id": "PERF-001",
+    "name": "Regular Expression Compilation Inside Loop",
+    "original_description": "Detect regexp.MustCompile(...) or regexp.Compile(...) inside a for or range loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-002": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Repeatedly grows a string with concatenation inside a loop instead of using a builder, buffer, or batched join.",
+    "detection_notes": "Future Go performance heuristic. Match repeated string concatenation in loops and suppress when strings.Builder, bytes.Buffer, or equivalent batching is already used.",
+    "go_relevance": "High",
+    "id": "PERF-002",
+    "name": "String Concatenation Inside Loop",
+    "original_description": "Detect s = s + part or s += part inside a for or range loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-003": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Rebuilds a working slice inside a loop in a way that repeatedly discards capacity or recreates the same accumulation buffer.",
+    "detection_notes": "Future Go performance heuristic. Match slice reset or make patterns inside loops and suppress when reuse via slicing or intentional one-shot allocation is evident.",
+    "go_relevance": "Medium",
+    "id": "PERF-003",
+    "name": "Slice Rebuild Inside Loop",
+    "original_description": "Detect loop-local slice re-creation followed by repeated append in the same loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-004": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new map inside a loop body where the map could be reused or hoisted to avoid repeated allocation churn.",
+    "detection_notes": "Future Go performance heuristic. Match make(map[...]) inside loop bodies and suppress when the allocation is intentional and not on a hot path.",
+    "go_relevance": "Medium",
+    "id": "PERF-004",
+    "name": "Map Allocation Inside Loop",
+    "original_description": "Detect make(map[K]V) inside a for or range loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-005": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Performs repeated JSON marshal, unmarshal, encoder, or decoder setup inside an inner loop or row-by-row hot path.",
+    "detection_notes": "Future Go performance heuristic. Match repeated JSON conversion in hot paths and suppress when the code already batches work or reuses encoder or decoder state appropriately.",
+    "go_relevance": "High",
+    "id": "PERF-005",
+    "name": "JSON Encode Or Decode In Hot Loop",
+    "original_description": "Detect json.Marshal, json.Unmarshal, json.NewEncoder, or json.NewDecoder in a tight loop or repeated request-side hot path.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-006": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses fmt-based string formatting repeatedly inside a loop where direct writes, builders, or cached formatting would be cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match fmt formatting in loop bodies and suppress when the code is already writing directly to a reusable buffer or writer.",
+    "go_relevance": "Medium",
+    "id": "PERF-006",
+    "name": "fmt Formatting Inside Loop",
+    "original_description": "Detect fmt.Sprintf or fmt.Fprintf used as repeated string construction in a loop.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-007": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Places defer statements inside loops, causing cleanup work to stack until function exit and adding avoidable per-iteration overhead.",
+    "detection_notes": "Match a defer whose nearest enclosing loop executes in the same function scope. Suppress a defer inside a function literal declared by that loop, because it runs when each closure returns; still report a loop nested inside that closure.",
+    "go_relevance": "High",
+    "id": "PERF-007",
+    "name": "Defer Inside Loop",
+    "original_description": "Detect defer inside a for or range loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-008": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Repeatedly parses time values in a loop using a constant layout on a hot path instead of restructuring or caching work.",
+    "detection_notes": "Future Go performance heuristic. Match repeated time parsing inside loops and suppress when the parse is outside the hot path or the loop is clearly small and bounded.",
+    "go_relevance": "Medium",
+    "id": "PERF-008",
+    "name": "Time Parsing Inside Loop",
+    "original_description": "Detect time.Parse or time.ParseInLocation inside loop bodies.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-009": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Repeatedly parses URLs inside a tight loop rather than moving parsing or validation to a cheaper boundary.",
+    "detection_notes": "Future Go performance heuristic. Match repeated URL parsing in loops and suppress when parsing happens on a cold path or only for a trivially small collection.",
+    "go_relevance": "Medium",
+    "id": "PERF-009",
+    "name": "URL Parsing Inside Loop",
+    "original_description": "Detect url.Parse or url.ParseRequestURI inside loop bodies.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-010": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Parses templates on the request path instead of compiling them once at process start or initialization time.",
+    "detection_notes": "Future Go performance heuristic. Match template parsing on request-serving paths and suppress when template initialization is intentionally isolated and cached.",
+    "go_relevance": "High",
+    "id": "PERF-010",
+    "name": "Template Parsing On Request Path",
+    "original_description": "Detect template.New(...).Parse(...), template.ParseFiles(...), or template.Must(template.Parse...) inside handlers or middleware.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-011": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new http.Client on request-serving paths where a shared client should usually be reused.",
+    "detection_notes": "Future Go performance heuristic. Match http.Client allocation on hot paths and suppress when a short-lived specialized client is intentionally required and not repeatedly recreated.",
+    "go_relevance": "High",
+    "id": "PERF-011",
+    "name": "HTTP Client Allocation Per Request",
+    "original_description": "Detect http.Client construction inside handlers, middleware, or looped call paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-012": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Creates prepared statements on request-serving paths instead of caching or initializing them once.",
+    "detection_notes": "Future Go performance heuristic. Match prepared statement setup on hot paths and suppress when statement creation is amortized, cached, or intentionally scoped.",
+    "go_relevance": "High",
+    "id": "PERF-012",
+    "name": "Prepared Statement Setup On Request Path",
+    "original_description": "Detect db.Prepare or db.PrepareContext inside handlers, middleware, or inner loops.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-013": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Creates time.After values repeatedly inside long-running loops where reusable timers or tickers would avoid churn.",
+    "detection_notes": "Future Go performance heuristic. Match time.After in long-running loops and suppress when the loop is clearly bounded or already uses a reusable timer strategy.",
+    "go_relevance": "Medium",
+    "id": "PERF-013",
+    "name": "time.After Allocation In Long-Running Loop",
+    "original_description": "Detect time.After(...) inside worker loops, retry loops, or polling loops.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-014": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Performs repeated filesystem directory scans inside loops when the scanned set is stable and could be hoisted or cached.",
+    "detection_notes": "Future Go performance heuristic. Match directory scans inside loops and suppress when the scan target is intentionally dynamic per iteration.",
+    "go_relevance": "Medium",
+    "id": "PERF-014",
+    "name": "Directory Scan Inside Loop",
+    "original_description": "Detect filepath.Glob, os.ReadDir, or similar directory scans inside loop bodies.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-015": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Performs repeated numeric-to-string conversion inside loops where buffered writes, cached conversion, or batching would be cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match repeated strconv formatting in loops and suppress when the cost is clearly amortized or the loop is not on a hot path.",
+    "go_relevance": "Medium",
+    "id": "PERF-015",
+    "name": "strconv Formatting Inside Loop",
+    "original_description": "Detect strconv.Itoa, FormatInt, FormatUint, or FormatFloat inside loop bodies.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-016": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a fresh bytes.Buffer inside an inner loop instead of reusing a resettable buffer across iterations.",
+    "detection_notes": "Future Go performance heuristic. Match buffer allocation in loops and suppress when the allocation is one-shot by design or when reset-based reuse is not valid for the code shape.",
+    "go_relevance": "Medium",
+    "id": "PERF-016",
+    "name": "Buffer Reallocation Inside Loop",
+    "original_description": "Detect bytes.Buffer{} or new(bytes.Buffer) inside loop bodies when reuse is viable.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-017": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Builds a string with the + operator inside a loop, causing repeated allocation and copy churn. Use strings.Builder or a pre-sized buffer.",
+    "detection_notes": "Future Go performance heuristic. Match string += inside loop bodies and suppress when the loop is bounded and tiny, or when strings.Builder is already used.",
+    "go_relevance": "High",
+    "id": "PERF-017",
+    "name": "String Concatenation With Plus Inside Loop",
+    "original_description": "Detect s = s + x or s += x inside a for or range loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-018": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Copies a slice header into a function that only needs a sub-range, causing the full backing array to remain live and increase GC pressure.",
+    "detection_notes": "Future Go performance heuristic. Match large slice passing patterns and suppress when the callee mutates the slice in place or escapes it.",
+    "go_relevance": "Medium",
+    "id": "PERF-018",
+    "name": "Unnecessary Slice Copy On Reslice",
+    "original_description": "Detect passing a large slice where a sub-slice expression would suffice, or full copy where append-to-self would work.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-019": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Iterates over a slice of large structs by value, copying each element. Range by index or pointer to avoid per-iteration copies.",
+    "detection_notes": "Future Go performance heuristic. Match range by value over large structs and suppress when the copy is intentional for value semantics.",
+    "go_relevance": "High",
+    "id": "PERF-019",
+    "name": "Large Value Copy In Range Loop",
+    "original_description": "Detect for _, v := range largeStructSlice where the element type is a non-trivial struct.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-020": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses the reflect package on a hot request path. Reflection is significantly slower than typed or codegen-based dispatch.",
+    "detection_notes": "Future Go performance heuristic. Match reflect usage on hot paths and suppress when code is initialization-only, codegen, or generic helper that runs once.",
+    "go_relevance": "High",
+    "id": "PERF-020",
+    "name": "Reflection Usage In Hot Path",
+    "original_description": "Detect reflect.ValueOf, reflect.TypeOf, reflect.New, or method lookup via reflect on request-serving paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-021": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses io.ReadAll to fully buffer a request body that may be large. This materializes the whole body in memory and can amplify memory pressure.",
+    "detection_notes": "Future Go performance heuristic. Match io.ReadAll on request bodies and suppress when bodies are small or already bounded by middleware.",
+    "go_relevance": "Medium",
+    "id": "PERF-021",
+    "name": "io.ReadAll On Large Request Body",
+    "original_description": "Detect io.ReadAll, ioutil.ReadAll, or io.ReadFull on http.Request.Body in handlers.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-022": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Reads an entire file inside a request handler on every call. Large or remote files cause repeated disk I/O on a hot path.",
+    "detection_notes": "Future Go performance heuristic. Match file reads in handler paths and suppress when file is small config or already cached via sync.Once.",
+    "go_relevance": "Medium",
+    "id": "PERF-022",
+    "name": "os.ReadFile Inside Handler",
+    "original_description": "Detect os.ReadFile, ioutil.ReadFile, or os.ReadFile in handler or middleware functions.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-023": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new bytes.Reader or bytes.Buffer for each request when a sync.Pool or reusable buffer would be cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match per-request buffer allocation and suppress when the buffer is intentionally short-lived or escapes into goroutines.",
+    "go_relevance": "Medium",
+    "id": "PERF-023",
+    "name": "bytes.NewReader Allocation Per Request",
+    "original_description": "Detect bytes.NewReader, bytes.NewBuffer, or new(bytes.Buffer) on request-serving paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-024": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Creates a new hash instance (sha256, sha1, md5) inside a tight loop where the hasher could be reset or hoisted.",
+    "detection_notes": "Future Go performance heuristic. Match per-iteration hasher creation and suppress when the loop is bounded or already uses a pooled hasher.",
+    "go_relevance": "Medium",
+    "id": "PERF-024",
+    "name": "Crypto Hashing In Tight Loop",
+    "original_description": "Detect sha256.New, sha1.New, md5.New, or hmac.New inside loop bodies or per-row hot paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-025": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Generates RSA keys inside request handlers or per-call paths. RSA key generation is expensive and should be cached.",
+    "detection_notes": "Future Go performance heuristic. Match key generation in hot paths and suppress when keys are intentionally rotated or generated only at startup.",
+    "go_relevance": "High",
+    "id": "PERF-025",
+    "name": "RSA Key Generation Per Request",
+    "original_description": "Detect rsa.GenerateKey, rsa.GenerateMultiPrimeKey, or ecdsa.GenerateKey in handlers or middleware.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-026": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Performs base64 encoding or decoding repeatedly inside a loop. Encoders and decoders can be reused, and streaming is often cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match base64 conversion in loops and suppress when input sizes are tiny or the conversion is one-shot.",
+    "go_relevance": "Medium",
+    "id": "PERF-026",
+    "name": "Base64 Encode Or Decode In Loop",
+    "original_description": "Detect base64.StdEncoding.EncodeToString, DecodeString, NewEncoder, or NewDecoder inside loop bodies.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-027": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates short-lived buffers or objects on hot paths without using sync.Pool, increasing GC pressure.",
+    "detection_notes": "Future Go performance heuristic. Match per-call buffer allocation patterns and suppress when objects escape to other goroutines or are stored beyond the request.",
+    "go_relevance": "Medium",
+    "id": "PERF-027",
+    "name": "Missed sync.Pool Reuse Opportunity",
+    "original_description": "Detect allocation of bytes.Buffer, []byte, or frequently used structs in hot paths without a sync.Pool wrapper.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-028": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Embeds or constructs a sync.Mutex per request or per struct instance where a shared mutex or atomic primitive would be cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match mutex-per-instance patterns and suppress when per-record locking is the documented concurrency model.",
+    "go_relevance": "Low",
+    "id": "PERF-028",
+    "name": "Sync Mutex Allocation Per Request",
+    "original_description": "Detect sync.Mutex{}, sync.RWMutex{}, or pointer-embedded mutexes inside request-scoped or per-record structs.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-029": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Spawns goroutines without a worker pool, semaphore, or bounded concurrency, which can exhaust memory and file descriptors under load.",
+    "detection_notes": "Future Go performance heuristic. Match unconstrained go statements and suppress when the input set is bounded or the goroutine is part of a worker pool.",
+    "go_relevance": "High",
+    "id": "PERF-029",
+    "name": "Unbounded Goroutine Spawn",
+    "original_description": "Detect go func(){} in a loop, in a request handler, or inside a fan-out pattern with no semaphore or worker pool.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-030": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Creates a new context.Background() inside a goroutine launched from a request handler, breaking cancellation and request-scoped values.",
+    "detection_notes": "Future Go performance heuristic. Match context.Background() in goroutine launches and suppress when the context is intentionally detached from the parent request.",
+    "go_relevance": "Medium",
+    "id": "PERF-030",
+    "name": "context.Background In Goroutine From Request",
+    "original_description": "Detect context.Background() or context.TODO() in goroutines spawned from handlers or middleware.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-031": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses defer in performance-sensitive hot functions where the per-call overhead is measurable. defer has a small but non-zero cost in Go 1.13 and earlier.",
+    "detection_notes": "Future Go performance heuristic. Match defer usage in hot paths and suppress when readability outweighs the micro-overhead.",
+    "go_relevance": "Low",
+    "id": "PERF-031",
+    "name": "Defer In Hot Function",
+    "original_description": "Detect defer calls in functions that are called in tight loops or on request paths where profiling shows hot frames.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-032": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Converts between string and []byte repeatedly using []byte(s) or string(b), which copies the underlying data.",
+    "detection_notes": "Future Go performance heuristic. Match string/byte conversions in hot paths and suppress when copy is required by API or when unsafe zero-copy is not safe.",
+    "go_relevance": "Medium",
+    "id": "PERF-032",
+    "name": "String Byte Conversion In Hot Path",
+    "original_description": "Detect []byte(str) or string(byteSlice) inside loop bodies or per-request hot paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-033": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Iterates over a large slice without using indexed access, missing opportunities for early termination or two-pointer patterns.",
+    "detection_notes": "Future Go performance heuristic. Match range-over-slice patterns and suppress when iteration is clean enough to justify the readability.",
+    "go_relevance": "Low",
+    "id": "PERF-033",
+    "name": "Range Over Large Slice With Early Break Missing",
+    "original_description": "Detect range over large slices in handlers, batch processors, or search code where indexed scan would be more efficient.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-034": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Appends to a slice inside a map iteration, which is safe but often indicates accidental quadratic copying when the slice grows large.",
+    "detection_notes": "Future Go performance heuristic. Match append inside map ranges and suppress when the map is small or preallocation is already correct.",
+    "go_relevance": "Low",
+    "id": "PERF-034",
+    "name": "Map Iteration With Append",
+    "original_description": "Detect append inside a for k,v := range map body where the slice grows without preallocation.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-035": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Passes concrete values into interface{} parameters on hot paths, causing escape-to-heap and dynamic dispatch overhead.",
+    "detection_notes": "Future Go performance heuristic. Match interface{} boxing and suppress when the API requires it or when the cost is amortized.",
+    "go_relevance": "Medium",
+    "id": "PERF-035",
+    "name": "Interface Boxing On Hot Path",
+    "original_description": "Detect fmt.Sprintf with non-string args, or interface{}-typed function parameters on hot paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-036": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Captures a loop variable by reference inside a goroutine (pre-Go 1.22 semantics), causing all goroutines to see the final value.",
+    "detection_notes": "Future Go performance heuristic. Match goroutines that capture loop variables and suppress when the variable is correctly copied or the project targets Go 1.22+.",
+    "go_relevance": "Medium",
+    "id": "PERF-036",
+    "name": "Loop Variable Capture In Goroutine",
+    "original_description": "Detect go func(){ use(v) }() where v is a for/range loop variable without a per-iteration copy or shadowing.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-037": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Repeatedly appends to a slice without preallocation or with insufficient capacity hint, causing repeated reallocation and copy.",
+    "detection_notes": "Future Go performance heuristic. Match append in hot grow patterns and suppress when the final size is unknown or already preallocated.",
+    "go_relevance": "Medium",
+    "id": "PERF-037",
+    "name": "Slice Growth Miscalculation",
+    "original_description": "Detect append with no make + cap hint in a loop or function that grows a large slice.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-038": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses an unbuffered channel for high-throughput producer/consumer patterns, causing unnecessary blocking and synchronization.",
+    "detection_notes": "Future Go performance heuristic. Match unbuffered channels in hot pipelines and suppress when strict synchronization is required by design.",
+    "go_relevance": "Medium",
+    "id": "PERF-038",
+    "name": "Unbuffered Channel In Producer Consumer",
+    "original_description": "Detect make(chan T) in producer/consumer pipelines where buffered channels would smooth throughput.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-039": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses select with a default case in a tight loop, which becomes a busy-wait pattern that pins a CPU core.",
+    "detection_notes": "Future Go performance heuristic. Match select-default in loops and suppress when a small intentional sleep or backoff is also present.",
+    "go_relevance": "Medium",
+    "id": "PERF-039",
+    "name": "Select With Default In Tight Loop",
+    "original_description": "Detect for { select { case ...; default: ... } } in polling or worker loops.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-040": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls time.Now() repeatedly inside hot paths where a single timestamp at function entry would suffice.",
+    "detection_notes": "Future Go performance heuristic. Match multiple time.Now calls and suppress when distinct timestamps are required by the logic.",
+    "go_relevance": "Low",
+    "id": "PERF-040",
+    "name": "time.Now Calls In Hot Path",
+    "original_description": "Detect time.Now() called multiple times in the same function body, especially inside loops.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-041": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses the standard log package or log.Println/Printf on production hot paths, where structured, leveled, or async loggers are cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match standard log usage in hot paths and suppress when the project intentionally uses the standard log package or the call is gated by verbosity.",
+    "go_relevance": "Medium",
+    "id": "PERF-041",
+    "name": "log Standard Logger In Production Hot Path",
+    "original_description": "Detect log.Println, log.Printf, log.Print inside handler or loop bodies.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-042": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses fmt.Errorf for error wrapping without format verbs, which is slower than errors.New and requires extra parsing.",
+    "detection_notes": "Future Go performance heuristic. Match fmt.Errorf with no verbs and suppress when formatting is added for consistency.",
+    "go_relevance": "Low",
+    "id": "PERF-042",
+    "name": "fmt.Errorf With No Formatting In Hot Path",
+    "original_description": "Detect fmt.Errorf(\"static message\") where the string contains no %s, %d, %v, or other format verbs.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-043": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Recovers from panics in tight loops or hot functions, which adds defer setup and runtime cost on every iteration.",
+    "detection_notes": "Future Go performance heuristic. Match defer-recover in hot paths and suppress when the boundary is meaningful or the recover is required for safety.",
+    "go_relevance": "Low",
+    "id": "PERF-043",
+    "name": "Panic Recovery In Hot Path",
+    "original_description": "Detect defer func(){ recover() }() inside hot loops or per-request paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-044": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Performs the same type assertion on an interface value multiple times, where a single assertion with reuse would be cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match repeated type assertions and suppress when assertion success is the common path that the type system cannot optimize.",
+    "go_relevance": "Low",
+    "id": "PERF-044",
+    "name": "Repeated Type Assertion On Same Interface",
+    "original_description": "Detect x.(T) called multiple times for the same value inside a function or loop body.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-045": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Appends to a slice inside a loop without setting an initial capacity, leading to repeated reallocation as the slice grows geometrically.",
+    "detection_notes": "Future Go performance heuristic. Match append-in-loop without preallocation and suppress when the final size is genuinely unknown.",
+    "go_relevance": "Medium",
+    "id": "PERF-045",
+    "name": "Append Without Capacity Hint In Loop",
+    "original_description": "Detect append in a for/range loop where the slice has no make([]T, 0, hint) before the loop.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-046": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses strings.TrimSpace or similar trimming functions on hot paths where the result is the same as the input, allocating a new string.",
+    "detection_notes": "Future Go performance heuristic. Match string trimming in hot paths and suppress when correctness requires trimming.",
+    "go_relevance": "Low",
+    "id": "PERF-046",
+    "name": "String Trimming With Allocations",
+    "original_description": "Detect strings.TrimSpace, Trim, TrimPrefix, TrimSuffix in hot paths without checking the need first.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-047": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses strings.Split or strings.SplitN in hot paths where a streaming scanner or precomputed index would be cheaper.",
+    "detection_notes": "Future Go performance heuristic. Match strings.Split in hot paths and suppress when input is small or splitting semantics are required.",
+    "go_relevance": "Medium",
+    "id": "PERF-047",
+    "name": "strings.Split In Hot Path",
+    "original_description": "Detect strings.Split, strings.SplitN, or strings.SplitAfter inside hot loops or per-request parsing.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-048": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Compares long byte slices or strings without short-circuit optimizations, where length or hash precheck would help.",
+    "detection_notes": "Future Go performance heuristic. Match byte/string equality in hot paths and suppress when the full compare is required for correctness.",
+    "go_relevance": "Low",
+    "id": "PERF-048",
+    "name": "bytes.Equal On Long Strings",
+    "original_description": "Detect bytes.Equal or strings.EqualFold on long inputs in hot paths without an early length or prefix check.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-049": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses copy(dst, src) where the destination length is not checked, leading to silent truncation or wasted capacity.",
+    "detection_notes": "Future Go performance heuristic. Match copy calls in hot paths and suppress when lengths are explicitly validated upstream.",
+    "go_relevance": "Low",
+    "id": "PERF-049",
+    "name": "Copy With Mismatched Length",
+    "original_description": "Detect copy(dst, src) where dst was allocated with a wrong cap or where bounds are not validated.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-050": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls regexp.MatchString (or similar regex match helpers) inside a loop instead of compiling once and reusing the pattern.",
+    "detection_notes": "Future Go performance heuristic. Match regexp.MatchString in loops and suppress when the pattern is genuinely dynamic per iteration.",
+    "go_relevance": "High",
+    "id": "PERF-050",
+    "name": "regexp.MatchString In Loop",
+    "original_description": "Detect regexp.MatchString or regexp.Match inside loop bodies or per-row processing.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  }
+}

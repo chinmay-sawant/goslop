@@ -1,0 +1,15 @@
+# BP-92 positive: a plain errgroup has no cancellation context
+lang: go
+file: BP-92-vulnerable.go
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+func run() error {
+	var g errgroup.Group
+	g.Go(func() error {
+		return nil
+	})
+	return g.Wait()
+}

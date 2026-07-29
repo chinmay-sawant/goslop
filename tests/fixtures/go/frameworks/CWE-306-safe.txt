@@ -1,0 +1,20 @@
+# CWE-306 — Missing Authentication for Critical Function (safe)
+lang: go
+file: CWE-306-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Safe: requires authenticated operator before truncating ledger.
+func PurgeLedger(c *gin.Context, db *sqlx.DB) {
+	if c.GetString("operator_id") == "" {
+		c.JSON(401, gin.H{"error": "auth required"})
+		return
+	}
+	_, _ = db.Exec("TRUNCATE ledger")
+	c.JSON(200, gin.H{"purged": true})
+}

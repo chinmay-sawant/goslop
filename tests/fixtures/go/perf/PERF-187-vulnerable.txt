@@ -1,0 +1,17 @@
+# PERF-187 positive: template.HTMLEscaper in a handler
+lang: go
+file: PERF-187-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"html/template"
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	raw := r.URL.Query().Get("name")
+	safe := template.HTMLEscaper(raw)
+	w.Write([]byte(safe))
+}

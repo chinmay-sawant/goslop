@@ -1,0 +1,14 @@
+# BP-89 negative variant: sync.Once owns the close operation
+lang: go
+file: BP-89-variant-safe.go
+variant: cleanup
+---
+package sample
+
+import "sync"
+
+func stop(done chan struct{}, once *sync.Once) {
+	once.Do(func() {
+		close(done)
+	})
+}

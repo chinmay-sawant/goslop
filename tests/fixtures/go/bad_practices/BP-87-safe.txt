@@ -1,0 +1,20 @@
+# BP-87 negative: protected state is copied before blocking
+lang: go
+file: BP-87-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"sync"
+	"time"
+)
+
+func refresh() {
+	var mu sync.RWMutex
+	mu.RLock()
+	value := 1
+	mu.RUnlock()
+	_ = value
+	time.Sleep(time.Millisecond)
+}

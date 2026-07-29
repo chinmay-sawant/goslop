@@ -1,0 +1,16 @@
+# BP-15 positive: recursive sync.Once.Do
+lang: go
+file: BP-15-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+var once sync.Once
+
+func Init() {
+	once.Do(func() {
+		once.Do(func() {})
+	})
+}

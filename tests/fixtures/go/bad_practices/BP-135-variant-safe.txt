@@ -1,0 +1,26 @@
+# BP-135 variant negative: a GORM handler creates a new session first.
+lang: go
+file: BP-135-variant-safe.go
+variant: gorm-global-first-session
+---
+package sample
+
+import (
+	"errors"
+	"net/http"
+
+	"gorm.io/gorm"
+)
+
+type User struct{}
+
+func getUser(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	var user User
+	if err := db.Session(&gorm.Session{}).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http.NotFound(w, r)
+			return
+		}
+		http.Error(w, "query failed", http.StatusInternalServerError)
+	}
+}

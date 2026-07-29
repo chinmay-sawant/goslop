@@ -1,0 +1,27 @@
+# CWE-309 — Use of Password System for Primary Authentication (vulnerable) (pure stdlib)
+lang: go
+file: CWE-309-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+)
+
+// Vulnerable: enterprise SSO route still accepts password form login only.
+func EnterpriseLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	user := r.FormValue("username")
+	pass := r.FormValue("password")
+	if user == "" || pass == "" {
+		http.Error(w, "missing fields", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(`{"session":"` + user + `"}`))
+}

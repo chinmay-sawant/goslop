@@ -1,0 +1,19 @@
+# CWE-79 negative: taint-tracked XSS with html.EscapeString
+lang: go
+file: CWE-79-taint-safe.go
+variant: taint
+---
+package sample
+
+import (
+	"html"
+	"html/template"
+	"net/http"
+)
+
+func RenderPage(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	safe := html.EscapeString(name)
+	t := template.Must(template.New("x").Parse("<html>{{.}}</html>"))
+	_ = t.Execute(w, safe)
+}

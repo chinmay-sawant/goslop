@@ -1,0 +1,19 @@
+# PERF-105 negative: explicit Close method, no finalizer
+lang: go
+file: PERF-105-safe.go
+variant: stdlib
+---
+package sample
+
+type Buffer struct {
+	data []byte
+}
+
+func MakeBuffer() *Buffer {
+	return &Buffer{}
+}
+
+func (b *Buffer) Close() error {
+	b.data = nil
+	return nil
+}

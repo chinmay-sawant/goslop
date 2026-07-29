@@ -1,0 +1,32 @@
+# CWE-1230 positive: leaks document metadata (pure stdlib)
+lang: go
+file: CWE-1230-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1230: Exposure of Sensitive Information Through Metadata.
+// Vulnerable: redacted download still returns original filename and byte length.
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func DownloadRedactedPure() http.HandlerFunc {
+	base := "/var/vault/documents"
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("name")
+		path := filepath.Join(base, name)
+		info, err := os.Stat(path)
+		if err != nil {
+			http.Error(w, "missing", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("X-Original-Name", name)
+		w.Header().Set("X-File-Size", fmt.Sprintf("%d", info.Size()))
+		w.Write([]byte("[REDACTED CONTENT]"))
+	}
+}

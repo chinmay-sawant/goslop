@@ -1,0 +1,24 @@
+# CWE-367 vulnerable — Time-of-check Time-of-use (TOCTOU) Race Condition
+lang: go
+file: CWE-367-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+func LoadKYCScan(c *GinCtx) ([]byte, error) {
+	name := c.Request.URL.Query().Get("scan")
+	target := filepath.Join("/var/kyc/inbox", name)
+	if _, err := os.Stat(target); os.IsNotExist(err) {
+		return nil, err
+	}
+	return os.ReadFile(target)
+}

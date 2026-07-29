@@ -1,0 +1,19 @@
+# CWE-270 — Privilege Context Switching Error (safe)
+lang: go
+file: CWE-270-safe.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// Safe: saves and restores the request principal after privileged work.
+func RunMaintenanceJob(c *gin.Context, db *gorm.DB) {
+	original := c.GetString("effective_user")
+	defer c.Set("effective_user", original)
+	c.Set("effective_user", "maintenance")
+	db.Exec("DELETE FROM stale_sessions")
+	c.JSON(200, gin.H{"done": true})
+}

@@ -1,0 +1,16 @@
+# IP-001: Direct call chain (depth 2) — safe (constant arg)
+lang: go
+file: IP-001-safe.go
+variant: taint
+---
+package sample
+
+import "os"
+
+func caller() {
+    callee("/safe/path")
+}
+
+func callee(s string) {
+    os.Open(s)
+}

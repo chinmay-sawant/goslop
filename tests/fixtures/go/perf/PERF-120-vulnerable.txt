@@ -1,0 +1,11 @@
+# PERF-120 positive: time.Now().Sub instead of time.Since
+lang: go
+file: PERF-120-vulnerable.go
+---
+package sample
+
+import "time"
+
+func Since(t time.Time) time.Duration {
+    return time.Now().Sub(t)
+}

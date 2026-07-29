@@ -1,0 +1,45 @@
+# CWE-829: Inclusion of Functionality from Untrusted Control Sphere (mitigated)
+lang: go
+file: CWE-829-safe.go
+---
+package sample
+
+import (
+	"net/http"
+	"path/filepath"
+	"plugin"
+
+	"github.com/gin-gonic/gin"
+)
+
+var allowedModules = map[string]struct{}{
+	"reports.so": {},
+	"metrics.so": {},
+}
+
+const moduleRoot = "/opt/app/modules"
+
+// Safe: only allowlisted modules under a fixed directory may be loaded.
+func LoadExtension(c *gin.Context) {
+	name := c.Query("module")
+	if _, ok := allowedModules[name]; !ok {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	full := filepath.Join(moduleRoot, filepath.Clean(name))
+	if !filepath.HasPrefix(full, moduleRoot) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	p, err := plugin.Open(full)
+	if err != nil {
+		c.String(http.StatusBadRequest, "load failed")
+		return
+	}
+	sym, err := p.Lookup("Init")
+	if err != nil {
+		c.String(http.StatusBadRequest, "init missing")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"loaded": sym != nil})
+}

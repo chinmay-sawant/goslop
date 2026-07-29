@@ -1,0 +1,17 @@
+# BP-82 negative: location-aware parsing is explicit for both supported shapes.
+lang: go
+file: BP-82-safe.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+// ParseDate parses a wall-clock value using the caller's location.
+func ParseDate(value string, location *time.Location) (time.Time, error) {
+	local, err := time.ParseInLocation("2006-01-02 15:04:05", value, location)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return local, nil
+}

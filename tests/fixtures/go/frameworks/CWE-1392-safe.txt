@@ -1,0 +1,43 @@
+# CWE-1392 safe: admin password from secret env var
+lang: go
+file: CWE-1392-safe.go
+---
+package sample
+
+// CWE-1392 mitigated: initial admin password loaded from environment, not a default literal.
+
+import (
+	"net/http"
+	"os"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type AdminUser struct {
+	ID       uint
+	Username string
+	Password string
+}
+
+func BootstrapAdminSafe(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		secret := os.Getenv("BOOTSTRAP_ADMIN_PASSWORD")
+		if secret == "" {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": "bootstrap password not configured"})
+			return
+		}
+		hash, err := bcrypt.GenerateFromPassword([]byte(secret), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		rec := AdminUser{Username: "admin", Password: string(hash)}
+		if err := db.FirstOrCreate(&rec, AdminUser{Username: "admin"}).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"admin_ready": true})
+	}
+}

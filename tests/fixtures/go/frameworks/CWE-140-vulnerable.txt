@@ -1,0 +1,23 @@
+# CWE-140 positive: delimiter injection in CSV export
+lang: go
+file: CWE-140-vulnerable.go
+---
+package sample
+
+import (
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// CWE-140 Improper Neutralization of Delimiters
+// Vulnerable line: comma-separated row built by naive concatenation.
+func ExportRows(c *gin.Context) {
+	name := c.Query("name")
+	role := c.Query("role")
+	line := strings.Join([]string{name, role, "active"}, ",")
+	csv := fmt.Sprintf("name,role,status\n%s", line)
+	c.Data(http.StatusOK, "text/csv", []byte(csv))
+}

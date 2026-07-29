@@ -1,0 +1,15 @@
+# BP-81 positive: one condition reads the clock twice.
+lang: go
+file: BP-81-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "time"
+
+func expired(deadline time.Time) bool {
+	if time.Now().After(deadline) && time.Now().Before(deadline.Add(time.Minute)) {
+		return true
+	}
+	return false
+}

@@ -1,0 +1,16 @@
+# BP-162 negative: the parallel test uses isolated local state.
+lang: go
+file: BP-162-safe_test.go
+variant: isolated-parallel-state
+---
+package sample
+
+import "testing"
+
+var sharedResults = map[string]int{}
+
+func TestParallelUsesLocalState(t *testing.T) {
+	t.Parallel()
+	localResults := map[string]int{}
+	localResults["ready"] = 1
+}

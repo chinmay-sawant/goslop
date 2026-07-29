@@ -1,0 +1,22 @@
+# CWE-455 positive: API continues when TLS material missing (pure stdlib)
+lang: go
+file: CWE-455-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"crypto/tls"
+	"log"
+	"net/http"
+)
+
+func StartHTTPServer() error {
+	cert, err := tls.LoadX509KeyPair("/etc/hsm/tls.crt", "/etc/hsm/tls.key")
+	if err != nil {
+		log.Printf("hsm tls unavailable, continuing without mTLS: %v", err)
+	}
+	_ = cert
+	http.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+	return http.ListenAndServe(":8443", nil)
+}

@@ -1,0 +1,20 @@
+# BP-143 negative: the go-redis Get Result error is checked.
+lang: go
+file: BP-143-safe.go
+variant: redis-get-result-checked
+---
+package sample
+
+import (
+	"context"
+
+	"github.com/redis/go-redis/v9"
+)
+
+func loadName(ctx context.Context, rdb *redis.Client, key string) (string, error) {
+	value, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}

@@ -1,0 +1,15 @@
+# PERF-185 negative: Content-Type is read from the request header
+lang: go
+file: PERF-185-safe.go
+variant: stdlib
+---
+package sample
+
+import "net/http"
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	if t := r.Header.Get("Content-Type"); t != "" {
+		w.Header().Set("Content-Type", t)
+	}
+	w.WriteHeader(200)
+}

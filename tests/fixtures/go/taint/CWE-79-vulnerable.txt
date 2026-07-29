@@ -1,0 +1,20 @@
+# CWE-79 positive: UnescapeString reaches text/template without HTML escaping
+lang: go
+file: CWE-79-taint-vulnerable.go
+variant: taint
+---
+package sample
+
+import (
+	"html"
+	"net/http"
+	"text/template"
+)
+
+func RenderPage(w http.ResponseWriter, r *http.Request) {
+	name := r.URL.Query().Get("name")
+	// text/template does not HTML-escape ordinary string values.
+	raw := html.UnescapeString(name)
+	t := template.Must(template.New("x").Parse("<html>{{.}}</html>"))
+	_ = t.Execute(w, raw)
+}

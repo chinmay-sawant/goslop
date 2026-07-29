@@ -1,0 +1,20 @@
+# PERF-024 positive: sha256.New allocated inside loop
+lang: go
+file: PERF-024-vulnerable.go
+---
+package sample
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+)
+
+func HashAll(values [][]byte) []string {
+	out := make([]string, 0, len(values))
+	for _, v := range values {
+		h := sha256.New()
+		h.Write(v)
+		out = append(out, hex.EncodeToString(h.Sum(nil)))
+	}
+	return out
+}

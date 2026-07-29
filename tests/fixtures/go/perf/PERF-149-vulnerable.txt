@@ -1,0 +1,13 @@
+# PERF-149 positive: conn.Read/Write without SetReadDeadline/SetWriteDeadline
+lang: go
+file: PERF-149-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import "net"
+
+func Read(conn net.Conn, buf []byte) (int, error) {
+	// No deadline set: this blocks indefinitely.
+	return conn.Read(buf)
+}

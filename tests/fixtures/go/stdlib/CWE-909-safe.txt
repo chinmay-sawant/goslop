@@ -1,0 +1,41 @@
+# CWE-909: Missing Initialization of Resource (mitigated, pure stdlib)
+lang: go
+file: CWE-909-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+type Widget struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+var widgetDB *sql.DB
+
+// Safe: handler refuses to run when the database has not been initialized.
+func ListWidgets(w http.ResponseWriter, r *http.Request) {
+	if widgetDB == nil {
+		http.Error(w, "service unavailable", http.StatusServiceUnavailable)
+		return
+	}
+	rows, err := widgetDB.Query("SELECT id, name FROM widgets")
+	if err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var widgets []Widget
+	for rows.Next() {
+		var wgt Widget
+		_ = rows.Scan(&wgt.ID, &wgt.Name)
+		widgets = append(widgets, wgt)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(widgets)
+}

@@ -1,0 +1,44 @@
+# CWE-1125 positive: oversized public attack surface (pure stdlib)
+lang: go
+file: CWE-1125-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1125: Excessive Attack Surface — debug and admin routes exposed without auth.
+// Vulnerable: mux registers heap dump, SQL console, and config dump endpoints.
+
+import (
+	"database/sql"
+	"fmt"
+	"net/http"
+	"net/http/pprof"
+	"runtime"
+)
+
+func MountWideSurfacePure(db *sql.DB) *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	mux.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
+	mux.HandleFunc("/admin/sql", func(w http.ResponseWriter, r *http.Request) {
+		sqlText := r.URL.Query().Get("q")
+		rows, _ := db.Query(sqlText)
+		if rows != nil {
+			rows.Close()
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`[]`))
+	})
+	mux.HandleFunc("/admin/config", func(w http.ResponseWriter, r *http.Request) {
+		var m runtime.MemStats
+		runtime.ReadMemStats(&m)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprintf(w, `{"heap":%d}`, m.HeapAlloc)
+	})
+	mux.HandleFunc("/internal/reload", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
+	return mux
+}

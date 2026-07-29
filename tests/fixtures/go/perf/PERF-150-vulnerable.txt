@@ -1,0 +1,18 @@
+# PERF-150 positive: large stack frame from multiple big local buffers
+lang: go
+file: PERF-150-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+)
+
+func LargeFrameHandler(w http.ResponseWriter, r *http.Request) {
+	var dataBuf [4096]byte
+	var tmpBuf [8192]byte
+	dataBuf[0] = 'a'
+	tmpBuf[0] = 'b'
+	w.Write(dataBuf[:])
+}

@@ -1,0 +1,27 @@
+# CWE-756: Missing Custom Error Page (mitigated, pure stdlib)
+lang: go
+file: CWE-756-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"encoding/json"
+	"net/http"
+)
+
+// Safe: returns a generic message while hiding internal error details.
+func FetchProfile(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	id := r.URL.Query().Get("id")
+	var email string
+	err := db.QueryRow("SELECT email FROM profiles WHERE id = $1", id).Scan(&email)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "unable to load profile"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"email": email})
+}

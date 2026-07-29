@@ -1,0 +1,13 @@
+# PERF-175 positive: a tight `for { <-ch }` spin loop
+lang: go
+file: PERF-175-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func Spin(ch chan int) {
+	for {
+		v := <-ch
+		_ = v
+	}
+}

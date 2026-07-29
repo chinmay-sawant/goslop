@@ -1,0 +1,21 @@
+# PERF-141 negative: cache r.URL.Query() in a local variable
+lang: go
+file: PERF-141-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = w
+	q := r.URL.Query()
+	page := q.Get("page")
+	size := q.Get("size")
+	tag := q.Get("tag")
+	_ = page
+	_ = size
+	_ = tag
+}

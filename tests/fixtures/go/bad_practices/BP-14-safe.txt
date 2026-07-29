@@ -1,0 +1,24 @@
+# BP-14 negative: goroutine watches ctx.Done
+lang: go
+file: BP-14-safe.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"time"
+)
+
+func run(ctx context.Context) {
+	ticker := time.NewTicker(time.Second)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+			}
+		}
+	}()
+}

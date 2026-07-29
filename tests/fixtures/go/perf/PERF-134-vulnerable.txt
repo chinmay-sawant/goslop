@@ -1,0 +1,22 @@
+# PERF-134 positive: manual io.Read + io.Write loop instead of io.Copy
+lang: go
+file: PERF-134-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+func ManualCopyHandler(w http.ResponseWriter, r *http.Request) {
+	buf := make([]byte, 4096)
+	for {
+		n, err := r.Body.Read(buf)
+		if err != nil {
+			break
+		}
+		w.Write(buf[:n])
+	}
+}

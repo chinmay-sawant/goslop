@@ -1,0 +1,46 @@
+# CWE-1173 negative: strict JSON decode and field validation (pure stdlib)
+lang: go
+file: CWE-1173-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-1173 mitigated: typed decode plus email and password length checks before insert.
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/mail"
+	"strings"
+	"sync"
+)
+
+type SignupPayloadValidatedPure struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+var customersSafeMu sync.Mutex
+var customersSafePure = map[string]string{}
+
+func SignupValidatedPure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var payload SignupPayloadValidatedPure
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if _, err := mail.ParseAddress(payload.Email); err != nil {
+			http.Error(w, "invalid email", http.StatusBadRequest)
+			return
+		}
+		if len(strings.TrimSpace(payload.Password)) < 12 {
+			http.Error(w, "password too short", http.StatusBadRequest)
+			return
+		}
+		customersSafeMu.Lock()
+		customersSafePure[payload.Email] = payload.Password
+		customersSafeMu.Unlock()
+		w.WriteHeader(http.StatusCreated)
+	}
+}

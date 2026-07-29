@@ -1,0 +1,12 @@
+# PERF-229 negative: AppendInt into destination
+lang: go
+file: PERF-229-safe.go
+variant: stdlib
+---
+package sample
+
+import "strconv"
+
+func AppendID(dst []byte, id int) []byte {
+	return strconv.AppendInt(dst, int64(id), 10)
+}

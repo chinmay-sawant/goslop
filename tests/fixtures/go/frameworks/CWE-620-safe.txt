@@ -1,0 +1,44 @@
+# CWE-620: Unverified Password Change (mitigated)
+lang: go
+file: CWE-620-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
+)
+
+type Account struct {
+	ID       uint
+	Username string
+	Password string
+}
+
+// Safe: requires knowledge of the current password before updating.
+func ChangePassword(c *gin.Context, db *gorm.DB) {
+	var body struct {
+		Username        string `json:"username"`
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	var acct Account
+	if err := db.Where("username = ?", body.Username).First(&acct).Error; err != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	if bcrypt.CompareHashAndPassword([]byte(acct.Password), []byte(body.CurrentPassword)) != nil {
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	hash, _ := bcrypt.GenerateFromPassword([]byte(body.NewPassword), bcrypt.DefaultCost)
+	db.Model(&acct).Update("password", string(hash))
+	c.Status(http.StatusOK)
+}

@@ -1,0 +1,21 @@
+# BP-15 negative: helper call does not recurse on the same sync.Once
+lang: go
+file: BP-15-indirect-safe.go
+variant: stdlib
+---
+package sample
+
+import "sync"
+
+// Init runs setup through a different sync.Once instance.
+func Init() {
+	var once sync.Once
+	var other sync.Once
+	once.Do(func() {
+		setup(&other)
+	})
+}
+
+func setup(other *sync.Once) {
+	other.Do(func() {})
+}

@@ -1,0 +1,15 @@
+# BP-92 positive variant: a renamed plain errgroup is still context-free
+lang: go
+file: BP-92-variant-vulnerable.go
+---
+package sample
+
+import "golang.org/x/sync/errgroup"
+
+func run() error {
+	var group errgroup.Group
+	group.Go(func() error {
+		return nil
+	})
+	return group.Wait()
+}

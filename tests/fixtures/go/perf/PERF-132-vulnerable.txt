@@ -1,0 +1,25 @@
+# PERF-132 positive: go func() that does I/O but the closure can't be cancelled
+lang: go
+file: PERF-132-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"database/sql"
+	"net/http"
+)
+
+func Handle(ctx context.Context, r *http.Request, db *sql.DB) {
+	_ = r
+	_ = ctx
+	_ = db
+	go func() {
+		// Goroutine has no ctx parameter; the parent's
+		// cancellation does not propagate because the goroutine
+		// keeps running until db.Query completes.
+		rows, _ := db.Query("SELECT id FROM users")
+		_ = rows
+	}()
+}

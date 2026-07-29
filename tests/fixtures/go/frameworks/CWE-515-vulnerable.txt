@@ -1,0 +1,30 @@
+# CWE-515: shared status bit encodes secret across handlers (covert storage channel).
+lang: go
+file: CWE-515-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+var quotaFlag int
+
+func SetQuotaSecret(c *gin.Context) {
+	if c.PostForm("over") == "1" {
+		quotaFlag = 1
+	} else {
+		quotaFlag = 0
+	}
+	c.Status(http.StatusOK)
+}
+
+func ProbeQuotaSecret(c *gin.Context) {
+	if quotaFlag == 1 {
+		c.String(http.StatusOK, "over_limit")
+		return
+	}
+	c.String(http.StatusOK, "ok")
+}

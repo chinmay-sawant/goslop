@@ -1,0 +1,824 @@
+{
+  "PERF-051": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses unsafe.Pointer for type punning or zero-copy conversion in ways that hurt readability and may cause subtle performance issues when miscompiled by future Go versions.",
+    "detection_notes": "Future Go performance heuristic. Match unsafe.Pointer usage and suppress when a benchmark justifies the pattern or when no safe alternative exists.",
+    "go_relevance": "Low",
+    "id": "PERF-051",
+    "name": "unsafe.Pointer Misuse Pattern",
+    "original_description": "Detect unsafe.Pointer usage in hot paths without clear justification, especially for string/byte conversion.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-052": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls runtime.GC() in production code, forcing a stop-the-world GC pause and undermining the runtime's tuning.",
+    "detection_notes": "Future Go performance heuristic. Match runtime.GC() calls and suppress when used in tests, controlled shutdown, or where deterministic GC is required.",
+    "go_relevance": "Medium",
+    "id": "PERF-052",
+    "name": "Manual runtime.GC Call",
+    "original_description": "Detect runtime.GC() calls outside of tests, debug builds, or initialization shutdown paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-053": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses the package-level math/rand functions, which are guarded by a global mutex and can become a contention hotspot.",
+    "detection_notes": "Future Go performance heuristic. Match package-level math/rand in hot paths and suppress when usage is sparse or mutex contention is not a concern.",
+    "go_relevance": "Medium",
+    "id": "PERF-053",
+    "name": "math/rand Without Explicit Source",
+    "original_description": "Detect math/rand.Intn, math/rand.Float64, or rand.Read on hot paths where a per-goroutine rand.Source would be cheaper.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-054": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new strings.Builder per request instead of calling Reset on a pooled or reused builder.",
+    "detection_notes": "Future Go performance heuristic. Match new strings.Builder allocations on hot paths and suppress when the builder intentionally escapes or is one-shot.",
+    "go_relevance": "Medium",
+    "id": "PERF-054",
+    "name": "strings.Builder Reset Missed",
+    "original_description": "Detect strings.Builder{} inside hot paths where a sync.Pool or hoisted builder with Reset would be cheaper.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-055": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses bufio.Scanner with the default 64KiB max token size on potentially large input, which silently truncates or errors out.",
+    "detection_notes": "Future Go performance heuristic. Match bufio.Scanner without explicit buffer sizing and suppress when input is bounded or already configured upstream.",
+    "go_relevance": "Low",
+    "id": "PERF-055",
+    "name": "bufio.Scanner Default Token Size",
+    "original_description": "Detect bufio.NewScanner with no explicit Buffer call before Scan, on inputs that may exceed 64KiB.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-056": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls c.JSON inside a loop with on-the-fly marshaling per iteration. Marshaling per iteration defeats batch response strategies and can balloon CPU under load.",
+    "detection_notes": "Future Gin performance heuristic. Match c.JSON in loop bodies and suppress when the loop is a streaming response or has been intentionally serialized.",
+    "go_relevance": "High",
+    "id": "PERF-056",
+    "name": "Gin c.JSON With Marshal In Loop",
+    "original_description": "Detect c.JSON or c.JSONP inside for/range loops in Gin handlers.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-057": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Defines middleware that allocates large buffers, parses bodies, or builds heavy structures for every request even when downstream handlers do not need them.",
+    "detection_notes": "Future Gin performance heuristic. Match heavy work in middleware and suppress when the work is gated by routing or required for downstream safety.",
+    "go_relevance": "High",
+    "id": "PERF-057",
+    "name": "Gin Middleware Heavy Allocation",
+    "original_description": "Detect gin.HandlerFunc implementations with io.ReadAll, large make, or json.Unmarshal at the middleware level.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-058": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Reads c.Request.Body without deferring Close, causing connection leaks and request body buffer retention.",
+    "detection_notes": "Future Gin performance heuristic. Match body reads without close and suppress when middleware handles closing globally.",
+    "go_relevance": "Medium",
+    "id": "PERF-058",
+    "name": "Gin c.Request.Body Not Closed",
+    "original_description": "Detect c.Request.Body access without a matching defer body.Close() or io.Copy to discard.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-059": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses c.ShouldBindJSON, c.ShouldBind, or c.Bind on every request even when the same DTO is reused, missing typed handler or struct reuse opportunities.",
+    "detection_notes": "Future Gin performance heuristic. Match binding calls and suppress when input shapes vary or when binding is required for validation.",
+    "go_relevance": "Medium",
+    "id": "PERF-059",
+    "name": "Gin Binding Reuse Missed",
+    "original_description": "Detect c.ShouldBindJSON or c.ShouldBind in handlers that could share a pre-validated struct or per-route binder.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-060": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new render.Render or per-request render struct instead of relying on the default render pool Gin's c.Render manages.",
+    "detection_notes": "Future Gin performance heuristic. Match direct render usage and suppress when a custom render is intentional or required for streaming.",
+    "go_relevance": "Low",
+    "id": "PERF-060",
+    "name": "Gin Render Allocation Per Request",
+    "original_description": "Detect render.JSON or render.HTML direct allocation inside Gin handlers.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-061": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Serves static files via gin.Static or router.StaticFS without Cache-Control, ETag, or Last-Modified headers, forcing redundant client fetches.",
+    "detection_notes": "Future Gin performance heuristic. Match static serving and suppress when caching is handled by a CDN or reverse proxy in front of the service.",
+    "go_relevance": "Medium",
+    "id": "PERF-061",
+    "name": "Gin Static Handler No Cache Headers",
+    "original_description": "Detect gin.Static, router.Static, or c.File usage without explicit cache header configuration.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-062": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Parses complex route parameters (e.g., UUIDs, JSON) inside middleware that runs for every request, even for routes that do not need them.",
+    "detection_notes": "Future Gin performance heuristic. Match param parsing in middleware and suppress when it is required by the routing model.",
+    "go_relevance": "Medium",
+    "id": "PERF-062",
+    "name": "Gin Route Parameter Parsing In Middleware",
+    "original_description": "Detect c.Param parsing with regex or json.Unmarshal inside gin.HandlerFunc middleware.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-063": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Registers or invokes custom validator factories on every request instead of initializing them once via binding.Validator.Engine().",
+    "detection_notes": "Future Gin performance heuristic. Match validator allocation patterns and suppress when validators are intentionally reconfigured per request.",
+    "go_relevance": "Low",
+    "id": "PERF-063",
+    "name": "Gin Custom Validator Allocation",
+    "original_description": "Detect binding.Validator.Engine() usage inside handlers or repeated validator construction.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-064": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Spawns a goroutine that uses *gin.Context directly. The context's underlying objects are pooled and will be recycled, causing data races and corruption.",
+    "detection_notes": "Future Gin performance heuristic. Match goroutine use of *gin.Context and suppress when the project is on Gin v1.10+ with context.Copy semantics or uses c.Request.Context() only.",
+    "go_relevance": "High",
+    "id": "PERF-064",
+    "name": "Gin c.Copy Not Called In Goroutine",
+    "original_description": "Detect go func() { c.JSON(...) }() or similar goroutine usage of *gin.Context without c.Copy().",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-065": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls c.ShouldBind in a middleware that runs before route dispatch, performing the same parse work for routes that may not need it.",
+    "detection_notes": "Future Gin performance heuristic. Match binding in middleware and suppress when binding is required for the entire downstream chain.",
+    "go_relevance": "Medium",
+    "id": "PERF-065",
+    "name": "Gin ShouldBind In Middleware Chain",
+    "original_description": "Detect c.ShouldBind or c.ShouldBindJSON inside RouterGroup.Use handlers or shared middleware.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-066": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Builds a deep middleware chain per route group where many middlewares can be merged or composed, adding per-request frame overhead.",
+    "detection_notes": "Future Gin performance heuristic. Match deep middleware chains and suppress when separation of concerns is required for security or audit.",
+    "go_relevance": "Low",
+    "id": "PERF-066",
+    "name": "Gin Deep Middleware Chain",
+    "original_description": "Detect router.Group(...).Use(...) called with more than ~5 middlewares or chained .Use on nested groups.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-067": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Removes gin.Recovery() in production, allowing panics to crash workers. While strictly a reliability issue, repeated panics under load have severe performance impact.",
+    "detection_notes": "Future Gin performance heuristic. Match routers without recovery middleware and suppress when an external supervisor provides recovery semantics.",
+    "go_relevance": "Medium",
+    "id": "PERF-067",
+    "name": "Gin Recovery Middleware Disabled",
+    "original_description": "Detect gin.New() without gin.Recovery() or r.Use(gin.Recovery()) on the production router.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-068": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Leaves gin.Logger() or gin.LoggerWithFormatter in production, writing a log line per request with synchronous I/O on the hot path.",
+    "detection_notes": "Future Gin performance heuristic. Match synchronous logger middleware and suppress when access logs are required and rate-limited by design.",
+    "go_relevance": "Medium",
+    "id": "PERF-068",
+    "name": "Gin Logger Middleware In Production Hot Path",
+    "original_description": "Detect gin.Logger() in router setup or gin.LoggerWithConfig with stdout sink.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-069": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Streams a large response with c.Writer without periodic flush, increasing time-to-first-byte for clients.",
+    "detection_notes": "Future Gin performance heuristic. Match streaming responses without flush and suppress when the response is short and the buffer is automatically flushed on handler exit.",
+    "go_relevance": "Low",
+    "id": "PERF-069",
+    "name": "Gin c.Writer Buffer Flush Missed",
+    "original_description": "Detect c.Writer.Write or c.Stream usage without c.Writer.Flush() or SSE-style flushing.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-070": {
+    "applicable_to": [
+      "golang",
+      "gin",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Spawns goroutines inside a Gin handler without ensuring they finish before the response is returned, leading to goroutine leaks and resource retention.",
+    "detection_notes": "Future Gin performance heuristic. Match goroutine spawn in handlers and suppress when the goroutine is correctly tied to request lifetime via context or wait group.",
+    "go_relevance": "High",
+    "id": "PERF-070",
+    "name": "Gin Handler Goroutine Leak",
+    "original_description": "Detect go func(){} in gin.HandlerFunc without a sync.WaitGroup, done channel, or context cancellation tied to the request.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-071": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Loads a list of parent records and then queries related records one by one inside a loop, producing N+1 round-trips to the database.",
+    "detection_notes": "Future GORM performance heuristic. Match query-in-loop patterns and suppress when batching is explicitly not possible or already done via Joins or Preload.",
+    "go_relevance": "High",
+    "id": "PERF-071",
+    "name": "GORM N+1 Query Pattern",
+    "original_description": "Detect db.Find or .First inside a for loop iterating over a previously loaded list, without Preload.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-072": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Wraps every request in a database transaction, adding BEGIN/COMMIT round-trip overhead even for read-only or single-statement paths.",
+    "detection_notes": "Future GORM performance heuristic. Match per-request transactions and suppress when correctness requires atomicity.",
+    "go_relevance": "Medium",
+    "id": "PERF-072",
+    "name": "GORM Transaction Per Request",
+    "original_description": "Detect db.Transaction(...) or tx := db.Begin() inside handlers where the work is read-only or single-statement.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-073": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Queries a parent record and accesses a relation in code paths, triggering lazy loads on the hot path. Preload or Joins would be cheaper.",
+    "detection_notes": "Future GORM performance heuristic. Match relation access without preload and suppress when relations are intentionally lazy.",
+    "go_relevance": "High",
+    "id": "PERF-073",
+    "name": "GORM Preload Missing For Relations",
+    "original_description": "Detect db.First, db.Find, or db.Take followed by access to a relation field without Preload or Joins.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-074": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses db.Find or unscoped queries without Select(), pulling all columns including large text or blob fields that the response does not need.",
+    "detection_notes": "Future GORM performance heuristic. Match unbounded selects and suppress when the full record is required.",
+    "go_relevance": "Medium",
+    "id": "PERF-074",
+    "name": "GORM Select All Columns",
+    "original_description": "Detect db.Find, db.First, db.Take, or db.Where without a Select clause in handlers that only project a subset of fields.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-075": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Configures GORM session options (logger, dry run, prepared statement) per call instead of once via Session or a shared session config.",
+    "detection_notes": "Future GORM performance heuristic. Match per-request session config and suppress when per-request overrides are intentionally required.",
+    "go_relevance": "Low",
+    "id": "PERF-075",
+    "name": "GORM Session Not Reused",
+    "original_description": "Detect db.Session(&gorm.Session{...}) inside handlers with per-request options that could be hoisted.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-076": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Inserts records one at a time with db.Create inside a loop. Bulk insert with db.CreateInBatches or a single multi-value INSERT is significantly faster.",
+    "detection_notes": "Future GORM performance heuristic. Match per-iteration Create and suppress when per-row hooks or generated IDs are required.",
+    "go_relevance": "High",
+    "id": "PERF-076",
+    "name": "GORM Create In Loop",
+    "original_description": "Detect db.Create(...) inside a for/range loop without batching.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-077": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses db.Save for partial updates, which performs an UPSERT (UPDATE all columns or INSERT). db.Update or db.Updates with explicit fields is more efficient for partial updates.",
+    "detection_notes": "Future GORM performance heuristic. Match db.Save for partial updates and suppress when full-row replacement is intentional.",
+    "go_relevance": "Medium",
+    "id": "PERF-077",
+    "name": "GORM Save Vs Update Misuse",
+    "original_description": "Detect db.Save in update-only code paths where only a subset of fields changes.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-078": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Builds raw SQL with db.Raw or db.Exec on columns that lack indexes, leading to sequential scans on large tables.",
+    "detection_notes": "Future GORM performance heuristic. Match raw queries on unindexed columns and suppress when index coverage is verified externally.",
+    "go_relevance": "Medium",
+    "id": "PERF-078",
+    "name": "GORM Raw Query Missing Index Hint",
+    "original_description": "Detect db.Raw or db.Exec with WHERE, ORDER BY, or JOIN clauses that are not backed by indexes visible in migration files.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-079": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Misses db.SetMaxOpenConns, db.SetMaxIdleConns, or db.SetConnMaxLifetime configuration, leading to pool exhaustion or stale connections.",
+    "detection_notes": "Future GORM performance heuristic. Match unconfigured pools and suppress when defaults are intentionally relied on or set elsewhere.",
+    "go_relevance": "High",
+    "id": "PERF-079",
+    "name": "GORM Connection Pool Exhaustion",
+    "original_description": "Detect *sql.DB or *gorm.DB that is never configured with SetMaxOpenConns, SetMaxIdleConns, or SetConnMaxLifetime.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-080": {
+    "applicable_to": [
+      "golang",
+      "gorm",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses db.Pluck to load a single column from a large table into a slice in memory, which can balloon memory usage.",
+    "detection_notes": "Future GORM performance heuristic. Match Pluck without limit and suppress when result set is bounded by a where clause or batched.",
+    "go_relevance": "Medium",
+    "id": "PERF-080",
+    "name": "GORM Pluck Returns Large Slice",
+    "original_description": "Detect db.Pluck or distinct queries on large tables without limit or batching.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-081": {
+    "applicable_to": [
+      "golang",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Builds an IN clause with a large slice in sqlx, generating a query so large it hits DB parameter limits or performs poorly.",
+    "detection_notes": "Future sqlx performance heuristic. Match unbounded IN slices and suppress when chunking is already applied or input is bounded.",
+    "go_relevance": "Medium",
+    "id": "PERF-081",
+    "name": "sqlx SelectIn Unbounded Slice",
+    "original_description": "Detect db.Select or db.Queryx with a slice expanded into an IN clause without chunking.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-082": {
+    "applicable_to": [
+      "golang",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls rows.StructScan inside a loop without amortizing reflection. Caching struct scan targets or using Get/SELECT INTO is cheaper.",
+    "detection_notes": "Future sqlx performance heuristic. Match StructScan in row loops and suppress when the destination type varies per row.",
+    "go_relevance": "Medium",
+    "id": "PERF-082",
+    "name": "sqlx StructScan In Loop",
+    "original_description": "Detect rows.StructScan inside for rows.Next() loops where the destination type is large or repeated.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-083": {
+    "applicable_to": [
+      "golang",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses MapScan in hot paths where typed scanning or reuse would be cheaper, since MapScan always allocates a new map per row.",
+    "detection_notes": "Future sqlx performance heuristic. Match MapScan in hot paths and suppress when dynamic schemas require the map form.",
+    "go_relevance": "Low",
+    "id": "PERF-083",
+    "name": "sqlx MapScan Allocation",
+    "original_description": "Detect rows.MapScan inside row iteration loops on hot paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-084": {
+    "applicable_to": [
+      "golang",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Mixes Begin/Commit patterns with sqlx incorrectly, holding a transaction longer than needed or nesting transactions without savepoints.",
+    "detection_notes": "Future sqlx performance heuristic. Match transaction boundaries and suppress when atomicity requires the current scope.",
+    "go_relevance": "Medium",
+    "id": "PERF-084",
+    "name": "sqlx Transaction Misuse",
+    "original_description": "Detect db.Beginx, db.MustBegin, or tx inside handlers where the work could be done in a single statement or shorter transaction.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-085": {
+    "applicable_to": [
+      "golang",
+      "sqlx",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Uses sqlx.Named or sqlx.In repeatedly with large parameter sets, which builds query strings and argument lists per call.",
+    "detection_notes": "Future sqlx performance heuristic. Match named query construction and suppress when arguments vary legitimately per call.",
+    "go_relevance": "Low",
+    "id": "PERF-085",
+    "name": "sqlx Named Query Binding Cost",
+    "original_description": "Detect sqlx.Named, sqlx.In, or named Exec in tight loops where the query shape is stable.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-086": {
+    "applicable_to": [
+      "golang",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls c.JSON inside Echo handlers with on-the-fly marshaling per request, missing pooled encoder opportunities.",
+    "detection_notes": "Future Echo performance heuristic. Match c.JSON in hot handlers and suppress when the response shape is dynamic or already optimized.",
+    "go_relevance": "Medium",
+    "id": "PERF-086",
+    "name": "Echo c.JSON Marshal In Hot Path",
+    "original_description": "Detect c.JSON or c.JSONP inside Echo handlers that could batch or pool encoding state.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-087": {
+    "applicable_to": [
+      "golang",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Calls c.Bind on every request with full validation enabled, even for trusted internal routes that only need parsing.",
+    "detection_notes": "Future Echo performance heuristic. Match binding with validation on hot paths and suppress when validation is required for security.",
+    "go_relevance": "Low",
+    "id": "PERF-087",
+    "name": "Echo Bind Without Validation Reuse",
+    "original_description": "Detect c.Bind or c.BindWith inside Echo handlers with DefaultBinder and full validation in trusted paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-088": {
+    "applicable_to": [
+      "golang",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Serves static files via echo.Static without Cache-Control, ETag, or Last-Modified headers, forcing redundant client fetches.",
+    "detection_notes": "Future Echo performance heuristic. Match static serving and suppress when caching is handled by a CDN or reverse proxy.",
+    "go_relevance": "Medium",
+    "id": "PERF-088",
+    "name": "Echo Static Handler Missing Cache",
+    "original_description": "Detect echo.Static, e.File, or static middleware without cache header configuration.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-089": {
+    "applicable_to": [
+      "golang",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Defines middleware that allocates large structures on every request, even when the downstream handler does not need them.",
+    "detection_notes": "Future Echo performance heuristic. Match heavy middleware work and suppress when the work is gated by routing or required for downstream safety.",
+    "go_relevance": "Medium",
+    "id": "PERF-089",
+    "name": "Echo Middleware Allocation",
+    "original_description": "Detect echo.MiddlewareFunc implementations with large make, json.Unmarshal, or per-request struct allocation at the middleware level.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-090": {
+    "applicable_to": [
+      "golang",
+      "echo",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Stores unbounded keys in c.Set() across the request lifetime, retaining memory until the context is recycled.",
+    "detection_notes": "Future Echo performance heuristic. Match c.Set usage and suppress when the value is small or required for downstream handler.",
+    "go_relevance": "Low",
+    "id": "PERF-090",
+    "name": "Echo Context Store Growth",
+    "original_description": "Detect c.Set(\"key\", largeValue) inside Echo middleware with values that are large or accumulate.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-091": {
+    "applicable_to": [
+      "golang",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates per-request buffers or objects in Fiber handlers without using fasthttp's pooling primitives like *fasthttp.RequestCtx byte slices or sync.Pool.",
+    "detection_notes": "Future Fiber performance heuristic. Match per-request buffer allocation in Fiber handlers and suppress when the allocation is one-shot or escapes correctly.",
+    "go_relevance": "High",
+    "id": "PERF-091",
+    "name": "Fiber fasthttp Pooling Miss",
+    "original_description": "Detect c.Request.Body(), c.Response.BodyWriter(), or byte buffer allocation inside Fiber handlers without pool reuse.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-092": {
+    "applicable_to": [
+      "golang",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Stores request-scoped data in a *fiber.Ctx field or returns the ctx from a goroutine, missing the fact that fiber.Ctx is reused per request.",
+    "detection_notes": "Future Fiber performance heuristic. Match c usage in goroutines and suppress when c.UserContext is used correctly.",
+    "go_relevance": "High",
+    "id": "PERF-092",
+    "name": "Fiber Ctx Allocation Misuse",
+    "original_description": "Detect go func(){ use(c) }() or storing c beyond the request lifetime in Fiber handlers.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-093": {
+    "applicable_to": [
+      "golang",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new json.Encoder or json.Marshal call per response when a pooled encoder would be cheaper.",
+    "detection_notes": "Future Fiber performance heuristic. Match JSON allocation per request and suppress when the response is dynamic or already optimized.",
+    "go_relevance": "Medium",
+    "id": "PERF-093",
+    "name": "Fiber JSON Encoder Reuse Missed",
+    "original_description": "Detect c.JSON or json.NewEncoder allocation inside Fiber handlers in hot paths.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-094": {
+    "applicable_to": [
+      "golang",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Reads the Fiber request body in a way that triggers buffer copies, missing fasthttp's zero-copy PostArgs or BodyStream access.",
+    "detection_notes": "Future Fiber performance heuristic. Match body reads in handlers and suppress when copy is required for downstream safety.",
+    "go_relevance": "Medium",
+    "id": "PERF-094",
+    "name": "Fiber Request Body Read Pattern",
+    "original_description": "Detect c.Body() or io.ReadAll on c.RequestBodyStream() in Fiber handlers where fasthttp byte slices would suffice.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-095": {
+    "applicable_to": [
+      "golang",
+      "fiber",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Builds a deep middleware chain per route group in Fiber, where fasthttp per-request overhead multiplies with chain depth.",
+    "detection_notes": "Future Fiber performance heuristic. Match deep middleware chains and suppress when separation of concerns is required.",
+    "go_relevance": "Low",
+    "id": "PERF-095",
+    "name": "Fiber Middleware Chain Growth",
+    "original_description": "Detect app.Use(...) called repeatedly or nested route groups with overlapping middleware in Fiber apps.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-096": {
+    "applicable_to": [
+      "golang",
+      "grpc",
+      "protobuf",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Allocates a new message struct per Recv in a gRPC client stream, where reusing a single message would reduce GC pressure.",
+    "detection_notes": "Future gRPC performance heuristic. Match per-recv allocation and suppress when the message escapes the loop or has lifetime constraints.",
+    "go_relevance": "High",
+    "id": "PERF-096",
+    "name": "gRPC Stream Allocation Per Recv",
+    "original_description": "Detect for { msg := NewProtoType(); stream.RecvMsg(msg) } or similar per-call allocation in gRPC clients.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-097": {
+    "applicable_to": [
+      "golang",
+      "grpc",
+      "protobuf",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Marshals protobuf messages inside a loop without reusing marshaling buffers or using proto.MarshalOptions with deterministic state.",
+    "detection_notes": "Future protobuf performance heuristic. Match marshal in loops and suppress when message shape varies legitimately.",
+    "go_relevance": "Medium",
+    "id": "PERF-097",
+    "name": "protobuf Marshal In Loop",
+    "original_description": "Detect proto.Marshal or jsonpb.Marshaler in tight loops without buffer reuse.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-098": {
+    "applicable_to": [
+      "golang",
+      "go-redis",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Issues sequential redis commands in a loop, missing the chance to pipeline them into a single round-trip.",
+    "detection_notes": "Future go-redis performance heuristic. Match sequential redis calls and suppress when ordering or atomicity requires single calls.",
+    "go_relevance": "High",
+    "id": "PERF-098",
+    "name": "go-redis Pipeline Missed",
+    "original_description": "Detect rdb.Set, rdb.Get, or similar redis calls inside a for/range loop without Pipeline().",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-099": {
+    "applicable_to": [
+      "golang",
+      "prometheus",
+      "go-web"
+    ],
+    "category": "Performance",
+    "description": "Defines a counter, gauge, or histogram with a high-cardinality label (user ID, request ID, full URL) that explodes time series storage.",
+    "detection_notes": "Future Prometheus performance heuristic. Match high-cardinality labels and suppress when label space is bounded by external contract.",
+    "go_relevance": "High",
+    "id": "PERF-099",
+    "name": "Prometheus Label High Cardinality",
+    "original_description": "Detect prometheus.NewCounterVec or NewHistogramVec with labels that include user IDs, UUIDs, or unbounded path parameters.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  },
+  "PERF-100": {
+    "applicable_to": [
+      "golang",
+      "cobra",
+      "cli"
+    ],
+    "category": "Performance",
+    "description": "Registers cobra subcommands with expensive Run hooks, large init logic, or per-invocation flag parsing that could be amortized.",
+    "detection_notes": "Future cobra performance heuristic. Match heavy init in Run hooks and suppress when CLI startup cost is acceptable for the use case.",
+    "go_relevance": "Low",
+    "id": "PERF-100",
+    "name": "Cobra Command Subcommand Allocation",
+    "original_description": "Detect cobra.Command with heavy RunE, large init blocks, or repeated flag registration patterns in CLI tools.",
+    "status": "Implemented",
+    "weakness_abstraction": "Variant"
+  }
+}

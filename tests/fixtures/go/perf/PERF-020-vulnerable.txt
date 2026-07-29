@@ -1,0 +1,19 @@
+# PERF-020 positive: reflect.ValueOf in a request handler
+lang: go
+file: PERF-020-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+	"reflect"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Echo(c *gin.Context) {
+	body := map[string]any{"ok": true}
+	v := reflect.ValueOf(body)
+	_ = v
+	c.JSON(http.StatusOK, body)
+}

@@ -1,0 +1,31 @@
+# CWE-307 — Improper Restriction of Excessive Authentication Attempts (vulnerable) (pure stdlib)
+lang: go
+file: CWE-307-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: no backoff or lockout on repeated failed logins.
+func PasswordLogin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	email := r.FormValue("email")
+	if email == "" {
+		http.Error(w, "missing email", http.StatusBadRequest)
+		return
+	}
+	var hash string
+	err := db.QueryRow("SELECT hash FROM users WHERE email = ?", email).Scan(&hash)
+	if err != nil {
+		http.Error(w, "bad creds", http.StatusUnauthorized)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

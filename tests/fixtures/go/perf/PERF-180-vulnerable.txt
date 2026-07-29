@@ -1,0 +1,27 @@
+# PERF-180 positive: csv.NewReader(...).Read() called inside a loop
+lang: go
+file: PERF-180-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"encoding/csv"
+	"io"
+)
+
+func ParseAll(data []byte) ([][]string, error) {
+	r := csv.NewReader(bytes.NewReader(data))
+	var rows [][]string
+	for {
+		row, err := r.Read()
+		if err == io.EOF {
+			return rows, nil
+		}
+		if err != nil {
+			return rows, err
+		}
+		rows = append(rows, row)
+	}
+}

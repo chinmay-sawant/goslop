@@ -1,0 +1,20 @@
+# PERF-141 positive: r.URL.Query() called repeatedly
+lang: go
+file: PERF-141-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"net/http"
+)
+
+func Handle(w http.ResponseWriter, r *http.Request) {
+	_ = w
+	page := r.URL.Query().Get("page")
+	size := r.URL.Query().Get("size")
+	tag := r.URL.Query().Get("tag")
+	_ = page
+	_ = size
+	_ = tag
+}

@@ -1,0 +1,37 @@
+# PERF-233 positive: DefaultCompression on hot compress path (pooled Reset so
+# this is level-only — PERF-227 does not fire).
+lang: go
+file: PERF-233-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"bytes"
+	"compress/zlib"
+	"sync"
+)
+
+type zwHolder struct {
+	w *zlib.Writer
+}
+
+var zwPool = sync.Pool{
+	New: func() any {
+		return &zwHolder{}
+	},
+}
+
+func CompressPage(page []byte) []byte {
+	var buf bytes.Buffer
+	h := zwPool.Get().(*zwHolder)
+	if h.w == nil {
+		h.w, _ = zlib.NewWriterLevel(&buf, zlib.DefaultCompression)
+	} else {
+		h.w.Reset(&buf)
+	}
+	_, _ = h.w.Write(page)
+	_ = h.w.Close()
+	zwPool.Put(h)
+	return buf.Bytes()
+}

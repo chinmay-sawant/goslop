@@ -1,0 +1,15 @@
+# PERF-234 negative: capacity follows the variable payload
+lang: go
+file: PERF-234-safe.go
+variant: stdlib
+---
+package sample
+
+import "bytes"
+
+func NewBulkBuffer(data []byte) *bytes.Buffer {
+	var buf bytes.Buffer
+	buf.Grow(len(data))
+	buf.Write(data)
+	return &buf
+}

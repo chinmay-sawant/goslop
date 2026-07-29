@@ -1,0 +1,25 @@
+# BP-163 negative: the golden update path skips short tests before writing.
+lang: go
+file: BP-163-safe_test.go
+variant: update-with-short
+---
+package snapshots
+
+import (
+	"flag"
+	"os"
+	"testing"
+)
+
+var update = flag.Bool("update", false, "rewrite golden files")
+
+func TestGolden(t *testing.T) {
+	if *update {
+		if testing.Short() {
+			t.Skip("golden update requires a full test run")
+		}
+		if err := os.WriteFile("testdata/golden.json", []byte(`{}`), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

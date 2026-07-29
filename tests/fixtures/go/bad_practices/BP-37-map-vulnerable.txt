@@ -1,0 +1,12 @@
+# BP-37 positive: package-level map receives an index write
+lang: go
+file: BP-37-map-vulnerable.go
+variant: stdlib
+---
+package sample
+
+var registry = map[string]bool{}
+
+func enable(key string) {
+	registry[key] = true
+}

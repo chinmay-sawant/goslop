@@ -1,0 +1,26 @@
+# CWE-353 vulnerable — Missing Support for Integrity Check
+lang: go
+file: CWE-353-vulnerable.go
+---
+package sample
+
+import (
+	"io"
+	"net/http"
+)
+
+type GinCtx struct {
+	Request *http.Request
+}
+
+type SqlxDB struct{}
+
+func (db *SqlxDB) Exec(query string, args ...interface{}) error { return nil }
+
+func IngestTelemetry(c *GinCtx, db *SqlxDB) error {
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		return err
+	}
+	return db.Exec("INSERT INTO telemetry (payload) VALUES (?)", string(body))
+}

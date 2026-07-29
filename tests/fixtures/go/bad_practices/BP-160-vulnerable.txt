@@ -1,0 +1,19 @@
+# BP-160 positive: Cobra command uses Run and swallows the operation error
+lang: go
+file: BP-160-vulnerable.go
+variant: cobra
+---
+package main
+
+import "github.com/spf13/cobra"
+
+func rootCmd() *cobra.Command {
+	return &cobra.Command{
+		Use: "sample",
+		Run: func(cmd *cobra.Command, args []string) {
+			runApp()
+		},
+	}
+}
+
+func runApp() error { return nil }

@@ -1,0 +1,28 @@
+# CWE-408 safe: Incorrect Behavior Order: Early Amplification (mitigated, pure stdlib)
+lang: go
+file: CWE-408-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"errors"
+	"net/http"
+)
+
+func PullTenantArchive(w http.ResponseWriter, r *http.Request, db *sql.DB) error {
+	auth := r.Header.Get("Authorization")
+	if auth == "" {
+		return errors.New("authentication required")
+	}
+	tenant := r.URL.Query().Get("tenant")
+	rows, err := db.Query("SELECT * FROM orders WHERE tenant_id = ?", tenant)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	defer rows.Close()
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

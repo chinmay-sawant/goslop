@@ -1,0 +1,20 @@
+# PERF-92 positive: Fiber c captured inside a goroutine
+lang: go
+file: PERF-092-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gofiber/fiber/v2"
+)
+
+func FireAndForget(c *fiber.Ctx) error {
+	go func() {
+		process(c)
+	}()
+	return c.SendString("queued")
+}
+
+func process(c *fiber.Ctx) {
+	_ = c.Path()
+}

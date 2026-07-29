@@ -1,0 +1,21 @@
+# BP-14 positive: long-running goroutine ignores ctx.Done
+lang: go
+file: BP-14-vulnerable.go
+variant: stdlib
+---
+package sample
+
+import (
+	"context"
+	"time"
+)
+
+func run(ctx context.Context) {
+	ticker := time.NewTicker(time.Second)
+	go func() {
+		for {
+			<-ticker.C
+		}
+	}()
+	_ = ctx
+}

@@ -1,0 +1,33 @@
+# CWE-654: Reliance on a Single Factor in a Security Decision
+lang: go
+file: CWE-654-vulnerable.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+)
+
+// Vulnerable: admin access is granted based solely on a static header value.
+func ExportUsers(c *gin.Context, db *sqlx.DB) {
+	if c.GetHeader("X-Api-Key") != "legacy-admin-key" {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
+	rows, err := db.Queryx("SELECT id, email FROM users")
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+	var out []map[string]interface{}
+	for rows.Next() {
+		row := map[string]interface{}{}
+		_ = rows.MapScan(row)
+		out = append(out, row)
+	}
+	c.JSON(http.StatusOK, out)
+}

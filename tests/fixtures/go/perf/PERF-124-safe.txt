@@ -1,0 +1,11 @@
+# PERF-124 negative: strings.Replace with -1 instead of ReplaceAll
+lang: go
+file: PERF-124-safe.go
+---
+package sample
+
+import "strings"
+
+func ReplaceAll(s, old, new string) string {
+    return strings.ReplaceAll(s, old, new)
+}

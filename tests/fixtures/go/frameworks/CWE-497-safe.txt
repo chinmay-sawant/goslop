@@ -1,0 +1,19 @@
+# CWE-497: diagnostics return generic health data without system internals.
+lang: go
+file: CWE-497-safe.go
+---
+package sample
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func RegisterDiagnostics(r *gin.Engine) {
+	r.GET("/diag/host", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	})
+}

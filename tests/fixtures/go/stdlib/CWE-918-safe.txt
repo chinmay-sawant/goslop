@@ -1,0 +1,50 @@
+# CWE-918 negative: allowlisted outbound fetch (pure stdlib)
+lang: go
+file: CWE-918-safe.pure.go
+variant: pure-go
+---
+package sample
+
+// CWE-918 mitigated: only approved CDN hosts may be fetched over HTTPS.
+
+import (
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+)
+
+var allowedHostsPure = map[string]struct{}{
+	"cdn.example.com":    {},
+	"assets.example.com": {},
+}
+
+func ProxyPreviewSafePure() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		target := r.URL.Query().Get("url")
+		parsed, err := url.Parse(target)
+		if err != nil || parsed.Scheme != "https" {
+			http.Error(w, "invalid url", http.StatusBadRequest)
+			return
+		}
+		host := strings.ToLower(parsed.Hostname())
+		if _, ok := allowedHostsPure[host]; !ok {
+			http.Error(w, "host not allowed", http.StatusForbidden)
+			return
+		}
+		resp, err := http.Get(parsed.String())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.WriteHeader(resp.StatusCode)
+		w.Write(body)
+	}
+}

@@ -1,0 +1,23 @@
+# BP-141 negative variant: the local composite value uses matching db tags.
+lang: go
+file: BP-141-variant-safe.go
+variant: sqlx-named-composite-tagged
+---
+package sample
+
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+)
+
+type Account struct {
+	AccountID int    `db:"account_id"`
+	Email     string `db:"email"`
+}
+
+func insertAccount(db *sqlx.DB) error {
+	payload := &Account{AccountID: 7, Email: "ops@example"}
+	_, err := db.NamedExec(`INSERT INTO accounts (account_id, email) VALUES (:account_id, :email)`, payload)
+	return fmt.Errorf("insert account: %w", err)
+}

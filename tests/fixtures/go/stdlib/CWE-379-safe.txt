@@ -1,0 +1,33 @@
+# CWE-379 safe: Creation of Temporary File in Directory with Insecure Permissions (mitigated, pure stdlib)
+lang: go
+file: CWE-379-safe.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"path/filepath"
+)
+
+func WriteSessionSnapshot(w http.ResponseWriter, r *http.Request) error {
+	dir, err := os.MkdirTemp("", "sessions-*")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	if err := os.Chmod(dir, 0700); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	raw := r.URL.Query().Get("id")
+	id := filepath.Base(raw)
+	path := filepath.Join(dir, "snap-"+id+".json")
+	if err := os.WriteFile(path, []byte(r.FormValue("body")), 0600); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

@@ -1,0 +1,17 @@
+# PERF-206 negative: sqlx.Unsafe is used with a static query name
+lang: go
+file: PERF-206-safe.go
+variant: framework
+---
+package sample
+
+import "gorm.io/gorm"
+
+type Order struct {
+	ID uint
+}
+
+func Load(db *gorm.DB, id uint) error {
+	db.Unsafe().Where("orders.idx = ?", id).First(&Order{})
+	return nil
+}

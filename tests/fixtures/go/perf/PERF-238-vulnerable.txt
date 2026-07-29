@@ -1,0 +1,12 @@
+# PERF-238 positive: map[rune]bool membership updated in a loop
+lang: go
+file: PERF-238-vulnerable.go
+variant: stdlib
+---
+package sample
+
+func MarkUsed(text string, seen map[rune]bool) {
+	for _, r := range text {
+		seen[r] = true
+	}
+}

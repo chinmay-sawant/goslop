@@ -1,0 +1,15 @@
+# BP-81 negative variant: separate conditions may read the clock independently.
+lang: go
+file: BP-81-variant-safe.go
+variant: separate-conditions
+---
+package sample
+
+import "time"
+
+func expired(deadline time.Time) bool {
+	if time.Now().After(deadline) {
+		return true
+	}
+	return time.Now().Before(deadline.Add(time.Minute))
+}

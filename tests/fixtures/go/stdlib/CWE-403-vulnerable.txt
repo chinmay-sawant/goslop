@@ -1,0 +1,29 @@
+# CWE-403 vulnerable: Exposure of File Descriptor to Unintended Control Sphere (positive, pure stdlib)
+lang: go
+file: CWE-403-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"net/http"
+	"os"
+	"os/exec"
+)
+
+func LaunchUserJob(w http.ResponseWriter, r *http.Request) error {
+	script := r.FormValue("script")
+	if script == "" {
+		http.Error(w, "script required", http.StatusBadRequest)
+		return http.ErrMissingFile
+	}
+	secret, err := os.Open("/etc/codehound/master.key")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
+	}
+	cmd := exec.Command("/bin/sh", "-c", script)
+	cmd.Stdout = os.Stdout
+	_ = secret
+	return cmd.Run()
+}

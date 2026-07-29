@@ -1,0 +1,12 @@
+# BP-91 negative: the bool channel value controls behavior
+lang: go
+file: BP-91-safe.go
+---
+package sample
+
+func notify(done chan bool) {
+	done <- true
+	if <-done {
+		return
+	}
+}

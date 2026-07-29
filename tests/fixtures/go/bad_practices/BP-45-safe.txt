@@ -1,0 +1,12 @@
+# BP-45 negative: methods on the same type use a consistent receiver name
+lang: go
+file: BP-45-safe.go
+variant: stdlib
+---
+package sample
+
+type store struct{}
+
+func (s *store) Save() {}
+
+func (s *store) Load() {}

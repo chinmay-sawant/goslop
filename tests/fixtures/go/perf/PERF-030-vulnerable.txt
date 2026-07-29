@@ -1,0 +1,20 @@
+# PERF-030 positive: context.Background called from a request handler
+lang: go
+file: PERF-030-vulnerable.go
+---
+package sample
+
+import (
+	"context"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
+
+func Background(c *gin.Context) {
+	go func() {
+		ctx := context.Background()
+		_ = ctx
+	}()
+	c.JSON(http.StatusOK, gin.H{"ok": true})
+}

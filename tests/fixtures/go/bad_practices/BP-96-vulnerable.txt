@@ -1,0 +1,16 @@
+# BP-96 positive: Query rows have no visible Close
+lang: go
+file: BP-96-vulnerable.go
+---
+package sample
+
+import "database/sql"
+
+func load(db *sql.DB) error {
+	rows, err := db.Query("select 1")
+	if err != nil {
+		return err
+	}
+	_ = rows
+	return nil
+}

@@ -1,0 +1,25 @@
+# CWE-826: Premature Release of Resource During Expected Lifetime (pure stdlib)
+lang: go
+file: CWE-826-vulnerable.pure.go
+variant: pure-go
+---
+package sample
+
+import (
+	"database/sql"
+	"net/http"
+)
+
+// Vulnerable: closes the shared pool before a background query finishes.
+// Background workers may observe a closed handle and fail unpredictably.
+func WarmCache(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		_, _ = db.Query("SELECT 1")
+	}()
+	_ = db.Close()
+	<-done
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+}

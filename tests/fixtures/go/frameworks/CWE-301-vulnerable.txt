@@ -1,0 +1,15 @@
+# CWE-301 — Reflection Attack in an Authentication Protocol (vulnerable)
+lang: go
+file: CWE-301-vulnerable.go
+---
+package sample
+
+import (
+	"github.com/gin-gonic/gin"
+)
+
+// Vulnerable: server echoes client challenge as the authentication proof.
+func MutualAuth(c *gin.Context) {
+	challenge := c.PostForm("challenge")
+	c.JSON(200, gin.H{"proof": challenge})
+}
