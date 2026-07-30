@@ -1,6 +1,7 @@
 package python_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -18,11 +19,11 @@ func TestPythonPluginIdentityAndParse(t *testing.T) {
 	if len(exts) != 1 || exts[0] != "py" {
 		t.Fatalf("Extensions() = %v, want [py]", exts)
 	}
-	if len(p.Detectors()) != 0 {
-		t.Fatalf("Detectors() = %d, want empty stub catalogue", len(p.Detectors()))
+	if len(p.Detectors()) == 0 {
+		t.Fatal("Detectors() empty; expected BP-PY detector bundle")
 	}
-	if len(p.NewDetectors()) != 0 {
-		t.Fatalf("NewDetectors() = %d, want empty stub catalogue", len(p.NewDetectors()))
+	if len(p.NewDetectors()) == 0 {
+		t.Fatal("NewDetectors() empty; expected BP-PY detector bundle")
 	}
 
 	const src = "def hello():\n    print('hi')\n"
@@ -47,6 +48,36 @@ func TestPythonPluginIdentityAndParse(t *testing.T) {
 	}
 	if result.Unit.Path != "sample.py" {
 		t.Fatalf("path = %q", result.Unit.Path)
+	}
+}
+
+func TestPythonPluginHasBPPYRules(t *testing.T) {
+	t.Parallel()
+	p := python.NewPlugin()
+	dets := p.NewDetectors()
+	if len(dets) == 0 {
+		t.Fatal("expected at least one Python detector")
+	}
+	var foundBP bool
+	for _, d := range dets {
+		if d.Language() != core.LanguagePython {
+			t.Errorf("detector language = %v, want Python", d.Language())
+		}
+		for _, id := range d.RuleIDs() {
+			if strings.HasPrefix(id, "BP-PY-") {
+				foundBP = true
+				meta := d.MetadataFor(id)
+				if meta == nil {
+					t.Errorf("MetadataFor(%s) = nil", id)
+				}
+			}
+			if strings.HasPrefix(id, "BP-") && !strings.HasPrefix(id, "BP-PY-") {
+				t.Errorf("bare Go BP id on Python detector: %s", id)
+			}
+		}
+	}
+	if !foundBP {
+		t.Fatal("expected at least one BP-PY-* rule id on Python detectors")
 	}
 }
 
@@ -109,14 +140,14 @@ func TestPythonPluginRegisterInCustomRegistryOnly(t *testing.T) {
 	}
 	p, ok := reg.Plugin(core.LanguagePython)
 	if !ok || p == nil {
-		t.Fatal("custom registry should register Python stub")
+		t.Fatal("custom registry should register Python plugin")
 	}
 	extMap := reg.ExtensionMap()
 	if lang, ok := extMap["py"]; !ok || lang != core.LanguagePython {
 		t.Fatalf("ExtensionMap py = (%v, %v), want python", lang, ok)
 	}
-	if n := len(reg.DetectorsForLanguage(core.LanguagePython)); n != 0 {
-		t.Fatalf("python detectors = %d, want 0", n)
+	if n := len(reg.DetectorsForLanguage(core.LanguagePython)); n == 0 {
+		t.Fatal("python detectors = 0, want BP-PY detector(s)")
 	}
 }
 

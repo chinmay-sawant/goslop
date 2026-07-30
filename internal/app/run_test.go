@@ -192,7 +192,7 @@ fail_on = "none"
 
 func TestRunListRulesRespectsLanguagesConfig(t *testing.T) {
 	dir := t.TempDir()
-	// languages=["python"] uses the stub plugin → empty detector catalogue.
+	// languages=["python"] lists BP-PY rules from the Python plugin detectors.
 	cfg := filepath.Join(dir, "goslop.toml")
 	if err := os.WriteFile(cfg, []byte(`[goslop]
 languages = ["python"]
@@ -203,8 +203,16 @@ languages = ["python"]
 	if err := run([]string{"--list-rules", "--config", cfg}, &out, &errBuf); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), "no rules registered") {
-		t.Fatalf("expected empty rule list for Python stub (zero detectors): %q", out.String())
+	s := out.String()
+	if !strings.Contains(s, "BP-PY-") {
+		t.Fatalf("expected BP-PY rules for python languages config: %q", s)
+	}
+	if strings.Contains(s, "PERF-") || strings.Contains(s, "\tCWE-") {
+		// Python-only registry should not surface Go PERF/CWE catalogue.
+		// (Bare "CWE" substring may appear in descriptions; require tab-prefixed rule ids.)
+		if strings.Contains(s, "PERF-") {
+			t.Fatalf("python-only list-rules should not include PERF: %q", s)
+		}
 	}
 
 	// languages=["go"] still lists Go rules.
@@ -218,9 +226,12 @@ languages = ["go"]
 	if err := run([]string{"--list-rules", "--config", cfg}, &out, &errBuf); err != nil {
 		t.Fatal(err)
 	}
-	s := out.String()
+	s = out.String()
 	if !strings.Contains(s, "CWE-") && !strings.Contains(s, "PERF-") {
 		t.Fatalf("expected go rules: %q", s)
+	}
+	if strings.Contains(s, "BP-PY-") {
+		t.Fatalf("go-only list-rules should not include BP-PY: %q", s)
 	}
 }
 

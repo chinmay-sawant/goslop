@@ -27,7 +27,7 @@
 
 | Fact | Evidence |
 |------|----------|
-| Python plugin source-only, **zero detectors** | `internal/lang/python/plugin.go` |
+| Python plugin source-only + **BP-PY detectors** (A+B+C subset) | `internal/lang/python/` + `detectors/bad_practices/` |
 | CWE catalogue ~344 rules | `ruleset/python/chunks/cwe-*.json` (`python_relevance`) |
 | BP catalogue 50 `BP-PY-*` | `ruleset/python/bad-practices.json` |
 | **No** Python PERF JSON | no `ruleset/python/chunks/perf-*` |
@@ -67,8 +67,8 @@
 ### BP — #53
 
 - [x] Detail checklist complete in [python-heuristics-bp.md](./python-heuristics-bp.md) (docs-only plan, 2026-07-31)
-- [ ] Priority `BP-PY-*` batch green on fixtures
-- [ ] Validation: `make lint` + `make test` recorded on implement branch
+- [x] Priority `BP-PY-*` batch green (A+B + C high-signal; inline unit tests; D/E deferred)
+- [x] Validation: `make lint` + `make test` green on `feat/python-bp-heuristics` (2026-07-31)
 
 ### PERF — #54 (deferred)
 

@@ -1,7 +1,7 @@
 # Python ruleset catalogues (WIP)
 
-> **Status:** catalogue metadata only — **no** Python AST detectors in this tree  
-> **Issue:** #43 · epic #39 · plan: `plans/v0.0.2/phase-4-rulesets.md`  
+> **Status:** catalogues + **partial BP-PY detectors** (priority subset); CWE/PERF detectors not landed yet  
+> **Issue:** #43 · epic #39 · BP detectors #53 · plan: `plans/v0.0.2/heuristics/python-heuristics-bp.md`  
 > **CWE mapping:** `plans/v0.0.2/python-cwe-from-699-mapping.md` (from `699.csv`)  
 > **BP audit:** `plans/v0.0.2/ruleset-reuse-audit.md`
 
@@ -75,9 +75,25 @@ Same fields as golang CWE chunks:
 
 | File | Contents |
 |------|----------|
-| `bad-practices.json` | **50** `BP-PY-*` entries (metadata only) |
+| `bad-practices.json` | **50** `BP-PY-*` entries (catalogue metadata) |
 
 IDs use **`BP-PY-*`** so they never collide with Go `BP-*` when both catalogues are listed.
+
+### Detector status (issue #53)
+
+Source-pattern heuristics live under `internal/lang/python/detectors/bad_practices/`.
+They run only when the Python plugin is enabled (`languages = ["python"]` / multi-language registry).
+
+**Shipped (first land):**
+
+| Batch | IDs |
+|-------|-----|
+| A — Core | `BP-PY-1`, `2`, `4`, `6`, `7` |
+| B — Security hygiene | `BP-PY-8` … `13` |
+| C — Framework (high-signal) | `BP-PY-16`, `17`, `21` |
+
+Remaining catalogue IDs (`BP-PY-3`, `5`, rest of C/D/E) are deferred — see the BP ledger.
+This tree still has **no** Python CWE/PERF detectors.
 
 ## Reuse policy
 
