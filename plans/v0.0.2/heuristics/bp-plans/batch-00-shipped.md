@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/bp-plans/README.md` — batch index  
 > **Canonical #53 ledger:** `plans/v0.0.2/heuristics/python-heuristics-bp.md`  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) under epic [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
-> **Status:** **closed inventory** — implemented `RegisterRule` subset; remaining work is **other batches only**  
+> **Status:** complete (shipped; ledger only)
 > **Estimated effort:** none (ledger / evidence only)
 
 ---
@@ -126,3 +126,12 @@ None — ledger only. Implementers of other batches depend on this inventory for
 ## ID list (complete for this file)
 
 **Shipped [x]:** BP-PY-1, BP-PY-2, BP-PY-4, BP-PY-6, BP-PY-7, BP-PY-8, BP-PY-9, BP-PY-10, BP-PY-11, BP-PY-12, BP-PY-13, BP-PY-16, BP-PY-17, BP-PY-21
+
+---
+
+## Completion stamp
+
+- [x] Batch ledger synchronized to code on `main` (PR #65, `2b3e635`, 2026-07-31)
+- [x] All catalogue IDs in this batch have `RegisterRule` + hit/miss tests (or prior shipped evidence)
+- [x] File size policy observed (≤1500 soft / 2000 hard per Go domain file)
+- [x] Validation: `make lint` + `make test` green on integration before merge

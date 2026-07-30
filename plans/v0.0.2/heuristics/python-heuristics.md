@@ -12,7 +12,7 @@
 | Stream | Issue | Detail plan | Status |
 |--------|------:|-------------|--------|
 | CWE heuristics | #52 | [python-heuristics-cwe.md](./python-heuristics-cwe.md) | active plan |
-| Bad-practice heuristics | #53 | [python-heuristics-bp.md](./python-heuristics-bp.md) + [bp-plans/](./bp-plans/) | priority shipped; 36 remaining batchwise |
+| Bad-practice heuristics | #53 | [python-heuristics-bp.md](./python-heuristics-bp.md) + [bp-plans/](./bp-plans/) | **complete** 50/50 on main (PR #65) |
 | PERF catalogue + heuristics | #54 | [python-heuristics-perf.md](./python-heuristics-perf.md) | **deferred** (`[~]`) |
 
 **Foundation already shipped** (do not re-plan): epic #39 / PR #50 — `languages` config, Python plugin stub, `ruleset/python/` CWE + BP catalogues. See [python-support.md](./python-support.md).

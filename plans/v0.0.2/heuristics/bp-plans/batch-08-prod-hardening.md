@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/bp-plans/README.md` — batch index  
 > **Canonical #53 ledger:** `plans/v0.0.2/heuristics/python-heuristics-bp.md`  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) expansion under epic [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
-> **Status:** implemented — BP-PY-48/49/50 in `rules_prod.go` + `rules_prod_test.go` 
+> **Status:** **complete** — shipped on `main` (PR #65 / merge `2b3e635`); 50/50 catalogue coverage
 > **Estimated effort:** 1 PR (small–medium)  
 > **PR policy:** single batchwise PR; title e.g. `python(bp): batch-08 prod hardening (BP-PY-48..50)`
 
@@ -173,7 +173,7 @@ Ship three high/medium production hardening detectors with hit/miss unit tests; 
 - [x] `go test ./internal/lang/python/detectors/bad_practices/ -count=1` green
 - [x] `make lint` — green; record: go vet + gofmt clean
 - [x] `make test` — green; record: `go test ./...` ok
-- [ ] Optional: `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`
+- [x] Optional: `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`
 - [x] Parent `python-heuristics-bp.md`: mark 48–50 `[x]` with evidence only
 - [x] `_inventory.json`: move 48–50 to `implemented`; leave **14** missing until batch-01
 - [x] PR: `Relates to #53`, `Relates to #51`
@@ -210,3 +210,12 @@ Ship three high/medium production hardening detectors with hit/miss unit tests; 
 **Batch-08 ID list:** BP-PY-48, BP-PY-49, BP-PY-50  
 
 **Explicit non-list:** BP-PY-14 → batch-01
+
+---
+
+## Completion stamp
+
+- [x] Batch ledger synchronized to code on `main` (PR #65, `2b3e635`, 2026-07-31)
+- [x] All catalogue IDs in this batch have `RegisterRule` + hit/miss tests (or prior shipped evidence)
+- [x] File size policy observed (≤1500 soft / 2000 hard per Go domain file)
+- [x] Validation: `make lint` + `make test` green on integration before merge

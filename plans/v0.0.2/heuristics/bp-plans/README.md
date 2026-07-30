@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics-bp.md` — canonical #53 ledger  
 > **Epic:** [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) expansion — batchwise PRs for remaining `BP-PY-*`  
-> **Status:** all 50 BP-PY RegisterRule-implemented on integration branch (2026-07-31); batch ledgers evidence  
+> **Status:** **complete** — all 50 `BP-PY-*` on `main` (PR #65, `2b3e635`); batch ledgers checked
 > **Inventory snapshot:** `plans/v0.0.2/heuristics/bp-plans/_inventory.json`
 
 ---
@@ -101,3 +101,21 @@ From `_inventory.json` / `wc` at plan time (~2026-07-31):
 - Parent epic rollup: `plans/v0.0.2/heuristics/python-heuristics.md`
 - Catalogue README: `ruleset/python/README.md`
 - Go pattern reference: `internal/lang/go/detectors/bad_practices/`
+
+---
+
+## Completion rollup (2026-07-31)
+
+| Batch | Status | Evidence |
+|------:|--------|----------|
+| 00 shipped | [x] | Prior PR #58 + retained on main |
+| 01 core/prod | [x] | PR #60 → #65 |
+| 02 flask | [x] | PR #60 → #65 |
+| 03 django | [x] | PR #62 → #65 |
+| 04 fastapi | [x] | PR #64 → #65 |
+| 05 templates/db | [x] | PR #64 → #65 |
+| 06 async | [x] | PR #63 → #65 |
+| 07 testing/deps/obs | [x] | PR #63 → #65 |
+| 08 prod harden | [x] | PR #61 → #65 |
+
+**Catalogue:** 50/50 `RegisterRule` on `main`. **No pending implement rows** in this directory after ledger sync.

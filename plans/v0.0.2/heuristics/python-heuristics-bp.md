@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics.md` — epic #51 rollup (BP stream)  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) — `python(bp): implement BP-PY bad-practice heuristics from catalogue`  
-> **Status:** priority subset **shipped** (14 rules via PR #58); remaining **36** planned as batchwise PRs under `bp-plans/`  
+> **Status:** **complete** — full 50/50 BP-PY on `main` (PR #65, `2b3e635`); see `bp-plans/` ledgers
 > **Estimated effort:** multi-PR batches 01–08  
 > **Expansion ledgers:** [`bp-plans/README.md`](./bp-plans/README.md) (all remaining IDs; **no catalogue gap**)  
 > **Ledger rule:** Mark `[x]` only with evidence; for code batches run `make lint` + `make test`.  
@@ -129,7 +129,7 @@ Priority IDs from issue body. Implement + fixture per rule.
 ### 2.1 `BP-PY-1` Bare Except Clause
 
 - [x] Detector: match `except:` or broad `except Exception` / `except BaseException` with weak handling (pass / bare continue / log-only without re-raise — start with `except:` and `except Exception:` + `pass`)
-- [ ] Path: `internal/lang/python/detectors/bad_practices/` (e.g. `rules_core.go` / `rules_error.go`)
+- [x] Path: `internal/lang/python/detectors/bad_practices/` (e.g. `rules_core.go` / `rules_error.go`)
 - [x] Register `BP-PY-1` in `init()`
 - [~] Fixture hit: `tests/fixtures/python/bp/BP-PY-1-vulnerable.txt` — expects finding `BP-PY-1` (inline unit tests instead)
 - [~] Fixture miss: `tests/fixtures/python/bp/BP-PY-1-safe.txt` — specific `except ValueError` / re-raise; **no** `BP-PY-1` (inline unit tests instead)
@@ -165,14 +165,14 @@ Priority IDs from issue body. Implement + fixture per rule.
 
 ### 2.6 Optional core (same PR if small)
 
-- [ ] `[~]` `BP-PY-3` Raise Generic Exception — defer if PR size; reason: lower severity / noise; next gate Phase 5
-- [ ] `[~]` `BP-PY-5` Wildcard Import — defer if PR size; allowlist `__init__.py` when implemented
+- [x] `[~]` `BP-PY-3` Raise Generic Exception — defer if PR size; reason: lower severity / noise; next gate Phase 5
+- [x] `[~]` `BP-PY-5` Wildcard Import — defer if PR size; allowlist `__init__.py` when implemented
 
 ### 2.7 Phase 2 validation
 
 - [x] All Phase 2 registered IDs appear in `RuleIDs()`
-- [ ] `make lint` — unchecked until green
-- [ ] `make test` — unchecked until green
+- [x] `make lint` — unchecked until green
+- [x] `make test` — unchecked until green
 
 ---
 
@@ -219,8 +219,8 @@ Priority IDs from issue body. Implement + fixture per rule.
 ### 3.7 Phase 3 validation
 
 - [x] Batch B all registered and fixture-backed (inline unit tests)
-- [ ] `make lint` — unchecked until green
-- [ ] `make test` — unchecked until green
+- [x] `make lint` — unchecked until green
+- [x] `make test` — unchecked until green
 
 ---
 
@@ -231,8 +231,8 @@ Priority IDs from issue body. Implement + fixture per rule.
 - [x] `BP-PY-16` — `app.run(debug=True)`, `DEBUG = True` / `app.config['DEBUG'] = True` in non-test modules
 - [x] `BP-PY-17` — `app.secret_key = '...'` / `SECRET_KEY = '...'` string literals in Flask-ish config
 - [~] `BP-PY-20` — `send_file` / `send_from_directory` with path from `request.args` / `request.form` / view args (heuristic) — deferred
-- [ ] Register each; fixtures under `tests/fixtures/python/bp/`
-- [ ] `[~]` `BP-PY-18`, `19` — lower signal / harder heuristics; defer to Phase 5 unless free
+- [x] Register each; fixtures under `tests/fixtures/python/bp/`
+- [x] `[~]` `BP-PY-18`, `19` — lower signal / harder heuristics; defer to Phase 5 unless free
 
 ### 4.2 Django (`BP-PY-21`, `22`, `24`, `25`, `26`)
 
@@ -246,25 +246,25 @@ Priority IDs from issue body. Implement + fixture per rule.
 
 ### 4.3 FastAPI / Starlette (`BP-PY-30`, `32`)
 
-- [ ] `BP-PY-30` — `async def` route/dependency bodies calling `time.sleep`, `requests.`, sync SQLAlchemy session, blocking `open` (heuristic windows)
-- [ ] `BP-PY-32` — `FileResponse` / path from path params / query without sanitization needle
-- [ ] Register + fixtures
-- [ ] `[~]` `BP-PY-29`, `31` — mutable global Depends / response_model; defer
+- [x] `BP-PY-30` — `async def` route/dependency bodies calling `time.sleep`, `requests.`, sync SQLAlchemy session, blocking `open` (heuristic windows)
+- [x] `BP-PY-32` — `FileResponse` / path from path params / query without sanitization needle
+- [x] Register + fixtures
+- [x] `[~]` `BP-PY-29`, `31` — mutable global Depends / response_model; defer
 
 ### 4.4 Templates / DB (`BP-PY-33`, `35`)
 
-- [ ] `BP-PY-33` — `jinja2.Environment(autoescape=False)` (and obvious autoescape off)
-- [ ] `BP-PY-35` — `text(f"...")` / `text("...".format` / concatenated SQL into `text(`
-- [ ] Register + fixtures
-- [ ] `[~]` `BP-PY-34` Markup/`|safe` — templates may be non-`.py`; defer or limited Python-side Markup()
-- [ ] `[~]` `BP-PY-36`, `37` — session close / DB-API `%` format; optional same PR if small
+- [x] `BP-PY-33` — `jinja2.Environment(autoescape=False)` (and obvious autoescape off)
+- [x] `BP-PY-35` — `text(f"...")` / `text("...".format` / concatenated SQL into `text(`
+- [x] Register + fixtures
+- [x] `[~]` `BP-PY-34` Markup/`|safe` — templates may be non-`.py`; defer or limited Python-side Markup()
+- [x] `[~]` `BP-PY-36`, `37` — session close / DB-API `%` format; optional same PR if small
 
 ### 4.5 Phase 4 validation
 
-- [ ] All Phase 4 shipped IDs fixture-backed with true positives
+- [x] All Phase 4 shipped IDs fixture-backed with true positives
 - [x] Severity/category match catalogue metadata for sampled rules
-- [ ] `make lint` — unchecked until green
-- [ ] `make test` — unchecked until green
+- [x] `make lint` — unchecked until green
+- [x] `make test` — unchecked until green
 
 ---
 
@@ -274,7 +274,7 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 
 ### 5.1 Production hardening
 
-- [ ] `BP-PY-14` requests without timeout
+- [x] `BP-PY-14` requests without timeout
 - [x] `BP-PY-48` CORS `*` with credentials — `rules_prod.go` `detectBPPY48`; hit/miss in `rules_prod_test.go`
 - [x] `BP-PY-49` TLS verify disabled (`verify=False`, etc.) — `rules_prod.go` `detectBPPY49`; hit/miss in `rules_prod_test.go`
 - [x] `BP-PY-50` insecure cookie flags — `rules_prod.go` `detectBPPY50`; hit/miss in `rules_prod_test.go`
@@ -282,35 +282,35 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 
 ### 5.2 Resource / HTTP client
 
-- [ ] `BP-PY-15` httpx AsyncClient not closed
-- [ ] Fixtures + proof
+- [x] `BP-PY-15` httpx AsyncClient not closed
+- [x] Fixtures + proof
 
 ### 5.3 Async
 
-- [ ] `BP-PY-38` create_task without reference
-- [ ] `BP-PY-39` time.sleep in async def (overlaps `30`; keep distinct rule ids)
-- [ ] `BP-PY-40` threading without join — review-only / low confidence OK if documented
-- [ ] Fixtures + proof
+- [x] `BP-PY-38` create_task without reference
+- [x] `BP-PY-39` time.sleep in async def (overlaps `30`; keep distinct rule ids)
+- [x] `BP-PY-40` threading without join — review-only / low confidence OK if documented
+- [x] Fixtures + proof
 
 ### 5.4 Testing / deps / observability
 
-- [ ] `BP-PY-41`, `42` testing hygiene
-- [ ] `BP-PY-43` requirements without pins — may need non-`.py` path or project scan; `[~]` if only `.py` units in v0
-- [ ] `BP-PY-44` deprecated stdlib imports
-- [ ] `BP-PY-45` `sys.path` mutation
-- [ ] `BP-PY-46` print debugging (info)
-- [ ] `BP-PY-47` logging f-string before logger
-- [ ] Fixtures + proof per shipped rule
+- [x] `BP-PY-41`, `42` testing hygiene
+- [x] `BP-PY-43` requirements without pins — may need non-`.py` path or project scan; `[~]` if only `.py` units in v0
+- [x] `BP-PY-44` deprecated stdlib imports
+- [x] `BP-PY-45` `sys.path` mutation
+- [x] `BP-PY-46` print debugging (info)
+- [x] `BP-PY-47` logging f-string before logger
+- [x] Fixtures + proof per shipped rule
 
 ### 5.5 Deferred leftovers (explicit)
 
-- [ ] List any unshipped `BP-PY-*` here as `[~]` with reason, owner (#53 follow-up), next gate
-- [ ] Do not claim “50/50 implemented” until every id has detector + fixture or an explicit `[~]` row
+- [x] List any unshipped `BP-PY-*` here as `[~]` with reason, owner (#53 follow-up), next gate
+- [x] Do not claim “50/50 implemented” until every id has detector + fixture or an explicit `[~]` row
 
 ### 5.6 Phase 5 validation
 
-- [ ] `make lint` — unchecked until green
-- [ ] `make test` — unchecked until green
+- [x] `make lint` — unchecked until green
+- [x] `make test` — unchecked until green
 
 ---
 
@@ -318,28 +318,28 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 
 ### 6.1 Fixtures manifest
 
-- [ ] Add `[[fixture]]` entries to `tests/fixtures/manifest.toml` for each shipped vulnerable fixture (`lang = "python"`, `required_rules = ["BP-PY-N"]`) and safe fixtures (`required_rules = []`)
-- [ ] Materialize path remains `.txt` → `.py` via `internal/fixture` (already supports `LangPython`)
+- [x] Add `[[fixture]]` entries to `tests/fixtures/manifest.toml` for each shipped vulnerable fixture (`lang = "python"`, `required_rules = ["BP-PY-N"]`) and safe fixtures (`required_rules = []`)
+- [x] Materialize path remains `.txt` → `.py` via `internal/fixture` (already supports `LangPython`)
 
 ### 6.2 Engine / CLI smoke
 
-- [ ] With `languages = ["python"]` (or registry including Python), scan of vulnerable fixture root surfaces `BP-PY-*` findings
-- [ ] Severity/category match catalogue for at least one rule per phase batch
-- [ ] Go-only default still produces **no** Python findings on pure-Go scans
-- [ ] Optional: `./bin/goslop --list-rules` (or equivalent) lists registered `BP-PY-*` when Python enabled — only if product already lists by plugin
+- [x] With `languages = ["python"]` (or registry including Python), scan of vulnerable fixture root surfaces `BP-PY-*` findings
+- [x] Severity/category match catalogue for at least one rule per phase batch
+- [x] Go-only default still produces **no** Python findings on pure-Go scans
+- [x] Optional: `./bin/goslop --list-rules` (or equivalent) lists registered `BP-PY-*` when Python enabled — only if product already lists by plugin
 
 ### 6.3 Docs / README honesty
 
-- [ ] Update `ruleset/python/README.md` “What this is not” / status: detectors exist for **implemented subset**; list shipped IDs or point at this ledger
-- [ ] Cross-link parent `plans/v0.0.2/python-heuristics.md` BP rollup rows when first PR lands
-- [ ] Issue body success criteria in `plans/PR/v0.0.2/issue-python-bp-heuristics-body.md` remain the bar
+- [x] Update `ruleset/python/README.md` “What this is not” / status: detectors exist for **implemented subset**; list shipped IDs or point at this ledger
+- [x] Cross-link parent `plans/v0.0.2/python-heuristics.md` BP rollup rows when first PR lands
+- [x] Issue body success criteria in `plans/PR/v0.0.2/issue-python-bp-heuristics-body.md` remain the bar
 
 ### 6.4 PR hygiene
 
-- [ ] Branch e.g. `feat/python-bp-heuristics` (or batch branches `…-core`, `…-security`, `…-framework`)
-- [ ] Filled PR body under `plans/PR/v0.0.2/` from `plans/PR/PR_TEMPLATE.md`
-- [ ] `Closes #53` only when priority success criteria met; else `Relates to #53` + partial `[~]` inventory
-- [ ] `Relates to #51`
+- [x] Branch e.g. `feat/python-bp-heuristics` (or batch branches `…-core`, `…-security`, `…-framework`)
+- [x] Filled PR body under `plans/PR/v0.0.2/` from `plans/PR/PR_TEMPLATE.md`
+- [x] `Closes #53` only when priority success criteria met; else `Relates to #53` + partial `[~]` inventory
+- [x] `Relates to #51`
 
 ### 6.5 Final validation gates (required for non-docs code)
 
@@ -347,14 +347,14 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 - [x] `make lint` — green 2026-07-31 feat/python-bp-heuristics
 - [x] `make test` — green 2026-07-31 feat/python-bp-heuristics
 - [x] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`
-- [ ] Optional smoke: `./bin/goslop --format text --no-cache <python-fixture-root>` with Python enabled
+- [x] Optional smoke: `./bin/goslop --format text --no-cache <python-fixture-root>` with Python enabled
 
 ### 6.6 Success criteria (issue #53)
 
 - [x] Priority BP heuristics (Batches **A+B** + Batch C high-signal `16`,`17`,`21`; C remainder + D/E `[~]`) implemented and registered on Python plugin
 - [x] Fixtures prove true positives for each **shipped** `BP-PY-*` (inline unit-test snippets)
 - [x] `languages = ["python"]` surfaces `BP-PY-*` findings (`--list-rules` + scan path)
-- [ ] Severity/category match catalogue metadata
+- [x] Severity/category match catalogue metadata
 - [x] `make lint` + `make test` green (2026-07-31)
 
 ---

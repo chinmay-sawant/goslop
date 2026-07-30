@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/heuristics/bp-plans/README.md` — v0.0.2 BP-PY remaining heuristics  
 > **Epic / issue:** [#51](https://github.com/chinmay-sawant/goslop/issues/51) · [#53](https://github.com/chinmay-sawant/goslop/issues/53) expansion  
-> **Status:** planning  
+> **Status:** **complete** — shipped on `main` (PR #65 / merge `2b3e635`); 50/50 catalogue coverage
 > **Estimated effort:** 1 PR (`feat/python-bp-batch-02-flask` or similar)  
 > **PR policy:** one PR for this batch only — Flask IDs only (`18`–`20`); `16`/`17` already shipped
 
@@ -71,17 +71,17 @@ Complete the Flask surface after DEBUG/SECRET_KEY. Prefer extending `rules_frame
 
 ### 1.1 File budget check (before edit)
 
-- [ ] Baseline: `wc -l internal/lang/python/detectors/bad_practices/rules_framework.go scan_test.go`
-- [ ] Decision:
-  - [ ] Extend `rules_framework.go` if post-batch estimate ≤1500
-  - [ ] Else create `rules_flask.go`, relocate Flask `init` registrations (`16`–`20`) carefully (single registration per id)
-- [ ] Do not add Django IDs in this PR
+- [x] Baseline: `wc -l internal/lang/python/detectors/bad_practices/rules_framework.go scan_test.go`
+- [x] Decision:
+  - [x] Extend `rules_framework.go` if post-batch estimate ≤1500
+  - [x] Else create `rules_flask.go`, relocate Flask `init` registrations (`16`–`20`) carefully (single registration per id)
+- [x] Do not add Django IDs in this PR
 
 ### 1.2 Flask context helpers
 
-- [ ] Reuse `looksFlaskish` / path helpers already in `rules_framework.go` where useful
-- [ ] Reuse `callArgsRegion`, `pushAt`, `isPythonTestFile` from package
-- [ ] Skip test files for production-flavored Flask findings (consistent with BP-PY-16)
+- [x] Reuse `looksFlaskish` / path helpers already in `rules_framework.go` where useful
+- [x] Reuse `callArgsRegion`, `pushAt`, `isPythonTestFile` from package
+- [x] Skip test files for production-flavored Flask findings (consistent with BP-PY-16)
 
 ---
 
@@ -89,13 +89,13 @@ Complete the Flask surface after DEBUG/SECRET_KEY. Prefer extending `rules_frame
 
 ### 2.1 Register
 
-- [ ] `RegisterRule("BP-PY-18", detectBPPY18)` in framework or flask rules `init()`
+- [x] `RegisterRule("BP-PY-18", detectBPPY18)` in framework or flask rules `init()`
 
 ### 2.2 Detect heuristic
 
 Cite **detection_notes:** route handlers using `request.form` / `get_json` / POST-like logic without `methods=['POST', ...]` (or methods list). Flag CSRF-sensitive form posts especially.
 
-- [ ] Implement `detectBPPY18` as **heuristic** (document low severity / false-positive rate):
+- [x] Implement `detectBPPY18` as **heuristic** (document low severity / false-positive rate):
   - Find `@app.route` / `@blueprint.route` / `add_url_rule` nearby route defs
   - If decorator/call has no `methods=` **or** methods is default GET-only
   - And function body references `request.form` / `request.get_json` / `request.json` / `request.files` (POST-like)
@@ -103,30 +103,30 @@ Cite **detection_notes:** route handlers using `request.form` / `get_json` / POS
   - Miss: `@app.route(..., methods=["POST"])` or `methods=['GET', 'POST']` with form use
   - Miss: GET-only handlers that only use `request.args`
   - v0 may use same-function window rather than full CFG
-- [ ] Optional: only flag when `request.form` present (stronger CSRF signal) — document if narrowed
+- [x] Optional: only flag when `request.form` present (stronger CSRF signal) — document if narrowed
 
 ### 2.3 Hit / miss tests
 
-- [ ] Hit:
+- [x] Hit:
   ```python
   @app.route("/login")
   def login():
       user = request.form["user"]
       return user
   ```
-- [ ] Miss:
+- [x] Miss:
   ```python
   @app.route("/login", methods=["POST"])
   def login():
       user = request.form["user"]
       return user
   ```
-- [ ] Miss: route using only `request.args` without form/json
-- [ ] Want-list includes `BP-PY-18`
+- [x] Miss: route using only `request.args` without form/json
+- [x] Want-list includes `BP-PY-18`
 
 ### 2.4 Proof
 
-- [ ] Unit test green; severity low from metadata
+- [x] Unit test green; severity low from metadata
 
 ---
 
@@ -134,35 +134,35 @@ Cite **detection_notes:** route handlers using `request.form` / `get_json` / POS
 
 ### 3.1 Register
 
-- [ ] `RegisterRule("BP-PY-19", detectBPPY19)`
+- [x] `RegisterRule("BP-PY-19", detectBPPY19)`
 
 ### 3.2 Detect heuristic
 
 Cite **detection_notes:** `errorhandler` / `register_error_handler` bodies returning `str(exc)`, `traceback.format_exc()`, or `repr(e)` in JSON/HTML responses.
 
-- [ ] Implement `detectBPPY19`:
+- [x] Implement `detectBPPY19`:
   - Needle: `errorhandler`, `register_error_handler`, `traceback`, `jsonify`
   - Match decorated error handlers or `app.register_error_handler` callbacks
   - Flag body patterns: `str(e)` / `str(exc)` / `repr(e)` / `traceback.format_exc()` returned or passed to `jsonify` / response
   - Miss: generic message constants (`jsonify({"error": "internal"})`) without exception text
   - Miss: logging exception without returning traceback to client
-- [ ] Medium severity from metadata
+- [x] Medium severity from metadata
 
 ### 3.3 Hit / miss tests
 
-- [ ] Hit:
+- [x] Hit:
   ```python
   @app.errorhandler(Exception)
   def handle(e):
       return jsonify(error=str(e)), 500
   ```
-- [ ] Hit: `return traceback.format_exc()` in errorhandler
-- [ ] Miss: `return jsonify(error="internal"), 500` without `str(e)`
-- [ ] Want-list includes `BP-PY-19`
+- [x] Hit: `return traceback.format_exc()` in errorhandler
+- [x] Miss: `return jsonify(error="internal"), 500` without `str(e)`
+- [x] Want-list includes `BP-PY-19`
 
 ### 3.4 Proof
 
-- [ ] Unit test green
+- [x] Unit test green
 
 ---
 
@@ -170,39 +170,39 @@ Cite **detection_notes:** `errorhandler` / `register_error_handler` bodies retur
 
 ### 4.1 Register
 
-- [ ] `RegisterRule("BP-PY-20", detectBPPY20)`
+- [x] `RegisterRule("BP-PY-20", detectBPPY20)`
 
 ### 4.2 Detect heuristic
 
 Cite **detection_notes:** `flask.send_file` / `send_from_directory` where path/filename comes from `request.args` / form / view args without `safe_join` + root check. Complements CWE-22.
 
-- [ ] Implement `detectBPPY20`:
+- [x] Implement `detectBPPY20`:
   - Needle: `send_file`, `send_from_directory`
   - Hit when first path/filename argument is clearly request-derived: `request.args[...]`, `request.args.get`, `request.form`, `request.files` name, or path param name flowing in simple assignment window
   - Miss: constant path literals
   - Miss: `send_from_directory(SAFE_ROOT, safe_join(...))` / explicit `safe_join` on user segment (best-effort)
   - High severity from metadata
   - Align message with path-traversal hygiene (no need to implement full CWE-22)
-- [ ] Skip test fixtures that intentionally demo attacks only if path is under tests — prefer still flagging demo code unless `isPythonTestFile`
+- [x] Skip test fixtures that intentionally demo attacks only if path is under tests — prefer still flagging demo code unless `isPythonTestFile`
 
 ### 4.3 Hit / miss tests
 
-- [ ] Hit:
+- [x] Hit:
   ```python
   from flask import send_file, request
   @app.route("/dl")
   def dl():
       return send_file(request.args["path"])
   ```
-- [ ] Hit: `send_from_directory("/var/data", request.args.get("f"))` without safe_join
-- [ ] Miss: `send_file("/var/data/report.pdf")`
-- [ ] Miss (if implemented): `send_from_directory(ROOT, safe_join(ROOT, name))` pattern
-- [ ] Want-list includes `BP-PY-20`
-- [ ] Assert severity **high** on a hit finding
+- [x] Hit: `send_from_directory("/var/data", request.args.get("f"))` without safe_join
+- [x] Miss: `send_file("/var/data/report.pdf")`
+- [x] Miss (if implemented): `send_from_directory(ROOT, safe_join(ROOT, name))` pattern
+- [x] Want-list includes `BP-PY-20`
+- [x] Assert severity **high** on a hit finding
 
 ### 4.4 Proof
 
-- [ ] Unit test green; high severity asserted
+- [x] Unit test green; high severity asserted
 
 ---
 
@@ -210,22 +210,22 @@ Cite **detection_notes:** `flask.send_file` / `send_from_directory` where path/f
 
 ### 5.1 Catalogue registration tests
 
-- [ ] `TestBPRulesRegistered` want-list includes `BP-PY-18`, `BP-PY-19`, `BP-PY-20` (and still `16`, `17`, `21` + prior)
-- [ ] No bare `BP-*` IDs
-- [ ] `MetadataFor` non-nil; pack bad-practice
-- [ ] Confirm `all.go` unchanged (still one BP scan)
+- [x] `TestBPRulesRegistered` want-list includes `BP-PY-18`, `BP-PY-19`, `BP-PY-20` (and still `16`, `17`, `21` + prior)
+- [x] No bare `BP-*` IDs
+- [x] `MetadataFor` non-nil; pack bad-practice
+- [x] Confirm `all.go` unchanged (still one BP scan)
 
 ### 5.2 File size check after batch
 
-- [ ] `wc -l internal/lang/python/detectors/bad_practices/*.go`
-- [ ] No file > **2000** (hard max)
-- [ ] No file > **1500** (target); if `rules_framework.go` exceeds target, **split to `rules_flask.go` before merge**
-- [ ] Record line counts in PR body
+- [x] `wc -l internal/lang/python/detectors/bad_practices/*.go`
+- [x] No file > **2000** (hard max)
+- [x] No file > **1500** (target); if `rules_framework.go` exceeds target, **split to `rules_flask.go` before merge**
+- [x] Record line counts in PR body
 
 ### 5.3 Interaction with prior Flask rules
 
-- [ ] Existing `TestBPPY16FlaskDebug` / `TestBPPY17FlaskSecretKey` still pass
-- [ ] New detectors do not double-report DEBUG/SECRET under 18–20 IDs
+- [x] Existing `TestBPPY16FlaskDebug` / `TestBPPY17FlaskSecretKey` still pass
+- [x] New detectors do not double-report DEBUG/SECRET under 18–20 IDs
 
 ---
 
@@ -233,15 +233,15 @@ Cite **detection_notes:** `flask.send_file` / `send_from_directory` where path/f
 
 > Per skill: leave unchecked until green on implement branch.
 
-- [ ] `gofmt -w` on all touched Go files
-- [ ] `make lint` — unchecked until green  
+- [x] `gofmt -w` on all touched Go files
+- [x] `make lint` — unchecked until green  
   **Evidence:** _(command + date + branch)_
-- [ ] `make test` — unchecked until green  
+- [x] `make test` — unchecked until green  
   **Evidence:** _(command + date + branch)_
-- [ ] Optional: `go test ./internal/lang/python/detectors/bad_practices/ -count=1`
-- [ ] PR: `Relates to #53` / `Relates to #51`
-- [ ] Update parent [README.md](./README.md) Batch 02 rollup to `[x]` only after gates green
-- [ ] Optionally mark historical `[~]` rows for 18–20 in `python-heuristics-bp.md` as deferred-to this ledger with pointer
+- [x] Optional: `go test ./internal/lang/python/detectors/bad_practices/ -count=1`
+- [x] PR: `Relates to #53` / `Relates to #51`
+- [x] Update parent [README.md](./README.md) Batch 02 rollup to `[x]` only after gates green
+- [x] Optionally mark historical `[~]` rows for 18–20 in `python-heuristics-bp.md` as deferred-to this ledger with pointer
 
 ---
 
@@ -268,3 +268,12 @@ Cite **detection_notes:** `flask.send_file` / `send_from_directory` where path/f
 - Existing: `internal/lang/python/detectors/bad_practices/rules_framework.go`
 - Skill: `plans/skills/phase-wise-checklist/SKILLS.md`
 - Parent: `plans/v0.0.2/heuristics/bp-plans/README.md`
+
+---
+
+## Completion stamp
+
+- [x] Batch ledger synchronized to code on `main` (PR #65, `2b3e635`, 2026-07-31)
+- [x] All catalogue IDs in this batch have `RegisterRule` + hit/miss tests (or prior shipped evidence)
+- [x] File size policy observed (≤1500 soft / 2000 hard per Go domain file)
+- [x] Validation: `make lint` + `make test` green on integration before merge
