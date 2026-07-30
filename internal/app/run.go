@@ -71,7 +71,10 @@ func run(args []string, stdout, stderr io.Writer) error {
 		return &ExitCodeError{Code: ExitConfig, Err: merr}
 	}
 
-	reg, rerr := engine.RegistryForLanguages(engine.DefaultRegistry(), merged.Languages)
+	// Compose a registry from built-in plugins for the enabled languages.
+	// Default (unset languages) is Go-only via config.DefaultEnabledLanguages.
+	// Unknown language tokens are rejected at config load; missing built-ins error here.
+	reg, rerr := engine.NewRegistryWithLanguages(merged.Languages...)
 	if rerr != nil {
 		return &ExitCodeError{Code: ExitConfig, Err: rerr}
 	}

@@ -163,7 +163,7 @@ fail_on = "none"
 	}
 }
 
-func TestRunLanguagesPythonOnlyWithoutPluginDoesNotCrash(t *testing.T) {
+func TestRunLanguagesPythonOnlyScansPyNotGo(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.WriteFile(filepath.Join(dir, "goslop.toml"), []byte(`[goslop]
 languages = ["python"]
@@ -178,12 +178,12 @@ fail_on = "none"
 		t.Fatal(err)
 	}
 	var out, errBuf bytes.Buffer
-	// No Python plugin on main → empty registry → zero files scanned, clean exit.
+	// Built-in Python stub is registered via NewRegistryWithLanguages: scan .py only.
 	if err := run([]string{"--format", "json", "--no-cache", dir}, &out, &errBuf); err != nil {
-		t.Fatalf("python-only without plugin must not crash: %v\nstderr=%s", err, errBuf.String())
+		t.Fatalf("python-only scan must not crash: %v\nstderr=%s", err, errBuf.String())
 	}
-	if !strings.Contains(errBuf.String(), "scanned 0 files") {
-		t.Fatalf("expected zero files scanned, stderr=%q", errBuf.String())
+	if !strings.Contains(errBuf.String(), "scanned 1 files") {
+		t.Fatalf("expected only app.py scanned, stderr=%q", errBuf.String())
 	}
 	if !strings.Contains(out.String(), `"findings"`) {
 		t.Fatalf("json: %q", out.String())
@@ -192,7 +192,7 @@ fail_on = "none"
 
 func TestRunListRulesRespectsLanguagesConfig(t *testing.T) {
 	dir := t.TempDir()
-	// languages=["python"] with no plugin → no rules listed.
+	// languages=["python"] uses the stub plugin → empty detector catalogue.
 	cfg := filepath.Join(dir, "goslop.toml")
 	if err := os.WriteFile(cfg, []byte(`[goslop]
 languages = ["python"]
@@ -204,7 +204,7 @@ languages = ["python"]
 		t.Fatal(err)
 	}
 	if !strings.Contains(out.String(), "no rules registered") {
-		t.Fatalf("expected empty rule list when only unregistered language enabled: %q", out.String())
+		t.Fatalf("expected empty rule list for Python stub (zero detectors): %q", out.String())
 	}
 
 	// languages=["go"] still lists Go rules.

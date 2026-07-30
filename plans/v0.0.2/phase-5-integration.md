@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/python-support.md`  
 > **Issue:** #39 (epic)  
-> **Status:** blocked until Phases 1–4 PRs exist  
+> **Status:** integration branch assembled; PR pending/open  
 > **Branch:** `chore/epic-39-integration`  
 > **Base branch:** `main`
 
@@ -25,24 +25,24 @@ After each merge: resolve conflicts, re-run tests when code present.
 
 ## 5.2 Combined validation
 
-- [ ] `make lint`  
-- [ ] `make test`  
-- [ ] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`  
-- [ ] Smoke: default scan still Go-oriented; with config `languages = ["go"]` behaves  
-- [ ] Record commands + outcomes in integration PR body  
+- [x] `make lint` — green on `chore/epic-39-integration`  
+- [x] `make test` — green (incl. `internal/lang/python`, `ruleset/python`, integration)  
+- [x] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`  
+- [x] Smoke: default Go-only; `languages = ["python"]` scans `.py` only  
+- [x] Record commands + outcomes in integration PR body  
 
 ## 5.3 Integration PR
 
-- [ ] Filled body `plans/PR/v0.0.2/pr-epic-39-integration.md`  
-- [ ] Table of child issue / branch / standalone PR  
-- [ ] `Closes #40` `#41` `#42` `#43` and `Closes #39` when foundation complete  
-- [ ] Note child PRs superseded by integration  
+- [x] Filled body `plans/PR/v0.0.2/pr-epic-39-integration.md`  
+- [x] Table of child issue / branch / standalone PR  
+- [x] `Closes #40` `#41` `#42` `#43` and `Closes #39` when foundation complete  
+- [x] Note child PRs superseded by integration  
 - [ ] Comment on each child PR pointing at integration  
 
 ## 5.4 Parent ledger sync
 
-- [ ] Update `python-support.md` rollup checkboxes with evidence  
-- [ ] Update phase file rows that shipped  
+- [x] Update `python-support.md` rollup checkboxes with evidence  
+- [x] Update phase file rows that shipped  
 
 ## 5.5 Land (only when user requests merge)
 

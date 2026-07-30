@@ -1,7 +1,7 @@
 # v0.0.2 — Introduce Python language support (foundation)
 
 > **Parent:** GitHub epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) — Epic: Introduce Python language support  
-> **Status:** planning → parallel worktrees (foundation only; not full detector parity)  
+> **Status:** integration branch open (foundation only; not full detector parity)  
 > **Estimated effort:** multi-PR epic (4 workstreams + integration)  
 > **Ledger rule:** this file is the **canonical execution ledger**. Phase detail lives in sibling markdowns; update checkboxes only with evidence (`make lint` / `make test` when code changes).
 
@@ -71,15 +71,15 @@ Follow `plans/skills/worktree-deleation/SKILL.md` adapted to this repo’s defau
 
 ### Phase 2 — Models — #41
 
-- [ ] Ledger rows complete in [phase-2-models.md](./phase-2-models.md)
-- [ ] PR open with filled body `plans/PR/v0.0.2/pr-phase-2-models.md`
-- [ ] Validation: `make lint` + `make test` recorded
+- [x] Ledger rows complete in [phase-2-models.md](./phase-2-models.md)
+- [x] PR open with filled body `plans/PR/v0.0.2/pr-phase-2-models.md`
+- [x] Validation: `make lint` + `make test` recorded (child PR #47; revalidated on integration)
 
 ### Phase 3 — Config enable/disable languages — #42
 
-- [ ] Ledger rows complete in [phase-3-config-languages.md](./phase-3-config-languages.md)
-- [ ] PR open with filled body `plans/PR/v0.0.2/pr-phase-3-config.md`
-- [ ] Validation: `make lint` + `make test` recorded
+- [x] Ledger rows complete in [phase-3-config-languages.md](./phase-3-config-languages.md)
+- [x] PR open with filled body `plans/PR/v0.0.2/pr-phase-3-config.md`
+- [x] Validation: `make lint` + `make test` recorded (child PR #48; revalidated on integration)
 
 ### Phase 4 — Rulesets + generic reuse audit — #43
 
@@ -90,10 +90,10 @@ Follow `plans/skills/worktree-deleation/SKILL.md` adapted to this repo’s defau
 
 ### Phase 5 — Integration — #39
 
-- [ ] Child branches merged into `chore/epic-39-integration`
-- [ ] Combined `make lint` + `make test` green
-- [ ] Integration PR body `plans/PR/v0.0.2/pr-epic-39-integration.md`
-- [ ] Plan checkboxes synchronized to evidence
+- [x] Child branches merged into `chore/epic-39-integration`
+- [x] Combined `make lint` + `make test` green (`make lint` / `make test` 2026-07-30 on integration)
+- [x] Integration PR body `plans/PR/v0.0.2/pr-epic-39-integration.md`
+- [x] Plan checkboxes synchronized to evidence
 
 ---
 
