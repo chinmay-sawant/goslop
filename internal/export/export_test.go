@@ -76,6 +76,49 @@ func TestExportContextAndChunks(t *testing.T) {
 	}
 }
 
+func TestExportDualSurfaceMatchesSingleSurfaceRendering(t *testing.T) {
+	dir := t.TempDir()
+	srcPath := filepath.Join(dir, "sample.go")
+	src := "package sample\n\nfunc Flag() {\n\t_ = 1\n}\n"
+	if err := os.WriteFile(srcPath, []byte(src), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	finding := rules.Finding{
+		RuleID: "PERF-1", File: srcPath, Line: 4, Column: 2,
+		Message: "test", Severity: rules.SeverityLow,
+		Fingerprint: "goslop:2:PERF-1:sample.go:abcd",
+	}
+	sources := map[string]string{srcPath: src}
+	contextOnlyDir := filepath.Join(dir, "context-only")
+	chunksOnlyDir := filepath.Join(dir, "chunks-only")
+	dualContextDir := filepath.Join(dir, "dual-context")
+	dualChunksDir := filepath.Join(dir, "dual-chunks")
+
+	if _, err := export.ExportFindings([]rules.Finding{finding}, export.Options{
+		ExportContext: true, ContextOutputDir: contextOnlyDir,
+	}, sources); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := export.ExportFindings([]rules.Finding{finding}, export.Options{
+		ExportChunks: true, ChunksOutputDir: chunksOnlyDir,
+	}, sources); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := export.ExportFindings([]rules.Finding{finding}, export.Options{
+		ExportContext: true, ContextOutputDir: dualContextDir,
+		ExportChunks: true, ChunksOutputDir: dualChunksDir,
+	}, sources); err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := readFile(t, filepath.Join(dualContextDir, "1.txt")), readFile(t, filepath.Join(contextOnlyDir, "1.txt")); got != want {
+		t.Fatalf("dual context differs from context-only output:\n%s", got)
+	}
+	if got, want := readFile(t, filepath.Join(dualChunksDir, "Chunk_1_1.txt")), readFile(t, filepath.Join(chunksOnlyDir, "Chunk_1_1.txt")); got != want {
+		t.Fatalf("dual chunks differ from chunks-only output:\n%s", got)
+	}
+}
+
 func TestExportContextPreservesUnownedTextFiles(t *testing.T) {
 	dir := t.TempDir()
 	ctxDir := filepath.Join(dir, "ctx")
@@ -117,6 +160,9 @@ func TestExportRejectsContextAndChunkDirectoryCollision(t *testing.T) {
 	}, nil)
 	if err == nil || !strings.Contains(err.Error(), "must use different output directories") {
 		t.Fatalf("expected directory collision error, got %v", err)
+	}
+	if _, err := os.Stat(outputDir); !os.IsNotExist(err) {
+		t.Fatalf("rejected collision must not create output dir, stat error=%v", err)
 	}
 }
 

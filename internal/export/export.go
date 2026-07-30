@@ -89,18 +89,20 @@ func ExportFindings(findings []rules.Finding, opts Options, sourceCache map[stri
 		}
 	}
 
-	fileCache := map[string]string{}
-	astCache := map[string]*parsedFile{}
+	renderState := &renderState{
+		fileCache:     map[string]string{},
+		sourceCache:   sourceCache,
+		astCache:      map[string]*parsedFile{},
+		wholeFunction: opts.wholeFunctionEnabled(),
+	}
 	total := len(findings)
-	wholeFn := opts.wholeFunctionEnabled()
 
 	// When both surfaces export, format each finding once and reuse (P1.3).
 	dual := opts.ExportContext && opts.ExportChunks
-	var blocks []string
 	if dual {
-		blocks = make([]string, total)
+		renderState.preformatted = make([]string, total)
 		for i, f := range findings {
-			blocks[i] = formatFindingBlock(f, i+1, total, fileCache, sourceCache, astCache, wholeFn)
+			renderState.preformatted[i] = formatFindingBlock(f, i+1, total, renderState)
 		}
 	}
 
@@ -114,9 +116,9 @@ func ExportFindings(findings []rules.Finding, opts Options, sourceCache map[stri
 		for i, f := range findings {
 			var text string
 			if dual {
-				text = blocks[i]
+				text = renderState.preformatted[i]
 			} else {
-				text = formatFindingBlock(f, i+1, total, fileCache, sourceCache, astCache, wholeFn)
+				text = formatFindingBlock(f, i+1, total, renderState)
 			}
 			path := filepath.Join(opts.ContextOutputDir, fmt.Sprintf("%d.txt", i+1))
 			if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
@@ -127,7 +129,7 @@ func ExportFindings(findings []rules.Finding, opts Options, sourceCache map[stri
 	}
 
 	if opts.ExportChunks {
-		n, err := writeChunkFiles(findings, opts.ChunksOutputDir, opts.ChunkSize, fileCache, sourceCache, astCache, wholeFn, blocks)
+		n, err := writeChunkFiles(findings, opts.ChunksOutputDir, opts.ChunkSize, renderState)
 		if err != nil {
 			return sum, err
 		}
@@ -137,12 +139,6 @@ func ExportFindings(findings []rules.Finding, opts Options, sourceCache map[stri
 }
 
 func dirsEqual(a, b string) (bool, error) {
-	if err := os.MkdirAll(a, 0o755); err != nil {
-		return false, fmt.Errorf("mkdir context dir: %w", err)
-	}
-	if err := os.MkdirAll(b, 0o755); err != nil {
-		return false, fmt.Errorf("mkdir chunks dir: %w", err)
-	}
 	ca, err := filepath.Abs(a)
 	if err != nil {
 		return false, fmt.Errorf("abs context dir: %w", err)
@@ -152,6 +148,16 @@ func dirsEqual(a, b string) (bool, error) {
 		return false, fmt.Errorf("abs chunks dir: %w", err)
 	}
 	return ca == cb, nil
+}
+
+// renderState groups the per-export data reused by context and chunk renderers.
+// It is scoped to one ExportFindings call and must not escape it.
+type renderState struct {
+	fileCache     map[string]string
+	sourceCache   map[string]string
+	astCache      map[string]*parsedFile
+	wholeFunction bool
+	preformatted  []string
 }
 
 // cleanOwnedFiles removes only files owned by this export surface. Callers may
@@ -203,11 +209,7 @@ func writeChunkFiles(
 	findings []rules.Finding,
 	outputDir string,
 	chunkSize int,
-	fileCache map[string]string,
-	sourceCache map[string]string,
-	astCache map[string]*parsedFile,
-	wholeFunction bool,
-	preformatted []string, // optional: reuse dual-export blocks (same index as findings)
+	renderState *renderState,
 ) (int, error) {
 	if err := os.MkdirAll(outputDir, 0o755); err != nil {
 		return 0, fmt.Errorf("create chunks dir: %w", err)
@@ -243,10 +245,10 @@ func writeChunkFiles(
 				b.WriteString("\n\n")
 			}
 			var block string
-			if i < len(preformatted) && preformatted[i] != "" {
-				block = preformatted[i]
+			if i < len(renderState.preformatted) && renderState.preformatted[i] != "" {
+				block = renderState.preformatted[i]
 			} else {
-				block = formatFindingBlock(findings[i], i+1, total, fileCache, sourceCache, astCache, wholeFunction)
+				block = formatFindingBlock(findings[i], i+1, total, renderState)
 			}
 			b.WriteString(strings.TrimRight(block, "\n"))
 		}
@@ -262,10 +264,7 @@ func writeChunkFiles(
 func formatFindingBlock(
 	f rules.Finding,
 	index, total int,
-	fileCache map[string]string,
-	sourceCache map[string]string,
-	astCache map[string]*parsedFile,
-	wholeFunction bool,
+	renderState *renderState,
 ) string {
 	lines := make([]string, 0, 16)
 	lines = append(lines,
@@ -293,7 +292,7 @@ func formatFindingBlock(
 		lines = append(lines, fmt.Sprintf("Remediation: %s", f.Remediation))
 	}
 	lines = append(lines, "Context:")
-	for _, cl := range findingContextLines(f, fileCache, sourceCache, astCache, wholeFunction) {
+	for _, cl := range findingContextLines(f, renderState) {
 		lines = append(lines, "    "+cl)
 	}
 	return strings.Join(lines, "\n") + "\n"
@@ -301,18 +300,15 @@ func formatFindingBlock(
 
 func findingContextLines(
 	f rules.Finding,
-	fileCache map[string]string,
-	sourceCache map[string]string,
-	astCache map[string]*parsedFile,
-	wholeFunction bool,
+	renderState *renderState,
 ) []string {
 	// Nearby-window mode: prefer an explicit detector snippet when present.
-	if !wholeFunction && f.Snippet != "" {
+	if !renderState.wholeFunction && f.Snippet != "" {
 		if out := snippetLines(f.Snippet); len(out) > 0 {
 			return out
 		}
 	}
-	content := loadSource(f.File, fileCache, sourceCache)
+	content := loadSource(f.File, renderState.fileCache, renderState.sourceCache)
 	if content == "" {
 		if f.Snippet != "" {
 			if out := snippetLines(f.Snippet); len(out) > 0 {
@@ -321,8 +317,8 @@ func findingContextLines(
 		}
 		return []string{"<context unavailable>"}
 	}
-	if wholeFunction {
-		if lines := functionWindow(f, content, astCache); len(lines) > 0 {
+	if renderState.wholeFunction {
+		if lines := functionWindow(f, content, renderState.astCache); len(lines) > 0 {
 			return lines
 		}
 	}
@@ -383,11 +379,10 @@ func getParsed(path, content string, astCache map[string]*parsedFile) *parsedFil
 	}
 	fset := token.NewFileSet()
 	// SkipObjectResolution keeps export parsing cheap; partial File is ok on error.
-	file, err := parser.ParseFile(fset, path, content, parser.SkipObjectResolution)
+	file, _ := parser.ParseFile(fset, path, content, parser.SkipObjectResolution)
 	p := &parsedFile{fset: fset, file: file, lineStarts: computeLineStarts(content)}
 	if file == nil {
 		p.failed = true
-		_ = err
 	} else {
 		p.spans = collectFuncSpans(fset, file)
 	}

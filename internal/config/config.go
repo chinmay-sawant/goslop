@@ -5,6 +5,7 @@
 package config
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math"
@@ -95,7 +96,7 @@ func Parse(data []byte) (*Document, error) {
 	doc.Goslop.Baseline.Enabled = boolPtr(true)
 	doc.Goslop.Cache.Enabled = boolPtr(true)
 
-	dec := toml.NewDecoder(strings.NewReader(string(data)))
+	dec := toml.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(&doc); err != nil {
 		return nil, fmt.Errorf("parse goslop.toml: %w", err)
