@@ -1,0 +1,15 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-78-safe.py
+---
+"""CWE-78 safe: list argv without shell."""
+
+import subprocess
+
+
+def run_ls():
+    subprocess.run(["ls", "-l"], shell=False)
+
+
+def run_echo():
+    subprocess.run(["echo", "hello"])

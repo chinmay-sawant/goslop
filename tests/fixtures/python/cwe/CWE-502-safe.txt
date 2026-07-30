@@ -1,0 +1,16 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-502-safe.py
+---
+"""CWE-502 safe: yaml.safe_load and json.loads only."""
+
+import json
+import yaml
+
+
+def load_yaml(data: str):
+    return yaml.safe_load(data)
+
+
+def load_json(data: str):
+    return json.loads(data)

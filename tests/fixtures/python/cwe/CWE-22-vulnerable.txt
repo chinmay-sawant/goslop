@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-22-vulnerable.py
+---
+"""CWE-22 vulnerable: open(os.path.join(root, user)) without confinement."""
+
+import os
+
+
+def read_user_file(root: str, user_path: str):
+    return open(os.path.join(root, user_path))

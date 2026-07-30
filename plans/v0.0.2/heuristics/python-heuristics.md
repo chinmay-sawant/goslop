@@ -1,7 +1,7 @@
 # v0.0.2 — Python heuristic detectors (CWE, BP, PERF)
 
 > **Parent:** GitHub epic [#51](https://github.com/chinmay-sawant/goslop/issues/51) — Epic: Python heuristic detectors (CWE, BP, PERF)  
-> **Status:** planning (foundation #39 / PR #50 shipped; detectors not started)  
+> **Status:** CWE #52 implemented on branch; BP #53 pending; PERF #54 deferred  
 > **Estimated effort:** multi-PR (CWE + BP active; PERF deferred)  
 > **Ledger rule:** this file is the **canonical execution ledger** for heuristic implementation. Detail lives in sibling checklists. Update checkboxes only with evidence (`make lint` / `make test` for code).
 
@@ -27,7 +27,7 @@
 
 | Fact | Evidence |
 |------|----------|
-| Python plugin source-only, **zero detectors** | `internal/lang/python/plugin.go` |
+| Python plugin source-only + **BP-PY detectors** (A+B+C subset) | `internal/lang/python/` + `detectors/bad_practices/` |
 | CWE catalogue ~344 rules | `ruleset/python/chunks/cwe-*.json` (`python_relevance`) |
 | BP catalogue 50 `BP-PY-*` | `ruleset/python/bad-practices.json` |
 | **No** Python PERF JSON | no `ruleset/python/chunks/perf-*` |
@@ -61,14 +61,16 @@
 ### CWE — #52
 
 - [x] Detail checklist complete in [python-heuristics-cwe.md](./python-heuristics-cwe.md) (docs-only plan, 2026-07-31)
-- [ ] Priority CWE batch green on fixtures
-- [ ] Validation: `make lint` + `make test` recorded on implement branch
+- [x] Priority CWE batch green on fixtures  
+  **Evidence:** `go test ./internal/lang/python/detectors/cwe/` hit/miss for CWE-22/78/79/89/502; fixtures under `tests/fixtures/python/cwe/` (2026-07-31, `feat/python-cwe-heuristics`).
+- [x] Validation: `make lint` + `make test` recorded on implement branch  
+  **Evidence:** `make lint` / `make test` green; `CGO_ENABLED=0 go build` OK (2026-07-31, `feat/python-cwe-heuristics`).
 
 ### BP — #53
 
 - [x] Detail checklist complete in [python-heuristics-bp.md](./python-heuristics-bp.md) (docs-only plan, 2026-07-31)
-- [ ] Priority `BP-PY-*` batch green on fixtures
-- [ ] Validation: `make lint` + `make test` recorded on implement branch
+- [x] Priority `BP-PY-*` batch green (A+B + C high-signal; inline unit tests; D/E deferred)
+- [x] Validation: `make lint` + `make test` green on `feat/python-bp-heuristics` (2026-07-31)
 
 ### PERF — #54 (deferred)
 
@@ -80,9 +82,11 @@
 
 ### Epic closure
 
-- [ ] #52 and #53 have shipped initial heuristic batches (or explicit partial `[~]` with remaining IDs listed)
-- [ ] #54 remains deferred or unblocked with catalogue + first detectors
-- [ ] Epic #51 success criteria reviewed against evidence
+- [x] #52 and #53 have shipped initial heuristic batches on `chore/epic-51-integration`  
+  **Evidence:** CWE-22/78/79/89/502 + BP-PY A/B + C high-signal; remaining BP/CWE/PERF still deferred (`[~]`).  
+  **Validation (integration):** `make lint` + `make test` green 2026-07-31.
+- [x] #54 remains deferred (no PERF catalogue)
+- [ ] Epic #51 closed when integration PR lands (or left open for remaining expansion)
 
 ---
 

@@ -1,0 +1,25 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-22-safe.py
+---
+"""CWE-22 safe: basename confinement and literal path."""
+
+import os
+from pathlib import Path
+
+
+def read_named(root: str, user_path: str):
+    name = os.path.basename(user_path)
+    return open(os.path.join(root, name))
+
+
+def read_hosts():
+    return open("/etc/hosts")
+
+
+def read_confined(root: str, user_path: str):
+    base = Path(root).resolve()
+    full = (base / user_path).resolve()
+    if str(full).startswith(str(base)):
+        return open(full)
+    raise ValueError("path escape")

@@ -1,0 +1,5 @@
+# Python-only scan config for make run-python (and ad-hoc --config use).
+# Default product still uses templates/goslop.toml (Go-first; languages unset = go).
+[goslop]
+languages = ["python"]
+fail_on = "none"

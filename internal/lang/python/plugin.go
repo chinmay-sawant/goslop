@@ -1,24 +1,25 @@
-// Package python implements a minimal Python LanguagePlugin stub for goslop.
+// Package python implements the Python LanguagePlugin for goslop.
 //
-// Status: WIP foundation for multi-language enable/disable (epic #39). This
-// package provides ID / Extensions / source-only ParseSource so the engine can
-// resolve .py files when the plugin is registered. There are no detectors yet
-// (Detectors / NewDetectors return empty). Full parse trees, detectors, and
-// ruleset-backed catalogue execution are out of scope for this stub.
+// Status: multi-language foundation (#39) plus priority CWE heuristics (#52)
+// and BP-PY bad-practice heuristics (#53). ParseSource is source-only (no
+// Python AST / CGO tree-sitter). Detectors scan unit.Source via pure-Go
+// patterns under detectors/{cwe,bad_practices}. PERF (#54) is deferred.
+//
+// Production DefaultRegistry stays Go-only; include Python via
+// engine.NewRegistryWithLanguages or python.Register when intentionally
+// enabling the language (tests / config languages).
 //
 // Callers use:
 //
 //	python.NewPlugin() / python.Register(reg)
-//
-// DefaultRegistry stays Go-only; include Python via engine.NewRegistryWithLanguages
-// or Register when intentionally enabling the language (tests / config languages).
 package python
 
 import (
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/detectors"
 )
 
-// Plugin is the Python language plugin stub (source-only, zero detectors).
+// Plugin is the Python language plugin (source-only parse + CWE/BP detectors).
 type Plugin struct {
 	core.BasePlugin
 }
@@ -53,14 +54,15 @@ func (p *Plugin) ID() core.LanguageID { return core.LanguagePython }
 // Extensions implements core.LanguagePlugin.
 func (p *Plugin) Extensions() []string { return []string{"py"} }
 
-// Detectors implements core.LanguagePlugin. Empty until Python detectors land.
-func (p *Plugin) Detectors() []core.Detector { return nil }
+// Detectors implements core.LanguagePlugin.
+func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
 
-// NewDetectors implements core.LanguagePlugin. Empty catalogue matches Detectors.
-func (p *Plugin) NewDetectors() []core.Detector { return nil }
+// NewDetectors creates the session-local Python detector set (fresh instances).
+func (p *Plugin) NewDetectors() []core.Detector { return detectors.All() }
 
 // ParseSource returns a source-only ParsedUnit tagged LanguagePython.
 // Overrides BasePlugin.ParseSource which defaults language to Go.
+// Detectors must not require unit.Tree.
 func (p *Plugin) ParseSource(path, source string) (*core.ParseResult, error) {
 	return &core.ParseResult{
 		Unit:    core.NewParsedUnit(core.LanguagePython, path, source),

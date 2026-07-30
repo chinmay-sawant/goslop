@@ -1,9 +1,16 @@
 # Python ruleset catalogues (WIP)
 
-> **Status:** catalogue metadata only — **no** Python AST detectors in this tree  
-> **Issue:** #43 · epic #39 · plan: `plans/v0.0.2/phase-4-rulesets.md`  
-> **CWE mapping:** `plans/v0.0.2/python-cwe-from-699-mapping.md` (from `699.csv`)  
-> **BP audit:** `plans/v0.0.2/ruleset-reuse-audit.md`
+> **Status:** catalogues + priority **CWE** and **BP-PY** detectors (PERF deferred)  
+> **Issues:** #52 CWE · #53 BP · #54 PERF deferred · epic #51 · foundation #39  
+> **Plans:** `plans/v0.0.2/heuristics/python-heuristics-*.md`  
+> **CWE mapping:** `plans/v0.0.2/init-python/python-cwe-from-699-mapping.md` (from `699.csv`)  
+> **BP audit:** `plans/v0.0.2/init-python/ruleset-reuse-audit.md`
+
+**Runnable detectors (priority batches):**
+- CWE-22, CWE-78, CWE-79, CWE-89, CWE-502 — `internal/lang/python/detectors/cwe`
+- BP-PY priority subset (core + security + sample Flask/Django) — `internal/lang/python/detectors/bad_practices`
+
+Pure-Go source patterns; catalogue JSON remains source of truth. Full CWE-344 / all 50 BP / PERF not claimed.
 
 ## Layout
 
@@ -75,9 +82,25 @@ Same fields as golang CWE chunks:
 
 | File | Contents |
 |------|----------|
-| `bad-practices.json` | **50** `BP-PY-*` entries (metadata only) |
+| `bad-practices.json` | **50** `BP-PY-*` entries (catalogue metadata) |
 
 IDs use **`BP-PY-*`** so they never collide with Go `BP-*` when both catalogues are listed.
+
+### Detector status (issue #53)
+
+Source-pattern heuristics live under `internal/lang/python/detectors/bad_practices/`.
+They run only when the Python plugin is enabled (`languages = ["python"]` / multi-language registry).
+
+**Shipped (first land):**
+
+| Batch | IDs |
+|-------|-----|
+| A — Core | `BP-PY-1`, `2`, `4`, `6`, `7` |
+| B — Security hygiene | `BP-PY-8` … `13` |
+| C — Framework (high-signal) | `BP-PY-16`, `17`, `21` |
+
+Remaining catalogue IDs (`BP-PY-3`, `5`, rest of C/D/E) are deferred — see the BP ledger.
+This tree still has **no** Python CWE/PERF detectors.
 
 ## Reuse policy
 
