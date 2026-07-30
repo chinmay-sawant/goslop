@@ -29,13 +29,13 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 4. Rewrite consumers that walk tree-sitter CSTs (PERF facts, BP facts, taint extract) to use the new Go AST (or pure source facts where AST is unnecessary).
 5. Update Makefile/README/CI so `CGO_ENABLED=0` builds and tests work.
 6. Re-baseline performance and keep wall under hard/soft budgets above.
-7. Preserve `make run` product summary surface and §12.4 oracle hard metrics.
+7. Preserve `make run` product summary surface and §12.4 parity baseline hard metrics.
 
 ## Out of scope
 
 - Implementing Python or other languages (only the plugin seam).
 - Rewriting pure-FP museum rule bodies for site-for-site residual swaps.
-- Changing §12.4 oracle numbers or fail policy.
+- Changing §12.4 parity baseline numbers or fail policy.
 - Windows CGO matrix (N/A once pure Go).
 
 ## Success criteria
@@ -58,5 +58,5 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 ## References
 
 - Relates to #8 (§12.4 gate)
-- PRs: #16 (oracle lock), #18 (`make run` summary)
+- PRs: #16 (baseline lock), #18 (`make run` summary)
 - Docs: `internal/lang/go/goparse/parse.go` (pure-Go parse), `internal/core/plugin.go` (plugin seam + second-language guide)

@@ -7,10 +7,10 @@ import (
 	"github.com/chinmay/goslop/tests/integration"
 )
 
-// TestSeedFixtureOracle exercises the Phase 12 integration harness on a small
+// TestSeedFixtureMatrix exercises the Phase 12 integration harness on a small
 // seed set of materialized fixtures (CWE-78/89 + PERF-6). This is scaffolding
-// only — full fixture matrix and §12.4 product oracle remain deferred.
-func TestSeedFixtureOracle(t *testing.T) {
+// only — full fixture matrix and §12.4 product reference remain deferred.
+func TestSeedFixtureMatrix(t *testing.T) {
 	if _, err := integration.FixturesRoot(); err != nil {
 		t.Fatalf("fixtures not available: %v", err)
 	}

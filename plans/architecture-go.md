@@ -8,7 +8,7 @@
 ## Goals (parity with Rust product)
 
 1. Single static binary CLI: scan Go trees for **PERF / CWE / BP** findings.
-2. Same **fixture-backed** rule oracle: `tests/fixtures/**/*.txt` materialize → scan → expected rule IDs.
+2. Same **fixture-backed** rule expectations: `tests/fixtures/**/*.txt` materialize → scan → expected rule IDs.
 3. Offline, no network; optional typed path via `go list` later (`--typed`).
 4. Profiles: `recommended` / `security` / `all` (+ only/skip, baseline, cache, SARIF/JSON).
 5. Complements golangci-lint - does not replace it.
@@ -99,8 +99,8 @@ CLI/config/profile
  - `file: name.go`
  - optional `variant:`, `expect:`, etc.
  - `---` then source
-3. Integration tests assert **rule ID presence/absence** per fixture (same oracle as Rust).
-4. Prefer table-driven Go tests under `tests/integration/` rather than porting every Rust `#[test]` file 1:1; keep **oracle fidelity**.
+3. Integration tests assert **rule ID presence/absence** per fixture (same baseline as Rust).
+4. Prefer table-driven Go tests under `tests/integration/` rather than porting every Rust `#[test]` file 1:1; keep **expectation fidelity**.
 
 ## Dependency policy (Go)
 

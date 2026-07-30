@@ -1,5 +1,5 @@
 // Package integration provides a small fixture-materialization harness for
-// Phase 12 parity scaffolding. Full §12.4 oracle comparison is intentionally
+// Phase 12 parity scaffolding. Full §12.4 parity baseline comparison is intentionally
 // out of scope until Phases 7–11 land.
 package integration
 

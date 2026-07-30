@@ -57,7 +57,7 @@ Fix an infinite loop in BP-28/BP-29 text scanners that hung `make run` when scan
 - [x] `go test ./tests/integration/ -run TestDogfoodDetectorSourcesNoHang`
 - [x] `go test ./internal/export/ ./internal/config/`
 - [ ] `make test` (full suite recommended before merge)
-- [ ] `make run` on gopdfsuit (oracle path)
+- [ ] `make run` on gopdfsuit (reference corpus path)
 
 ### Commands
 

@@ -95,6 +95,8 @@ Product-style summary scan (build + export defaults):
 make run SCAN_PATH=./your/go/project
 ```
 
+**Note:** Scanning **this** repository under `--profile all` yields a large finding count. That is expected for a SAT that ships **pattern needles**, **detector source**, and **intentional fixtures**—the same class of noise you get when tools like **Semgrep** (or other SATs) analyze their own rule packs and test corpora. Use a real app (or the `gopdfsuit` baseline via default `make run`) to judge product signal. See [documents/overview.md](./documents/overview.md#scanning-the-goslop-repo-itself-high-finding-counts).
+
 ### Rule discovery
 
 ```sh
@@ -200,7 +202,7 @@ make lint          # go vet + gofmt check
 make lint-all      # golangci-lint (when configured)
 make ci            # lint + test + build
 make run           # product summary scan + optional exports
-make oracle        # large-corpus metrics gate (see Makefile SCAN_PATH)
+make reference-metrics        # large-corpus metrics gate (see Makefile SCAN_PATH)
 make help          # list targets
 ```
 
@@ -217,7 +219,7 @@ Detailed guides live under [`documents/`](./documents/):
 | [`documents/README.md`](./documents/README.md) | Documentation index |
 | [`documents/overview.md`](./documents/overview.md) | Features, profiles, cache, baseline, ignore |
 | [`documents/cli-reference.md`](./documents/cli-reference.md) | Every CLI flag, exit codes, config merge |
-| [`documents/make-run.md`](./documents/make-run.md) | Product `make run` / `make oracle` workflow |
+| [`documents/make-run.md`](./documents/make-run.md) | Product `make run` / `make reference-metrics` workflow |
 | [`documents/reporting-formats.md`](./documents/reporting-formats.md) | Text, JSON, and **SARIF** with examples |
 | [`documents/export-context-and-chunks.md`](./documents/export-context-and-chunks.md) | Function refs vs chunks for agent delegation |
 | [`documents/go-recommended-pack.md`](./documents/go-recommended-pack.md) | Recommended pack and profile tables |

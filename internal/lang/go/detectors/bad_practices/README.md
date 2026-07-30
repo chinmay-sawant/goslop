@@ -44,7 +44,7 @@ Module-hygiene rules emit on the project anchor (`requiresProjectAnchor`): BP-57
 ## Coverage notes
 
 Heuristic ports of the Rust modules under `goslop/src/lang/go/detectors/bad_practices/`.
-Priority fidelity: **BP-1**, **BP-5** (top oracle frequency), then broad catalogue registration.
+Priority fidelity: **BP-1**, **BP-5** (top reference-corpus frequency), then broad catalogue registration.
 
 Not every fixture is expected to pass; AST-precise rules from Rust may still need tightening. Gaps are listed in the Phase 8 PR body.
 

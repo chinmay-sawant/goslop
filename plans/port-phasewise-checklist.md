@@ -11,7 +11,7 @@
 
 Port **goslop** from Rust to Go while keeping:
 
-1. **Heuristic oracles as-is** - `tests/fixtures/**/*.txt`, `ruleset/`, PERF/CWE registry TOMLs, findings/chunks corpora.
+1. **Fixture expectations as-is** - `tests/fixtures/**/*.txt`, `ruleset/`, PERF/CWE registry TOMLs, findings/chunks corpora.
 2. **Heuristic logic rewritten in Go** - no blind transpile; preserve rule IDs, messages, and fixture expectations.
 3. **Product surface** - CLI, profiles, cache, baseline, reporters, incremental analysis.
 
@@ -35,7 +35,7 @@ Supporting docs: [`architecture-go.md`](./architecture-go.md), [`parity-matrix.m
 | 9 | Taint | Intra/inter-procedural graph + CWE-22/78/79/89 | 7 |
 | 10 | Cache / baseline / ignore | Parity with Rust incremental + ignore model | 3-5 |
 | 11 | Packs / maturity / quarantine | Recommended pack, metadata, --list-rules fidelity | 6-8 |
-| 12 | Parity gates | Fixture oracle suites, smoke budgets, CI, **§12.4 final export/scan oracle** | 6-11 |
+| 12 | Parity gates | Fixture baseline suites, smoke budgets, CI, **§12.4 final export/scan parity baseline** | 6-11 |
 
 **Proof commands (repo root):**
 
@@ -178,7 +178,7 @@ go build -o bin/goslop ./cmd/goslop
 - [x] `--export-context` / `--export-chunks` full port - `internal/export` + CLI flags
 - [x] Default dirs: `scripts/findings/functions` (context), `scripts/chunks` (chunks)
 - [x] `retain_sources` only when export enabled
-- [x] Final gate: export counts in **§12.4** (915 context + 37 chunks on `gopdfsuit`) - `make oracle`
+- [x] Final gate: export counts in **§12.4** (915 context + 37 chunks on `gopdfsuit`) - `make reference-metrics`
 
 ---
 
@@ -209,7 +209,7 @@ go build -o bin/goslop ./cmd/goslop
 ### 6.2 PERF closure gate
 - [x] All registry `[[detector]]` entries have a Go function (`RegisterRule` → 239/239)
 - [~] `go test` PERF package green with batch samples; full materialized fixture suite still optional
-- [ ] Record residual FN/FP vs Rust oracle in notes (tighten heuristics)
+- [ ] Record residual FN/FP vs Rust reference baseline in notes (tighten heuristics)
 
 ---
 
@@ -329,9 +329,9 @@ go build -o bin/goslop ./cmd/goslop
 - [ ] No silent empty detector stubs in default packs
 - [ ] Checklist statuses reconciled with `go test` evidence
 
-### 12.4 Final product validation (Rust oracle → Go parity)
+### 12.4 Final product validation (Rust reference baseline → Go parity)
 
-> **Ship gate.** Do not mark the Go port complete until this command (or its Go equivalent) matches the oracle below on the same corpus.
+> **Ship gate.** Do not mark the Go port complete until this command (or its Go equivalent) matches the expected baseline below on the same corpus.
 >
 > **Corpus:** the default `make run` target tree used by the Rust product (gopdfsuit-scale / project configured in Rust `makefile` - typically the real-repo scan that yields **78** analyzed Go files).  
 > **Rust reference command** (recorded 2026-07-29 on `goslop` @ `docs/expand-documents-and-frontend`):
@@ -341,7 +341,7 @@ go build -o bin/goslop ./cmd/goslop
 make run RUN_ARGS="--export-context --export-chunks --no-cache"
 ```
 
-**Reference output (oracle - hold finding counts & top rules):**
+**Reference output (baseline - hold finding counts & top rules):**
 
 ```text
 scanned 78 files (28120 lines) in 479.5ms
@@ -354,7 +354,7 @@ scanned 78 files (28120 lines) in 479.5ms
 exported 915 context file(s) to scripts/findings/functions; exported 37 chunk file(s) to scripts/chunks
 ```
 
-| Check | Expected (oracle) | Go port proof (2026-07-30, `gopdfsuit`, PR #16) |
+| Check | Expected (baseline) | Go port proof (2026-07-30, `gopdfsuit`, PR #16) |
 |------:|-------------------|---------------|
 | Files scanned | **78** | [x] **78** |
 | Lines scanned | **28120** | [~] **28042** (line-count off-by ~78; soft) |
@@ -373,7 +373,7 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 
 ```bash
 # From goslop-go (SCAN_PATH defaults to gopdfsuit in Makefile):
-make oracle
+make reference-metrics
 # or:
 ./bin/goslop --profile all --export-context --export-chunks --no-cache --format json "$SCAN_PATH"
 ```
@@ -381,11 +381,11 @@ make oracle
 **Pass criteria**
 
 - [x] Same command surface: `--export-context`, `--export-chunks`, `--no-cache` (profile **all** for full catalogue / §12.4)
-- [x] **Finding oracle locked:** total **915**; severity **10 / 197 / 312 / 396**; top-five rules and counts exact
-- [x] **Export oracle locked:** **915** context files + **37** chunk files to the same default dirs (`scripts/findings/functions`, `scripts/chunks`)
+- [x] **Finding baseline locked:** total **915**; severity **10 / 197 / 312 / 396**; top-five rules and counts exact
+- [x] **Export baseline locked:** **915** context files + **37** chunk files to the same default dirs (`scripts/findings/functions`, `scripts/chunks`)
 - [x] **Scan shape:** **78** files scanned; full re-analysis under `--no-cache`; skipped-file counter wired (`FilesSkipped` / summary line)
 - [x] Recorded Go wall time + host (soft): pure-Go scan **~170-220ms** / process **~0.23-0.30s** on local Linux host (2026-07-30, PR #20); hard **&lt;400ms**
-- [x] Residual FN/FP vs Rust recorded as explicit `[~]` rows above (do not silently change the oracle)
+- [x] Residual FN/FP vs Rust recorded as explicit `[~]` rows above (do not silently change the expected baseline)
 
 **Hard vs soft**
 
@@ -414,7 +414,7 @@ make oracle
 1. **Fixtures and ruleset are sacred** - copy/update only with cross-repo intent.
 2. **One checklist** - update this file when closing work; do not fork status docs.
 3. **Atomic rows** - check a box only with path + command evidence.
-4. **Quarantine honestly** - if a rule cannot meet oracle yet, mark `[~]` with reason (like Rust taint FNs).
+4. **Quarantine honestly** - if a rule cannot meet expected baseline yet, mark `[~]` with reason (like Rust taint FNs).
 5. **Prefer small PRs/phases** - land engine + one rule before mass detector ports.
 
 ---

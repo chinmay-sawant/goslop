@@ -8,7 +8,7 @@ Port Phase 7 CWE structural detectors for goslop Go: unified `GoCweScan` (PERF-s
 
 - Plans: `plans/port-phasewise-checklist.md` Phase 7
 - Issue: #3
-- Rust oracle: `goslop/src/lang/go/detectors/cwe/`
+- Rust reference baseline: `goslop/src/lang/go/detectors/cwe/`
 - Fixtures already present under `tests/fixtures/go/{stdlib,frameworks,taint}/`
 
 ---

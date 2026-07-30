@@ -1,4 +1,4 @@
-# CWE-89 variant: renamed identifiers / wrapper (taint core oracle)
+# CWE-89 variant: renamed identifiers / wrapper (taint core expectation)
 lang: go
 file: CWE-89-renamed-vulnerable.go
 variant: stdlib

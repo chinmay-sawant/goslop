@@ -10,7 +10,7 @@ main (0-6 done)
   └─ Phase 12 scaffolding (CI, harness)  [partial; §12.4 blocked]
          │
   6+7+8 ─► Phase 11 packs / maturity
-  6..11 ─► Phase 12 full parity / §12.4 oracle
+  6..11 ─► Phase 12 full parity / §12.4 parity baseline
 ```
 
 ## Parallel wave 1 (unlocked) - PRs open, **not merged**

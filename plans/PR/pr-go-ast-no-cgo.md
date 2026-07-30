@@ -1,6 +1,6 @@
 ## Summary
 
-Replace tree-sitter/CGO parsing with pure Go (`go/parser` + `go/ast`) behind a language-plugin seam, drop CGO from the default build/CI, and keep the §12.4 gopdfsuit oracle hard metrics plus sub-400ms `make run` wall time.
+Replace tree-sitter/CGO parsing with pure Go (`go/parser` + `go/ast`) behind a language-plugin seam, drop CGO from the default build/CI, and keep the §12.4 gopdfsuit reference corpus hard metrics plus sub-400ms `make run` wall time.
 
 ## Motivation / context
 

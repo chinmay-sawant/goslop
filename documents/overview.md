@@ -30,7 +30,7 @@ Phases **0-12** landed. High-level status:
 | Taint graph | ✅ CWE-22/78/79/89 |
 | Cache / baseline / ignore | ✅ |
 | Packs | ✅ recommended / perf / security / style / all |
-| §12.4 product oracle (`gopdfsuit`) | ✅ 915 findings; exports 915 context + 37 chunks |
+| §12.4 product parity baseline (`gopdfsuit`) | ✅ 915 findings; exports 915 context + 37 chunks |
 
 Details: root [`README.md`](../README.md) and [`plans/port-phasewise-checklist.md`](../plans/port-phasewise-checklist.md).
 
@@ -78,6 +78,34 @@ Default: **`--profile recommended`**.
 
 Exact allow-lists and rationale: [go-recommended-pack.md](./go-recommended-pack.md).  
 Full flag list: [cli-reference.md](./cli-reference.md).
+
+## Scanning the goslop repo itself (high finding counts)
+
+If you point goslop at **this repository** (`SCAN_PATH=.` or the goslop tree), expect a **large** finding count. That is expected and is a poor measure of product false-positive rate.
+
+### Why (SAT self-host, not “broken rules”)
+
+goslop is a static analysis tool (SAT). Like **Semgrep**, **CodeQL**, or similar engines run **on their own source**, a self-scan fires heavily because the tree is full of **what detectors look for**:
+
+| In this repo | What happens |
+|--------------|--------------|
+| **Pattern catalogues** (`needles.go`, rule tables, metadata) | Rules match **string literals** that encode vulnerable or sloppy snippets used as search needles—not live application code. |
+| **Detector implementations** | Source contains the same substrings the scanners search for (`"http.Server{"`, `"interface {"`, Gin/SQL examples, etc.). |
+| **Test fixtures** (`tests/fixtures/...`) | Deliberate **vulnerable** and **safe** samples for the matrix; many findings are **by design**. |
+| **Product code** (`cmd/`, most of `internal/` outside detectors) | The smaller slice that resembles a normal Go project. |
+
+So a self-scan looks “noisy” for the same reason Semgrep (or any pattern-based SAT) flags its own rule packs and fixture corpora: **the tool is matching the patterns it was built to detect**, which live in the repo as data and tests.
+
+### What to do instead
+
+| Goal | Approach |
+|------|----------|
+| **Product / baseline metrics** | Scan a real application tree (default `make run` → **gopdfsuit**). See [make-run.md](./make-run.md). |
+| **Judge FPs on real apps** | Use application code and CI profiles (`recommended`, etc.), not full self-scan under `--profile all`. |
+| **Dogfood hang / smoke** | Optional short scan of detector packages with a wall clock; do not use finding count as quality score. |
+| **Clean product debt in goslop** | Scan `cmd/` + `internal/` while **excluding** `internal/lang/go/detectors/**` and `tests/fixtures/**`, then triage. |
+
+True false positives on **normal application code** still deserve detector improvements. Self-host and fixture volume do **not** mean “fix every finding in this repo until zero.”
 
 ### Recommended pack (summary)
 

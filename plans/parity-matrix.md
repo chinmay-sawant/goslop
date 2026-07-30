@@ -37,7 +37,7 @@ Update counts from `goslop --list-rules` when Rust binary available; registries 
 
 | Path | Files (copied) | Notes |
 |------|---------------:|-------|
-| `tests/fixtures/go/**` | bulk of 1746 | primary oracle |
+| `tests/fixtures/go/**` | bulk of 1746 | primary expectations |
 | `tests/fixtures/python/**` | small | [~] skip until Python plugin |
 | `tests/fixtures/manifest.toml` | 1 | materializer must read |
 
@@ -59,7 +59,7 @@ Update counts from `goslop --list-rules` when Rust binary available; registries 
 | `--export-context` / `--export-chunks` | 5, **12.4** | [ ] |
 | `--no-cache` full re-analysis | 10, **12.4** | [ ] |
 
-## Final validation oracle (Phase 12.4)
+## Final validation baseline (Phase 12.4)
 
 Rust reference (do not change without updating the checklist):
 

@@ -95,7 +95,7 @@ flowchart LR
 
 - [x] `go test ./...`
 - [x] Focused: `go test ./internal/lang/go/detectors/cwe/taint/ -v`
-- [x] Fixture oracle: vulnerable fires / safe silent; IP-010 quarantined
+- [x] Fixture baseline: vulnerable fires / safe silent; IP-010 quarantined
 - [x] Multi-file `taint_projects/` resolution
 
 ### Commands

@@ -158,7 +158,7 @@ Copy everything below this line into the GitHub PR body (and into `plans/PR/pr-<
 - [ ] `make lint` / `go vet`
 - [ ] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` (when pure-Go is required)
 - [ ] `make run` wall time vs baseline (hard &lt; 400ms; soft ±50ms of reference)
-- [ ] `make oracle` / gopdfsuit hard metrics if detector surface changed
+- [ ] `make reference-metrics` / gopdfsuit hard metrics if detector surface changed
 
 ### Commands
 
@@ -217,7 +217,7 @@ make run
 feat(engine): replace tree-sitter with go/ast pure-Go parse
 fix: respect --skip when GoScan bundle runs
 perf(engine): parallel file scan without CGO
-docs: align README with §12.4 oracle
+docs: align README with §12.4 parity baseline
 chore: drop tree-sitter CGO dependencies
 ```
 

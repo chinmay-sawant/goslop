@@ -55,7 +55,7 @@ Merge order used: **12a → 10 → 7 → 8 → 9** (then conflict resolution for
 ### Not in this PR (follow-ups)
 
 - **Phase 11** packs/maturity full fidelity (issue #7)
-- **§12.4** hard oracle (915 findings / exports) - still blocked
+- **§12.4** hard expected baseline (915 findings / exports) - still blocked
 - Export-context / export-chunks full product path
 
 ---
@@ -121,7 +121,7 @@ go build -o bin/goslop ./cmd/goslop
 ## Follow-ups (out of scope)
 
 - Phase 11 recommended/security/all pack fidelity + maturity tags (#7)
-- §12.4 oracle on reference corpus (#8)
+- §12.4 parity baseline on reference corpus (#8)
 - Supersede child PRs #10-#14 without double-merge once this is accepted
 - Residual FN/FP polish vs Rust
 

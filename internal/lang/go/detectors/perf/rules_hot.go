@@ -15,7 +15,7 @@ func detectPERF32(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Findin
 	// sees []byte(...) as type_conversion_expression). Keep in-loop sites,
 	// drop string(simpleIdent) / string(buf[:n]) FPs that Rust misses, and
 	// cap per-file density toward §12.4 PERF-32×59 (cap 8 restores that
-	// oracle count after the string filters).
+	// reference count after the string filters).
 	const maxPerFile = 8
 	emitted := 0
 	for _, conv := range facts.Conversions {

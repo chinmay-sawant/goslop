@@ -31,7 +31,7 @@ func detectPERF2(unit *core.ParsedUnit, facts *GoPerfFacts, out *[]rules.Finding
 		}
 		text, expr := a.Text, a.Expr
 		// String concat in loop: += or name = name + …
-		// Field form: x.joined += " " + part (search.go oracle site).
+		// Field form: x.joined += " " + part (search.go reference site).
 		hasPlusEqual := strings.Contains(text, "+=")
 		// Require the concat operand to be the assigned name at a word boundary
 		// (avoid matching the trailing 'd' of cmd in `cmd+" "`).
