@@ -19,6 +19,12 @@ var bpNeedles = []string{
 	"password", "secret", "api_key", "token", "private_key", "SECRET_KEY",
 	"debug=True", "DEBUG", "app.run", "secret_key",
 	"app.config",
+	// Batch 06 — async / threading
+	"create_task", "ensure_future", "time.sleep", "threading.", ".start(", ".join(",
+	// Batch 07 — testing / deps / observability
+	"pytest", "sys.path", "print(", "logging.", "logger.",
+	"import ", "from ",
+	"imp", "asyncore", "asynchat", "cgi", "telnetlib",
 }
 
 // bpFacts is a light fact bag for Python source-pattern BP detectors.

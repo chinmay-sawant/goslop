@@ -20,6 +20,10 @@ func TestBPRulesRegistered(t *testing.T) {
 		"BP-PY-1", "BP-PY-2", "BP-PY-4", "BP-PY-6", "BP-PY-7",
 		"BP-PY-8", "BP-PY-9", "BP-PY-10", "BP-PY-11", "BP-PY-12", "BP-PY-13",
 		"BP-PY-16", "BP-PY-17", "BP-PY-21",
+		// Batch 06 — async
+		"BP-PY-38", "BP-PY-39", "BP-PY-40",
+		// Batch 07 — testing / deps / observability
+		"BP-PY-41", "BP-PY-42", "BP-PY-43", "BP-PY-44", "BP-PY-45", "BP-PY-46", "BP-PY-47",
 	}
 	if len(ids) < len(want) {
 		t.Fatalf("expected >= %d BP-PY rules, got %d: %v", len(want), len(ids), ids)

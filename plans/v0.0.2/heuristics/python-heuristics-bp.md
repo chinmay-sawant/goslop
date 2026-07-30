@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics.md` — epic #51 rollup (BP stream)  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) — `python(bp): implement BP-PY bad-practice heuristics from catalogue`  
-> **Status:** priority subset **shipped** (14 rules via PR #58); remaining **36** planned as batchwise PRs under `bp-plans/`  
+> **Status:** priority subset **shipped** (14 rules via PR #58); batches 06–07 add **10** more (38–47); remaining **26** planned as batchwise PRs under `bp-plans/`  
 > **Estimated effort:** multi-PR batches 01–08  
 > **Expansion ledgers:** [`bp-plans/README.md`](./bp-plans/README.md) (all remaining IDs; **no catalogue gap**)  
 > **Ledger rule:** Mark `[x]` only with evidence; for code batches run `make lint` + `make test`.  
@@ -287,20 +287,20 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 
 ### 5.3 Async
 
-- [ ] `BP-PY-38` create_task without reference
-- [ ] `BP-PY-39` time.sleep in async def (overlaps `30`; keep distinct rule ids)
-- [ ] `BP-PY-40` threading without join — review-only / low confidence OK if documented
-- [ ] Fixtures + proof
+- [x] `BP-PY-38` create_task without reference
+- [x] `BP-PY-39` time.sleep in async def (overlaps `30`; keep distinct rule ids)
+- [x] `BP-PY-40` threading without join — review-only / low confidence OK if documented
+- [x] Fixtures + proof (`rules_async.go` / `rules_async_test.go`)
 
 ### 5.4 Testing / deps / observability
 
-- [ ] `BP-PY-41`, `42` testing hygiene
-- [ ] `BP-PY-43` requirements without pins — may need non-`.py` path or project scan; `[~]` if only `.py` units in v0
-- [ ] `BP-PY-44` deprecated stdlib imports
-- [ ] `BP-PY-45` `sys.path` mutation
-- [ ] `BP-PY-46` print debugging (info)
-- [ ] `BP-PY-47` logging f-string before logger
-- [ ] Fixtures + proof per shipped rule
+- [x] `BP-PY-41`, `42` testing hygiene
+- [x] `BP-PY-43` requirements without pins — path-gated on `requirements*.txt` unit path (Path A; plugin Extensions stay `.py`-only)
+- [x] `BP-PY-44` deprecated stdlib imports
+- [x] `BP-PY-45` `sys.path` mutation
+- [x] `BP-PY-46` print debugging (info)
+- [x] `BP-PY-47` logging f-string before logger
+- [x] Fixtures + proof per shipped rule (`rules_testing.go`, `rules_deps.go`, `rules_observability.go` + matching `*_test.go`)
 
 ### 5.5 Deferred leftovers (explicit)
 
@@ -424,16 +424,16 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-34 | Jinja2 Markup Or safe Filter On Variables | high | Templates | [~] deferred |
 | BP-PY-36 | SQLAlchemy Session Not Closed | medium | Database | [~] deferred |
 | BP-PY-37 | DB-API Cursor Execute With Percent Format | high | Database | [~] deferred |
-| BP-PY-38 | asyncio create_task Without Reference | medium | Async | [~] deferred |
-| BP-PY-39 | time.sleep In Async Function | high | Async | [~] deferred |
-| BP-PY-40 | threading Without Join Or Shutdown | low | Async | [~] deferred |
-| BP-PY-41 | pytest assert With Side Effects Only | info | Testing | [~] deferred |
-| BP-PY-42 | unittest Assert Without Context On Raises | low | Testing | [~] deferred |
-| BP-PY-43 | requirements Without Pins | low | Dependency Hygiene | [~] deferred |
-| BP-PY-44 | Import Deprecated stdlib Module | low | Dependency Hygiene | [~] deferred |
-| BP-PY-45 | sys.path Mutation At Runtime | low | Dependency Hygiene | [~] deferred |
-| BP-PY-46 | print Debugging In Library Code | info | Observability | [~] deferred |
-| BP-PY-47 | logging With String Format Before Logger | info | Observability | [~] deferred |
+| BP-PY-38 | asyncio create_task Without Reference | medium | Async | [x] `rules_async.go` |
+| BP-PY-39 | time.sleep In Async Function | high | Async | [x] `rules_async.go` |
+| BP-PY-40 | threading Without Join Or Shutdown | low | Async | [x] `rules_async.go` |
+| BP-PY-41 | pytest assert With Side Effects Only | info | Testing | [x] `rules_testing.go` |
+| BP-PY-42 | unittest Assert Without Context On Raises | low | Testing | [x] `rules_testing.go` |
+| BP-PY-43 | requirements Without Pins | low | Dependency Hygiene | [x] `rules_deps.go` (path-gated) |
+| BP-PY-44 | Import Deprecated stdlib Module | low | Dependency Hygiene | [x] `rules_deps.go` |
+| BP-PY-45 | sys.path Mutation At Runtime | low | Dependency Hygiene | [x] `rules_deps.go` |
+| BP-PY-46 | print Debugging In Library Code | info | Observability | [x] `rules_observability.go` |
+| BP-PY-47 | logging With String Format Before Logger | info | Observability | [x] `rules_observability.go` |
 | BP-PY-48 | CORS Allow Origins Star With Credentials | high | Production Hardening | [~] deferred |
 | BP-PY-49 | TLS Verification Disabled | high | Production Hardening | [~] deferred |
 | BP-PY-50 | Django/Flask CSRF Or Session Cookie Insecure Flags | medium | Production Hardening | [~] deferred |
