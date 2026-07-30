@@ -123,6 +123,13 @@
   --info: #1f6c9f;
   --danger: #9f2f2d;
   --surface: #ffffff;
+  /* Scrollbars: warm bone track, charcoal thumb */
+  --scrollbar-size: 10px;
+  --scrollbar-track: #efeee9;
+  --scrollbar-thumb: #c8c4ba;
+  --scrollbar-thumb-hover: #9a968c;
+  --scrollbar-thumb-active: #6b6a66;
+  --scrollbar-corner: #efeee9;
 }
 
 /* Dark: same warm monochrome family, inverted */
@@ -151,6 +158,11 @@
   --danger: #d47270;
   --surface: #1a1a18;
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --scrollbar-track: #1a1a18;
+  --scrollbar-thumb: #3a3a35;
+  --scrollbar-thumb-hover: #52524b;
+  --scrollbar-thumb-active: #6e6e66;
+  --scrollbar-corner: #1a1a18;
 }
 
 @layer base {
@@ -183,6 +195,55 @@
 
   ::selection {
     background: color-mix(in srgb, var(--info) 22%, transparent);
+  }
+
+  /*
+   * Scrollbars (vertical + horizontal) — page and overflow panels.
+   * Firefox: scrollbar-width / scrollbar-color
+   * Chromium / Safari: ::-webkit-scrollbar*
+   */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  *::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+    border: 2px solid var(--scrollbar-track);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+    border: 2px solid var(--scrollbar-track);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-thumb-active);
+    border: 2px solid var(--scrollbar-track);
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: var(--scrollbar-corner);
+  }
+
+  *::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
   }
 }
 

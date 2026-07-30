@@ -15,6 +15,7 @@ export const NAV_LINKS = [
   { href: '#ci', id: 'ci', label: 'CI' },
   { href: '#install', id: 'install', label: 'Install' },
   { href: '#docs', id: 'docs', label: 'Docs' },
+  { href: '#faq', id: 'faq', label: 'FAQ' },
 ] as const
 
 const SECTION_IDS = NAV_LINKS.map((l) => l.id)
@@ -24,7 +25,7 @@ export function SiteHeader() {
   const menuId = useId()
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
-  const active = useActiveSection([...SECTION_IDS, 'faq', 'features'])
+  const active = useActiveSection([...SECTION_IDS, 'features'])
 
   useEffect(() => {
     if (!open) return
@@ -150,13 +151,6 @@ export function SiteHeader() {
                 {link.label}
               </a>
             ))}
-            <a
-              href="#faq"
-              onClick={() => closeMenu()}
-              className="rounded-md px-3 py-3 text-sm text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
-            >
-              FAQ
-            </a>
             <div className="mt-2 flex flex-col gap-2 border-t border-border pt-3 sm:hidden">
               <GitHubStarsButton className="w-full justify-center" />
               <Button size="sm" asChild className="w-full">

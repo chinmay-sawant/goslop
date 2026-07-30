@@ -1,5 +1,4 @@
 import { ArrowRight } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CodeBlock } from '@/components/code-block'
 
@@ -22,14 +21,6 @@ export function HeroSection() {
       <div className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           <div>
-            <Badge
-              variant="outline"
-              className="mb-5 gap-2 px-3 py-1 font-mono text-[11px] uppercase tracking-wider"
-            >
-              <span className="size-1.5 rounded-full bg-success" />
-              Pure-Go SAT · CGO_ENABLED=0
-            </Badge>
-
             <h1 className="font-heading text-4xl leading-[1.08] tracking-tight text-balance sm:text-5xl lg:text-6xl">
               Find it. Export it. Hand it to an agent.
             </h1>

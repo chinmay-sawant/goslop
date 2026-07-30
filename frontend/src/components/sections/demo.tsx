@@ -9,7 +9,6 @@ import {
   CONTEXT_LINES,
   FINDING,
   SCAN_COMMAND,
-  SCAN_FINDING,
   SCAN_SUMMARY,
 } from '@/lib/export-sample'
 import { cn } from '@/lib/utils'
@@ -184,7 +183,7 @@ export function DemoSection() {
 
   const fileLabel =
     panel === 'scan'
-      ? 'stderr summary · sample findings (gopdfsuit)'
+      ? 'stderr summary · gopdfsuit scan'
       : panel === 'chunk'
         ? FINDING.chunkFile
         : FINDING.functionFile
@@ -202,12 +201,8 @@ export function DemoSection() {
         <Reveal>
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-heading text-3xl tracking-tight sm:text-4xl md:text-5xl">
-              The product is the output
+              Scan, Understand, hand agents real context
             </h2>
-            <p className="mt-4 text-muted-foreground text-balance">
-              Summary on stderr, findings on stdout, then disk export for agents.
-              Real PERF-42 true positive from the reference corpus export.
-            </p>
           </div>
         </Reveal>
 
@@ -250,7 +245,7 @@ export function DemoSection() {
                     {FINDING.rule}
                   </Badge>
                 )}
-                <CopyButton text={copyText} label="Copy dossier" />
+                <CopyButton text={copyText} />
               </div>
             </div>
 
@@ -281,14 +276,6 @@ export function DemoSection() {
                     <p className="mb-2 text-muted-foreground"># stderr · scan summary</p>
                     <pre className="whitespace-pre-wrap text-foreground/90">
                       {SCAN_SUMMARY}
-                    </pre>
-                  </div>
-                  <div className="border-t border-border pt-4">
-                    <p className="mb-2 text-muted-foreground">
-                      # sample findings (from same run · text shape)
-                    </p>
-                    <pre className="whitespace-pre-wrap text-foreground/90">
-                      {SCAN_FINDING}
                     </pre>
                   </div>
                 </div>
@@ -325,10 +312,6 @@ export function DemoSection() {
           </div>
         </Reveal>
 
-        <p className="mx-auto mt-6 max-w-2xl text-center text-xs text-muted-foreground">
-          Reference corpus self-scan counts are large on purpose (fixtures +
-          needles). Judge signal on real app trees; use baseline for known debt.
-        </p>
       </div>
     </section>
   )

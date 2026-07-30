@@ -66,22 +66,6 @@ export function WhySection() {
             </div>
           ))}
         </div>
-
-        <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-border bg-secondary/30 px-5 py-4 text-sm text-muted-foreground">
-          <p>
-            <span className="font-medium text-foreground">Noise honesty: </span>
-            scanning the goslop repo itself is a poor FP benchmark (needles,
-            detectors, fixtures). Use a real app tree, then{' '}
-            <code className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-foreground">
-              .goslop-baseline.json
-            </code>{' '}
-            and{' '}
-            <code className="rounded bg-secondary px-1.5 py-0.5 font-mono text-[11px] text-foreground">
-              // goslop-ignore
-            </code>{' '}
-            for known debt.
-          </p>
-        </div>
       </div>
     </section>
   )

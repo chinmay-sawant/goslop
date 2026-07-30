@@ -54,28 +54,6 @@ export const SCAN_SUMMARY = `scanned 78 files (28042 lines) in 100.4ms
   example findings: 63 (of 915 total)
 exported 915 context file(s) to scripts/findings/functions; exported 37 chunk file(s) to scripts/chunks`
 
-/**
- * Example findings from the same gopdfsuit run (paths shortened for display).
- * Messages match export dossiers under scripts/findings/functions/.
- */
-export const SCAN_FINDING = `CWE-497  high  cmd/gopdfsuit/main.go:72:19
-the diagnostics endpoint exposes host environment details to callers
-
-PERF-68  medium  cmd/gopdfsuit/main.go:66:14
-gin.Logger() performs synchronous I/O on the request path; use an async logger or disable in production
-
-PERF-42  info  internal/benchmarktemplates/runner.go:110:10
-fmt.Errorf with a static string allocates a Sprintf; use errors.New instead
-
-PERF-6  info  internal/handlers/handlers.go:478:11
-fmt-based formatting is performed inside a loop body
-
-PERF-32  medium  internal/handlers/handlers.go:60:27
-string <-> []byte conversion copies the underlying data on a hot path
-
-BP-1  low  internal/benchmarktemplates/zerodha_retail.go:22:2
-discarded error return; handle or explicitly ignore with a comment`
-
 /** Full text for clipboard (function dossier shape). */
 export function buildFunctionDossierText(): string {
   const lines = CONTEXT_LINES.map((l) => {
@@ -118,8 +96,5 @@ export function buildScanText(): string {
     '',
     '# stderr · scan summary',
     SCAN_SUMMARY,
-    '',
-    '# sample findings (text shape)',
-    SCAN_FINDING,
   ].join('\n')
 }
