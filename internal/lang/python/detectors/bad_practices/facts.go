@@ -19,6 +19,14 @@ var bpNeedles = []string{
 	"password", "secret", "api_key", "token", "private_key", "SECRET_KEY",
 	"debug=True", "DEBUG", "app.run", "secret_key",
 	"app.config",
+	// Batch 01-02: core extra, http, flask remainder
+	"raise", "Exception", "BaseException",
+	"import *",
+	"requests.", "session.", "sess.", "timeout",
+	"AsyncClient", "aclose",
+	"request.form", "request.get_json", "request.json", "request.files",
+	".route(", "errorhandler", "register_error_handler", "traceback",
+	"send_file", "send_from_directory", "safe_join",
 	// BP-PY-48 CORS star + credentials
 	"CORSMiddleware", "allow_origins", "allow_credentials",
 	"supports_credentials", "CORS_ALLOW_ALL_ORIGINS", "CORS_ORIGIN_ALLOW_ALL",
