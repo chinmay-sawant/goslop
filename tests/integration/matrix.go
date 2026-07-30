@@ -53,6 +53,7 @@ func MaterializeAndScanOpts(relPath string, opts ScanOptions) (Result, error) {
 	if err != nil {
 		return Result{}, err
 	}
+	defer os.RemoveAll(outRoot)
 	srcPath, err := fixture.MaterializeFixtureFile(txt, outRoot)
 	if err != nil {
 		return Result{}, fmt.Errorf("materialize %s: %w", relPath, err)

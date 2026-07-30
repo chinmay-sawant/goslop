@@ -57,18 +57,16 @@ func (d *GoBadPracticeScan) MetadataFor(ruleID string) *rules.RuleMetadata {
 	return MetadataForID(ruleID)
 }
 
-// BeginScan installs project-cache session state for this analyzer.
+// BeginScan resets project-cache session state for this detector instance.
 func (d *GoBadPracticeScan) BeginScan(ctx *core.ScanContext) {
 	if d.caches == nil {
 		d.caches = newProjectCaches()
 	}
 	d.caches.clear()
-	setActiveCaches(d.caches)
 }
 
-// EndScan clears the active session.
+// EndScan drops the current detector's project facts.
 func (d *GoBadPracticeScan) EndScan() {
-	clearActiveCaches()
 	if d.caches != nil {
 		d.caches.clear()
 	}
@@ -89,9 +87,6 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 	if d.caches == nil {
 		d.caches = newProjectCaches()
 	}
-	// Rayon-style workers may not inherit the controlling thread's session.
-	_ = installActiveCaches(d.caches)
-
 	all := bpCatalogueSnapshot()
 	any := false
 	for _, e := range all {
@@ -104,7 +99,7 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 		return
 	}
 
-	facts := buildFacts(unit)
+	facts := buildFacts(unit, d.caches)
 	defer facts.close()
 
 	hasEnabledProject := false
@@ -123,8 +118,8 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 	isProjectAnchor := false
 	isServerAnchor := false
 	if hasEnabledProject && !isMaterializedFixture(unit) {
-		isProjectAnchor = isProjectAnchorFile(unit)
-		isServerAnchor = isServerAnchorFile(unit)
+		isProjectAnchor = isProjectAnchorFile(unit, d.caches)
+		isServerAnchor = isServerAnchorFile(unit, d.caches)
 	}
 
 	for _, e := range all {

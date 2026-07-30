@@ -73,7 +73,7 @@ func detectBP47(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isMaterializedFixture(unit) {
 		return
 	}
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if !snap.HasServerStart || snap.HasShutdown {
 		return
 	}
@@ -155,7 +155,7 @@ func detectBP50(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isMaterializedFixture(unit) {
 		return
 	}
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if !snap.HasServerStart || snap.HasSignalHandling {
 		return
 	}
@@ -548,7 +548,7 @@ func detectBP54(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isMaterializedFixture(unit) {
 		return
 	}
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if !snap.HasServerStart || !snap.HasPublicRoute || snap.HasRateLimiting {
 		return
 	}
@@ -560,7 +560,7 @@ func detectBP55(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isMaterializedFixture(unit) {
 		return
 	}
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if !snap.HasServerStart || !snap.HasPublicRoute || !snap.HasLogging || snap.HasRequestID {
 		return
 	}

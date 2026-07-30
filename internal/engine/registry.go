@@ -27,6 +27,46 @@ type Registry struct {
 	allIndices  []int
 }
 
+// scanSession owns the detector instances and lifecycle state for exactly one
+// Analyzer.AnalyzePaths call. Registry keeps the immutable catalogue used by
+// rule listing and file discovery; a session gets fresh detector instances.
+type scanSession struct {
+	detectors  []core.Detector
+	byLanguage map[core.LanguageID][]int
+}
+
+// DetectorCount returns the number of detectors available to this scan.
+func (s *scanSession) DetectorCount() int {
+	if s == nil {
+		return 0
+	}
+	return len(s.detectors)
+}
+
+// Detectors returns session-local detectors in registration order.
+func (s *scanSession) Detectors() []core.Detector {
+	if s == nil {
+		return nil
+	}
+	return s.detectors
+}
+
+// DetectorIndices returns session-local detector indices for a language.
+func (s *scanSession) DetectorIndices(language core.LanguageID) []int {
+	if s == nil {
+		return nil
+	}
+	return s.byLanguage[language]
+}
+
+// Detector returns a session-local detector by index.
+func (s *scanSession) Detector(index int) core.Detector {
+	if s == nil || index < 0 || index >= len(s.detectors) {
+		return nil
+	}
+	return s.detectors[index]
+}
+
 // NewRegistry builds a registry from plugins. Each plugin's Detectors() is
 // invoked once; detectors are validated against the plugin language.
 func NewRegistry(plugins []core.LanguagePlugin) (*Registry, error) {
@@ -91,6 +131,33 @@ func (r *Registry) RegisterPlugin(plugin core.LanguagePlugin) error {
 	}
 	r.plugins = append(r.plugins, plugin)
 	return nil
+}
+
+// newScanSession creates fresh detector instances for one scan. NewDetectors
+// is an explicit factory seam so a plugin cannot accidentally reuse lifecycle
+// state that the registry holds for catalogue listing.
+func (r *Registry) newScanSession() (*scanSession, error) {
+	if r == nil {
+		return nil, &RegistryError{Msg: "nil registry"}
+	}
+	session := &scanSession{byLanguage: make(map[core.LanguageID][]int, len(r.plugins))}
+	for _, plugin := range r.plugins {
+		id := plugin.ID()
+		for _, det := range plugin.NewDetectors() {
+			if det == nil {
+				return nil, &RegistryError{Msg: "nil scan detector"}
+			}
+			if det.Language() != id {
+				return nil, &RegistryError{
+					Msg: fmt.Sprintf("scan detector language %s does not match plugin language %s", det.Language(), id),
+				}
+			}
+			idx := len(session.detectors)
+			session.detectors = append(session.detectors, det)
+			session.byLanguage[id] = append(session.byLanguage[id], idx)
+		}
+	}
+	return session, nil
 }
 
 // DetectorCount returns the number of registered detectors.

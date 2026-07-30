@@ -122,6 +122,25 @@ func TestSARIFReporterEmptyFindings(t *testing.T) {
 	}
 }
 
+func TestReportersDoNotMutateFindings(t *testing.T) {
+	findings := []rules.Finding{{
+		RuleID: "PERF-1", File: "main.go", Line: 1, Column: 1,
+		Message: "test", Severity: rules.SeverityLow,
+	}}
+	for _, reporter := range []Reporter{
+		JSONReporter{Version: "v"},
+		SARIFReporter{Version: "v"},
+	} {
+		var buf bytes.Buffer
+		if err := reporter.Write(findings, &buf); err != nil {
+			t.Fatal(err)
+		}
+		if findings[0].Fingerprint != "" {
+			t.Fatalf("%T mutated caller finding", reporter)
+		}
+	}
+}
+
 func TestSARIFSeverityMapping(t *testing.T) {
 	cases := []struct {
 		sev   rules.Severity

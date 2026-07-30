@@ -18,6 +18,7 @@ func (r SARIFReporter) Write(findings []rules.Finding, w io.Writer) error {
 	if version == "" {
 		version = DefaultVersion
 	}
+	findings = normalizedFindings(findings)
 
 	// Collect unique rules.
 	type ruleMeta struct {
@@ -51,7 +52,6 @@ func (r SARIFReporter) Write(findings []rules.Finding, w io.Writer) error {
 	results := make([]sarifResult, 0, len(findings))
 	for i := range findings {
 		f := &findings[i]
-		f.EnsureFingerprint()
 		line := f.Line
 		col := f.Column
 		if line <= 0 {

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Architecture review — goslop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" });
+    </script>
+    <style>
+      .seam { border-style: dashed; }
+      .deep { background: linear-gradient(135deg, #0f172a, #1e293b); }
+      .leak { color: #b91c1c; }
+    </style>
+  </head>
+  <body class="bg-stone-50 text-slate-900 font-sans">
+    <main class="max-w-6xl mx-auto px-6 py-12 space-y-10">
+      <header class="border-b border-stone-300 pb-6 flex justify-between gap-6">
+        <div><p class="text-xs uppercase tracking-widest text-slate-500">goslop · 2026-07-30</p><h1 class="font-serif text-4xl mt-2">Architecture deepening review</h1></div>
+        <p class="text-sm text-slate-600 max-w-sm">Solid box: module · dashed box: seam · red text: leakage · dark box: deep module</p>
+      </header>
+
+      <article id="scan-session" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex justify-between gap-4"><h2 class="text-2xl font-serif">Make detector state a per-scan ScanSession</h2><span class="h-fit rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs font-semibold">Strong · in-process</span></div>
+        <p class="font-mono text-sm text-slate-600 mt-2">internal/engine/{registry,analyzer}.go · internal/lang/go/detectors/{cwe/taint,bad_practices}</p>
+        <div class="grid md:grid-cols-2 gap-5 mt-6">
+          <div class="border rounded-lg p-4"><p class="text-xs uppercase tracking-wider text-slate-500">Before</p><pre class="mermaid">flowchart TD
+R[Process-wide Registry] --> D[Mutable detectors]
+D --> A[Analyzer scan A]
+D --> B[Analyzer scan B]
+A -. cache hit skips state .-> F[Finalize]
+B -. lifecycle leaks .-> D
+classDef leak fill:#fee2e2,stroke:#dc2626;
+class D,F leak</pre></div>
+          <div class="deep rounded-lg p-4 text-white"><p class="text-xs uppercase tracking-wider text-slate-300">After</p><pre class="mermaid">flowchart TD
+R[Immutable catalogue] --> S1[ScanSession A]
+R --> S2[ScanSession B]
+S1 --> X[State + cache parity + finalize]
+S2 --> Y[State + cache parity + finalize]
+classDef deep fill:#0f172a,color:#fff,stroke:#94a3b8;
+class S1,S2,X,Y deep</pre></div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 mt-5 text-sm"><p><b>Problem.</b> Detector state and lifecycle leak across the scan seam; a warm hit can bypass required project-state accumulation.</p><p><b>Solution.</b> One ScanSession interface runs a resolved scan; its implementation owns detector instances, lifecycle, project facts, and finalization.</p></div>
+        <ul class="mt-4 grid sm:grid-cols-3 gap-2 text-sm"><li>Locality: scan state concentrates</li><li>Leverage: one cache contract</li><li>Tests cross one interface</li></ul>
+      </article>
+
+      <article id="scan-plan" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex justify-between gap-4"><h2 class="text-2xl font-serif">Resolve configuration into one ScanPlan</h2><span class="h-fit rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs font-semibold">Strong · in-process</span></div>
+        <p class="font-mono text-sm text-slate-600 mt-2">internal/config/config.go · internal/app/run.go · internal/engine/cache</p>
+        <div class="grid md:grid-cols-2 gap-5 mt-6 text-sm">
+          <div class="border rounded-lg p-5"><p class="text-xs uppercase tracking-wider text-slate-500">Before</p><div class="mt-4 space-y-2"><div class="border p-2">TOML document</div><div class="text-center leak">↓ fields disappear</div><div class="border p-2">Merged configuration</div><div class="text-center leak">↓ more field-by-field mutation</div><div class="border p-2">app + cache + walker</div></div></div>
+          <div class="deep rounded-lg p-5 text-white"><p class="text-xs uppercase tracking-wider text-slate-300">After</p><div class="mt-4 border seam border-slate-400 p-3">CLI + TOML seam</div><div class="text-center text-slate-300 py-2">↓</div><div class="border-2 border-white p-4"><b>Deep ScanPlan module</b><br><span class="text-slate-300">policy · walk · cache · baseline · roots</span></div><div class="text-center text-slate-300 py-2">↓</div><div class="border border-slate-400 p-3">app consumes resolved plan</div></div>
+        </div>
+        <div class="grid md:grid-cols-2 gap-6 mt-5 text-sm"><p><b>Problem.</b> Configuration is a distributed interface; accepted cache, language, and typed fields can vanish between modules.</p><p><b>Solution.</b> Resolve precedence once into a ScanPlan. One concrete implementation is sufficient; an adapter would be hypothetical.</p></div>
+        <ul class="mt-4 grid sm:grid-cols-3 gap-2 text-sm"><li>Locality: policy translation is one place</li><li>Leverage: full-plan table tests</li><li>Interface shrinks for app</li></ul>
+      </article>
+
+      <article id="project-facts" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex justify-between gap-4"><h2 class="text-2xl font-serif">Make BP project facts scan-scoped</h2><span class="h-fit rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs font-semibold">Strong · local-substitutable</span></div>
+        <p class="font-mono text-sm text-slate-600 mt-2">internal/lang/go/detectors/bad_practices/{scan,project,package_facts,rules_api}.go</p>
+        <div class="grid md:grid-cols-2 gap-5 mt-6 text-sm"><div class="border rounded-lg p-5"><p class="text-xs uppercase tracking-wider text-slate-500">Before</p><div class="mt-4 border p-3">BP rule</div><p class="text-center leak py-2">hidden global cache ↔ repeated package I/O</p><div class="border p-3">BP rule</div><p class="text-center leak py-2">hidden global cache ↔ repeated package I/O</p><div class="border p-3">BP rule</div></div><div class="deep rounded-lg p-5 text-white"><p class="text-xs uppercase tracking-wider text-slate-300">After</p><div class="mt-4 border-2 border-white p-4"><b>Deep ProjectFacts module</b><br><span class="text-slate-300">ForProject · ForPackage · ForPackageDocs</span></div><p class="text-center text-slate-300 py-2">↓ scan-scoped seam ↓</p><div class="grid grid-cols-3 gap-2"><div class="border border-slate-400 p-2">BP-30</div><div class="border border-slate-400 p-2">BP-31</div><div class="border border-slate-400 p-2">other rules</div></div></div></div>
+        <div class="grid md:grid-cols-2 gap-6 mt-5 text-sm"><p><b>Problem.</b> The module has a hidden interface: ambient mutable state and repeated directory scanning leak into rule execution.</p><p><b>Solution.</b> Let one ProjectFacts implementation own snapshots and synchronization for each scan; no second global adapter.</p></div>
+        <ul class="mt-4 grid sm:grid-cols-3 gap-2 text-sm"><li>Locality: root facts stay in one module</li><li>Leverage: one snapshot feeds N rules</li><li>Concurrent tests use the seam</li></ul>
+      </article>
+
+      <article id="export-target" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+        <div class="flex justify-between gap-4"><h2 class="text-2xl font-serif">Give export targets explicit ownership</h2><span class="h-fit rounded-full bg-emerald-100 text-emerald-800 px-3 py-1 text-xs font-semibold">Strong · ports &amp; adapters</span></div>
+        <p class="font-mono text-sm text-slate-600 mt-2">internal/export/export.go · internal/app/run.go</p>
+        <div class="grid md:grid-cols-2 gap-5 mt-6 text-sm"><div class="border rounded-lg p-5"><p class="text-xs uppercase tracking-wider text-slate-500">Before</p><div class="mt-4 border p-3">ExportFindings</div><p class="text-center leak py-2">deletes caller text files</p><div class="border p-3">Caller-selected directory</div><p class="text-center leak py-2">cleanup failure ignored</p></div><div class="deep rounded-lg p-5 text-white"><p class="text-xs uppercase tracking-wider text-slate-300">After</p><div class="mt-4 border-2 border-white p-4"><b>Deep ExportTarget interface</b><br><span class="text-slate-300">Sync(expected named blocks)</span></div><p class="text-center text-slate-300 py-2">↓ two real adapters ↓</p><div class="grid grid-cols-2 gap-2"><div class="border border-slate-400 p-2">Context target</div><div class="border border-slate-400 p-2">Chunk target</div></div></div></div>
+        <div class="grid md:grid-cols-2 gap-6 mt-5 text-sm"><p><b>Problem.</b> Output ownership and cleanup leak through an apparently small export interface.</p><p><b>Solution.</b> Two real adapters own predicates, staging/manifest state, and cleanup failures behind one target seam.</p></div>
+        <ul class="mt-4 grid sm:grid-cols-3 gap-2 text-sm"><li>Locality: cleanup rules concentrate</li><li>Leverage: safety across both outputs</li><li>Tests assert ownership</li></ul>
+      </article>
+
+      <section id="top-recommendation" class="border-2 border-slate-900 bg-white rounded-xl p-7"><p class="text-xs uppercase tracking-widest text-slate-500">Top recommendation</p><h2 class="font-serif text-3xl mt-2"><a class="underline" href="#scan-session">Start with the ScanSession module</a></h2><p class="mt-2">It restores locality for detector state and closes cache-dependent security-result drift before deeper catalogue work.</p></section>
+    </main>
+  </body>
+</html>

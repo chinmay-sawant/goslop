@@ -108,22 +108,8 @@ func ExportFindings(findings []rules.Finding, opts Options, sourceCache map[stri
 		if err := os.MkdirAll(opts.ContextOutputDir, 0o755); err != nil {
 			return sum, fmt.Errorf("create context dir: %w", err)
 		}
-		if err := cleanMatchingTxt(opts.ContextOutputDir, func(name string) bool {
-			// numbered N.txt files only
-			for _, r := range name {
-				if r < '0' || r > '9' {
-					return strings.HasSuffix(name, ".txt") && name != "" && !strings.Contains(name, "Chunk")
-				}
-			}
-			return strings.HasSuffix(name, ".txt")
-		}); err != nil {
-			return sum, err
-		}
-		// Clean all *.txt in context dir (simple parity with fresh stage).
-		if err := cleanMatchingTxt(opts.ContextOutputDir, func(name string) bool {
-			return strings.HasSuffix(name, ".txt")
-		}); err != nil {
-			return sum, err
+		if err := cleanOwnedFiles(opts.ContextOutputDir, isContextOutputFile); err != nil {
+			return sum, fmt.Errorf("clean context output: %w", err)
 		}
 		for i, f := range findings {
 			var text string
@@ -168,7 +154,10 @@ func dirsEqual(a, b string) (bool, error) {
 	return ca == cb, nil
 }
 
-func cleanMatchingTxt(dir string, keep func(name string) bool) error {
+// cleanOwnedFiles removes only files owned by this export surface. Callers may
+// choose a directory that also contains their own files, so broad extension
+// based cleanup is never safe here.
+func cleanOwnedFiles(dir string, owns func(name string) bool) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -181,11 +170,29 @@ func cleanMatchingTxt(dir string, keep func(name string) bool) error {
 			continue
 		}
 		name := e.Name()
-		if keep(name) {
-			_ = os.Remove(filepath.Join(dir, name))
+		if owns(name) {
+			if err := os.Remove(filepath.Join(dir, name)); err != nil {
+				return fmt.Errorf("remove %s: %w", filepath.Join(dir, name), err)
+			}
 		}
 	}
 	return nil
+}
+
+func isContextOutputFile(name string) bool {
+	if !strings.HasSuffix(name, ".txt") {
+		return false
+	}
+	base := strings.TrimSuffix(name, ".txt")
+	if base == "" {
+		return false
+	}
+	for _, r := range base {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 func writeChunkFiles(
@@ -201,7 +208,7 @@ func writeChunkFiles(
 	if err := os.MkdirAll(outputDir, 0o755); err != nil {
 		return 0, fmt.Errorf("create chunks dir: %w", err)
 	}
-	if err := cleanMatchingTxt(outputDir, func(name string) bool {
+	if err := cleanOwnedFiles(outputDir, func(name string) bool {
 		return strings.HasPrefix(name, "Chunk_") && strings.HasSuffix(name, ".txt")
 	}); err != nil {
 		return 0, err

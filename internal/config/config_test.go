@@ -93,6 +93,46 @@ not_a_real_field = true
 	}
 }
 
+func TestUnsupportedLanguageAndTypedConfigurationRejected(t *testing.T) {
+	for name, body := range map[string]string{
+		"languages": `[goslop]
+languages = ["go"]
+`,
+		"typed": `[goslop.typed]
+enabled = true
+`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := config.Parse([]byte(body)); err == nil {
+				t.Fatalf("expected unsupported %s configuration to be rejected", name)
+			}
+		})
+	}
+}
+
+func TestEvictTargetRatioValidatedAndMerged(t *testing.T) {
+	const body = `[goslop.cache]
+evict_target_ratio = 0.5
+`
+	dir := t.TempDir()
+	path := filepath.Join(dir, "goslop.toml")
+	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	merged, err := config.LoadAndMerge(config.MergeInput{ConfigPath: path})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if merged.CacheEvictTargetRatio == nil || *merged.CacheEvictTargetRatio != 0.5 {
+		t.Fatalf("ratio=%v", merged.CacheEvictTargetRatio)
+	}
+	if _, err := config.Parse([]byte(`[goslop.cache]
+evict_target_ratio = 0.05
+`)); err == nil {
+		t.Fatal("expected out-of-range eviction target ratio to be rejected")
+	}
+}
+
 func TestExportWholeFunctionConfig(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "goslop.toml")

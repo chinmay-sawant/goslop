@@ -66,6 +66,42 @@ func TestRunScanEmptyDirJSON(t *testing.T) {
 	}
 }
 
+func TestRunPartialScanWritesErrorsToStderrAndFails(t *testing.T) {
+	dir := t.TempDir()
+	badSource := filepath.Join(dir, "invalid.go")
+	if err := os.WriteFile(badSource, []byte("package invalid\n\xff"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	err := run([]string{"--format", "json", "--no-cache", dir}, &out, &errBuf)
+	if ExitCode(err) != ExitInternal {
+		t.Fatalf("exit code=%d err=%v", ExitCode(err), err)
+	}
+	if out.Len() != 0 {
+		t.Fatalf("partial scan must not emit a JSON payload: %q", out.String())
+	}
+	if !strings.Contains(errBuf.String(), "analysis error [encoding]") ||
+		!strings.Contains(errBuf.String(), "incomplete: 1 file(s)") {
+		t.Fatalf("stderr=%q", errBuf.String())
+	}
+}
+
+func TestRunPruneCacheOpenFailureIsExplicit(t *testing.T) {
+	dir := t.TempDir()
+	cachePath := filepath.Join(dir, "not-a-cache-directory")
+	if err := os.WriteFile(cachePath, []byte("not a directory"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	err := run([]string{"--prune-cache", "--cache-dir", cachePath, dir}, &out, &errBuf)
+	if ExitCode(err) != ExitInternal {
+		t.Fatalf("exit code=%d err=%v", ExitCode(err), err)
+	}
+	if err == nil || !strings.Contains(err.Error(), "open cache for pruning") {
+		t.Fatalf("error=%v", err)
+	}
+}
+
 func TestRunInit(t *testing.T) {
 	dir := t.TempDir()
 	wd, err := os.Getwd()
@@ -77,8 +113,12 @@ func TestRunInit(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chdir(wd) })
 
-	if initErr := run([]string{"init"}, ioDiscard{}, ioDiscard{}); initErr != nil {
+	var out bytes.Buffer
+	if initErr := run([]string{"init"}, &out, ioDiscard{}); initErr != nil {
 		t.Fatal(initErr)
+	}
+	if !strings.Contains(out.String(), "wrote starter goslop.toml to") {
+		t.Fatalf("init output was not written to the supplied stdout: %q", out.String())
 	}
 	if _, statErr := os.Stat(filepath.Join(dir, "goslop.toml")); statErr != nil {
 		t.Fatal(statErr)

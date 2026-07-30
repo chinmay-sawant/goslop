@@ -9,18 +9,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "languages": {
-          "description": "Restrict analysis to these languages. Allowed values: go, python (alias: py).",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": ["go", "python", "py"]
-          }
-        },
         "fail_on": {
-          "description": "Exit policy. Allowed: none, never, medium, warnings, high, strict. Unknown values are rejected. CLI --strict / --no-fail / --warnings-as-errors always win when set.",
+          "description": "Exit policy. Allowed: none, never, medium, high, strict. Unknown values are rejected. CLI --no-fail overrides this setting.",
           "type": "string",
-          "enum": ["none", "never", "medium", "warnings", "high", "strict"]
+          "enum": ["none", "never", "medium", "high", "strict"]
         },
         "skip": {
           "description": "Skip the named rule IDs.",

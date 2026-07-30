@@ -19,15 +19,22 @@ type snapEntry struct {
 
 // bpProjectCaches memoizes project-level facts per scan root.
 type bpProjectCaches struct {
-	mu          sync.Mutex
-	snapshots   map[string]*snapEntry // key: absolute project root
-	packageDocs map[string]*PackageDocSnapshot // key: directory path
+	mu           sync.Mutex
+	snapshots    map[string]*snapEntry          // key: absolute project root
+	packageDocs  map[string]*PackageDocSnapshot // key: directory path
+	packageTypes map[string]*packageTypeEntry   // key: absolute package directory
+}
+
+type packageTypeEntry struct {
+	once  sync.Once
+	facts *packageTypeFacts
 }
 
 func newProjectCaches() *bpProjectCaches {
 	return &bpProjectCaches{
-		snapshots:   map[string]*snapEntry{},
-		packageDocs: map[string]*PackageDocSnapshot{},
+		snapshots:    map[string]*snapEntry{},
+		packageDocs:  map[string]*PackageDocSnapshot{},
+		packageTypes: map[string]*packageTypeEntry{},
 	}
 }
 
@@ -38,6 +45,7 @@ func (c *bpProjectCaches) clear() {
 	c.mu.Lock()
 	c.snapshots = map[string]*snapEntry{}
 	c.packageDocs = map[string]*PackageDocSnapshot{}
+	c.packageTypes = map[string]*packageTypeEntry{}
 	c.mu.Unlock()
 }
 
@@ -49,7 +57,7 @@ type PackageDocSnapshot struct {
 	DocumentedPackages map[string]struct{}
 }
 
-func packageDocSnapshotForUnit(unit *core.ParsedUnit) *PackageDocSnapshot {
+func packageDocSnapshotForUnit(unit *core.ParsedUnit, caches *bpProjectCaches) *PackageDocSnapshot {
 	if unit == nil {
 		return &PackageDocSnapshot{}
 	}
@@ -57,17 +65,14 @@ func packageDocSnapshotForUnit(unit *core.ParsedUnit) *PackageDocSnapshot {
 	if dir == "" || dir == "." {
 		dir = filepath.Dir(fileDisplayPath(unit))
 	}
-	return packageDocSnapshotForDir(dir)
+	return packageDocSnapshotForDir(dir, caches)
 }
 
-func packageDocSnapshotForDir(dir string) *PackageDocSnapshot {
+func packageDocSnapshotForDir(dir string, caches *bpProjectCaches) *PackageDocSnapshot {
 	abs, err := filepath.Abs(dir)
 	if err != nil {
 		abs = dir
 	}
-	activeCachesMu.Lock()
-	caches := activeCaches
-	activeCachesMu.Unlock()
 	if caches != nil {
 		caches.mu.Lock()
 		if snap, ok := caches.packageDocs[abs]; ok {
@@ -178,41 +183,12 @@ type ProjectSnapshot struct {
 	GoSumExists       bool
 }
 
-var (
-	activeCachesMu sync.Mutex
-	activeCaches   *bpProjectCaches
-)
-
-func setActiveCaches(c *bpProjectCaches) {
-	activeCachesMu.Lock()
-	activeCaches = c
-	activeCachesMu.Unlock()
-}
-
-func clearActiveCaches() {
-	activeCachesMu.Lock()
-	activeCaches = nil
-	activeCachesMu.Unlock()
-}
-
-func installActiveCaches(c *bpProjectCaches) func() {
-	activeCachesMu.Lock()
-	prev := activeCaches
-	activeCaches = c
-	activeCachesMu.Unlock()
-	return func() {
-		activeCachesMu.Lock()
-		activeCaches = prev
-		activeCachesMu.Unlock()
-	}
-}
-
-func projectSnapshot(unit *core.ParsedUnit) *ProjectSnapshot {
+func projectSnapshot(unit *core.ParsedUnit, caches *bpProjectCaches) *ProjectSnapshot {
 	root := discoverProjectRoot(unit.Path)
-	return projectSnapshotForRoot(root)
+	return projectSnapshotForRoot(root, caches)
 }
 
-func projectSnapshotForRoot(root string) *ProjectSnapshot {
+func projectSnapshotForRoot(root string, caches *bpProjectCaches) *ProjectSnapshot {
 	if root == "" {
 		return &ProjectSnapshot{}
 	}
@@ -220,9 +196,6 @@ func projectSnapshotForRoot(root string) *ProjectSnapshot {
 	if abs, err := filepath.Abs(root); err == nil {
 		root = abs
 	}
-	activeCachesMu.Lock()
-	caches := activeCaches
-	activeCachesMu.Unlock()
 	if caches == nil {
 		// No scan session: build without memoization (unit tests / ad-hoc).
 		return buildProjectSnapshot(root)
@@ -393,27 +366,27 @@ func isExampleSource(path string) bool {
 
 // Preallocated needles for buildProjectSnapshot (avoid per-file []byte("...") allocs).
 var (
-	shutdownNeedle         = []byte(".Shutdown(")
-	signalNotifyNeedle     = []byte("signal.Notify(")
-	signalNotifyCtxNeedle  = []byte("signal.NotifyContext(")
-	osSignalImportNeedle   = []byte(`"os/signal"`)
-	rateNewLimiterNeedle   = []byte("rate.NewLimiter(")
-	rateLimiterNeedle      = []byte("rate.Limiter")
-	tollboothNeedle        = []byte("tollbooth")
-	httprateNeedle         = []byte("httprate")
-	throttleNeedle         = []byte("Throttle(")
-	logDotNeedle           = []byte("log.")
-	loggerDotNeedle        = []byte("logger.")
-	slogDotNeedle          = []byte("slog.")
-	handleFuncNeedle       = []byte("HandleFunc(")
-	dotHandleFuncNeedle    = []byte(".HandleFunc(")
-	dotHandleNeedle        = []byte(".Handle(")
-	dotGETNeedle           = []byte(".GET(")
-	dotPOSTNeedle          = []byte(".POST(")
-	dotPUTNeedle           = []byte(".PUT(")
-	dotDELETENeedle        = []byte(".DELETE(")
-	dotPATCHNeedle         = []byte(".PATCH(")
-	requestIDNeedles       = [][]byte{
+	shutdownNeedle        = []byte(".Shutdown(")
+	signalNotifyNeedle    = []byte("signal.Notify(")
+	signalNotifyCtxNeedle = []byte("signal.NotifyContext(")
+	osSignalImportNeedle  = []byte(`"os/signal"`)
+	rateNewLimiterNeedle  = []byte("rate.NewLimiter(")
+	rateLimiterNeedle     = []byte("rate.Limiter")
+	tollboothNeedle       = []byte("tollbooth")
+	httprateNeedle        = []byte("httprate")
+	throttleNeedle        = []byte("Throttle(")
+	logDotNeedle          = []byte("log.")
+	loggerDotNeedle       = []byte("logger.")
+	slogDotNeedle         = []byte("slog.")
+	handleFuncNeedle      = []byte("HandleFunc(")
+	dotHandleFuncNeedle   = []byte(".HandleFunc(")
+	dotHandleNeedle       = []byte(".Handle(")
+	dotGETNeedle          = []byte(".GET(")
+	dotPOSTNeedle         = []byte(".POST(")
+	dotPUTNeedle          = []byte(".PUT(")
+	dotDELETENeedle       = []byte(".DELETE(")
+	dotPATCHNeedle        = []byte(".PATCH(")
+	requestIDNeedles      = [][]byte{
 		[]byte("Request-ID"), []byte("Request-Id"),
 		[]byte("X-Request-ID"), []byte("X-Request-Id"),
 		[]byte("requestid"), []byte("request_id"), []byte("RequestID"),
@@ -483,16 +456,16 @@ func containsRequestIDBytes(b []byte) bool {
 	return false
 }
 
-func isProjectAnchorFile(unit *core.ParsedUnit) bool {
-	snap := projectSnapshot(unit)
+func isProjectAnchorFile(unit *core.ParsedUnit, caches *bpProjectCaches) bool {
+	snap := projectSnapshot(unit, caches)
 	if snap.Anchor == "" {
 		return false
 	}
 	return samePath(snap.Anchor, unit.Path)
 }
 
-func isServerAnchorFile(unit *core.ParsedUnit) bool {
-	snap := projectSnapshot(unit)
+func isServerAnchorFile(unit *core.ParsedUnit, caches *bpProjectCaches) bool {
+	snap := projectSnapshot(unit, caches)
 	if snap.ServerAnchor == "" {
 		return false
 	}

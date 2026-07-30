@@ -21,18 +21,44 @@ type packageTypeFacts struct {
 
 var reExportedIface = regexp.MustCompile(`(?m)^type\s+([A-Z]\w*)\s+interface\s*\{`)
 
-func packageTypeFactsForUnit(unit *core.ParsedUnit) *packageTypeFacts {
-	facts := &packageTypeFacts{
-		methods:    map[string]map[string]struct{}{},
-		interfaces: map[string][]string{},
-	}
+func packageTypeFactsForUnit(unit *core.ParsedUnit, caches *bpProjectCaches) *packageTypeFacts {
 	if unit == nil {
-		return facts
+		return newPackageTypeFacts()
 	}
 	dir := filepath.Dir(unit.Path)
 	if dir == "" || dir == "." {
 		dir = filepath.Dir(fileDisplayPath(unit))
 	}
+	if abs, err := filepath.Abs(dir); err == nil {
+		dir = abs
+	}
+	if caches == nil {
+		return buildPackageTypeFacts(dir, unit)
+	}
+	caches.mu.Lock()
+	entry := caches.packageTypes[dir]
+	if entry == nil {
+		entry = &packageTypeEntry{}
+		caches.packageTypes[dir] = entry
+	}
+	caches.mu.Unlock()
+	entry.once.Do(func() { entry.facts = buildPackageTypeFacts(dir, unit) })
+	if entry.facts == nil {
+		return newPackageTypeFacts()
+	}
+	return entry.facts
+}
+
+func newPackageTypeFacts() *packageTypeFacts {
+	facts := &packageTypeFacts{
+		methods:    map[string]map[string]struct{}{},
+		interfaces: map[string][]string{},
+	}
+	return facts
+}
+
+func buildPackageTypeFacts(dir string, unit *core.ParsedUnit) *packageTypeFacts {
+	facts := newPackageTypeFacts()
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		// Fall back to the current unit only.

@@ -6,6 +6,7 @@ package config
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,7 +26,6 @@ type Document struct {
 
 // Section is the [goslop] table.
 type Section struct {
-	Languages    []string           `toml:"languages"`
 	FailOn       *string            `toml:"fail_on"`
 	Skip         []string           `toml:"skip"`
 	Only         []string           `toml:"only"`
@@ -35,7 +35,6 @@ type Section struct {
 	Baseline     BaselineConfig     `toml:"baseline"`
 	Cache        CacheConfig        `toml:"cache"`
 	Taint        TaintConfig        `toml:"taint"`
-	Typed        TypedConfig        `toml:"typed"`
 	BadPractices BadPracticesConfig `toml:"bad_practices"`
 	Export       ExportConfig       `toml:"export"`
 }
@@ -59,11 +58,6 @@ type CacheConfig struct {
 type TaintConfig struct {
 	Enabled   *bool `toml:"enabled"`
 	ShowPaths *bool `toml:"show_paths"`
-}
-
-// TypedConfig is [goslop.typed].
-type TypedConfig struct {
-	Enabled *bool `toml:"enabled"`
 }
 
 // BadPracticesConfig is [goslop.bad_practices].
@@ -121,6 +115,10 @@ func validate(s *Section) error {
 		if _, err := rules.ParseSeverity(*s.BadPractices.Severity); err != nil {
 			return fmt.Errorf("goslop.bad_practices.severity: %w", err)
 		}
+	}
+	if ratio := s.Cache.EvictTargetRatio; ratio != nil &&
+		(math.IsNaN(*ratio) || math.IsInf(*ratio, 0) || *ratio < 0.1 || *ratio > 0.99) {
+		return fmt.Errorf("goslop.cache.evict_target_ratio must be between 0.1 and 0.99")
 	}
 	for id, sev := range s.BadPractices.SeverityOverrides {
 		if _, err := rules.ParseSeverity(sev); err != nil {
@@ -202,8 +200,9 @@ type Merged struct {
 	BPSeverity          *rules.Severity
 	SeverityOverrides   map[string]rules.Severity
 	// Cache sizing (optional)
-	CacheMaxSizeMB     *uint64
-	CacheMaxFileSizeMB *uint64
+	CacheMaxSizeMB        *uint64
+	CacheEvictTargetRatio *float64
+	CacheMaxFileSizeMB    *uint64
 	// ExportWholeFunction is nil when unset (export defaults to true).
 	ExportWholeFunction *bool
 }
@@ -272,6 +271,7 @@ func LoadAndMerge(in MergeInput) (*Merged, error) {
 		out.CacheDir = *s.Cache.Path
 	}
 	out.CacheMaxSizeMB = s.Cache.MaxSizeMB
+	out.CacheEvictTargetRatio = s.Cache.EvictTargetRatio
 	out.CacheMaxFileSizeMB = s.Cache.MaxFileSizeMB
 
 	// baseline

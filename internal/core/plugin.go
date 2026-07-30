@@ -30,7 +30,12 @@ type ProjectContext struct {
 type LanguagePlugin interface {
 	ID() LanguageID
 	Extensions() []string
+	// Detectors returns the immutable catalogue used for registration and rule
+	// listing. Implementations must not expose scan-lifecycle state here.
 	Detectors() []Detector
+	// NewDetectors returns fresh detector instances for one AnalyzePaths call.
+	// Stateful detectors must never be shared by two calls.
+	NewDetectors() []Detector
 	ParseSource(path, source string) (*ParsedUnit, error)
 	PrepareProject(ctx *ScanContext, projectRoots []string)
 	ExtractDeps(unit *ParsedUnit, project ProjectContext) []string
@@ -48,6 +53,8 @@ func (BasePlugin) ParseSource(path, source string) (*ParsedUnit, error) {
 func (BasePlugin) PrepareProject(*ScanContext, []string) {}
 
 func (BasePlugin) ExtractDeps(*ParsedUnit, ProjectContext) []string { return nil }
+
+func (BasePlugin) NewDetectors() []Detector { return nil }
 
 // ParserConfigurer is implemented by plugins that configure a reusable parser.
 // Optional; pure-Go plugins typically parse per-file in ParseSource with no pool.

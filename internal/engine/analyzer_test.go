@@ -64,6 +64,13 @@ func (p *goTestPlugin) Detectors() []core.Detector {
 	return []core.Detector{&execCommandDetector{}}
 }
 
+func (p *goTestPlugin) NewDetectors() []core.Detector {
+	if p.dets != nil {
+		return p.dets
+	}
+	return []core.Detector{&execCommandDetector{}}
+}
+
 func writeFile(t *testing.T, dir, name, body string) {
 	t.Helper()
 	path := filepath.Join(dir, name)

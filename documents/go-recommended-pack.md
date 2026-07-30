@@ -10,7 +10,8 @@ A small, high-signal CI gate: **PERF footguns** teams actually fix, plus
 **taint-core CWE IDs** on the allow-list (taint engine off until you enable it).
 
 Bad practices (`BP-*`) are **off**. Fail policy defaults to **strict**
-(high / critical only) unless you set `--warnings-as-errors` / `--no-fail`.
+(high / critical only). Use `fail_on = "medium"` in `goslop.toml` to fail
+on medium findings too, or `--no-fail` for advisory scans.
 
 Full CLI: [cli-reference.md](./cli-reference.md). Product overview: [overview.md](./overview.md).
 
@@ -24,10 +25,12 @@ Full CLI: [cli-reference.md](./cli-reference.md). Product overview: [overview.md
 | Taint-core CWE (when fired) | **high** | **Yes** |
 | BP | n/a (off) | - |
 
-To fail CI on medium PERF (timeouts, body close, …):
+To fail CI on medium PERF (timeouts, body close, …), add this to
+`goslop.toml`:
 
-```bash
-goslop --profile recommended --warnings-as-errors .
+```toml
+[goslop]
+fail_on = "medium"
 ```
 
 Taint is **off** under recommended. The CWE IDs stay allow-listed so
@@ -138,10 +141,10 @@ The explain surface reuses the single maturity registry (`RuleMaturity` /
 goslop --profile recommended --format sarif . > goslop.sarif
 ```
 
-Fail on medium PERF too:
+Fail on medium PERF too by setting `fail_on = "medium"` in `goslop.toml`:
 
 ```bash
-goslop --profile recommended --warnings-as-errors --format sarif . > goslop.sarif
+goslop --profile recommended --format sarif . > goslop.sarif
 ```
 
 Sample workflow: [ci-integration.md](./ci-integration.md),

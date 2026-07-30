@@ -54,6 +54,10 @@ func (p *Plugin) Extensions() []string { return []string{"go"} }
 // Detectors implements core.LanguagePlugin.
 func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
 
+// NewDetectors creates the session-local Go detector set. The registry keeps
+// catalogue metadata separately, so lifecycle state never crosses scans.
+func (p *Plugin) NewDetectors() []core.Detector { return detectors.All() }
+
 // ParseSource parses Go source with go/parser and attaches *goparse.Tree.
 // On parse failure, falls back to a source-only unit so text-level detectors still run.
 func (p *Plugin) ParseSource(path, source string) (*core.ParsedUnit, error) {

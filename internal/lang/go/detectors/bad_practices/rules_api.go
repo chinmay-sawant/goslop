@@ -274,7 +274,7 @@ func detectBP30(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 	meta := MetadataForID("BP-30")
 	src := unit.Source
-	pkgFacts := packageTypeFactsForUnit(unit)
+	pkgFacts := facts.packageTypeFacts(unit)
 
 	// Only report interfaces declared in this file (per-file findings).
 	for _, m := range reExportedIface.FindAllStringSubmatchIndex(src, -1) {
@@ -310,7 +310,7 @@ func detectBP31(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	meta := MetadataForID("BP-31")
-	pkgFacts := packageTypeFactsForUnit(unit)
+	pkgFacts := facts.packageTypeFacts(unit)
 	if len(pkgFacts.interfaces) == 0 {
 		return
 	}
@@ -1554,7 +1554,7 @@ func detectBP41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if pkg == "" {
 		return
 	}
-	snap := packageDocSnapshotForUnit(unit)
+	snap := facts.packageDocSnapshot(unit)
 	anchor, ok := snap.Anchors[pkg]
 	if !ok {
 		return

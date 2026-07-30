@@ -76,6 +76,36 @@ func TestExportContextAndChunks(t *testing.T) {
 	}
 }
 
+func TestExportContextPreservesUnownedTextFiles(t *testing.T) {
+	dir := t.TempDir()
+	ctxDir := filepath.Join(dir, "ctx")
+	if err := os.MkdirAll(ctxDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	keepPath := filepath.Join(ctxDir, "notes.txt")
+	if err := os.WriteFile(keepPath, []byte("keep"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	stalePath := filepath.Join(ctxDir, "1.txt")
+	if err := os.WriteFile(stalePath, []byte("stale"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := export.ExportFindings(nil, export.Options{
+		ExportContext:    true,
+		ContextOutputDir: ctxDir,
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, keepPath); got != "keep" {
+		t.Fatalf("unowned file changed: %q", got)
+	}
+	if _, err := os.Stat(stalePath); !os.IsNotExist(err) {
+		t.Fatalf("owned stale output remains, stat error=%v", err)
+	}
+}
+
 func TestExportWholeFunctionVsWindow(t *testing.T) {
 	dir := t.TempDir()
 	srcPath := filepath.Join(dir, "sample.go")
