@@ -12,6 +12,10 @@
 *.swp
 coverage.out
 
+# Frontend (product site sources; built assets live in /docs)
+frontend/node_modules/
+frontend/dist/
+
 # Generated export artifacts (make run / make reference-metrics)
 scripts/chunks/
 scripts/findings/

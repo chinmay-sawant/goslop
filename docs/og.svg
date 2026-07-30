@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#F7F6F3"/>
+  <rect x="0" y="0" width="1200" height="630" fill="url(#g)" opacity="0.9"/>
+  <defs>
+    <radialGradient id="g" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(200 80) rotate(55) scale(900 600)">
+      <stop stop-color="#1F6C9F" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#F7F6F3" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="72" y="72" width="72" height="72" rx="16" fill="#111111"/>
+  <path d="M90 94.5h12M90 94.5v12M126 94.5h-12M126 94.5v12M90 121.5h12M90 121.5v-12M126 121.5h-12M126 121.5v-12" stroke="#FAFAF8" stroke-width="2.5" stroke-linecap="round" opacity="0.45"/>
+  <path d="M118 98c-1.4-1.2-3.2-1.8-5.4-1.8-5 0-8.6 3.6-8.6 9.4s3.6 9.4 8.6 9.4c2.4 0 4.4-.8 5.8-2.2v.8h3.4v-11.8h-8.8v3h5v2.2c-.8 1-2.2 1.6-3.8 1.6-2.8 0-4.8-2-4.8-5s2-5 4.8-5c1.6 0 3 .6 3.8 1.6l2-1.6z" fill="#FAFAF8"/>
+  <path d="M124 116l2.4 2.4 4.6-5" stroke="#FAFAF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="72" y="220" fill="#111111" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="400">Find it. Export it.</text>
+  <text x="72" y="300" fill="#1F6C9F" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="400">Hand it to an agent.</text>
+  <text x="72" y="380" fill="#6B6A66" font-family="ui-sans-serif, system-ui, sans-serif" font-size="28">goslop · pure-Go SAT for performance, security, and hygiene</text>
+  <rect x="72" y="430" width="520" height="88" rx="12" fill="#FFFFFF" stroke="#E8E6E1"/>
+  <text x="96" y="470" fill="#6B6A66" font-family="ui-monospace, monospace" font-size="18">$ ./bin/goslop --profile recommended .</text>
+  <text x="96" y="500" fill="#346538" font-family="ui-monospace, monospace" font-size="18">$ ./bin/goslop --export-context --export-chunks .</text>
+</svg>
