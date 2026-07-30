@@ -21,6 +21,7 @@ export function GitHubStarsButton({
 }: Props) {
   const [stars, setStars] = useState<number | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -28,6 +29,7 @@ export function GitHubStarsButton({
     getGitHubStars().then((result) => {
       if (cancelled) return
       setStars(result.stars)
+      setFailed(result.stars === null)
       setLoaded(true)
     })
 
@@ -36,6 +38,9 @@ export function GitHubStarsButton({
     }
   }, [])
 
+  const countLabel =
+    !loaded ? '...' : stars !== null ? formatStarCount(stars) : 'n/a'
+
   return (
     <Button
       variant="outline"
@@ -43,7 +48,16 @@ export function GitHubStarsButton({
       asChild
       className={cn('gap-1.5 font-normal', className)}
     >
-      <a href={GITHUB_URL} target="_blank" rel="noreferrer">
+      <a
+        href={GITHUB_URL}
+        target="_blank"
+        rel="noreferrer"
+        title={
+          failed
+            ? 'Star count unavailable (rate limit or network). Open on GitHub.'
+            : 'Star on GitHub'
+        }
+      >
         <svg
           viewBox="0 0 16 16"
           className="size-3.5 shrink-0 fill-current"
@@ -55,12 +69,19 @@ export function GitHubStarsButton({
         <span
           className={cn(
             'inline-flex items-center gap-1 border-l border-border pl-1.5 font-mono text-xs tabular-nums',
-            !loaded && 'text-muted-foreground',
+            (!loaded || failed) && 'text-muted-foreground',
           )}
           aria-live="polite"
         >
           <Star className="size-3 fill-current opacity-80" aria-hidden />
-          {loaded && stars !== null ? formatStarCount(stars) : '...'}
+          <span className="sr-only">
+            {failed
+              ? 'Star count unavailable'
+              : loaded && stars !== null
+                ? `${stars} stars`
+                : 'Loading star count'}
+          </span>
+          <span aria-hidden>{countLabel}</span>
         </span>
       </a>
     </Button>

@@ -73,6 +73,30 @@
   }
 }
 
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes terminal-loop {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  96% {
+    opacity: 0;
+  }
+}
+
 /* Light: warm bone canvas (product editorial) */
 :root {
   --radius: 0.625rem;
@@ -163,6 +187,24 @@
 }
 
 @layer utilities {
+  /* Type ramp: 12 / 14 / 16 / 18 / 24 / 32 / 40 / 56 */
+  .text-ramp-xs {
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .text-ramp-sm {
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  .text-ramp-base {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+  .text-ramp-lg {
+    font-size: 1.125rem;
+    line-height: 1.55;
+  }
+
   .font-heading {
     font-family: var(--font-heading);
   }
@@ -171,13 +213,54 @@
     text-wrap: balance;
   }
 
+  .texture-canvas {
+    background-image:
+      radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--foreground) 4%, transparent) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+
+  .dark .texture-canvas {
+    background-image:
+      radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--foreground) 5.5%, transparent) 1px, transparent 0);
+  }
+
   .animate-fade-up {
     animation: var(--animate-fade-up);
   }
 
+  .terminal-replay {
+    animation: terminal-loop 12s ease-in-out infinite;
+  }
+
+  .line-reveal {
+    display: inline;
+    animation: line-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .line-reveal.delay-1 {
+    animation-delay: 0.35s;
+  }
+  .line-reveal.delay-2 {
+    animation-delay: 0.7s;
+  }
+  .line-reveal.delay-3 {
+    animation-delay: 1.15s;
+  }
+  .line-reveal.delay-4 {
+    animation-delay: 1.6s;
+  }
+  .line-reveal.delay-5 {
+    animation-delay: 2s;
+  }
+  .line-reveal.delay-6 {
+    animation-delay: 2.4s;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .animate-fade-up {
-      animation: none;
+    .animate-fade-up,
+    .terminal-replay,
+    .line-reveal {
+      animation: none !important;
     }
   }
 

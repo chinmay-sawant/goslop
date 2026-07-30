@@ -3,9 +3,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CodeBlock } from '@/components/code-block'
 
-const HERO_CMD = `make build
-./bin/goslop --profile recommended .
-./bin/goslop --export-context --export-chunks .`
+const HERO_CMD = `CGO_ENABLED=0 go install github.com/chinmay-sawant/goslop/cmd/goslop@latest
+goslop --profile recommended .
+goslop --export-context --export-chunks .`
 
 export function HeroSection() {
   return (
@@ -79,17 +79,17 @@ export function HeroSection() {
 
           <div className="motion-safe:animate-fade-up">
             <CodeBlock code={HERO_CMD} filename="get started">
-              <span className="text-muted-foreground"># build (no C toolchain)</span>
+              <span className="text-muted-foreground"># install (module from go.mod)</span>
               {'\n'}
-              make build
+              CGO_ENABLED=0 go install github.com/chinmay-sawant/goslop/cmd/goslop@latest
               {'\n\n'}
               <span className="text-muted-foreground"># scan</span>
               {'\n'}
-              ./bin/goslop --profile recommended .
+              goslop --profile recommended .
               {'\n\n'}
               <span className="text-muted-foreground"># export for agents</span>
               {'\n'}
-              ./bin/goslop --export-context --export-chunks .
+              goslop --export-context --export-chunks .
             </CodeBlock>
           </div>
         </div>

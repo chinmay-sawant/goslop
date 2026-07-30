@@ -26,13 +26,13 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
-                <a href="#why" className="text-muted-foreground hover:text-foreground">
-                  Why goslop
+                <a href="#rules" className="text-muted-foreground hover:text-foreground">
+                  Rules
                 </a>
               </li>
               <li>
-                <a href="#ci" className="text-muted-foreground hover:text-foreground">
-                  CI profiles
+                <a href="#proof" className="text-muted-foreground hover:text-foreground">
+                  Proof
                 </a>
               </li>
               <li>
