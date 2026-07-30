@@ -57,7 +57,12 @@ function AccordionContent({
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
       {...props}
     >
-      <div className={cn('text-muted-foreground pb-5 leading-relaxed', className)}>
+      <div
+        className={cn(
+          'text-muted-foreground pb-6 pr-8 leading-relaxed',
+          className,
+        )}
+      >
         {children}
       </div>
     </AccordionPrimitive.Content>

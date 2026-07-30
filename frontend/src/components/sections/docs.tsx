@@ -11,7 +11,6 @@ import {
   LayoutDashboard,
   ArrowUpRight,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardDescription,
@@ -125,10 +124,7 @@ export function DocsSection() {
     <section id="docs" className="border-b border-border py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Documentation
-          </p>
-          <h2 className="mt-3 font-heading text-4xl tracking-tight md:text-5xl">
+          <h2 className="font-heading text-4xl tracking-tight md:text-5xl">
             From scan to agent handoff
           </h2>
           <p className="mt-4 text-muted-foreground text-balance">
@@ -142,11 +138,7 @@ export function DocsSection() {
         </div>
 
         <div className="mt-12">
-          <div className="mb-4 flex items-center gap-2">
-            <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider">
-              Start here
-            </Badge>
-          </div>
+          <h3 className="mb-4 text-sm font-semibold">Start here</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {startHere.map((doc) => (
               <a
@@ -179,11 +171,7 @@ export function DocsSection() {
         </div>
 
         <div className="mt-14">
-          <div className="mb-4 flex items-center gap-2">
-            <Badge variant="muted" className="font-mono text-[10px] uppercase tracking-wider">
-              Deeper guides
-            </Badge>
-          </div>
+          <h3 className="mb-4 text-sm font-semibold">Deeper guides</h3>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {deeper.map((doc) => (
               <a

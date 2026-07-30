@@ -88,10 +88,7 @@ export function FeaturesSection() {
     <section id="features" className="border-b border-border py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Capabilities
-          </p>
-          <h2 className="mt-3 font-heading text-4xl tracking-tight md:text-5xl">
+          <h2 className="font-heading text-4xl tracking-tight md:text-5xl">
             A full SAT surface for Go
           </h2>
           <p className="mt-4 text-muted-foreground text-balance">

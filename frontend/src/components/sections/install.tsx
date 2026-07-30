@@ -26,10 +26,7 @@ export function InstallSection() {
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-start">
           <div>
-            <p className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Install
-            </p>
-            <h2 className="mt-3 font-heading text-4xl tracking-tight md:text-5xl">
+            <h2 className="font-heading text-4xl tracking-tight md:text-5xl">
               One binary. Zero C toolchain.
             </h2>
             <p className="mt-4 text-muted-foreground leading-relaxed">
