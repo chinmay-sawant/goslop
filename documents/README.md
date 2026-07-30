@@ -2,7 +2,7 @@
 
 User-facing documentation for the **goslop** static analysis tool (SAT) for Go.
 
-goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristics, experimental **taint** flows, and **bad-practice** (`BP-*`) style rules. Output formats: **text**, **JSON**, and **SARIF 2.1.0**. Optional exports write per-finding context under `scripts/findings/functions/` and batched chunks under `scripts/chunks/` for agent delegation.
+goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristics, experimental **taint** flows, and **bad-practice** (`BP-*`) style rules. Output formats: **text**, **JSON**, and **SARIF 2.1.0**. Optional exports write per-finding context under `scripts/findings/functions/` and batched chunks under `scripts/chunks/` for agent delegation; by default each finding’s **Context** is the **whole enclosing function** (`[goslop.export] whole_function = true`).
 
 ## Start here
 
@@ -12,7 +12,7 @@ goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristi
 | [**cli-reference.md**](./cli-reference.md) | Every CLI flag, subcommands, exit codes, config merge |
 | [**make-run.md**](./make-run.md) | Product `make run` / `make oracle` workflow (markdown guide) |
 | [**reporting-formats.md**](./reporting-formats.md) | Text, JSON, and **SARIF** with full examples |
-| [**export-context-and-chunks.md**](./export-context-and-chunks.md) | Function refs vs chunks; AI delegation workflow |
+| [**export-context-and-chunks.md**](./export-context-and-chunks.md) | Function refs vs chunks; whole-function Context (default); AI delegation |
 
 ## Deeper topic guides (existing)
 
@@ -55,5 +55,5 @@ make run SCAN_PATH=./your/project
 | [`templates/goslop.toml`](../templates/goslop.toml) | Config template |
 | [`goslop.schema.json`](../goslop.schema.json) | Config JSON Schema |
 | [`plans/`](../plans/) | Port phase ledger and architecture notes |
-| [`scripts/findings/functions/`](../scripts/findings/functions/) | Generated per-finding context (after export) |
-| [`scripts/chunks/`](../scripts/chunks/) | Generated finding batches (after export) |
+| [`scripts/findings/functions/`](../scripts/findings/functions/) | Generated per-finding context (after export; whole function by default) |
+| [`scripts/chunks/`](../scripts/chunks/) | Generated finding batches (after export; same Context mode) |

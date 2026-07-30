@@ -24,7 +24,7 @@ Use for:
 
 Files: `1.txt`, `2.txt`, … `N.txt` (1-based scan order).
 
-> The directory name is `functions` for historical product parity. By default each file’s **Context** is the **whole enclosing function** (`FuncDecl` / `FuncLit`). Set `[goslop.export] whole_function = false` for the previous nearby ~4-line window.
+> The directory name is `functions` for historical product parity. By default each file’s **Context** is the **whole enclosing function** (outermost `FuncDecl` preferred; otherwise `FuncLit`). Set `[goslop.export] whole_function = false` for the previous nearby ~4-line window. After upgrading, run `make build` (or `make run`) so regenerated files replace stale short windows.
 
 ### `scripts/chunks/` - combined findings for delegation
 
@@ -335,7 +335,7 @@ make run SCAN_PATH=/path/to/project
 
 Prompt sketch:
 
-> You are reviewing goslop findings. The attached chunk contains up to 25 findings with source context. For each finding: confirm true/false positive, propose a minimal fix, and note the rule id and file:line. If you need a single finding alone, ask for `scripts/findings/functions/{i}.txt`.
+> You are reviewing goslop findings. The attached chunk contains up to 25 findings. Each finding’s Context block is the full enclosing Go function (unless the project set `whole_function = false`). For each finding: confirm true/false positive, propose a minimal fix, and note the rule id and file:line. If you need a single finding alone, ask for `scripts/findings/functions/{i}.txt`.
 
 ### Single-finding deep dive
 

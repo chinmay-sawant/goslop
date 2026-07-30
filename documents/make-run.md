@@ -63,6 +63,12 @@ mkdir -p scripts/findings/functions scripts/chunks
 | `--export-chunks` | Write batches of findings → `scripts/chunks/` |
 | `--no-cache` | Full re-analysis (oracle-style, reproducible) |
 
+**Context shape:** both export surfaces default to the **whole enclosing function**
+in each finding’s `Context:` block (`[goslop.export] whole_function = true` when
+unset). Rebuild with `make build` / `make run` after upgrading so stale short
+windows are rewritten. Set `whole_function = false` in `goslop.toml` for the old
+nearby ~4-line window. See [export-context-and-chunks.md](./export-context-and-chunks.md).
+
 ---
 
 ## Overrides
@@ -109,7 +115,8 @@ With `--no-terminal` and default `text` format, **no per-finding lines** are pri
 How to use them:
 
 - **Chunks** = combined findings for **delegating** work to agents (one batch per file).  
-- **Functions** = individual finding **refs** for single-issue deep dives.
+- **Functions** = individual finding **refs** for single-issue deep dives.  
+- **Context** inside each file = **full enclosing function by default** (not only the hit line ± a few lines).
 
 See [export-context-and-chunks.md](./export-context-and-chunks.md).
 
