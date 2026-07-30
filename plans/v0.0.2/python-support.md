@@ -66,8 +66,8 @@ Follow `plans/skills/worktree-deleation/SKILL.md` adapted to this repo’s defau
 
 ### Phase 1 — Docs / multi-language WIP — #40
 
-- [ ] Ledger rows complete in [phase-1-docs.md](./phase-1-docs.md)
-- [ ] PR open with filled body `plans/PR/v0.0.2/pr-phase-1-docs.md`
+- [x] Ledger rows complete in [phase-1-docs.md](./phase-1-docs.md)
+- [x] PR open with filled body `plans/PR/v0.0.2/pr-phase-1-docs.md`
 
 ### Phase 2 — Models — #41
 

@@ -1,15 +1,16 @@
 # goslop product overview
 
-goslop is a **pure-Go** static analysis tool (SAT) for Go codebases. It uses `go/parser` + `go/ast` (no CGO, no tree-sitter) to find performance issues, bad practices, and CWE-class security problems.
+goslop is a static analysis tool (SAT) with a **multi-language engine** (`LanguagePlugin`). **Go** is the shipped production language today: pure-Go parsing via `go/parser` + `go/ast` (no CGO, no tree-sitter) finds performance issues, bad practices, and CWE-class security problems on Go codebases. **Python** is reserved / WIP (fixtures + `LanguagePython`; no full detector catalogue yet)—see epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) and [`plans/v0.0.2/python-support.md`](../plans/v0.0.2/python-support.md).
 
 ## What it does
 
 | Capability | Description |
 |------------|-------------|
-| **PERF rules** | Hot-path heuristics (loops, allocations, HTTP timeouts, framework footguns). **239** registered. |
-| **CWE structural** | Catalogue of structural security heuristics. **175** registered. |
+| **Languages** | **Go** shipped (default). Engine is multi-language; **Python** reserved / WIP (#39)—not full detector support. |
+| **Go PERF rules** | Hot-path heuristics (loops, allocations, HTTP timeouts, framework footguns). **239** registered. |
+| **Go CWE structural** | Catalogue of structural security heuristics. **175** registered. |
 | **Taint (experimental)** | Inter-procedural graph for **CWE-22 / 78 / 79 / 89** (path traversal, command injection, XSS, SQLi). |
-| **Bad practices (BP)** | Style / hygiene / project-level rules (`BP-*`). On for `style` and `all` profiles. |
+| **Go bad practices (BP)** | Style / hygiene / project-level rules (`BP-*`). On for `style` and `all` profiles. |
 | **Profiles (packs)** | `recommended`, `perf`, `security`, `style`, `all` - curated rule surfaces and defaults. |
 | **Reporters** | `text` (default), `json`, `sarif` (SARIF 2.1.0). Summary always on **stderr**. |
 | **Exports** | Per-finding context (`scripts/findings/functions`) and batched chunks (`scripts/chunks`) for agent work. **Context defaults to the whole enclosing function** (`[goslop.export] whole_function = true`). |
@@ -23,13 +24,14 @@ Phases **0-12** landed. High-level status:
 
 | Area | Status |
 |------|--------|
-| Engine / CLI / text · JSON · SARIF | ✅ |
-| PERF detectors | ✅ 239/239 |
-| CWE structural | ✅ 175/175 |
-| Bad practices | ✅ catalogue + project-level rules |
-| Taint graph | ✅ CWE-22/78/79/89 |
+| Engine / CLI / text · JSON · SARIF | ✅ (language-agnostic engine) |
+| Go PERF detectors | ✅ 239/239 |
+| Go CWE structural | ✅ 175/175 |
+| Go bad practices | ✅ catalogue + project-level rules |
+| Taint graph (Go) | ✅ CWE-22/78/79/89 |
 | Cache / baseline / ignore | ✅ |
 | Packs | ✅ recommended / perf / security / style / all |
+| Python language support | ⏳ WIP foundation — epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) / [v0.0.2](../plans/v0.0.2/python-support.md) |
 | §12.4 product parity baseline (`gopdfsuit`) | ✅ 915 findings; exports 915 context + 37 chunks |
 
 Details: root [`README.md`](../README.md) and [`plans/port-phasewise-checklist.md`](../plans/port-phasewise-checklist.md).
@@ -118,20 +120,20 @@ Under default fail **high**, S-tier PERF is typically **medium** (visible, does 
 
 ## Detector families
 
-### PERF (`PERF-*`)
+### PERF (`PERF-*`) — Go catalogue
 
-- **239** rules across loop allocations, HTTP, frameworks (Gin, etc.), parsing, data access.
+- **239** Go rules across loop allocations, HTTP, frameworks (Gin, etc.), parsing, data access.
 - Metadata chunks: `ruleset/golang/chunks/perf-*.json`
 - Human notes (partial): [perf-rules.md](./perf-rules.md)
 - List live: `./bin/goslop --list-rules` and filter for `PERF-`
 
-### CWE (`CWE-*`)
+### CWE (`CWE-*`) — Go catalogue
 
-- **175** structural rules.
+- **175** Go structural rules.
 - Taint-lite same-file heuristics for injection-class CWEs when full taint is off.
 - Full taint graph: enable with `--taint` or `--profile security`. See [taint.md](./taint.md).
 
-### Bad practices (`BP-*`)
+### Bad practices (`BP-*`) — Go catalogue
 
 - Style, error handling, testing, HTTP/server, go.mod hygiene, resources.
 - Enabled only for **`style`** and **`all`** (unless overridden in config).

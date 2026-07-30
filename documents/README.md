@@ -1,8 +1,8 @@
 # goslop documentation
 
-User-facing documentation for the **goslop** static analysis tool (SAT) for Go.
+User-facing documentation for the **goslop** static analysis tool (SAT). **Go** is the shipped production language; the engine is multi-language (`LanguagePlugin`) with **Python** reserved / WIP (epic [#39](https://github.com/chinmay-sawant/goslop/issues/39)).
 
-goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristics, experimental **taint** flows, and **bad-practice** (`BP-*`) style rules. Output formats: **text**, **JSON**, and **SARIF 2.1.0**. Optional exports write per-finding context under `scripts/findings/functions/` and batched chunks under `scripts/chunks/` for agent delegation; by default each finding’s **Context** is the **whole enclosing function** (`[goslop.export] whole_function = true`).
+goslop scans **Go** source for **PERF** hot-path issues, structural **CWE** heuristics, experimental **taint** flows, and **bad-practice** (`BP-*`) style rules (Go catalogues). Output formats: **text**, **JSON**, and **SARIF 2.1.0**. Optional exports write per-finding context under `scripts/findings/functions/` and batched chunks under `scripts/chunks/` for agent delegation; by default each finding’s **Context** is the **whole enclosing function** (`[goslop.export] whole_function = true`).
 
 ## Start here
 
