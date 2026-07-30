@@ -321,20 +321,6 @@ func detectBPPY20(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func isSimpleIdent(s string) bool {
-	if s == "" {
-		return false
-	}
-	for i := 0; i < len(s); i++ {
-		if !isIdentByte(s[i]) {
-			return false
-		}
-	}
-	// first char not digit
-	c := s[0]
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
-}
-
 func nameAssignedFromRequest(src string, before int, name string) bool {
 	if before < 0 {
 		before = 0

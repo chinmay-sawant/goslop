@@ -205,21 +205,6 @@ func looksLikeRouteDef(defLine, deco string) bool {
 	return false
 }
 
-func isSimpleIdent(s string) bool {
-	if s == "" {
-		return false
-	}
-	for i := 0; i < len(s); i++ {
-		if !isIdentByte(s[i]) {
-			return false
-		}
-	}
-	if s[0] >= '0' && s[0] <= '9' {
-		return false
-	}
-	return true
-}
-
 // BP-PY-30: blocking I/O inside async FastAPI route/dependency bodies.
 func detectBPPY30(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-30")
