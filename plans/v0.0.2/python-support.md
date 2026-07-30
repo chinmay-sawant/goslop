@@ -83,10 +83,10 @@ Follow `plans/skills/worktree-deleation/SKILL.md` adapted to this repo’s defau
 
 ### Phase 4 — Rulesets + generic reuse audit — #43
 
-- [ ] [ruleset-reuse-audit.md](./ruleset-reuse-audit.md) written with generic vs Go-only classification
-- [ ] Ledger rows complete in [phase-4-rulesets.md](./phase-4-rulesets.md)
-- [ ] PR open with filled body `plans/PR/v0.0.2/pr-phase-4-rulesets.md`
-- [ ] Validation: `make lint` + `make test` if Go loaders change; else note docs-only
+- [x] [ruleset-reuse-audit.md](./ruleset-reuse-audit.md) written with generic vs Go-only classification
+- [x] Ledger rows complete in [phase-4-rulesets.md](./phase-4-rulesets.md)
+- [x] PR open with filled body `plans/PR/v0.0.2/pr-phase-4-rulesets.md`
+- [x] Validation: docs/JSON + `go test ./ruleset/python/` (no Go loaders changed; docs/JSON-primary)
 
 ### Phase 5 — Integration — #39
 

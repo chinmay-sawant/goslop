@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/python-support.md`  
 > **Issue:** #43  
-> **Status:** not started  
+> **Status:** complete (this PR)  
 > **Estimated effort:** medium  
 > **Branch:** `feat/python-rulesets`  
 > **Out of scope:** Implementing Python AST detectors; changing Go detector registration counts; Phase 3 config wiring (consume audit only)
@@ -14,7 +14,7 @@
 Today all catalogue JSON lives under `ruleset/golang/`:
 
 - `bad-practices.json` — BP metadata (135 rules), Go-idiomatic
-- `chunks/*.json` — CWE + PERF metadata with `applicable_to` **entirely Go ecosystem tags** (`golang`, `gin`, `gorm`, …) — **0 rules** list `python`
+- `chunks/*.json` — CWE + PERF metadata with `applicable_to` **entirely Go ecosystem tags** (`golang`, `gin`, `gorm`, …) — **0 rules** list `python` (on main before this phase)
 
 Phase 4 establishes:
 
@@ -33,38 +33,40 @@ Do not duplicate 400+ Go-tagged rules into Python blindly. Classify **portable w
 
 ## 4.1 Ruleset reuse audit (scan agent deliverable)
 
-- [ ] Inventory schema fields for CWE/PERF chunks and BP JSON  
-- [ ] Count rules by `applicable_to` / `go_relevance` / `status`  
-- [ ] Classify into: **portable CWE shell**, **Go-framework-specific**, **Go-PERF**, **Go-BP**, **shared metadata only**  
-- [ ] Write findings to [ruleset-reuse-audit.md](./ruleset-reuse-audit.md) with concrete rule ID examples  
-- [ ] Recommend layout: e.g. `ruleset/python/` + optional `ruleset/shared/` vs overlay files  
+- [x] Inventory schema fields for CWE/PERF chunks and BP JSON  
+- [x] Count rules by `applicable_to` / `go_relevance` / `status`  
+- [x] Classify into: **portable CWE shell**, **Go-framework-specific**, **Go-PERF**, **Go-BP**, **shared metadata only**  
+- [x] Write findings to [ruleset-reuse-audit.md](./ruleset-reuse-audit.md) with concrete rule ID examples  
+- [x] Recommend layout: e.g. `ruleset/python/` + optional `ruleset/shared/` vs overlay files  
+
+Evidence: scripted counts in audit (CWE 175, PERF 242, BP 135; **0** `python` tags on main).
 
 ## 4.2 Directory + seed catalogues
 
-- [ ] Create `ruleset/python/README.md` explaining WIP + reuse policy  
-- [ ] Seed minimal Python catalogues, reusing field names from golang where possible:
-  - [ ] `ruleset/python/bad-practices.json` — empty `{}` or small portable subset with clear python notes  
-  - [ ] `ruleset/python/chunks/` — at least one CWE seed file for high-value portable IDs (e.g. CWE-22/78/79/89) with `applicable_to` including `python` and python-oriented `detection_notes`  
-- [ ] Do **not** break `ruleset/golang/**` or generated Go metadata  
+- [x] Create `ruleset/python/README.md` explaining WIP + reuse policy  
+- [x] Seed minimal Python catalogues, reusing field names from golang where possible:
+  - [x] `ruleset/python/bad-practices.json` — empty `{}` (do not copy all Go BP)  
+  - [x] `ruleset/python/chunks/` — `cwe-seed.json` for CWE-22/78/79/89 with `applicable_to` including `python` and python-oriented `detection_notes`  
+- [x] Do **not** break `ruleset/golang/**` or generated Go metadata  
 
 ## 4.3 Loader / discovery (minimal code if needed)
 
-- [ ] Document how Go loads BP metadata today (`metadata_gen.go` from bad-practices.json)  
-- [ ] If a shared path helper is needed, keep it tiny; prefer docs + file layout over big refactors  
-- [ ] Optional: small test that Python JSON files parse as valid JSON objects  
+- [x] Document how Go loads BP metadata today (`metadata_gen.go` from bad-practices.json) — in audit  
+- [x] If a shared path helper is needed, keep it tiny; prefer docs + file layout over big refactors  
+- [x] Optional: small test that Python JSON files parse as valid JSON objects — `ruleset/python/catalogue_test.go`  
 
 ## 4.4 Docs cross-links
 
-- [ ] `documents/rule-catalog-and-maturity.md` — note multi-language catalogue roots if it claims golang-only paths  
-- [ ] Point parity matrix python fixtures row at this phase / #43  
+- [x] `documents/rule-catalog-and-maturity.md` — multi-language catalogue roots  
+- [x] Point parity matrix python fixtures row at this phase / #43  
 
 ## 4.5 Closure
 
-- [ ] Audit markdown committed  
-- [ ] Seed rulesets committed  
-- [ ] Validation: if only JSON/docs → no full suite required; if Go code touched → `make lint` + `make test`  
-- [ ] Filled PR body `plans/PR/v0.0.2/pr-phase-4-rulesets.md`  
-- [ ] `Closes #43`, `Relates to #39`  
+- [x] Audit markdown committed  
+- [x] Seed rulesets committed  
+- [x] Validation: JSON/docs + tiny Go test for parse only → `go test ./ruleset/python/`  
+- [x] Filled PR body `plans/PR/v0.0.2/pr-phase-4-rulesets.md`  
+- [x] `Closes #43`, `Relates to #39`  
 
 ---
 
