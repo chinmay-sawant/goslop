@@ -54,6 +54,7 @@ lint-all:
 #   make run
 #   make run RUN_ARGS="--export-context --export-chunks --no-cache"
 #   make run SCAN_PATH=./some/project
+# Timing loop (optional): for i in {1..20}; do make run || break; done > 1.txt 2>&1
 run: build
 	@mkdir -p scripts/findings/functions scripts/chunks
 	./bin/goslop --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
