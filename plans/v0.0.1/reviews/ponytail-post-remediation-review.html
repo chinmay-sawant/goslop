@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Goslop — Ponytail post-remediation review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { background: #09111d; color: #e4edf8; }
+      .grid-bg { background-image: linear-gradient(#22304755 1px, transparent 1px), linear-gradient(90deg, #22304755 1px, transparent 1px); background-size: 28px 28px; }
+      .card { background: #101c2d; border: 1px solid #263852; }
+      .good { border-left: 4px solid #34d399; }
+      .open { border-left: 4px solid #fbbf24; }
+      code { color: #93c5fd; }
+    </style>
+  </head>
+  <body class="min-h-screen font-sans">
+    <main class="mx-auto max-w-6xl px-6 py-12">
+      <header class="grid-bg rounded-3xl border border-slate-700 bg-slate-950/30 p-8 md:p-12">
+        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-sky-300">Ponytail review · main...aaf6880 · 2026-07-30</p>
+        <div class="mt-5 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div>
+            <h1 class="text-4xl font-bold tracking-tight text-white md:text-6xl">Post-remediation<br />code-quality review</h1>
+            <p class="mt-4 max-w-2xl text-lg text-slate-300">A Go-focused standards and checklist review of the scan-contract remediation branch. Recommendations are tied to source evidence and the retained phase-wise checklist.</p>
+          </div>
+          <div class="rounded-2xl border border-sky-400/40 bg-sky-400/10 px-7 py-5 text-center">
+            <div class="text-sm font-medium uppercase tracking-wider text-sky-200">Overall rating</div>
+            <div class="mt-1 text-5xl font-black text-white">8.2<span class="text-2xl text-slate-400">/10</span></div>
+            <div class="mt-2 text-sm text-slate-300">was 6.6/10</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="mt-10 grid gap-4 md:grid-cols-2">
+        <article class="card rounded-2xl p-6 good">
+          <p class="text-xs font-bold uppercase tracking-wider text-emerald-300">Standards and Go practices</p>
+          <p class="mt-2 text-4xl font-bold text-white">8.1 / 10</p>
+          <p class="mt-3 text-slate-300">Strong error propagation, early-return control flow, explicit cleanup ownership, and scan-local synchronization. Two precise follow-ups remain.</p>
+        </article>
+        <article class="card rounded-2xl p-6 good">
+          <p class="text-xs font-bold uppercase tracking-wider text-emerald-300">Checklist/spec completion</p>
+          <p class="mt-2 text-4xl font-bold text-white">8.4 / 10</p>
+          <p class="mt-3 text-slate-300">Phases 0–2 are substantively closed and validated. Remaining work is narrow test breadth and intentionally deferred staging.</p>
+        </article>
+      </section>
+
+      <section class="mt-12">
+        <div class="flex items-end justify-between gap-4">
+          <div><p class="text-sm font-semibold uppercase tracking-widest text-emerald-300">Verified improvements</p><h2 class="mt-2 text-3xl font-bold text-white">The branch fixed the trust boundaries first</h2></div>
+          <span class="rounded-full bg-emerald-400/15 px-4 py-2 text-sm font-semibold text-emerald-200">7 confirmed areas</span>
+        </div>
+        <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <article class="card rounded-xl p-5"><h3 class="font-bold text-white">Scan-session isolation</h3><p class="mt-2 text-sm text-slate-300">Fresh detectors are constructed per scan; concurrent analyzers cannot leak lifecycle state.</p><code class="mt-3 block text-xs">engine/registry.go:136</code></article>
+          <article class="card rounded-xl p-5"><h3 class="font-bold text-white">Cold/warm cache parity</h3><p class="mt-2 text-sm text-slate-300">Cached units accumulate required finalization state without rerunning normal detection.</p><code class="mt-3 block text-xs">cache_state_integration_test.go:59</code></article>
+          <article class="card rounded-xl p-5"><h3 class="font-bold text-white">Partial scan honesty</h3><p class="mt-2 text-sm text-slate-300">Invalid encoding and unreadable files return an internal error before JSON/SARIF output.</p><code class="mt-3 block text-xs">app/run.go:173</code></article>
+          <article class="card rounded-xl p-5"><h3 class="font-bold text-white">Owned export cleanup</h3><p class="mt-2 text-sm text-slate-300">Only numeric context files and chunk files are removed; caller files are preserved.</p><code class="mt-3 block text-xs">export/export.go:157</code></article>
+          <article class="card rounded-xl p-5"><h3 class="font-bold text-white">Resolved configuration</h3><p class="mt-2 text-sm text-slate-300">CLI/TOML precedence, cache values, and baseline/walk policy are now concentrated in one plan.</p><code class="mt-3 block text-xs">app/scan_plan.go:12</code></article>
+          <article class="card rounded-xl p-5"><h3 class="font-bold text-white">Scan-local BP facts</h3><p class="mt-2 text-sm text-slate-300">Project/package caches are local to a scan, synchronized, benchmarked, and race-tested.</p><code class="mt-3 block text-xs">bad_practices/project.go:20</code></article>
+        </div>
+      </section>
+
+      <section class="mt-12">
+        <p class="text-sm font-semibold uppercase tracking-widest text-amber-300">Targeted findings</p>
+        <h2 class="mt-2 text-3xl font-bold text-white">Two code changes; one explicit policy choice</h2>
+        <div class="mt-6 grid gap-5">
+          <article class="card open rounded-2xl p-6">
+            <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-bold text-amber-200">MEDIUM · future-plugin correctness</span><h3 class="text-xl font-bold text-white">Validate registry catalogue/factory parity</h3></div>
+            <p class="mt-3 text-slate-300"><code>Detectors()</code> provides the rule catalogue, but <code>NewDetectors()</code> may return a different or empty session set. The BasePlugin default is nil and the registry currently trusts the factory result.</p>
+            <p class="mt-3 text-sm text-slate-400">Smallest change: compare language, rule IDs, and duplicates inside Registry when creating a session; add a deliberately divergent test plugin. This is validation, not another abstraction.</p>
+            <code class="mt-3 block text-xs">internal/core/plugin.go:30–57 · internal/engine/registry.go:136–160</code>
+          </article>
+          <article class="card open rounded-2xl p-6">
+            <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-bold text-amber-200">LOW · cold-scan efficiency</span><h3 class="text-xl font-bold text-white">Single-flight package-doc snapshots</h3></div>
+            <p class="mt-3 text-slate-300">Parallel workers may each miss the package-doc map and build the same directory snapshot. It is race-safe, but it duplicates I/O. Package type facts already use a per-directory <code>sync.Once</code> pattern.</p>
+            <p class="mt-3 text-sm text-slate-400">Smallest change: reuse that entry-plus-once pattern for package docs and prove one build under concurrency.</p>
+            <code class="mt-3 block text-xs">bad_practices/project.go:76–89 · package_facts.go:38–49</code>
+          </article>
+          <article class="card rounded-2xl border-l-4 border-sky-400 p-6">
+            <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-sky-400/15 px-3 py-1 text-xs font-bold text-sky-200">INTENTIONAL POLICY</span><h3 class="text-xl font-bold text-white">Keep parser fallback visible, not silently “fixed”</h3></div>
+            <p class="mt-3 text-slate-300">Malformed Go can become a source-only unit so text detectors continue to work. This is the prior checklist’s explicit product policy, not a defect to change opportunistically.</p>
+            <p class="mt-3 text-sm text-slate-400">If CI later needs parse completeness, add a parser-quality diagnostic or strict mode with an end-to-end malformed-Go test.</p>
+            <code class="mt-3 block text-xs">internal/lang/go/plugin.go:61–71</code>
+          </article>
+        </div>
+      </section>
+
+      <section class="mt-12 card rounded-2xl p-7">
+        <p class="text-sm font-semibold uppercase tracking-widest text-violet-300">Remaining checklist closure</p>
+        <h2 class="mt-2 text-2xl font-bold text-white">Finish evidence before another broad refactor</h2>
+        <ol class="mt-5 space-y-3 text-slate-300">
+          <li><span class="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-400/15 text-sm text-violet-200">1</span>Registry parity validation and divergent-plugin regression.</li>
+          <li><span class="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-400/15 text-sm text-violet-200">2</span>Package-doc single-flight regression.</li>
+          <li><span class="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-400/15 text-sm text-violet-200">3</span>Deterministic export-removal and analyzer-failure cleanup tests.</li>
+          <li><span class="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full bg-violet-400/15 text-sm text-violet-200">4</span>Observable-effect tests for the rest of supported configuration; extract CLI output staging only if it gains another real variation.</li>
+        </ol>
+      </section>
+
+      <footer class="mt-12 border-t border-slate-700 pt-6 text-sm text-slate-400">Evidence: prior phase-wise checklist, current branch source, and recorded validation. No MCP and no new production changes were made for this review.</footer>
+    </main>
+  </body>
+</html>

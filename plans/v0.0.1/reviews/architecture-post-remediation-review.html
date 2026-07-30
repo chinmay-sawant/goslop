@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Goslop — Architecture post-remediation review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+    </script>
+    <style>
+      body { background: #0b1020; color: #e5e7eb; }
+      .card { background: #131b32; border: 1px solid #2a3858; }
+      .mesh { background-image: radial-gradient(circle at 15% 25%, #2563eb33, transparent 28%), radial-gradient(circle at 82% 18%, #7c3aed33, transparent 26%), linear-gradient(135deg,#0c1326,#131b32); }
+      .before { background: #381b2a; border-color: #7f3454; } .after { background: #122e2a; border-color: #227461; }
+      code { color: #a5d8ff; }
+    </style>
+  </head>
+  <body class="min-h-screen font-sans">
+    <main class="mx-auto max-w-7xl px-6 py-12">
+      <header class="mesh rounded-3xl border border-indigo-400/30 p-8 md:p-12">
+        <p class="text-sm font-semibold uppercase tracking-[0.24em] text-indigo-200">Architecture deepening review · main...aaf6880 · 2026-07-30</p>
+        <div class="mt-6 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+          <div><h1 class="text-4xl font-bold tracking-tight text-white md:text-6xl">Depth gained.<br />Three real seams remain.</h1><p class="mt-4 max-w-2xl text-lg text-slate-300">A post-remediation review of module interfaces, leverage, locality, and test surfaces. There is no CONTEXT.md or ADR set to constrain the review.</p></div>
+          <div class="rounded-2xl border border-indigo-300/40 bg-indigo-400/10 px-7 py-5 text-center"><div class="text-sm font-semibold uppercase tracking-wider text-indigo-200">Architecture rating</div><div class="mt-1 text-5xl font-black text-white">8.3<span class="text-2xl text-slate-400">/10</span></div><div class="mt-2 text-sm text-slate-300">Only A-1 is strong</div></div>
+        </div>
+      </header>
+
+      <section class="mt-10 card rounded-2xl p-7">
+        <p class="text-sm font-semibold uppercase tracking-widest text-emerald-300">What became deeper</p>
+        <div class="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div><h2 class="font-bold text-white">scanPlan</h2><p class="mt-1 text-sm text-slate-300">One interface resolves CLI/TOML precedence before engine construction.</p><code class="text-xs">app/scan_plan.go:12</code></div>
+          <div><h2 class="font-bold text-white">scanSession</h2><p class="mt-1 text-sm text-slate-300">Fresh detector state is local to one scan; the registry remains a catalogue.</p><code class="text-xs">engine/registry.go:30</code></div>
+          <div><h2 class="font-bold text-white">ScanScope</h2><p class="mt-1 text-sm text-slate-300">Root, cache-key, and display-path policy now have one owner.</p><code class="text-xs">engine/scan_scope.go:10</code></div>
+          <div><h2 class="font-bold text-white">Reporting/export</h2><p class="mt-1 text-sm text-slate-300">Output modules own normalization and only their own files.</p><code class="text-xs">export/export.go:157</code></div>
+          <div><h2 class="font-bold text-white">BP facts</h2><p class="mt-1 text-sm text-slate-300">Project/package facts are scan-local rather than process-global.</p><code class="text-xs">bad_practices/project.go:20</code></div>
+        </div>
+      </section>
+
+      <section class="mt-12">
+        <p class="text-sm font-semibold uppercase tracking-widest text-indigo-300">Candidate map</p>
+        <h2 class="mt-2 text-3xl font-bold text-white">One strong recommendation; three conditional ones</h2>
+        <pre class="mermaid mt-6 overflow-auto rounded-2xl border border-slate-700 bg-slate-950 p-4">flowchart LR
+          CLI[CLI Run] --> Plan[scanPlan]
+          Plan --> Engine[Analyzer + scanSession]
+          Engine --> Parse[Parse outcome]
+          Engine --> Scope[ScanScope]
+          Engine --> Output[Reporting + Export]
+          Parse -. A-1 .-> Quality[Explicit parser quality]
+          Scope -. A-3 .-> Keys[Canonical multi-root keys]
+          Engine -. A-2 .-> Caps[Optional detector capabilities]
+          CLI -. A-4 .-> Stages[Private scan/output stages]
+        </pre>
+      </section>
+
+      <section class="mt-10 space-y-7">
+        <article class="card rounded-2xl p-7">
+          <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-rose-400/15 px-3 py-1 text-xs font-bold text-rose-200">STRONG</span><h2 class="text-2xl font-bold text-white">A-1 · Make parser quality explicit</h2></div>
+          <p class="mt-3 text-slate-300">The Go parser deliberately preserves source-only analysis after parse failure. That gives text detectors value, but parse quality is absent from the parser interface and invisible to engine/output policy.</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch"><div class="before rounded-xl border p-5"><h3 class="font-bold text-rose-100">Before</h3><p class="mt-2 text-sm text-rose-100/80">ParseSource → unit; parse error is locally discarded. AST omissions cannot cross the seam.</p></div><div class="flex items-center justify-center text-3xl text-slate-400">→</div><div class="after rounded-xl border p-5"><h3 class="font-bold text-emerald-100">After</h3><p class="mt-2 text-sm text-emerald-100/80">Parse result → unit + explicit quality/diagnostic. Engine owns continue, text-only, warn, or fail policy.</p></div></div>
+          <p class="mt-5 text-sm text-slate-300"><strong>Leverage:</strong> one parser-quality interface feeds every language and output policy. <strong>Locality:</strong> parser-policy knowledge stops leaking into plugins and CLI. <strong>Deletion test:</strong> deleting it spreads the decision again, so it earns its module.</p>
+          <code class="mt-3 block text-xs">internal/lang/go/plugin.go:61–71 · internal/engine/analyzer.go</code>
+        </article>
+
+        <article class="card rounded-2xl p-7">
+          <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-bold text-amber-200">WORTH EXPLORING</span><h2 class="text-2xl font-bold text-white">A-2 · Narrow detector capabilities</h2></div>
+          <p class="mt-3 text-slate-300">The detector interface currently carries lifecycle, cache-state, finalization, reset, metadata, and run behaviour. Stateless detectors cross a broad interface and inherit no-op methods.</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch"><div class="before rounded-xl border p-5"><h3 class="font-bold text-rose-100">Before</h3><p class="mt-2 text-sm text-rose-100/80">Every detector learns one wide interface, even when it only runs rules.</p></div><div class="flex items-center justify-center text-3xl text-slate-400">→</div><div class="after rounded-xl border p-5"><h3 class="font-bold text-emerald-100">After</h3><p class="mt-2 text-sm text-emerald-100/80">A narrow detector module plus optional lifecycle/cache/finalization capabilities at the engine seam.</p></div></div>
+          <p class="mt-5 text-sm text-slate-300"><strong>Condition:</strong> first add catalogue/factory parity validation. One concrete language adapter means this should not become a premature abstraction.</p>
+          <code class="mt-3 block text-xs">internal/core/detector.go · internal/engine/registry.go · internal/engine/analyzer.go</code>
+        </article>
+
+        <article class="card rounded-2xl p-7">
+          <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-bold text-amber-200">WORTH EXPLORING</span><h2 class="text-2xl font-bold text-white">A-3 · Make multi-root cache identity order-invariant</h2></div>
+          <p class="mt-3 text-slate-300">The first requested root defines cache-relative keys; later roots can use <code>../</code> keys. This is safe but order-dependent, and first-root policy exists in both scope resolution and analyzer setup.</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch"><div class="before rounded-xl border p-5"><h3 class="font-bold text-rose-100">Before</h3><p class="mt-2 text-sm text-rose-100/80">[root A, root B] → B is keyed relative to A. Reordering changes persisted identities.</p></div><div class="flex items-center justify-center text-3xl text-slate-400">→</div><div class="after rounded-xl border p-5"><h3 class="font-bold text-emerald-100">After</h3><p class="mt-2 text-sm text-emerald-100/80">One ScanScope-owned canonical key space accepts each root and is passed directly to the analyzer.</p></div></div>
+          <p class="mt-5 text-sm text-slate-300"><strong>Acceptance:</strong> prove order invariance, mixed file/directory roots, and persisted-cache reuse before changing the seam.</p>
+          <code class="mt-3 block text-xs">internal/engine/scan_scope.go:19–50 · internal/engine/analyzer.go:185–190</code>
+        </article>
+
+        <article class="card rounded-2xl p-7">
+          <div class="flex flex-wrap items-center gap-3"><span class="rounded-full bg-amber-400/15 px-3 py-1 text-xs font-bold text-amber-200">WORTH EXPLORING</span><h2 class="text-2xl font-bold text-white">A-4 · Stage CLI execution only on real variation</h2></div>
+          <p class="mt-3 text-slate-300">Plan resolution and scope have been extracted, but <code>run</code> still manages cache, baseline, analyzer construction, reporting, export, and exit policy. It is a real pending checklist item, not a reason for a framework rewrite.</p>
+          <div class="mt-6 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-stretch"><div class="before rounded-xl border p-5"><h3 class="font-bold text-rose-100">Before</h3><p class="mt-2 text-sm text-rose-100/80">One CLI function coordinates execution and every output/exit decision.</p></div><div class="flex items-center justify-center text-3xl text-slate-400">→</div><div class="after rounded-xl border p-5"><h3 class="font-bold text-emerald-100">After</h3><p class="mt-2 text-sm text-emerald-100/80">Private scan-execution and output/exit-policy modules behind the same single Run interface.</p></div></div>
+          <p class="mt-5 text-sm text-slate-300"><strong>Condition:</strong> wait until a second output or exit-policy variation is real; one adapter remains hypothetical today.</p>
+          <code class="mt-3 block text-xs">internal/app/run.go:31 · internal/app/scan_plan.go</code>
+        </article>
+      </section>
+
+      <section class="mt-10 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-7"><p class="text-sm font-semibold uppercase tracking-widest text-emerald-200">Top recommendation</p><h2 class="mt-2 text-2xl font-bold text-white">Schedule A-1: explicit parser-quality signalling.</h2><p class="mt-3 max-w-3xl text-slate-200">It gives the engine and users an honest, testable result while retaining the intentional source-only fallback. The other candidates are conditional and should wait for a second language, repeat multi-root cache friction, or a second output policy.</p></section>
+      <footer class="mt-12 border-t border-slate-700 pt-6 text-sm text-slate-400">Source review only. No MCP, no code changes, and no new tests were run to create this report.</footer>
+    </main>
+  </body>
+</html>
