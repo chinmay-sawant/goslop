@@ -1,11 +1,11 @@
 package badpractices
 
 import (
-	goast "go/ast"
 	"strings"
 
 	"github.com/chinmay/goslop/internal/ast"
 	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/astfacts"
 	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
@@ -19,12 +19,20 @@ var bpNeedles = []string{
 	"signal.Notify", ".Shutdown(", "ListenAndServe", "rate.NewLimiter",
 }
 
+// codeLine is one source line with 0-based index and byte offset (P1.1).
+type codeLine struct {
+	idx  int
+	text string
+	byte int
+}
+
 // bpFacts is the fused fact bag for BP detectors.
 type bpFacts struct {
-	Source      string
-	Index       ast.SourceIndex
-	tree        *goparse.Tree
-	ownedTree   bool
+	Source string
+	Index  ast.SourceIndex
+	tree   *goparse.Tree
+	// lines is built once per file (codeLines / stripLineComment cost).
+	lines       []codeLine
 	assignNodes []nodeSpan
 	callNodes   []callSpan
 	deferNodes  []nodeSpan
@@ -63,80 +71,47 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 		return f
 	}
 	f.Source = unit.Source
+	// Once per file: shared by all BP rules that walk source lines.
+	f.lines = buildCodeLines(unit.Source)
 	f.Index = ast.Build(unit.Source, bpNeedles)
 
-	src := []byte(unit.Source)
-	var tree *goparse.Tree
-	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
-		tree = t
-	} else if unit.Source != "" {
-		t, err := goparse.Parse(src)
-		if err == nil && t != nil && t.File != nil {
-			tree = t
-			f.ownedTree = true
-		} else if t != nil && t.File != nil {
-			tree = t
-			f.ownedTree = true
-		}
+	// Shared AST walk with PERF (one Inspect pair per file via unit.FactCache).
+	tree := goparse.TreeForUnit(unit)
+	if tree != nil {
+		f.tree = tree
 	}
-	if tree == nil || tree.File == nil {
+	shared := astfacts.Ensure(unit)
+	if shared == nil {
 		return f
 	}
-	f.tree = tree
-
-	goast.Inspect(tree.File, func(n goast.Node) bool {
-		if n == nil {
-			return true
-		}
-		start := tree.Offset(n.Pos())
-		end := tree.Offset(n.End())
-		text := tree.NodeText(n)
-		switch x := n.(type) {
-		case *goast.AssignStmt:
-			f.assignNodes = append(f.assignNodes, nodeSpan{start: start, end: end, text: text})
-		case *goast.CallExpr:
-			callee := strings.TrimSpace(tree.NodeText(x.Fun))
-			f.callNodes = append(f.callNodes, callSpan{
-				start: start, end: end, callee: callee, text: text,
-			})
-		case *goast.DeferStmt:
-			f.deferNodes = append(f.deferNodes, nodeSpan{start: start, end: end, text: text})
-		case *goast.GoStmt:
-			f.goNodes = append(f.goNodes, nodeSpan{start: start, end: end, text: text})
-		case *goast.ForStmt, *goast.RangeStmt:
-			f.forRanges = append(f.forRanges, [2]int{start, end})
-		case *goast.FuncDecl:
-			name := ""
-			if x.Name != nil {
-				name = x.Name.Name
-			}
-			bodyS, bodyE := start, end
-			if x.Body != nil {
-				bodyS = tree.Offset(x.Body.Pos())
-				bodyE = tree.Offset(x.Body.End())
-			}
-			params := ""
-			if x.Type != nil && x.Type.Params != nil {
-				params = tree.NodeText(x.Type.Params)
-			}
-			f.funcDecls = append(f.funcDecls, funcSpan{
-				name:   name,
-				start:  start,
-				end:    end,
-				bodyS:  bodyS,
-				bodyE:  bodyE,
-				isMain: name == "main",
-				params: params,
-			})
-		}
-		return true
-	})
+	f.forRanges = shared.ForRanges
+	for _, a := range shared.Assigns {
+		f.assignNodes = append(f.assignNodes, nodeSpan{start: a.Start, end: a.End, text: a.Text})
+	}
+	for _, c := range shared.Calls {
+		f.callNodes = append(f.callNodes, callSpan{
+			start: c.Start, end: c.End, callee: c.Callee, text: c.Text,
+		})
+	}
+	for _, r := range shared.DeferSpans {
+		f.deferNodes = append(f.deferNodes, nodeSpan{start: r.Start, end: r.End, text: r.Text})
+	}
+	for _, r := range shared.GoSpans {
+		f.goNodes = append(f.goNodes, nodeSpan{start: r.Start, end: r.End, text: r.Text})
+	}
+	for _, fd := range shared.FuncDecls {
+		f.funcDecls = append(f.funcDecls, funcSpan{
+			name: fd.Name, start: fd.Start, end: fd.End,
+			bodyS: fd.BodyS, bodyE: fd.BodyE, isMain: fd.IsMain, params: fd.Params,
+		})
+	}
 	return f
 }
 
+// close releases any BP-owned resources. The shared unit AST is not closed here
+// (analyzer closeUnitTree owns unit.Tree lifetime for cross-pack reuse).
 func (f *bpFacts) close() {
-	if f != nil && f.ownedTree && f.tree != nil {
-		f.tree.Close()
+	if f != nil {
 		f.tree = nil
 	}
 }

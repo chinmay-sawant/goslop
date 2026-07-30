@@ -39,22 +39,9 @@ func ExtractTaintFacts(unit *core.ParsedUnit) TaintAnnotations {
 	}
 }
 
-// unitTree returns the *goparse.Tree attached to the unit, or parses source on demand.
+// unitTree returns the *goparse.Tree for the unit (shared via unit.Tree).
 func unitTree(unit *core.ParsedUnit) *goparse.Tree {
-	if unit == nil {
-		return nil
-	}
-	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
-		return t
-	}
-	if unit.Source == "" {
-		return nil
-	}
-	t, _ := goparse.Parse([]byte(unit.Source))
-	if t != nil && t.File != nil {
-		return t
-	}
-	return nil
+	return goparse.TreeForUnit(unit)
 }
 
 type extractionState struct {

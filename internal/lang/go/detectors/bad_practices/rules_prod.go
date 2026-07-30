@@ -21,7 +21,7 @@ func init() {
 	RegisterRule("BP-56", detectBP56)
 }
 
-func detectBP46(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-46")
 	if isTestFile(unit) || !strings.Contains(unit.Source, "http.Server") {
 		return
@@ -68,7 +68,7 @@ func detectBP46(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP47(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP47(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-47")
 	if isMaterializedFixture(unit) {
 		return
@@ -110,7 +110,7 @@ func detectBP48(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		for _, name := range callees {
 			if strings.Contains(t, name+"(") {
@@ -139,7 +139,7 @@ func detectBP49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 	}
 	if len(facts.deferNodes) == 0 {
-		for _, line := range codeLines(unit.Source) {
+		for _, line := range codeLinesFacts(facts, unit.Source) {
 			t := strings.TrimSpace(line.text)
 			if strings.HasPrefix(t, "defer ") && !strings.Contains(t, "func()") {
 				if strings.Contains(t, ".Close()") || strings.Contains(t, ".Flush()") || strings.Contains(t, ".Sync()") {
@@ -150,7 +150,7 @@ func detectBP49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP50(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP50(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-50")
 	if isMaterializedFixture(unit) {
 		return
@@ -162,7 +162,7 @@ func detectBP50(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	pushAt(unit, meta, 0, "long-running server should handle SIGTERM or SIGINT", out)
 }
 
-func detectBP51(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP51(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-51")
 	if isTestFile(unit) || packageName(unit.Source) == "main" {
 		return
@@ -178,7 +178,7 @@ func detectBP51(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP52(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP52(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-52")
 	if isTestFile(unit) || !strings.Contains(unit.Source, "make(") || !strings.Contains(unit.Source, "*") {
 		return
@@ -432,7 +432,7 @@ func bp52HasOverflowGuard(scope string) bool {
 		strings.Contains(scope, "checked_mul")
 }
 
-func detectBP53(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP53(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-53")
 	src := unit.Source
 	if isTestFile(unit) || !strings.Contains(src, "gob.Register(") {
@@ -543,7 +543,7 @@ func normalizeTypeName(value string) string {
 	return normalizeIdentifier(value)
 }
 
-func detectBP54(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP54(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-54")
 	if isMaterializedFixture(unit) {
 		return
@@ -555,7 +555,7 @@ func detectBP54(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	pushAt(unit, meta, 0, "public HTTP handlers should enforce a rate-limiting guard", out)
 }
 
-func detectBP55(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP55(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-55")
 	if isMaterializedFixture(unit) {
 		return
@@ -567,7 +567,7 @@ func detectBP55(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	pushAt(unit, meta, 0, "request-handling code logs traffic without a visible request-id propagation path", out)
 }
 
-func detectBP56(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP56(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-56")
 	deprecated := []string{
 		`"io/ioutil"`, `"golang.org/x/net/context"`, `"github.com/golang/protobuf"`,

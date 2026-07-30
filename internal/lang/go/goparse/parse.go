@@ -16,6 +16,7 @@ import (
 	goast "go/ast"
 	"go/parser"
 	"go/token"
+	"unsafe"
 
 	"github.com/chinmay/goslop/internal/ast"
 )
@@ -101,6 +102,9 @@ func ParseExpr(source []byte) (goast.Expr, *token.FileSet, error) {
 }
 
 // Slice returns source[start:end] clamped to bounds.
+//
+// Zero-copy: the result aliases Tree.Source. Callers must treat the string as
+// immutable and must not retain it past Close/replacement of Source (P2.2).
 func (t *Tree) Slice(start, end int) string {
 	if t == nil {
 		return ""
@@ -115,7 +119,9 @@ func (t *Tree) Slice(start, end int) string {
 	if start >= end {
 		return ""
 	}
-	return string(src[start:end])
+	b := src[start:end]
+	// Source is owned by Tree and not mutated after Parse.
+	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
 // NodeText returns the source text of node.

@@ -12,6 +12,6 @@
 *.swp
 coverage.out
 
-# Generated export artifacts (make run / make oracle)
+# Generated export artifacts (make run / make reference-metrics)
 scripts/chunks/
 scripts/findings/

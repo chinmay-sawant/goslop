@@ -65,7 +65,7 @@ func detectBP3(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, "panic(") {
 			continue
@@ -122,13 +122,13 @@ func detectBP6(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 }
 
 // BP-7: mutex passed by value.
-func detectBP7(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP7(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-7")
 	if !strings.Contains(unit.Source, "sync.Mutex") {
 		return
 	}
 	msg := "sync.Mutex is passed by value; pass *sync.Mutex to avoid copying lock state"
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "func ") && strings.Contains(t, " sync.Mutex") && !strings.Contains(t, "*sync.Mutex") {
 			pushAt(unit, meta, line.byte+strings.Index(line.text, "sync.Mutex"), msg, out)
@@ -283,7 +283,7 @@ func detectBP10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		if strings.Contains(line.text, "time.After") {
 			// crude: if any for earlier in file without closing — weak; use facts.forRanges if empty skip unless for in source
 			if strings.Contains(unit.Source, "for ") {
@@ -310,7 +310,7 @@ func detectBP11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 	// text: look for for { ... defer
 	inFor := 0
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "for ") || t == "for {" || strings.HasPrefix(t, "for{") {
 			inFor++
@@ -327,7 +327,7 @@ func detectBP11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 }
 
 // BP-12: unbuffered channel send from multiple goroutines — light heuristic.
-func detectBP12(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-12")
 	src := unit.Source
 	if !strings.Contains(src, "make(chan ") || !strings.Contains(src, "go ") {
@@ -340,7 +340,7 @@ func detectBP12(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	// if multiple go and channel send without buffer
 	if strings.Count(src, "go ") >= 2 && strings.Contains(src, "<-") {
 		// only fire if make(chan X) without comma capacity
-		for _, line := range codeLines(src) {
+		for _, line := range codeLinesFacts(facts, src) {
 			t := strings.TrimSpace(line.text)
 			if strings.Contains(t, "make(chan ") && !strings.Contains(t, ",") {
 				pushAt(unit, meta, line.byte, "unbuffered channel receives sends from multiple goroutines; consider buffering or synchronizing", out)
@@ -373,7 +373,7 @@ func detectBP13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		if strings.Contains(line.text, "context.Background") {
 			if name, ok := enclosingFuncName(unit.Source, line.byte); ok && (name == "main" || name == "init") {
 				continue
@@ -475,7 +475,7 @@ func detectBP15(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP72(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP72(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-72")
 	// return nil for interface when local *T is nil — common pattern: var p *T; return p
 	src := unit.Source
@@ -484,7 +484,7 @@ func detectBP72(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// function returns interface/error interface and returns typed nil
 	// heuristic: var x *Something\n return x
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "var ") && strings.Contains(t, "*") {
@@ -504,14 +504,14 @@ func detectBP72(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP73(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP73(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-73")
 	// Local var m map[...] written before make — clear when assigned make.
 	if !strings.Contains(unit.Source, "map[") {
 		return
 	}
 	varMaps := map[string]int{} // name → decl offset
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "var ") && strings.Contains(t, "map[") && !strings.Contains(t, "=") {
 			parts := strings.Fields(t)
@@ -545,7 +545,7 @@ func detectBP73(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP75(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP75(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-75")
 	if !strings.Contains(unit.Source, "copy(") {
 		return
@@ -553,7 +553,7 @@ func detectBP75(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	msg := "copy into a zero-length slice does nothing; allocate with length or use append"
 	// Track zero-length destinations: var name []T or name := make([]T, 0…)
 	zero := map[string]struct{}{}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "var ") && strings.Contains(t, "[]") && !strings.Contains(t, "=") {
 			parts := strings.Fields(t)
@@ -604,7 +604,7 @@ func detectBP75(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP79(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP79(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-79")
 	if !strings.Contains(unit.Source, "context.WithCancel") &&
 		!strings.Contains(unit.Source, "context.WithTimeout") &&
@@ -613,7 +613,7 @@ func detectBP79(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	msg := "locally bound context cancel function has no visible call or defer; verify its ownership and release path"
 	constructors := []string{"context.WithCancel", "context.WithTimeout", "context.WithDeadline"}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		var ctor string
 		for _, c := range constructors {
@@ -697,7 +697,7 @@ func detectBP80(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP81(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP81(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-81")
 	// Rust parity: only when a single if condition contains ≥2 time.Now() calls.
 	// Separate if statements may each read the clock independently (variant-safe).
@@ -705,7 +705,7 @@ func detectBP81(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	msg := "condition reads time.Now more than once; capture one now value before comparing"
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "if ") && !strings.HasPrefix(t, "if(") {
 			continue
@@ -722,12 +722,12 @@ func detectBP81(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP82(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP82(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-82")
 	if !strings.Contains(unit.Source, "time.Parse(") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, "time.Parse(") && !strings.Contains(t, "ParseInLocation") && !strings.Contains(unit.Source, "time.ParseInLocation") {
 			// time.Parse is UTC-only for no zone; flag if no location elsewhere
@@ -779,7 +779,7 @@ func detectBP83(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Text fallback: only sleep inside functions whose names look sync-shaped.
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		if !strings.Contains(line.text, "time.Sleep(") {
 			continue
 		}
@@ -884,12 +884,12 @@ func isBackoffOrRetryBP83(text string) bool {
 	return false
 }
 
-func detectBP84(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP84(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-84")
 	// Percentage-shaped: (a / b) * 100 with percent/pct/percentage context.
 	// Integer division truncates before scaling (1/3*100 == 0).
 	msg := "integer division truncates before percentage scaling; convert to a floating-point value before dividing"
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, "float") {
 			continue
@@ -939,7 +939,7 @@ func hasPercentageContext(source string, offset int, line string) bool {
 	return false
 }
 
-func detectBP86(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP86(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-86")
 	if !strings.Contains(unit.Source, ".Lock()") {
 		return
@@ -1018,7 +1018,7 @@ func rlockAcrossBlocking(body string) bool {
 	}
 }
 
-func detectBP88(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP88(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-88")
 	// var ch chan T without make then direct (non-select) send/recv.
 	if !strings.Contains(unit.Source, "chan ") && !strings.Contains(unit.Source, "chan\t") {
@@ -1028,7 +1028,7 @@ func detectBP88(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	varChans := map[string]int{}
 	// Brace depth after entering a select statement (0 = outside select).
 	selectDepth := 0
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 
 		if strings.HasPrefix(t, "var ") && strings.Contains(t, "chan ") && !strings.Contains(t, "make(") && !strings.Contains(t, "=") {
@@ -1082,11 +1082,11 @@ func channelOpOn(line, name string) bool {
 	return false
 }
 
-func detectBP89(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP89(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-89")
 	// close(ch) more than once on same channel name
 	closes := map[string]int{}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "close(") {
 			inner := strings.TrimSuffix(strings.TrimPrefix(t, "close("), ")")
@@ -1292,7 +1292,7 @@ func textContainsBareReceive(text string) bool {
 	return false
 }
 
-func detectBP92(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP92(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-92")
 	if strings.Contains(unit.Source, "errgroup.Group") || strings.Contains(unit.Source, "new(errgroup.Group)") || strings.Contains(unit.Source, "errgroup.Group{}") {
 		if !strings.Contains(unit.Source, "errgroup.WithContext") {
@@ -1303,7 +1303,7 @@ func detectBP92(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP93(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP93(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-93")
 	src := unit.Source
 	if !strings.Contains(src, ".Go(") {
@@ -1313,7 +1313,7 @@ func detectBP93(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Only blank-assign a call inside an errgroup.Go closure (not unrelated `_ = ctx`).
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, ".Go(func") && !strings.Contains(t, ".Go(") {
@@ -1356,7 +1356,7 @@ func detectBP93(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP94(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP94(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-94")
 	if !strings.Contains(unit.Source, "go ") || !strings.Contains(unit.Source, "map[") {
 		return
@@ -1399,7 +1399,7 @@ func detectBP100(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// text: for _, x := range ... { go
-	lines := codeLines(unit.Source)
+	lines := codeLinesFacts(facts, unit.Source)
 	inFor := false
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)

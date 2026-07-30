@@ -40,7 +40,7 @@ func detectBP1(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 
 	// Text fallback when AST unavailable.
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if t == "" {
 			continue
@@ -114,12 +114,12 @@ func isNonErrorBuiltinRHS(rhs string) bool {
 }
 
 // BP-2: naked `return err` without wrapping.
-func detectBP2(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP2(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-2")
 	if !strings.Contains(unit.Source, "return err") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		if strings.TrimSpace(line.text) == "return err" {
 			pushAt(unit, meta, line.byte, "naked return err loses operation context; wrap it before returning", out)
 		}
@@ -170,7 +170,7 @@ func detectBP5(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 
 	// Text fallback: flag defer x.Close() and bare x.Close().
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, ".Close()") {
 			if strings.HasPrefix(t, "defer ") || (!strings.Contains(t, "=") && !strings.HasPrefix(t, "return ") && !strings.Contains(t, "if ")) {
@@ -228,7 +228,7 @@ func closeCallIsHandled(c callSpan, facts *bpFacts) bool {
 }
 
 // BP-67: errors.As target not a pointer.
-func detectBP67(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP67(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-67")
 	if !strings.Contains(unit.Source, "errors.As(") {
 		return
@@ -323,12 +323,12 @@ func splitTopLevel(args string) []string {
 }
 
 // BP-68: discarded errors.Join result.
-func detectBP68(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP68(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-68")
 	if !strings.Contains(unit.Source, "errors.Join(") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "errors.Join(") || strings.HasPrefix(t, "_ = errors.Join(") {
 			pushAt(unit, meta, line.byte, "errors.Join result is discarded; capture or return the joined error", out)
@@ -338,12 +338,12 @@ func detectBP68(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 // BP-70: error branch logs with log.Print* and continues (Rust core_language_deferred).
 // log.Fatal / panic / os.Exit / return are explicit exits and must not fire.
-func detectBP70(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP70(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) {
 		return
 	}
 	meta := MetadataForID("BP-70")
-	lines := codeLines(unit.Source)
+	lines := codeLinesFacts(facts, unit.Source)
 	for i := 0; i < len(lines); i++ {
 		t := strings.TrimSpace(lines[i].text)
 		// Only non-fatal log.Print family (Rust is_error_log_call).
@@ -412,11 +412,7 @@ func bp70ErrorMessageLiteral(line string) bool {
 	return false
 }
 
-func bp70BranchHasExplicitExit(lines []struct {
-	idx  int
-	text string
-	byte int
-}, logIdx int) bool {
+func bp70BranchHasExplicitExit(lines []codeLine, logIdx int) bool {
 	for j := logIdx; j < len(lines) && j < logIdx+12; j++ {
 		n := strings.TrimSpace(lines[j].text)
 		if n == "}" {
@@ -465,7 +461,7 @@ func detectBP154(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "json.Unmarshal(") || strings.HasPrefix(t, "_ = json.Unmarshal(") {
 			pushAt(unit, meta, line.byte, msg, out)

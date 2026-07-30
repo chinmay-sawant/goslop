@@ -189,24 +189,51 @@ func stripLineComment(line string) string {
 	return line
 }
 
-func codeLines(source string) []struct {
-	idx  int
-	text string
-	byte int
-} {
-	var out []struct {
-		idx  int
-		text string
-		byte int
+// codeLines returns comment-stripped lines. Prefer facts.lines (via codeLinesFacts)
+// so multi-rule BP scans do not re-Split/strip the same file.
+func codeLines(source string) []codeLine {
+	return buildCodeLines(source)
+}
+
+// codeLinesFacts returns the per-file line table from facts when available.
+func codeLinesFacts(facts *bpFacts, source string) []codeLine {
+	if facts != nil && facts.lines != nil && (source == "" || source == facts.Source) {
+		return facts.lines
 	}
+	return buildCodeLines(source)
+}
+
+func buildCodeLines(source string) []codeLine {
+	if source == "" {
+		return nil
+	}
+	// Count lines for one allocation.
+	n := 1
+	for i := 0; i < len(source); i++ {
+		if source[i] == '\n' {
+			n++
+		}
+	}
+	out := make([]codeLine, 0, n)
 	byteOff := 0
-	for i, line := range strings.Split(source, "\n") {
-		out = append(out, struct {
-			idx  int
-			text string
-			byte int
-		}{i, stripLineComment(line), byteOff})
-		byteOff += len(line) + 1
+	lineIdx := 0
+	for {
+		nl := strings.IndexByte(source[byteOff:], '\n')
+		var raw string
+		if nl < 0 {
+			raw = source[byteOff:]
+			out = append(out, codeLine{idx: lineIdx, text: stripLineComment(raw), byte: byteOff})
+			break
+		}
+		raw = source[byteOff : byteOff+nl]
+		out = append(out, codeLine{idx: lineIdx, text: stripLineComment(raw), byte: byteOff})
+		byteOff += nl + 1
+		lineIdx++
+		if byteOff >= len(source) {
+			// Trailing newline → empty last line (strings.Split parity).
+			out = append(out, codeLine{idx: lineIdx, text: "", byte: byteOff})
+			break
+		}
 	}
 	return out
 }

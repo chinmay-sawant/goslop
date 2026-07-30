@@ -8,6 +8,7 @@ import (
 
 	"github.com/chinmay/goslop/internal/ast"
 	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/astfacts"
 	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
@@ -59,72 +60,116 @@ type GoPerfFacts struct {
 	SourceIndex           ast.SourceIndex
 }
 
-// BuildFacts walks the unit AST (parsing on demand when unit.Tree is unset).
+// BuildFacts builds PERF facts from the shared AST walk (astfacts) plus
+// pack-specific conversion / var-kind post-processing.
 func BuildFacts(unit *core.ParsedUnit) *GoPerfFacts {
 	facts := &GoPerfFacts{VarKinds: map[string]VarKind{}}
 	if unit == nil || unit.Source == "" {
 		return facts
 	}
 
-	src := []byte(unit.Source)
-	var tree *goparse.Tree
-	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
-		tree = t
-	} else {
-		t, err := goparse.Parse(src)
-		if t == nil || t.File == nil {
-			_ = err
-			facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
-			return facts
-		}
-		tree = t
+	// Index first so Run can gate rules; walk uses shared bag with BP.
+	facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
+
+	shared := astfacts.Ensure(unit)
+	if shared == nil {
+		return facts
 	}
 
-	// Pass 1: collect for/range spans (innermost wins via reverse search).
-	goast.Inspect(tree.File, func(n goast.Node) bool {
-		switch x := n.(type) {
-		case *goast.ForStmt, *goast.RangeStmt:
-			facts.ForRanges = append(facts.ForRanges, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
-		case *goast.FuncLit:
-			facts.FunctionLiteralRanges = append(facts.FunctionLiteralRanges, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
-		case *goast.DeferStmt:
-			facts.DeferStarts = append(facts.DeferStarts, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
-		case *goast.GoStmt:
-			facts.GoStarts = append(facts.GoStarts, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
-		case *goast.TypeAssertExpr:
-			facts.TypeAssertions = append(facts.TypeAssertions, [2]int{tree.Offset(x.Pos()), tree.Offset(x.End())})
-		case *goast.ValueSpec:
-			collectVarSpecAST(tree, x, facts)
-		}
-		return true
-	})
+	facts.ForRanges = shared.ForRanges
+	facts.FunctionLiteralRanges = shared.FuncLitRanges
+	facts.TypeAssertions = shared.TypeAssertions
+	for _, r := range shared.DeferSpans {
+		facts.DeferStarts = append(facts.DeferStarts, [2]int{r.Start, r.End})
+	}
+	for _, r := range shared.GoSpans {
+		facts.GoStarts = append(facts.GoStarts, [2]int{r.Start, r.End})
+	}
 
-	// Pass 2: calls + assignments with enclosing loop lookup.
-	goast.Inspect(tree.File, func(n goast.Node) bool {
-		switch x := n.(type) {
-		case *goast.CallExpr:
-			start := tree.Offset(x.Pos())
-			loop := enclosingLoop(facts.ForRanges, start)
-			recordCallAST(tree, x, facts, loop)
-			// Only record string/[]byte conversions (former tree-sitter
-			// conversion_expression / type_conversion_expression subset).
-			if text := strings.TrimSpace(tree.NodeText(x)); isStringBytesConversion(text) {
-				facts.Conversions = append(facts.Conversions, ConversionFact{
-					Text:      text,
-					StartByte: start,
-					InLoop:    loop != nil,
-				})
-			}
-		case *goast.AssignStmt:
-			start := tree.Offset(x.Pos())
-			loop := enclosingLoop(facts.ForRanges, start)
-			recordAssignAST(tree, x, facts, loop)
+	for _, vs := range shared.ValueSpecs {
+		kind := classifyTypeText(vs.TypeText)
+		for _, name := range vs.Names {
+			facts.VarKinds[name] = kind
 		}
-		return true
-	})
+	}
 
-	facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
+	for _, c := range shared.Calls {
+		loop := enclosingLoop(facts.ForRanges, c.Start)
+		facts.Calls = append(facts.Calls, CallFact{
+			Callee:        c.Callee,
+			Arguments:     append([]string(nil), c.Args...),
+			StartByte:     c.Start,
+			EnclosingLoop: loop,
+		})
+		text := strings.TrimSpace(c.Text)
+		if isStringBytesConversion(text) {
+			facts.Conversions = append(facts.Conversions, ConversionFact{
+				Text:      text,
+				StartByte: c.Start,
+				InLoop:    loop != nil,
+			})
+		}
+	}
+
+	for _, a := range shared.Assigns {
+		loop := enclosingLoop(facts.ForRanges, a.Start)
+		recordAssignFromText(a.Text, a.Start, facts, loop)
+	}
+
 	return facts
+}
+
+func classifyTypeText(typeText string) VarKind {
+	t := strings.TrimSpace(typeText)
+	switch {
+	case strings.Contains(t, "[]byte") || strings.Contains(t, "[]uint8"):
+		return VarBytes
+	case t == "string":
+		return VarString
+	case t == "int" || t == "int64" || t == "int32" || t == "uint" || t == "uint64" ||
+		t == "float64" || t == "float32" || t == "byte" || t == "rune" || t == "time.Duration":
+		return VarNumeric
+	default:
+		return VarUnknown
+	}
+}
+
+func recordAssignFromText(text string, start int, facts *GoPerfFacts, loop *int) {
+	lhs, rhs, ok := splitAssignment(text)
+	if !ok {
+		return
+	}
+	isShort := strings.Contains(text, ":=")
+	names := extractIdents(lhs)
+	if len(names) == 0 {
+		if n := firstAssignName(lhs); n != "" {
+			names = []string{n}
+		}
+	}
+	for _, name := range names {
+		facts.Assignments = append(facts.Assignments, AssignmentFact{
+			Name:          name,
+			Expr:          rhs,
+			Text:          text,
+			StartByte:     start,
+			EnclosingLoop: loop,
+		})
+		if isShort {
+			if _, exists := facts.VarKinds[name]; !exists {
+				if k := classifyInit(rhs); k != VarUnknown {
+					facts.VarKinds[name] = k
+				}
+			}
+		}
+	}
+}
+
+func firstAssignName(lhs string) string {
+	lhs = strings.TrimSpace(lhs)
+	if i := strings.IndexAny(lhs, ", "); i >= 0 {
+		lhs = strings.TrimSpace(lhs[:i])
+	}
+	return lhs
 }
 
 func enclosingLoop(ranges [][2]int, byteOff int) *int {
@@ -370,16 +415,43 @@ func isNumericLiteral(s string) bool {
 	return true
 }
 
+// perfNeedles backs SourceIndex + rule gates (zz_gates.go). Keep gate tokens here.
 var perfNeedles = []string{
 	"fmt.Sprintf(",
 	"fmt.Fprintf(",
+	"fmt.Errorf(",
 	"for ",
+	"defer ",
 	"regexp.MustCompile",
 	"regexp.Compile",
 	"regexp.MatchString",
 	"time.Parse",
 	"json.Marshal",
 	"json.Unmarshal",
+	"json.NewEncoder",
+	"json.NewDecoder",
 	"[]byte(",
 	"string(",
+	"http.Client{",
+	"&http.Client{",
+	"bytes.Buffer{",
+	"new(bytes.Buffer)",
+	"reflect.ValueOf(",
+	"io.ReadAll(",
+	"os.ReadFile(",
+	"ioutil.ReadFile(",
+	"bytes.NewReader(",
+	"bytes.NewBuffer(",
+	"sync.Mutex",
+	"sync.RWMutex",
+	"strings.Trim",
+	"TrimSpace",
+	"TrimPrefix",
+	"strings.Split",
+	"strings.Fields",
+	"strings.HasPrefix",
+	"HasPrefix",
+	"http.Server{",
+	"&http.Server{",
+	"ListenAndServe",
 }

@@ -8,8 +8,14 @@ type ParsedUnit struct {
 	Source      string
 	LineStarts  []int
 	// Tree is an opaque language-specific AST handle (e.g. *goparse.Tree for Go);
-	// nil when source-only.
+	// nil when source-only. Analyzer buildUnit attaches it once per file when the
+	// language plugin parses successfully; detectors must reuse it (not re-parse)
+	// so PERF / BP / CWE-taint share one AST for the same unit.
 	Tree any
+	// FactCache is an opaque per-unit memo for cross-detector shared walks
+	// (e.g. *astfacts.Shared). Units are per-file scan locals (not shared across
+	// concurrent analyzers).
+	FactCache any
 }
 
 // NewParsedUnit builds a source unit. Optional tree is an opaque AST handle.

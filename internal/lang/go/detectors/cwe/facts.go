@@ -13,6 +13,10 @@ type GoCweFacts struct {
 }
 
 // BuildFacts constructs GoCweFacts for a unit.
+//
+// Structural CWE rules only need a SourceIndex over cweNeedles (no AST walk).
+// PERF/BP needle tables differ, so indexes stay pack-local; parse reuse for
+// AST-based packs is handled by goparse.TreeForUnit / unit.Tree, not here.
 func BuildFacts(unit *core.ParsedUnit) *GoCweFacts {
 	facts := &GoCweFacts{}
 	if unit == nil || unit.Source == "" {

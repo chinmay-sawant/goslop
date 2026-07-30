@@ -1,6 +1,7 @@
 package badpractices
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"sort"
@@ -10,16 +11,22 @@ import (
 	"github.com/chinmay/goslop/internal/core"
 )
 
+// snapEntry builds a ProjectSnapshot at most once per root (shared by workers).
+type snapEntry struct {
+	once sync.Once
+	snap *ProjectSnapshot
+}
+
 // bpProjectCaches memoizes project-level facts per scan root.
 type bpProjectCaches struct {
 	mu          sync.Mutex
-	snapshots   map[string]*ProjectSnapshot
+	snapshots   map[string]*snapEntry // key: absolute project root
 	packageDocs map[string]*PackageDocSnapshot // key: directory path
 }
 
 func newProjectCaches() *bpProjectCaches {
 	return &bpProjectCaches{
-		snapshots:   map[string]*ProjectSnapshot{},
+		snapshots:   map[string]*snapEntry{},
 		packageDocs: map[string]*PackageDocSnapshot{},
 	}
 }
@@ -29,7 +36,7 @@ func (c *bpProjectCaches) clear() {
 		return
 	}
 	c.mu.Lock()
-	c.snapshots = map[string]*ProjectSnapshot{}
+	c.snapshots = map[string]*snapEntry{}
 	c.packageDocs = map[string]*PackageDocSnapshot{}
 	c.mu.Unlock()
 }
@@ -209,35 +216,42 @@ func projectSnapshotForRoot(root string) *ProjectSnapshot {
 	if root == "" {
 		return &ProjectSnapshot{}
 	}
+	// Normalize so concurrent workers with relative/abs paths share one entry.
+	if abs, err := filepath.Abs(root); err == nil {
+		root = abs
+	}
 	activeCachesMu.Lock()
 	caches := activeCaches
 	activeCachesMu.Unlock()
 	if caches == nil {
+		// No scan session: build without memoization (unit tests / ad-hoc).
 		return buildProjectSnapshot(root)
 	}
 	caches.mu.Lock()
-	if snap, ok := caches.snapshots[root]; ok {
-		caches.mu.Unlock()
-		return snap
+	e, ok := caches.snapshots[root]
+	if !ok {
+		e = &snapEntry{}
+		caches.snapshots[root] = e
 	}
 	caches.mu.Unlock()
 
-	built := buildProjectSnapshot(root)
-
-	caches.mu.Lock()
-	if snap, ok := caches.snapshots[root]; ok {
-		caches.mu.Unlock()
-		return snap
+	// Exactly one WalkDir+ReadFile pass per root for the whole AnalyzePaths.
+	e.once.Do(func() {
+		e.snap = buildProjectSnapshot(root)
+	})
+	if e.snap == nil {
+		return &ProjectSnapshot{}
 	}
-	caches.snapshots[root] = built
-	caches.mu.Unlock()
-	return built
+	return e.snap
 }
 
 var skipProjectDirs = map[string]struct{}{
 	"target": {}, "node_modules": {}, ".git": {}, "vendor": {},
 	".goslop-cache": {}, "goslop-fixtures": {}, "__pycache__": {},
 	".idea": {}, ".vscode": {}, "testdata": {},
+	// Build / generated / tooling (P2.1 — not product source for BP project rules).
+	"bin": {}, "dist": {}, "build": {}, "out": {}, "scripts": {},
+	"coverage": {}, ".cache": {}, ".tox": {}, ".venv": {}, "venv": {},
 }
 
 func discoverProjectRoot(path string) string {
@@ -274,6 +288,10 @@ func buildProjectSnapshot(root string) *ProjectSnapshot {
 		}
 		if d.IsDir() {
 			name := d.Name()
+			// Hidden and known non-source trees never contribute BP project facts.
+			if name != "." && name != ".." && strings.HasPrefix(name, ".") {
+				return filepath.SkipDir
+			}
 			if _, skip := skipProjectDirs[name]; skip {
 				return filepath.SkipDir
 			}
@@ -294,55 +312,50 @@ func buildProjectSnapshot(root string) *ProjectSnapshot {
 			}
 			return nil
 		}
-		if !strings.HasSuffix(path, "_test.go") {
+		isTest := strings.HasSuffix(path, "_test.go")
+		if !isTest {
 			goFiles = append(goFiles, path)
 		}
-		if isExampleSource(path) {
+		// Content scan: skip tests, examples, and once all project flags are known.
+		if isTest || isExampleSource(path) || projectFlagsComplete(snap) {
 			return nil
 		}
 		b, err := os.ReadFile(path)
 		if err != nil {
 			return nil
 		}
-		text := string(b)
-		if !snap.HasServerStart && isServerEntrypoint(text) {
+		// Prefer bytes.Contains for cheap needles; string only for package-aware helpers.
+		if !snap.HasServerStart && isServerEntrypoint(string(b)) {
 			snap.HasServerStart = true
 			snap.ServerAnchor = path
 		}
-		if !snap.HasShutdown && strings.Contains(text, ".Shutdown(") {
+		if !snap.HasShutdown && bytes.Contains(b, shutdownNeedle) {
 			snap.HasShutdown = true
 		}
 		if !snap.HasSignalHandling &&
-			(strings.Contains(text, "signal.Notify(") ||
-				strings.Contains(text, "signal.NotifyContext(") ||
-				strings.Contains(text, `"os/signal"`)) {
+			(bytes.Contains(b, signalNotifyNeedle) ||
+				bytes.Contains(b, signalNotifyCtxNeedle) ||
+				bytes.Contains(b, osSignalImportNeedle)) {
 			snap.HasSignalHandling = true
 		}
-		if !snap.HasPublicRoute && containsPublicRoute(text) {
+		if !snap.HasPublicRoute && containsPublicRouteBytes(b) {
 			snap.HasPublicRoute = true
 		}
 		if !snap.HasRateLimiting &&
-			(strings.Contains(text, "rate.NewLimiter(") ||
-				strings.Contains(text, "rate.Limiter") ||
-				strings.Contains(text, "tollbooth") ||
-				strings.Contains(text, "httprate") ||
-				strings.Contains(text, "Throttle(")) {
+			(bytes.Contains(b, rateNewLimiterNeedle) ||
+				bytes.Contains(b, rateLimiterNeedle) ||
+				bytes.Contains(b, tollboothNeedle) ||
+				bytes.Contains(b, httprateNeedle) ||
+				bytes.Contains(b, throttleNeedle)) {
 			snap.HasRateLimiting = true
 		}
-		if !snap.HasRequestID &&
-			(strings.Contains(text, "Request-ID") ||
-				strings.Contains(text, "Request-Id") ||
-				strings.Contains(text, "X-Request-ID") ||
-				strings.Contains(text, "X-Request-Id") ||
-				strings.Contains(text, "requestid") ||
-				strings.Contains(text, "request_id") ||
-				strings.Contains(text, "RequestID")) {
+		if !snap.HasRequestID && containsRequestIDBytes(b) {
 			snap.HasRequestID = true
 		}
 		if !snap.HasLogging &&
-			(strings.Contains(text, "log.") ||
-				strings.Contains(text, "logger.") ||
-				strings.Contains(text, "slog.")) {
+			(bytes.Contains(b, logDotNeedle) ||
+				bytes.Contains(b, loggerDotNeedle) ||
+				bytes.Contains(b, slogDotNeedle)) {
 			snap.HasLogging = true
 		}
 		return nil
@@ -376,6 +389,40 @@ func isExampleSource(path string) bool {
 		}
 	}
 	return false
+}
+
+// Preallocated needles for buildProjectSnapshot (avoid per-file []byte("...") allocs).
+var (
+	shutdownNeedle         = []byte(".Shutdown(")
+	signalNotifyNeedle     = []byte("signal.Notify(")
+	signalNotifyCtxNeedle  = []byte("signal.NotifyContext(")
+	osSignalImportNeedle   = []byte(`"os/signal"`)
+	rateNewLimiterNeedle   = []byte("rate.NewLimiter(")
+	rateLimiterNeedle      = []byte("rate.Limiter")
+	tollboothNeedle        = []byte("tollbooth")
+	httprateNeedle         = []byte("httprate")
+	throttleNeedle         = []byte("Throttle(")
+	logDotNeedle           = []byte("log.")
+	loggerDotNeedle        = []byte("logger.")
+	slogDotNeedle          = []byte("slog.")
+	handleFuncNeedle       = []byte("HandleFunc(")
+	dotHandleFuncNeedle    = []byte(".HandleFunc(")
+	dotHandleNeedle        = []byte(".Handle(")
+	dotGETNeedle           = []byte(".GET(")
+	dotPOSTNeedle          = []byte(".POST(")
+	dotPUTNeedle           = []byte(".PUT(")
+	dotDELETENeedle        = []byte(".DELETE(")
+	dotPATCHNeedle         = []byte(".PATCH(")
+	requestIDNeedles       = [][]byte{
+		[]byte("Request-ID"), []byte("Request-Id"),
+		[]byte("X-Request-ID"), []byte("X-Request-Id"),
+		[]byte("requestid"), []byte("request_id"), []byte("RequestID"),
+	}
+)
+
+func projectFlagsComplete(s *ProjectSnapshot) bool {
+	return s.HasServerStart && s.HasShutdown && s.HasSignalHandling &&
+		s.HasPublicRoute && s.HasRateLimiting && s.HasRequestID && s.HasLogging
 }
 
 func isServerEntrypoint(text string) bool {
@@ -414,6 +461,26 @@ func containsPublicRoute(text string) bool {
 		strings.Contains(text, ".PUT(") ||
 		strings.Contains(text, ".DELETE(") ||
 		strings.Contains(text, ".PATCH(")
+}
+
+func containsPublicRouteBytes(b []byte) bool {
+	return bytes.Contains(b, handleFuncNeedle) ||
+		bytes.Contains(b, dotHandleFuncNeedle) ||
+		bytes.Contains(b, dotHandleNeedle) ||
+		bytes.Contains(b, dotGETNeedle) ||
+		bytes.Contains(b, dotPOSTNeedle) ||
+		bytes.Contains(b, dotPUTNeedle) ||
+		bytes.Contains(b, dotDELETENeedle) ||
+		bytes.Contains(b, dotPATCHNeedle)
+}
+
+func containsRequestIDBytes(b []byte) bool {
+	for _, n := range requestIDNeedles {
+		if bytes.Contains(b, n) {
+			return true
+		}
+	}
+	return false
 }
 
 func isProjectAnchorFile(unit *core.ParsedUnit) bool {

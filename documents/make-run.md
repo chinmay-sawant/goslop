@@ -171,9 +171,28 @@ make reference-metrics REFERENCE_PATH=./some/project REFERENCE_PROFILE=all
 | Severity | **10** high / **197** info / **312** low / **396** medium |
 | Top rules | BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44 |
 | Exports | **915** context + **37** chunks |
-| Wall (pure Go) | **&lt;400ms** (checklist gate) |
+| Wall (pure Go) | **&lt;400ms** hard gate; typical scan **~100–120 ms** after P0–P3 opts (see below) |
 
 The leading `-` on the scan command allows non-zero exit under fail policy so the summary still runs. Ledger: [`plans/port-phasewise-checklist.md`](../plans/port-phasewise-checklist.md) §12.4.
+
+### Performance (gopdfsuit, post P0–P3)
+
+Measured on pure-Go builds (`CGO_ENABLED=0`), full catalogue + export context/chunks, no cache.
+
+| Signal | Before opts | After opts |
+|--------|-------------|------------|
+| **`make run` scan wall** | ~**190 ms** | ~**112–117 ms** mean; best ~**99 ms** |
+| **Findings / exports** | 915 / 915+37 | **unchanged** (parity) |
+
+Duration-based product benches (`make bench BENCHTIME=5s` or `go test -bench=. -benchmem -benchtime=5s ./internal/bench/`):
+
+| Benchmark | Before | After (5s) | Δ time |
+|-----------|--------|------------|--------|
+| ScanProfileAll | 164.2 ms | **112.7 ms** | **−31%** |
+| ScanAndExport | 366.7 ms | **186.8 ms** | **−49%** |
+| ExportOnly | 200.6 ms | **71.7 ms** | **−64%** |
+
+Details and pprof hotspot notes: [`plans/v0.0.1/perf-p0p3-measurement.md`](../plans/v0.0.1/perf-p0p3-measurement.md).
 
 ---
 
@@ -187,6 +206,7 @@ The leading `-` on the scan command allows non-zero exit under fail policy so th
 | `vet` / `fmt` / `lint` / `lint-all` | Static checks |
 | `ci` | `lint` + `test` + `build` (local CI parity) |
 | `version` | Build + `./bin/goslop --version` |
+| `bench` | Product `testing.B` benches (`./internal/bench/`); `BENCHTIME=5s` recommended |
 | `help` | Print targets and current `SCAN_PATH` / `RUN_ARGS` |
 
 ```sh
@@ -194,6 +214,7 @@ make help
 make ci
 make test
 make integration
+make bench BENCHTIME=5s
 ```
 
 ---

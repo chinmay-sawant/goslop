@@ -2,6 +2,7 @@ package perf
 
 import (
 	"sort"
+	"sync"
 
 	"github.com/chinmay/goslop/internal/core"
 	"github.com/chinmay/goslop/internal/rules"
@@ -14,10 +15,37 @@ type ruleEntry struct {
 	id   string
 	fn   ruleFn
 	meta *rules.RuleMetadata
+	// gates are optional SourceIndex needles (any-of). When non-empty, Run
+	// skips the rule when facts.SourceIndex has none of them. Nil/empty = always run.
+	// Needles must appear in perfNeedles (Build table) or Has returns false.
+	gates []string
 }
 
 // goPerfRules is the implemented PERF catalogue (filled via RegisterRule / init).
 var goPerfRules []ruleEntry
+
+// Immutable catalogue snapshots after init() registration (P3.1).
+// Shared detectors must not store per-scan mutable rule lists (parallel tests / multi-analyzer).
+var (
+	perfCatalogueOnce sync.Once
+	perfCatalogue     []ruleEntry
+	perfRuleIDs       []string
+)
+
+func perfCatalogueSnapshot() []ruleEntry {
+	perfCatalogueOnce.Do(func() {
+		registerMu.Lock()
+		perfCatalogue = append([]ruleEntry(nil), goPerfRules...)
+		ids := make([]string, len(goPerfRules))
+		for i, e := range goPerfRules {
+			ids[i] = e.id
+		}
+		registerMu.Unlock()
+		sort.Strings(ids)
+		perfRuleIDs = ids
+	})
+	return perfCatalogue
+}
 
 // GoPerfScan is the unified Go PERF detector (one Detector, many rules).
 // Mirrors Rust GoPerfScan: build facts once, then dispatch enabled rules.
@@ -35,15 +63,8 @@ func (d *GoPerfScan) Language() core.LanguageID { return core.LangGo }
 
 // RuleIDs implements core.Detector.
 func (d *GoPerfScan) RuleIDs() []string {
-	registerMu.Lock()
-	defer registerMu.Unlock()
-	ids := make([]string, len(goPerfRules))
-	for i, e := range goPerfRules {
-		ids[i] = e.id
-	}
-	// stable order for --list-rules
-	sort.Strings(ids)
-	return ids
+	_ = perfCatalogueSnapshot()
+	return perfRuleIDs
 }
 
 // MetadataFor implements core.Detector.
@@ -61,13 +82,9 @@ func (d *GoPerfScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]ru
 	if unit == nil || out == nil {
 		return
 	}
-	registerMu.Lock()
-	rulesCopy := make([]ruleEntry, len(goPerfRules))
-	copy(rulesCopy, goPerfRules)
-	registerMu.Unlock()
-
+	all := perfCatalogueSnapshot()
 	any := false
-	for _, e := range rulesCopy {
+	for _, e := range all {
 		if ctx == nil || ctx.Allows(e.id) {
 			any = true
 			break
@@ -78,12 +95,16 @@ func (d *GoPerfScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]ru
 	}
 
 	facts := BuildFacts(unit)
-	for _, e := range rulesCopy {
+	for _, e := range all {
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
 		// Pure-FP museums vs gopdfsuit reference corpus — never suppress fixture/unit tests.
 		if referenceSkipUnit(unit, e.id) {
+			continue
+		}
+		// Needle/domain gate: skip when the file has no relevant SourceIndex hits.
+		if len(e.gates) > 0 && !facts.SourceIndex.HasAny(e.gates) {
 			continue
 		}
 		e.fn(unit, facts, out)

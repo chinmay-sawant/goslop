@@ -2,6 +2,7 @@ package badpractices
 
 import (
 	"sort"
+	"sync"
 
 	"github.com/chinmay/goslop/internal/core"
 	"github.com/chinmay/goslop/internal/rules"
@@ -25,11 +26,30 @@ func NewGoBadPracticeScan() *GoBadPracticeScan {
 // Language implements core.Detector.
 func (d *GoBadPracticeScan) Language() core.LanguageID { return core.LangGo }
 
+// Immutable catalogue snapshot after init() registration (P3.1).
+var (
+	bpCatalogueOnce sync.Once
+	bpCatalogue     []ruleEntry
+	bpRuleIDs       []string
+)
+
+func bpCatalogueSnapshot() []ruleEntry {
+	bpCatalogueOnce.Do(func() {
+		bpCatalogue = snapshotRules()
+		ids := make([]string, len(bpCatalogue))
+		for i, e := range bpCatalogue {
+			ids[i] = e.id
+		}
+		sort.Strings(ids)
+		bpRuleIDs = ids
+	})
+	return bpCatalogue
+}
+
 // RuleIDs implements core.Detector.
 func (d *GoBadPracticeScan) RuleIDs() []string {
-	ids := registeredRuleIDs()
-	sort.Strings(ids)
-	return ids
+	_ = bpCatalogueSnapshot()
+	return bpRuleIDs
 }
 
 // MetadataFor implements core.Detector.
@@ -72,9 +92,9 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 	// Rayon-style workers may not inherit the controlling thread's session.
 	_ = installActiveCaches(d.caches)
 
-	rulesCopy := snapshotRules()
+	all := bpCatalogueSnapshot()
 	any := false
-	for _, e := range rulesCopy {
+	for _, e := range all {
 		if ctx == nil || ctx.Allows(e.id) {
 			any = true
 			break
@@ -88,7 +108,7 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 	defer facts.close()
 
 	hasEnabledProject := false
-	for _, e := range rulesCopy {
+	for _, e := range all {
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
@@ -107,7 +127,7 @@ func (d *GoBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, ou
 		isServerAnchor = isServerAnchorFile(unit)
 	}
 
-	for _, e := range rulesCopy {
+	for _, e := range all {
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}

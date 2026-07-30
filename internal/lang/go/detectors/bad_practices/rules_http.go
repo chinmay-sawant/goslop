@@ -32,7 +32,7 @@ func init() {
 	RegisterRule("BP-160", detectBP160)
 }
 
-func detectBP101(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP101(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-101")
 	src := unit.Source
 	if !strings.Contains(src, "WriteHeader") {
@@ -49,7 +49,7 @@ func detectBP101(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// Find body-write positions targeting a writer, and WriteHeader positions.
 	var bodyPos, headerPos int = -1, -1
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		// WriteHeader on a known writer
 		for _, w := range writers {
@@ -116,7 +116,7 @@ func httpResponseWriterNames(src string) []string {
 	return names
 }
 
-func detectBP102(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP102(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-102")
 	src := unit.Source
 	if !strings.Contains(src, "http.ResponseWriter") || !strings.Contains(src, "http.Request") {
@@ -124,7 +124,7 @@ func detectBP102(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// Handler-shaped: ResponseWriter + Request params. Look for err != nil branches
 	// that bare-return without writing a response in that branch.
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		// if err != nil / if loadErr != nil
@@ -174,11 +174,11 @@ func detectBP102(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP104(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP104(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-104")
 	// duplicate Handle/HandleFunc patterns
 	patterns := map[string]int{}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		for _, meth := range []string{"HandleFunc(", "Handle(", ".GET(", ".POST("} {
 			if i := strings.Index(t, meth); i >= 0 {
@@ -201,7 +201,7 @@ func detectBP104(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP105(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP105(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-105")
 	if !strings.Contains(unit.Source, "http.Cookie") && !strings.Contains(unit.Source, "&http.Cookie{") {
 		return
@@ -217,7 +217,7 @@ func detectBP105(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP107(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP107(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-107")
 	// middleware func(http.Handler) http.Handler without next.ServeHTTP
 	if strings.Contains(unit.Source, "http.Handler") && strings.Contains(unit.Source, "func(") {
@@ -235,7 +235,7 @@ func detectBP107(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP109(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP109(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-109")
 	src := unit.Source
 	if !strings.Contains(src, "gin.") && !strings.Contains(src, "*gin.Context") &&
@@ -244,7 +244,7 @@ func detectBP109(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// Any receiver .JSON(error status) without Abort/return in the same block.
 	// Supports renamed receivers (ctx *gin.Context) and aliased imports.
-	for i, line := range codeLines(src) {
+	for i, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, ".JSON(") {
 			continue
@@ -370,7 +370,7 @@ func detectBP110(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 	msg := "Gin bind error is discarded; check the error and abort the request"
 	bindNames := []string{"ShouldBindJSON", "ShouldBind", "BindJSON", "MustBindWith", "ShouldBindQuery"}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		for _, b := range bindNames {
 			if strings.Contains(t, b+"(") {
@@ -384,7 +384,7 @@ func detectBP110(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	_ = facts
 }
 
-func detectBP111(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP111(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-111")
 	src := unit.Source
 	if !strings.Contains(src, "go ") && !strings.Contains(src, "go\t") {
@@ -401,7 +401,7 @@ func detectBP111(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// For each go statement / go func, if body references a context param
 	// without an intervening .Copy() binding used instead, fire.
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "go ") && !strings.HasPrefix(t, "go\t") && !strings.HasPrefix(t, "go func") {
@@ -525,7 +525,7 @@ func copyVarsFromContext(src, ctxName string) []string {
 	return vars
 }
 
-func detectBP116(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP116(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-116")
 	src := unit.Source
 	if !strings.Contains(src, "echo.") && !strings.Contains(src, "echo.Context") &&
@@ -534,7 +534,7 @@ func detectBP116(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// Bare error JSON (expression statement) followed by return of a business error.
 	// Safe pattern binds JSON's error: if responseErr := c.JSON(...); responseErr != nil { return responseErr }
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, ".JSON(") {
@@ -603,12 +603,12 @@ func detectBP116(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP117(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP117(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-117")
 	if !strings.Contains(unit.Source, "echo") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, ".Bind(") && !strings.Contains(t, "err") && !strings.Contains(t, ":=") && !strings.HasPrefix(t, "if ") {
 			pushAt(unit, meta, line.byte, "Echo Bind error is discarded", out)
@@ -616,7 +616,7 @@ func detectBP117(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP119(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP119(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-119")
 	if !strings.Contains(unit.Source, "fiber") && !strings.Contains(unit.Source, "*fiber.Ctx") {
 		return
@@ -628,12 +628,12 @@ func detectBP119(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP120(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP120(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-120")
 	if !strings.Contains(unit.Source, "BodyParser") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, "BodyParser(") && !strings.Contains(t, "err") && !strings.Contains(t, ":=") && !strings.HasPrefix(t, "if ") {
 			pushAt(unit, meta, line.byte, "Fiber BodyParser error is discarded", out)
@@ -641,7 +641,7 @@ func detectBP120(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP122(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP122(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-122")
 	if !strings.Contains(unit.Source, "chi.") && !strings.Contains(unit.Source, "go-chi") {
 		return
@@ -655,13 +655,13 @@ func detectBP122(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP146(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP146(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-146")
 	src := unit.Source
 	if !(strings.Contains(src, "log.") || strings.Contains(src, "slog.") || strings.Contains(src, "zap.")) {
 		return
 	}
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := line.text
 		lt := strings.ToLower(t)
 		// Must be a logger call line
@@ -743,7 +743,7 @@ func containsSensitiveLoggedValue(lowerLine string) bool {
 	return false
 }
 
-func detectBP147(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP147(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-147")
 	if packageName(unit.Source) == "main" {
 		return
@@ -757,7 +757,7 @@ func detectBP147(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Fire only on log.Print / log.Printf / log.Println (not slog which contains "log.")
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "log.Print") || strings.Contains(t, " log.Print") {
 			// ensure not slog
@@ -776,10 +776,10 @@ func detectBP147(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP149(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP149(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-149")
 	// err != nil { slog.Error("msg") } without err attribute
-	lines := codeLines(unit.Source)
+	lines := codeLinesFacts(facts, unit.Source)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, "err != nil") {
@@ -798,7 +798,7 @@ func detectBP149(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP151(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP151(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-151")
 	src := unit.Source
 	if !strings.Contains(src, "os.Getenv") && !strings.Contains(src, "os.LookupEnv") {
@@ -809,7 +809,7 @@ func detectBP151(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	// Direct os.Getenv("SECRET...") inside a logger call, or logging the env result
 	// with a value format (not mere presence).
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		lt := strings.ToLower(t)
 		isLog := strings.Contains(lt, "log.") || strings.Contains(lt, "slog.") || strings.Contains(lt, "zap.")
@@ -831,7 +831,7 @@ func detectBP151(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	// Variable form: token := os.Getenv("API_TOKEN"); log.Printf("%s", token)
 	// Only fire when the value (not presence) is logged.
 	var secretVars []string
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if !(strings.Contains(t, "os.Getenv") || strings.Contains(t, "os.LookupEnv")) {
 			continue
@@ -854,7 +854,7 @@ func detectBP151(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 			secretVars = append(secretVars, name)
 		}
 	}
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		lt := strings.ToLower(t)
 		isLog := strings.Contains(lt, "log.") || strings.Contains(lt, "slog.") || strings.Contains(lt, "zap.")
@@ -885,7 +885,7 @@ func secretEnvNameInCall(t string) bool {
 		strings.Contains(upper, "PRIVATE_KEY") || strings.Contains(upper, "CREDENTIAL")
 }
 
-func detectBP155(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP155(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-155")
 	src := unit.Source
 	if !strings.Contains(src, "json.NewDecoder") {
@@ -895,7 +895,7 @@ func detectBP155(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// json.NewDecoder(...Body...).Decode without MaxBytesReader
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, "json.NewDecoder") && !strings.Contains(t, ".Decode(") {
 			// chained: may be one line json.NewDecoder(request.Body).Decode
@@ -941,10 +941,10 @@ func detectBP155(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP156(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP156(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-156")
 	// json omitempty on password/secret fields
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.ToLower(line.text)
 		if strings.Contains(t, "json:") && strings.Contains(t, "omitempty") {
 			if strings.Contains(t, "password") || strings.Contains(t, "secret") || strings.Contains(t, "token") {
@@ -954,7 +954,7 @@ func detectBP156(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP158(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP158(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-158")
 	if !strings.Contains(unit.Source, "grpc") && !strings.Contains(unit.Source, "status.Error") {
 		// grpc service methods often return (resp, error)
@@ -974,7 +974,7 @@ func detectBP158(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP159(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP159(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-159")
 	src := unit.Source
 	if !strings.Contains(src, "flag.") {
@@ -990,7 +990,7 @@ func detectBP159(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		"flag.String(", "flag.Uint(", "flag.Uint64(",
 	}
 	var flagNames []string
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		if line.byte >= parsePos {
 			break
 		}
@@ -1024,7 +1024,7 @@ func detectBP159(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Dereference *name before parsePos.
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		if line.byte >= parsePos {
 			break
 		}
@@ -1054,7 +1054,7 @@ func detectBP159(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP160(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP160(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-160")
 	if !strings.Contains(unit.Source, "cobra.Command") && !strings.Contains(unit.Source, "cobra.") {
 		return
