@@ -192,7 +192,7 @@ fail_on = "none"
 
 func TestRunListRulesRespectsLanguagesConfig(t *testing.T) {
 	dir := t.TempDir()
-	// languages=["python"] uses the stub plugin → empty detector catalogue.
+	// languages=["python"] lists priority CWE rules from the Python plugin.
 	cfg := filepath.Join(dir, "goslop.toml")
 	if err := os.WriteFile(cfg, []byte(`[goslop]
 languages = ["python"]
@@ -203,8 +203,14 @@ languages = ["python"]
 	if err := run([]string{"--list-rules", "--config", cfg}, &out, &errBuf); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), "no rules registered") {
-		t.Fatalf("expected empty rule list for Python stub (zero detectors): %q", out.String())
+	listed := out.String()
+	for _, id := range []string{"CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-502"} {
+		if !strings.Contains(listed, id) {
+			t.Fatalf("expected Python list-rules to include %s: %q", id, listed)
+		}
+	}
+	if strings.Contains(listed, "no rules registered") {
+		t.Fatalf("unexpected empty rule list for Python with CWE detectors: %q", listed)
 	}
 
 	// languages=["go"] still lists Go rules.

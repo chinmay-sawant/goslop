@@ -1,0 +1,16 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-78-vulnerable.py
+---
+"""CWE-78 vulnerable: dynamic os.system and subprocess shell=True."""
+
+import os
+import subprocess
+
+
+def run_system(cmd: str):
+    os.system(cmd)
+
+
+def run_shell(cmd: str):
+    subprocess.run(cmd, shell=True)

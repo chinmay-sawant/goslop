@@ -1,7 +1,7 @@
 # v0.0.2 — Python heuristic detectors (CWE, BP, PERF)
 
 > **Parent:** GitHub epic [#51](https://github.com/chinmay-sawant/goslop/issues/51) — Epic: Python heuristic detectors (CWE, BP, PERF)  
-> **Status:** planning (foundation #39 / PR #50 shipped; detectors not started)  
+> **Status:** CWE #52 implemented on branch; BP #53 pending; PERF #54 deferred  
 > **Estimated effort:** multi-PR (CWE + BP active; PERF deferred)  
 > **Ledger rule:** this file is the **canonical execution ledger** for heuristic implementation. Detail lives in sibling checklists. Update checkboxes only with evidence (`make lint` / `make test` for code).
 
@@ -61,8 +61,10 @@
 ### CWE — #52
 
 - [x] Detail checklist complete in [python-heuristics-cwe.md](./python-heuristics-cwe.md) (docs-only plan, 2026-07-31)
-- [ ] Priority CWE batch green on fixtures
-- [ ] Validation: `make lint` + `make test` recorded on implement branch
+- [x] Priority CWE batch green on fixtures  
+  **Evidence:** `go test ./internal/lang/python/detectors/cwe/` hit/miss for CWE-22/78/79/89/502; fixtures under `tests/fixtures/python/cwe/` (2026-07-31, `feat/python-cwe-heuristics`).
+- [x] Validation: `make lint` + `make test` recorded on implement branch  
+  **Evidence:** `make lint` / `make test` green; `CGO_ENABLED=0 go build` OK (2026-07-31, `feat/python-cwe-heuristics`).
 
 ### BP — #53
 

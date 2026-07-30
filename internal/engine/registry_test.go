@@ -93,8 +93,8 @@ func TestRegistryIndexesDetectorsByLanguageID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if n := len(multi.DetectorsForLanguage(core.LanguagePython)); n != 0 {
-		t.Fatalf("python stub detectors = %d, want 0", n)
+	if n := len(multi.DetectorsForLanguage(core.LanguagePython)); n == 0 {
+		t.Fatal("python plugin should expose CWE detectors")
 	}
 	if _, ok := multi.Plugin(core.LanguagePython); !ok {
 		t.Fatal("python plugin missing from multi registry")
@@ -137,8 +137,8 @@ func TestRegistryForLanguagesFiltersPlugins(t *testing.T) {
 	if _, ok := pyOnly.Plugin(core.LanguagePython); !ok {
 		t.Fatal("expected python plugin")
 	}
-	if pyOnly.DetectorCount() != 0 {
-		t.Fatalf("detector count=%d", pyOnly.DetectorCount())
+	if pyOnly.DetectorCount() == 0 {
+		t.Fatal("python-only registry should include CWE detectors")
 	}
 }
 

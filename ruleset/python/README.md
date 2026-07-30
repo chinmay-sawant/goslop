@@ -1,9 +1,13 @@
 # Python ruleset catalogues (WIP)
 
-> **Status:** catalogue metadata only — **no** Python AST detectors in this tree  
-> **Issue:** #43 · epic #39 · plan: `plans/v0.0.2/phase-4-rulesets.md`  
-> **CWE mapping:** `plans/v0.0.2/python-cwe-from-699-mapping.md` (from `699.csv`)  
-> **BP audit:** `plans/v0.0.2/ruleset-reuse-audit.md`
+> **Status:** catalogue metadata + priority CWE detectors (`internal/lang/python/detectors/cwe`)  
+> **Issue:** #43 · epic #39 · CWE heuristics #52 · plan: `plans/v0.0.2/heuristics/python-heuristics-cwe.md`  
+> **CWE mapping:** `plans/v0.0.2/init-python/python-cwe-from-699-mapping.md` (from `699.csv`)  
+> **BP audit:** `plans/v0.0.2/init-python/ruleset-reuse-audit.md`
+
+**Runnable detectors (priority batch):** CWE-22, CWE-78, CWE-79, CWE-89, CWE-502 under
+`internal/lang/python/detectors/cwe` (pure-Go source patterns; catalogue IDs remain
+source of truth here). Full 344-rule implementation is deferred.
 
 ## Layout
 

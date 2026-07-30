@@ -1,0 +1,21 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-79-vulnerable.py
+---
+"""CWE-79 vulnerable: mark_safe / Markup / render_template_string dynamic."""
+
+from django.utils.safestring import mark_safe
+from flask import render_template_string
+from markupsafe import Markup
+
+
+def paint(user_html: str):
+    return mark_safe(user_html)
+
+
+def paint_markup(q: str):
+    return Markup(q)
+
+
+def paint_string(name: str):
+    return render_template_string(f"<h1>{name}</h1>")

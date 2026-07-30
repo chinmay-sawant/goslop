@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-79-safe.py
+---
+"""CWE-79 safe: autoescaped render_template without mark_safe/Markup."""
+
+from flask import render_template
+
+
+def paint(name: str):
+    return render_template("x.html", name=name)
