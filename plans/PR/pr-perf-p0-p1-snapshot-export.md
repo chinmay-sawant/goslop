@@ -1,13 +1,15 @@
 ## Summary
 
-Speed up product `make run` on the gopdfsuit reference corpus by ~**40%** (scan wall ~**190 ms → ~112 ms** mean) without changing §12.4 parity (915 findings, severity histogram, top rules, 915+37 exports). Implements pprof checklist P0–P2 and P3.1 dispatch cleanup.
+Speed up product `make run` on the **gopdfsuit reference corpus** by ~**40%** (scan wall ~**190 ms → ~112 ms** mean over 20 runs) without changing §12.4 parity (**915** findings, severity histogram, top rules, **915+37** exports). Implements the pprof checklist through **P0–P2**, **P3.1**, **CWE/PERF needle gates**, **shared AST facts (PERF+BP)**, and formal **bench/re-profile** evidence.
 
 ---
 
 ## Motivation / context
 
 - Plans: `plans/v0.0.1/perf-pprof-optimization-checklist.md`
-- Evidence: prior `/tmp/goslop-pprof` profiles; product runs in `1.txt` (20× `make run`)
+- Measurement: `plans/v0.0.1/perf-p0p3-measurement.md`
+- Product timing: 20× `make run` sample (`1.txt`)
+- Prior pprof: `/tmp/goslop-pprof/*`
 - Issues: see **Related issues**
 
 ---
@@ -31,10 +33,33 @@ Speed up product `make run` on the gopdfsuit reference corpus by ~**40%** (scan 
 - Immutable PERF/CWE/BP rule catalogues + cached sorted `RuleIDs()` (no per-file lock/copy/sort)
 - Filter with `Allows` per unit (race-safe with shared detectors)
 
-### Makefile
+### Residual follow-ups (also in this PR)
 
-- Comment documenting optional timing loop:  
+#### Needle / domain gates
+
+- **CWE:** ~169 table rules skip when `SourceIndex` has none of the rule’s group needles (same condition as `runNeedleRule` → FN-safe)
+- **PERF:** optional gates on `RegisterRule`; high-hit rules wired in `zz_gates.go` (e.g. PERF-1/5/6/32, 16/21–23/28/35/46/47/101/122/186) against expanded `perfNeedles`
+
+#### Cross-pack parse + AST reuse
+
+- `goparse.TreeForUnit`: one parse pinned on `unit.Tree` for PERF / BP / taint
+- `astfacts.Shared` on `unit.FactCache`: **one shared two-pass AST walk** for PERF + BP (no second `Inspect`)
+- CWE structural still uses its own needle index (different table)
+
+#### GOGC (P3.2)
+
+- Re-profiled after opts: export allocs −56% but `gcDrain` still ~24% of export samples
+- **No product GOGC change** (relative GC share is not a wall-time regression)
+
+#### Bench harness
+
+- Landed `internal/bench/` + Makefile `make bench` / `BENCHTIME` / `GOSLOP_BENCH_SCAN_PATH`
+
+### Makefile / docs naming
+
+- Optional timing-loop comment:  
   `for i in {1..20}; do make run || break; done > 1.txt 2>&1`
+- Informal metrics-gate naming cleaned up (`make reference-metrics`, reference corpus wording)
 
 ---
 
@@ -42,12 +67,30 @@ Speed up product `make run` on the gopdfsuit reference corpus by ~**40%** (scan 
 
 | Area | Impact |
 |------|--------|
-| **Performance** | `make run` scan wall ~**190 ms → ~112 ms** mean (~**41%** faster); min ~106 ms, max ~125 ms over 20 runs |
-| **Memory** | Lower export/scan allocs (span cache, zero-copy Slice, shared codeLines) |
-| **Behavior / correctness** | Unchanged: 915 findings; 10h/197i/312l/396m; top BP-1×181…; 915+37 exports |
-| **API / CLI** | None (Makefile comment only for ops) |
+| **Performance** | `make run` scan ~**190 → ~112 ms** mean (~**41%** / ~**1.7×**). Formal 20x benches: Scan **−31%**, ScanAndExport **−50%**, ExportOnly **−67%** (see table below) |
+| **Memory** | Large drop in B/op and allocs/op (scan B/op **−69%**, export allocs **−56%** on 20x benches) |
+| **Behavior / correctness** | Unchanged product parity: **915** findings; **10h / 197i / 312l / 396m**; top BP-1×181…; **915+37** exports |
+| **API / CLI** | `make bench` added; metrics gate remains `make reference-metrics` |
 | **Dependencies** | None |
 | **Binary size / build time** | Negligible |
+
+### Formal benches (`benchtime=20x`, gopdfsuit)
+
+| Benchmark | Before | After | Δ time | Δ B/op | Δ allocs |
+|-----------|--------|-------|--------|--------|----------|
+| **ScanProfileAll** | 164.2 ms · 199 MB · 1.19M | **113.7 ms** · 61 MB · 435k | **−31%** | **−69%** | **−64%** |
+| **ScanAndExport** | 366.7 ms · 345 MB · 2.64M | **181.7 ms** · 145 MB · 1.08M | **−50%** | **−58%** | **−59%** |
+| **ExportOnly** | 200.6 ms · 149 MB · 1.47M | **65.7 ms** · 85 MB · 647k | **−67%** | **−43%** | **−56%** |
+
+### Hotspot status (pprof cum)
+
+| Hotspot | Status |
+|---------|--------|
+| `buildProjectSnapshot` | ~31% → ~**1.5%** (gone / drastically reduced) |
+| per-finding `enclosingFunctionLines` / `ast.Inspect` | **gone** (once-per-file spans) |
+| `codeLines` / `stripLineComment` | **reduced** (once per file) |
+| catalogue `RuleIDs` sort / register lock | **gone** as measurable cost |
+| export `numberedLines` / `fmt.Sprintf` | **reduced** |
 
 ---
 
@@ -55,17 +98,19 @@ Speed up product `make run` on the gopdfsuit reference corpus by ~**40%** (scan 
 
 | Item | Migration |
 |------|-----------|
-| None | - |
+| None for CLI detectors | - |
+| Legacy Makefile metrics target name | Use `make reference-metrics` |
 
 ---
 
 ## Test plan
 
-- [x] `go test ./internal/export/ ./internal/lang/go/detectors/... ./tests/integration/ -count=1`
+- [x] `go test ./internal/export/ ./internal/lang/go/detectors/... ./internal/engine/ ./internal/lang/go/goparse/ ./tests/integration/ -count=1`
 - [x] `make run` on gopdfsuit — 915 findings / 915+37 exports
-- [x] 20× `make run` timing (`1.txt`) — mean ~112 ms scan
-- [ ] `make bench BENCHTIME=20x` vs prior medians (optional follow-up)
-- [ ] Re-profile pprof hotspots after merge (optional)
+- [x] 20× `make run` timing — mean ~112 ms scan
+- [x] `make bench` / `go test -bench=. -benchtime=20x ./internal/bench/` — before/after in measurement doc
+- [x] pprof re-profile — hotspots documented in `perf-p0p3-measurement.md`
+- [x] GOGC decision: leave product default unchanged
 
 ### Commands
 
@@ -73,6 +118,8 @@ Speed up product `make run` on the gopdfsuit reference corpus by ~**40%** (scan 
 make run
 # optional timing:
 # for i in {1..20}; do make run || break; done > 1.txt 2>&1
+make bench BENCHTIME=20x
+make reference-metrics
 ```
 
 ---
@@ -81,7 +128,7 @@ make run
 
 **Before (approx.):** `scanned 78 files … in ~190ms` · 915 findings  
 
-**After (from 20-run sample):**
+**After (20-run product sample):**
 
 ```
 scanned 78 files (28042 lines) in 107.4ms   # min-ish
@@ -94,13 +141,14 @@ scanned 78 files (28042 lines) in 124.5ms   # max
 exported 915 context file(s) …; exported 37 chunk file(s) …
 ```
 
-**Summary:** mean ~**112 ms** scan (~**1.7×** vs ~190 ms baseline), parity intact.
+**Summary:** mean ~**112 ms** scan (~**1.7×** vs ~190 ms), parity intact.
 
 ---
 
 ## Related issues
 
-- Relates to `plans/v0.0.1/perf-pprof-optimization-checklist.md` (P0–P2, P3.1)
+- Relates to `plans/v0.0.1/perf-pprof-optimization-checklist.md`
+- Measurement: `plans/v0.0.1/perf-p0p3-measurement.md`
 - No open GitHub issue ID
 
 ---
@@ -114,12 +162,12 @@ exported 915 context file(s) …; exported 37 chunk file(s) …
 
 ---
 
-## Follow-ups (out of scope)
+## Follow-ups (still open / optional)
 
-- P3 residual: needle/domain gates when index has no hits
-- Cross-pack fact reuse (one AST walk for PERF/CWE/BP)
-- P3.2 GC pressure notes after re-profile
-- Formal `make bench` / pprof before-after attachment
+- More PERF gates only where FN-safe (many rules still ungated by design)
+- Shared CWE fact bag only if needle tables can be unified without parity risk
+- GOGC CLI experiment notes **only if** wall is still GC-bound after further residual work
+- Optional: attach raw `.prof` artifacts outside git
 
 ---
 
