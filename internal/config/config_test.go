@@ -111,10 +111,10 @@ whole_function = false
 
 	// Unset → nil (export package defaults to true).
 	path2 := filepath.Join(dir, "empty.toml")
-	if err := os.WriteFile(path2, []byte(`[goslop]
+	if writeErr := os.WriteFile(path2, []byte(`[goslop]
 fail_on = "none"
-`), 0o644); err != nil {
-		t.Fatal(err)
+`), 0o644); writeErr != nil {
+		t.Fatal(writeErr)
 	}
 	m2, err := config.LoadAndMerge(config.MergeInput{ConfigPath: path2})
 	if err != nil {

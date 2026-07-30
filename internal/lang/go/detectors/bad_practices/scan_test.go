@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/chinmay/goslop/internal/core"
 	"github.com/chinmay/goslop/internal/fixture"
@@ -61,6 +62,34 @@ func WriteFile(path string, data []byte) {
 		if f.RuleID == "BP-1" && f.Severity != rules.SeverityHigh {
 			t.Fatalf("expected severity override high, got %v", f.Severity)
 		}
+	}
+}
+
+// TestBP28BP29UnbalancedBraceNeedleDoesNotHang covers a regression where the
+// text scanners for BP-28/BP-29 matched "interface {" inside a string literal
+// whose braces never balanced, then set start=abs and looped forever.
+// Scanning rules_api.go itself used to hang make run when SCAN_PATH was self.
+func TestBP28BP29UnbalancedBraceNeedleDoesNotHang(t *testing.T) {
+	// Mimic detector source: needle appears in a string with no matching '}'.
+	src := "package p\n" +
+		"func f() {\n" +
+		"\t_ = \"interface {\"\n" +
+		"\t_ = \"interface{\"\n" +
+		"\tx := 1\n" +
+		"\t_ = x\n" +
+		"}\n"
+	ctx := core.DefaultScanContext()
+	ctx.BadPracticesEnabled = true
+	ctx.Only = []string{"BP-28", "BP-29"}
+	done := make(chan []rules.Finding, 1)
+	go func() {
+		done <- runBP(t, ctx, src, "bp28_bp29_string_needle.go")
+	}()
+	select {
+	case <-done:
+		// Success: terminated (no findings required).
+	case <-time.After(2 * time.Second):
+		t.Fatal("BP-28/BP-29 hung on unbalanced \"interface {\" string needle")
 	}
 }
 

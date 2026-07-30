@@ -170,27 +170,23 @@ func detectBP28(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	src := unit.Source
 	start := 0
 	for {
-		idx := strings.Index(src[start:], "interface {")
+		needle := "interface {"
+		idx := strings.Index(src[start:], needle)
 		if idx < 0 {
-			idx = strings.Index(src[start:], "interface{")
+			needle = "interface{"
+			idx = strings.Index(src[start:], needle)
 			if idx < 0 {
 				break
 			}
 		}
 		abs := start + idx
 		// count methods roughly
-		end := abs
-		depth := 0
-		for i := abs; i < len(src); i++ {
-			if src[i] == '{' {
-				depth++
-			} else if src[i] == '}' {
-				depth--
-				if depth == 0 {
-					end = i + 1
-					break
-				}
-			}
+		end, ok := matchBraceBlock(src, abs)
+		if !ok {
+			// Needle often appears inside string literals (including this
+			// detector's own source). Always advance past the match.
+			start = abs + len(needle)
+			continue
 		}
 		block := src[abs:end]
 		// method lines: name(
@@ -214,25 +210,20 @@ func detectBP28(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 func detectBP29(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-29")
 	src := unit.Source
+	const needle = "interface {"
 	start := 0
 	for {
-		idx := strings.Index(src[start:], "interface {")
+		idx := strings.Index(src[start:], needle)
 		if idx < 0 {
 			break
 		}
 		abs := start + idx
-		end := abs
-		depth := 0
-		for i := abs; i < len(src); i++ {
-			if src[i] == '{' {
-				depth++
-			} else if src[i] == '}' {
-				depth--
-				if depth == 0 {
-					end = i + 1
-					break
-				}
-			}
+		end, ok := matchBraceBlock(src, abs)
+		if !ok {
+			// Unbalanced braces from a false match (e.g. needle in a string)
+			// would otherwise set start=abs and loop forever.
+			start = abs + len(needle)
+			continue
 		}
 		block := src[abs:end]
 		methods := 0
@@ -248,6 +239,28 @@ func detectBP29(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		}
 		start = end
 	}
+}
+
+// matchBraceBlock finds the end offset (exclusive) of the brace-balanced region
+// starting at abs. abs must point at or before the opening '{'. Returns false
+// when braces never balance (string/comment false positives).
+func matchBraceBlock(src string, abs int) (int, bool) {
+	if abs < 0 || abs >= len(src) {
+		return abs, false
+	}
+	depth := 0
+	for i := abs; i < len(src); i++ {
+		switch src[i] {
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return i + 1, true
+			}
+		}
+	}
+	return abs, false
 }
 
 // detectBP30: exported interface with no evident same-package implementation.
