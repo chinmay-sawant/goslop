@@ -62,9 +62,9 @@ Completes the phase-wise scan-contract, configuration, cache, export, and Go-pra
 - [x] `make lint-all`
 - [x] `go test -race ./...`
 - [x] `git diff --check`
-- [ ] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` (not run separately; no CGO-related change)
-- [ ] `make run` wall-time comparison (not rerun; detector surface did not change in this closure batch)
-- [ ] `make reference-metrics` / gopdfsuit hard metrics (not applicable; no detector-rule surface changed)
+- [x] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`
+- [x] `make run SCAN_PATH=/home/chinmay/ChinmayPersonalProjects/gopdfsuit` — 0.45s wall time; 204.5ms scan time; 915 findings.
+- [x] `make reference-metrics REFERENCE_PATH=/home/chinmay/ChinmayPersonalProjects/gopdfsuit` — matched all hard metrics and exported 915 context files plus 37 chunk files.
 
 ### Commands
 
@@ -73,6 +73,9 @@ make lint-all
 make test
 go test -race ./...
 git diff --check
+CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop
+/usr/bin/time -f 'wall_time=%e_s' make run SCAN_PATH=/home/chinmay/ChinmayPersonalProjects/gopdfsuit
+make reference-metrics REFERENCE_PATH=/home/chinmay/ChinmayPersonalProjects/gopdfsuit
 ```
 
 ---
@@ -80,6 +83,13 @@ git diff --check
 ## Screenshots / sample output
 
 No user-interface change. Focused regression coverage proves export collision rejection leaves no directory behind, dual output matches independent context/chunk output, and cache cleanup errors propagate.
+
+```text
+make run: 78 files / 28,042 lines; 915 findings; 204.5ms scan; 0.45s wall
+reference-metrics: 915 findings; 10 high / 197 info / 312 low / 396 medium
+top rules: BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44
+exports: 915 context files, 37 chunk files
+```
 
 ---
 
