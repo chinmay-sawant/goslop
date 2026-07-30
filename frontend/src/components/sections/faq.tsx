@@ -385,10 +385,10 @@ const faqs: FaqItem[] = [
 
 export function FaqSection() {
   return (
-    <section id="faq" className="border-b border-border py-24 md:py-32">
+    <section id="faq" className="border-b border-border py-20 md:py-28">
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center">
-          <h2 className="font-heading text-4xl tracking-tight md:text-5xl">
+          <h2 className="font-heading text-3xl tracking-tight sm:text-4xl md:text-5xl">
             Straight answers
           </h2>
         </div>

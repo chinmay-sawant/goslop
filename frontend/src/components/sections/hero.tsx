@@ -1,82 +1,96 @@
-import { ArrowRight, Terminal } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { GitHubStarsButton } from '@/components/github-stars'
+import { CodeBlock } from '@/components/code-block'
+
+const HERO_CMD = `make build
+./bin/goslop --profile recommended .
+./bin/goslop --export-context --export-chunks .`
 
 export function HeroSection() {
   return (
     <section id="top" className="relative overflow-hidden border-b border-border">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
+        className="pointer-events-none absolute inset-0 -z-10 motion-safe:opacity-100"
         style={{
           background:
             'radial-gradient(ellipse 80% 50% at 50% -20%, color-mix(in srgb, var(--info) 12%, transparent), transparent), radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in srgb, var(--warning) 8%, transparent), transparent)',
         }}
       />
 
-      <div className="mx-auto max-w-6xl px-6 pt-20 pb-24 md:pt-28 md:pb-32">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="animate-fade-up mb-6 flex justify-center">
-            <Badge variant="outline" className="gap-2 px-3 py-1 font-mono text-[11px] uppercase tracking-wider">
+      <div className="mx-auto max-w-6xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+          <div>
+            <Badge
+              variant="outline"
+              className="mb-5 gap-2 px-3 py-1 font-mono text-[11px] uppercase tracking-wider"
+            >
               <span className="size-1.5 rounded-full bg-success" />
-              Pure-Go SAT · No CGO
+              Pure-Go SAT · CGO_ENABLED=0
             </Badge>
-          </div>
 
-          <h1 className="animate-fade-up delay-100 font-heading text-5xl leading-[1.08] tracking-tight text-balance md:text-6xl lg:text-7xl">
-            Static analysis for the{' '}
-            <em className="not-italic text-info">agentic era</em> of software
-          </h1>
+            <h1 className="font-heading text-4xl leading-[1.08] tracking-tight text-balance sm:text-5xl lg:text-6xl">
+              Find it. Export it. Hand it to an agent.
+            </h1>
 
-          <p className="animate-fade-up delay-200 mx-auto mt-6 max-w-2xl text-lg text-muted-foreground text-balance md:text-xl">
-            <strong className="font-medium text-foreground">goslop</strong> is a
-            pure-Go SAT that finds performance, security, and hygiene issues,
-            then exports whole-function context so agents can fix them without
-            spelunking your tree.
-          </p>
+            <p className="mt-5 max-w-xl text-base text-muted-foreground text-balance sm:text-lg">
+              <strong className="font-medium text-foreground">goslop</strong> is
+              a static analysis tool for Go: performance, CWE security, and
+              hygiene. The difference is the export path: whole-function context
+              and batched chunks so agents fix issues without spelunking the
+              monorepo.
+            </p>
 
-          <div className="animate-fade-up delay-300 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button size="lg" asChild>
-              <a href="#install">
-                Install goslop
-                <ArrowRight className="size-4" />
-              </a>
-            </Button>
-            <Button size="lg" variant="outline" asChild>
-              <a href="#docs">
-                <Terminal className="size-4" />
-                Documentation
-              </a>
-            </Button>
-            <GitHubStarsButton size="default" className="h-12 px-5" />
-          </div>
-        </div>
+            <ol className="mt-8 max-w-md space-y-3 text-sm">
+              {[
+                { step: '1', label: 'Scan', detail: 'profiles for CI, perf, security, style' },
+                { step: '2', label: 'Export', detail: 'functions + chunks with full context' },
+                { step: '3', label: 'Delegate', detail: 'humans or coding agents remediate' },
+              ].map((item) => (
+                <li key={item.step} className="flex gap-3">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-card font-mono text-xs font-medium">
+                    {item.step}
+                  </span>
+                  <span>
+                    <span className="font-medium text-foreground">{item.label}</span>
+                    <span className="text-muted-foreground"> · {item.detail}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
 
-        <div className="animate-fade-up delay-400 mx-auto mt-16 max-w-3xl">
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
-            <div className="flex items-center gap-2 border-b border-border bg-secondary/50 px-4 py-3">
-              <span className="size-2.5 rounded-full bg-muted-foreground/25" />
-              <span className="size-2.5 rounded-full bg-muted-foreground/25" />
-              <span className="size-2.5 rounded-full bg-muted-foreground/25" />
-              <span className="ml-2 font-mono text-xs text-muted-foreground">
-                terminal
-              </span>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button size="lg" asChild>
+                <a href="#install">
+                  Install goslop
+                  <ArrowRight className="size-4" />
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <a href="#demo">See the export</a>
+              </Button>
             </div>
-            <pre className="overflow-x-auto p-5 font-mono text-[13px] leading-relaxed text-foreground/90 md:text-sm">
-              <code>
-                <span className="text-muted-foreground">$</span> ./bin/goslop --profile recommended .{'\n'}
-                <span className="text-muted-foreground">
-                  # text on stdout · summary on stderr · exit by severity
-                </span>
-                {'\n\n'}
-                <span className="text-muted-foreground">$</span> ./bin/goslop --format sarif . {'>'} goslop.sarif{'\n'}
-                <span className="text-muted-foreground">$</span> ./bin/goslop --export-context --export-chunks .{'\n'}
-                <span className="text-success">
-                  # → scripts/findings/functions · scripts/chunks for agents
-                </span>
-              </code>
-            </pre>
+
+            <p className="mt-5 font-mono text-[11px] text-muted-foreground">
+              Default gate: --profile recommended · SARIF 2.1.0 · pure Go
+            </p>
+          </div>
+
+          <div className="motion-safe:animate-fade-up">
+            <CodeBlock code={HERO_CMD} filename="get started">
+              <span className="text-muted-foreground"># build (no C toolchain)</span>
+              {'\n'}
+              make build
+              {'\n\n'}
+              <span className="text-muted-foreground"># scan</span>
+              {'\n'}
+              ./bin/goslop --profile recommended .
+              {'\n\n'}
+              <span className="text-muted-foreground"># export for agents</span>
+              {'\n'}
+              ./bin/goslop --export-context --export-chunks .
+            </CodeBlock>
           </div>
         </div>
       </div>

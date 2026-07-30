@@ -1,3 +1,4 @@
+import { Logo } from '@/components/logo'
 import { GitHubStarsButton } from '@/components/github-stars'
 
 export function SiteFooter() {
@@ -5,12 +6,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12 md:flex-row md:items-start md:justify-between">
         <div className="max-w-sm space-y-3">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground font-mono text-xs font-semibold">
-              go
-            </span>
-            <span className="text-sm font-semibold tracking-tight">goslop</span>
-          </div>
+          <Logo />
           <p className="text-sm text-muted-foreground leading-relaxed">
             Pure-Go static analysis for performance, security, and hygiene.
             Built to feed findings into humans and agents.
@@ -25,18 +21,18 @@ export function SiteFooter() {
             </p>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#features" className="text-muted-foreground hover:text-foreground">
-                  Features
+                <a href="#demo" className="text-muted-foreground hover:text-foreground">
+                  Demo
                 </a>
               </li>
               <li>
-                <a href="#profiles" className="text-muted-foreground hover:text-foreground">
-                  Profiles
+                <a href="#why" className="text-muted-foreground hover:text-foreground">
+                  Why goslop
                 </a>
               </li>
               <li>
-                <a href="#docs" className="text-muted-foreground hover:text-foreground">
-                  Documentation
+                <a href="#ci" className="text-muted-foreground hover:text-foreground">
+                  CI profiles
                 </a>
               </li>
               <li>
@@ -68,7 +64,7 @@ export function SiteFooter() {
                   rel="noreferrer"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  CLI reference
+                  CLI
                 </a>
               </li>
               <li>
@@ -78,17 +74,17 @@ export function SiteFooter() {
                   rel="noreferrer"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  Export & chunks
+                  Export
                 </a>
               </li>
               <li>
                 <a
-                  href="https://github.com/chinmay-sawant/goslop/blob/main/documents/README.md"
+                  href="https://github.com/chinmay-sawant/goslop/blob/main/documents/reporting-formats.md"
                   target="_blank"
                   rel="noreferrer"
                   className="text-muted-foreground hover:text-foreground"
                 >
-                  All documents
+                  Reporting
                 </a>
               </li>
             </ul>
@@ -110,16 +106,6 @@ export function SiteFooter() {
               </li>
               <li>
                 <a
-                  href="https://github.com/chinmay-sawant/goslop/blob/main/README.md"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  README
-                </a>
-              </li>
-              <li>
-                <a
                   href="https://github.com/chinmay-sawant/goslop/blob/main/LICENSE"
                   target="_blank"
                   rel="noreferrer"
@@ -136,7 +122,7 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5 text-xs text-muted-foreground">
           <span>Static analysis tool for Go</span>
-          <span className="font-mono">v0.0.1</span>
+          <span className="font-mono">goslop</span>
         </div>
       </div>
     </footer>
