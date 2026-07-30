@@ -10,16 +10,22 @@ import (
 	"github.com/chinmay/goslop/internal/core"
 )
 
+// snapEntry builds a ProjectSnapshot at most once per root (shared by workers).
+type snapEntry struct {
+	once sync.Once
+	snap *ProjectSnapshot
+}
+
 // bpProjectCaches memoizes project-level facts per scan root.
 type bpProjectCaches struct {
 	mu          sync.Mutex
-	snapshots   map[string]*ProjectSnapshot
+	snapshots   map[string]*snapEntry // key: absolute project root
 	packageDocs map[string]*PackageDocSnapshot // key: directory path
 }
 
 func newProjectCaches() *bpProjectCaches {
 	return &bpProjectCaches{
-		snapshots:   map[string]*ProjectSnapshot{},
+		snapshots:   map[string]*snapEntry{},
 		packageDocs: map[string]*PackageDocSnapshot{},
 	}
 }
@@ -29,7 +35,7 @@ func (c *bpProjectCaches) clear() {
 		return
 	}
 	c.mu.Lock()
-	c.snapshots = map[string]*ProjectSnapshot{}
+	c.snapshots = map[string]*snapEntry{}
 	c.packageDocs = map[string]*PackageDocSnapshot{}
 	c.mu.Unlock()
 }
@@ -209,29 +215,33 @@ func projectSnapshotForRoot(root string) *ProjectSnapshot {
 	if root == "" {
 		return &ProjectSnapshot{}
 	}
+	// Normalize so concurrent workers with relative/abs paths share one entry.
+	if abs, err := filepath.Abs(root); err == nil {
+		root = abs
+	}
 	activeCachesMu.Lock()
 	caches := activeCaches
 	activeCachesMu.Unlock()
 	if caches == nil {
+		// No scan session: build without memoization (unit tests / ad-hoc).
 		return buildProjectSnapshot(root)
 	}
 	caches.mu.Lock()
-	if snap, ok := caches.snapshots[root]; ok {
-		caches.mu.Unlock()
-		return snap
+	e, ok := caches.snapshots[root]
+	if !ok {
+		e = &snapEntry{}
+		caches.snapshots[root] = e
 	}
 	caches.mu.Unlock()
 
-	built := buildProjectSnapshot(root)
-
-	caches.mu.Lock()
-	if snap, ok := caches.snapshots[root]; ok {
-		caches.mu.Unlock()
-		return snap
+	// Exactly one WalkDir+ReadFile pass per root for the whole AnalyzePaths.
+	e.once.Do(func() {
+		e.snap = buildProjectSnapshot(root)
+	})
+	if e.snap == nil {
+		return &ProjectSnapshot{}
 	}
-	caches.snapshots[root] = built
-	caches.mu.Unlock()
-	return built
+	return e.snap
 }
 
 var skipProjectDirs = map[string]struct{}{

@@ -19,12 +19,21 @@ var bpNeedles = []string{
 	"signal.Notify", ".Shutdown(", "ListenAndServe", "rate.NewLimiter",
 }
 
+// codeLine is one source line with 0-based index and byte offset (P1.1).
+type codeLine struct {
+	idx  int
+	text string
+	byte int
+}
+
 // bpFacts is the fused fact bag for BP detectors.
 type bpFacts struct {
 	Source      string
 	Index       ast.SourceIndex
 	tree        *goparse.Tree
 	ownedTree   bool
+	// lines is built once per file (codeLines / stripLineComment cost).
+	lines       []codeLine
 	assignNodes []nodeSpan
 	callNodes   []callSpan
 	deferNodes  []nodeSpan
@@ -63,6 +72,8 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 		return f
 	}
 	f.Source = unit.Source
+	// Once per file: shared by all BP rules that walk source lines.
+	f.lines = buildCodeLines(unit.Source)
 	f.Index = ast.Build(unit.Source, bpNeedles)
 
 	src := []byte(unit.Source)

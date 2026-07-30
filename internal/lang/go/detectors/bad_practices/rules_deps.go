@@ -25,7 +25,7 @@ func init() {
 
 var goVersionRe = regexp.MustCompile(`(?m)^go\s+(\d+)\.(\d+)`)
 
-func detectBP57(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP57(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-57")
 	snap := projectSnapshot(unit)
 	if snap.GoModText == "" {
@@ -44,7 +44,7 @@ func detectBP57(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP58(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP58(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-58")
 	snap := projectSnapshot(unit)
 	if snap.GoModText == "" {
@@ -72,14 +72,14 @@ func detectBP58(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP59(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP59(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Unused direct dependency needs whole-module import graph; emit only with strong signal.
 	// Skip noisy heuristic for Phase 8 MVP (registered for catalogue completeness when go.mod empty require).
 	_ = unit
 	_ = out
 }
 
-func detectBP60(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP60(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-60")
 	snap := projectSnapshot(unit)
 	if snap.GoModText == "" {
@@ -116,7 +116,7 @@ func hasTestOnlyRequire(snap *ProjectSnapshot) bool {
 	return false
 }
 
-func detectBP61(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP61(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-61")
 	snap := projectSnapshot(unit)
 	if snap.GoModText == "" {
@@ -151,7 +151,7 @@ func detectBP61(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	_ = out
 }
 
-func detectBP62(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP62(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Rust: external direct dep imported by exactly one non-test file, project has ≥2 non-test files.
 	meta := MetadataForID("BP-62")
 	snap := projectSnapshot(unit)
@@ -246,13 +246,13 @@ func detectBP62(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP63(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP63(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// CVE check needs advisories CSV — optional later
 	_ = unit
 	_ = out
 }
 
-func detectBP64(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP64(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-64")
 	snap := projectSnapshot(unit)
 	if snap.GoModText == "" {
@@ -267,7 +267,7 @@ func detectBP64(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP65(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP65(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Rust: project anchor only; go.mod exists but go.sum missing or empty.
 	// (Dispatch already gates project-anchor rules.)
 	if isMaterializedFixture(unit) {

@@ -64,7 +64,7 @@ func detectBP26(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 	}
 	if len(facts.funcDecls) == 0 {
-		for _, line := range codeLines(unit.Source) {
+		for _, line := range codeLinesFacts(facts, unit.Source) {
 			t := strings.TrimSpace(line.text)
 			if !strings.HasPrefix(t, "func ") || !strings.Contains(t, "context.Context") {
 				continue
@@ -117,10 +117,10 @@ func min(a, b int) int {
 	return b
 }
 
-func detectBP27(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP27(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-27")
 	// exported func returns unexported type
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "func ") {
 			continue
@@ -164,7 +164,7 @@ func detectBP27(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP28(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP28(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-28")
 	// single-method interface
 	src := unit.Source
@@ -207,7 +207,7 @@ func detectBP28(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP29(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP29(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-29")
 	src := unit.Source
 	const needle = "interface {"
@@ -265,7 +265,7 @@ func matchBraceBlock(src string, abs int) (int, bool) {
 
 // detectBP30: exported interface with no evident same-package implementation.
 // Uses the whole package directory (Rust package_method_sets parity).
-func detectBP30(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP30(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) {
 		return
 	}
@@ -302,7 +302,7 @@ func detectBP30(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 
 // detectBP31: New* constructor returns a concrete type even though a fitting
 // package interface already exists (Rust api_design::detect_bp_31).
-func detectBP31(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP31(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) {
 		return
 	}
@@ -416,11 +416,11 @@ func normalizeResultType(s string) string {
 	return s
 }
 
-func detectBP32(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-32")
 	// type X string with Error() method — string alias error
 	if strings.Contains(unit.Source, "type ") && strings.Contains(unit.Source, " string") && strings.Contains(unit.Source, "Error() string") {
-		for _, line := range codeLines(unit.Source) {
+		for _, line := range codeLinesFacts(facts, unit.Source) {
 			t := strings.TrimSpace(line.text)
 			if strings.HasPrefix(t, "type ") && strings.HasSuffix(t, " string") {
 				pushAt(unit, meta, line.byte, "string alias used as error type; prefer a struct implementing error", out)
@@ -430,11 +430,11 @@ func detectBP32(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP34(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP34(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-34")
 	// fmt.Errorf without %w when wrapping err — require bare `err` arg, not errCount.
 	emitted := 0
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, "fmt.Errorf(") || strings.Contains(t, "%w") {
 			continue
@@ -494,7 +494,7 @@ func bp34WrapsErr(line string) bool {
 	return false
 }
 
-func detectBP36(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP36(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Rust: init body contains call_expression / go / defer.
 	if isTestFile(unit) {
 		return
@@ -557,7 +557,7 @@ func detectBP37(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if len(written) == 0 {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "var ") {
 			continue
@@ -1127,7 +1127,7 @@ func firstIdent(s string) string {
 	return s[:i]
 }
 
-func detectBP38(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP38(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Unexported helper with no same-file callers.
 	if isTestFile(unit) {
 		return
@@ -1253,7 +1253,7 @@ func localCallNames(source string) map[string]struct{} {
 	return out
 }
 
-func detectBP39(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP39(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Rust: exported API (funcs + methods on exported receivers) need a doc
 	// comment that starts with the function/method name. Emit all hits (no
 	// early return) for real-repos parity.
@@ -1476,7 +1476,7 @@ func isSimpleIdent(s string) bool {
 }
 
 // detectBP42: import alias used only once (Rust count_word_occurrences <= 2).
-func detectBP42(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isTestFile(unit) {
 		return
 	}
@@ -1539,7 +1539,7 @@ func isUsefulImportAlias(alias string) bool {
 	return true
 }
 
-func detectBP41(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Rust parity: only the package anchor file reports missing package doc.
 	// Skip flat materializations (…/go/file.go) to avoid noise, but still run
 	// on nested package fixtures such as go/bp41/*.go (BP-41-vulnerable).
@@ -1573,12 +1573,12 @@ func detectBP41(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	pushAt(unit, meta, 0, "package is missing a package-level doc comment", out)
 }
 
-func detectBP43(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP43(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-43")
 	if isTestFile(unit) {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, ". \"") || strings.Contains(t, "\t. \"") || strings.Contains(t, " . \"") {
 			pushAt(unit, meta, line.byte, "dot import outside tests pollutes the namespace", out)
@@ -1596,7 +1596,7 @@ func detectBP43(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP44(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP44(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-44")
 	if isTestFile(unit) {
 		return
@@ -1715,7 +1715,7 @@ func detectBP45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 	// Text fallback: func (name *Type) / func (name Type)
 	re := regexp.MustCompile(`func\s+\((\w+)\s+\*?(\w+)\)`)
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		m := re.FindStringSubmatch(line.text)
 		if m == nil {
 			continue
@@ -1774,7 +1774,7 @@ func detectBP33(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 	} else {
 		// Text: func (e T) Error() / Is(
-		for _, line := range codeLines(unit.Source) {
+		for _, line := range codeLinesFacts(facts, unit.Source) {
 			t := strings.TrimSpace(line.text)
 			if !strings.HasPrefix(t, "func (") {
 				continue
@@ -1796,7 +1796,7 @@ func detectBP33(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Sentinel: var Err… = Type{} or Type()
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "var Err") && !strings.HasPrefix(t, "const Err") {
 			continue
@@ -1830,11 +1830,11 @@ func methodReceiverTypeText(funcLine string) string {
 	return strings.TrimPrefix(ty, "*")
 }
 
-func detectBP66(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP66(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-66")
 	// err == SomeSentinel when wrapping used
 	if strings.Contains(unit.Source, "fmt.Errorf") && strings.Contains(unit.Source, "%w") {
-		for _, line := range codeLines(unit.Source) {
+		for _, line := range codeLinesFacts(facts, unit.Source) {
 			t := strings.TrimSpace(line.text)
 			if (strings.Contains(t, "err ==") || strings.Contains(t, "err !=")) && strings.Contains(t, "Err") {
 				if !strings.Contains(t, "errors.Is") {
@@ -1845,7 +1845,7 @@ func detectBP66(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP76(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP76(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-76")
 	// Map range feeds strings.Join (or similar ordered output) without sort.
 	src := unit.Source
@@ -1863,7 +1863,7 @@ func detectBP76(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	msg := "map iteration feeds ordered output without sorting; collect keys or values and sort before strings.Join"
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "for ") && strings.Contains(t, " range ") {
 			pushAt(unit, meta, line.byte, msg, out)
@@ -1872,10 +1872,10 @@ func detectBP76(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP85(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP85(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-85")
 	// r.Context().Value without ok check - type assert
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.Contains(t, ".Value(") && strings.Contains(t, ".(") && !strings.Contains(t, "ok") {
 			pushAt(unit, meta, line.byte, "unchecked type assertion on request context value", out)
@@ -1883,7 +1883,7 @@ func detectBP85(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP91(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP91(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-91")
 	src := unit.Source
 	// Notification-shaped bool/int channels: constant send + discarded receive.
@@ -1986,7 +1986,7 @@ func hasDiscardedReceiveBP91(src, ch string) bool {
 	return false
 }
 
-func detectBP138(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP138(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-138")
 	// GORM lifecycle hooks with direct external I/O (http/smtp).
 	hooks := []string{
@@ -2018,7 +2018,7 @@ func detectBP138(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP141(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP141(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-141")
 	if !strings.Contains(unit.Source, "Named") && !strings.Contains(unit.Source, "sqlx") {
 		return
@@ -2033,7 +2033,7 @@ func detectBP141(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP164(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP164(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-164")
 	if isTestFile(unit) {
 		return
@@ -2048,7 +2048,7 @@ func detectBP164(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Walk With* functions that return Option; flag assignment to package globals.
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "func With") || !strings.Contains(t, "Option") {

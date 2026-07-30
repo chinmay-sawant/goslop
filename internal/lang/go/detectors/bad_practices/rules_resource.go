@@ -28,7 +28,7 @@ func init() {
 	RegisterRule("BP-145", detectBP145)
 }
 
-func detectBP95(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP95(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-95")
 	src := unit.Source
 	// HTTP client call without Body.Close
@@ -68,7 +68,7 @@ func detectBP95(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP96(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP96(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-96")
 	if !strings.Contains(unit.Source, ".Query(") && !strings.Contains(unit.Source, ".QueryContext(") {
 		return
@@ -83,7 +83,7 @@ func detectBP96(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP97(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP97(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-97")
 	src := unit.Source
 	// bufio/gzip writer writes into a buffer that is read before Flush/Close.
@@ -93,7 +93,7 @@ func detectBP97(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 	var writer, target string
 	var bindPos int
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		for _, c := range constructors {
 			if !strings.Contains(t, c) {
@@ -318,7 +318,7 @@ func splitTopLevelFuncs(src string) []funcChunk {
 	return out
 }
 
-func detectBP99(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP99(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-99")
 	src := unit.Source
 	// Local sync.NewCond / Cond construction; Wait without visible Lock/RLock.
@@ -332,7 +332,7 @@ func detectBP99(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		pos  int
 	}
 	var binds []condBind
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if !strings.Contains(t, "NewCond(") {
 			continue
@@ -390,7 +390,7 @@ func detectBP99(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP126(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP126(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-126")
 	if !strings.Contains(unit.Source, ".Begin(") && !strings.Contains(unit.Source, ".BeginTx(") {
 		return
@@ -403,7 +403,7 @@ func detectBP126(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP128(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP128(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-128")
 	if !strings.Contains(unit.Source, "QueryRow") || !strings.Contains(unit.Source, ".Scan(") {
 		return
@@ -416,10 +416,10 @@ func detectBP128(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP131(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP131(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-131")
 	// Query used for INSERT/UPDATE/DELETE without RETURNING.
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		if !strings.Contains(line.text, ".Query(") && !strings.Contains(line.text, ".QueryContext(") {
 			continue
 		}
@@ -435,7 +435,7 @@ func detectBP131(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP132(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP132(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-132")
 	if !strings.Contains(unit.Source, ".Exec(") && !strings.Contains(unit.Source, "UPDATE") {
 		return
@@ -449,7 +449,7 @@ func detectBP132(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP133(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP133(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-133")
 	if !strings.Contains(unit.Source, "gorm") && !strings.Contains(unit.Source, ".Find(") && !strings.Contains(unit.Source, ".Create(") {
 		return
@@ -468,7 +468,7 @@ func detectBP133(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP134(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP134(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-134")
 	if !strings.Contains(unit.Source, ".First(") && !strings.Contains(unit.Source, ".Take(") {
 		return
@@ -485,7 +485,7 @@ func detectBP134(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP135(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP135(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-135")
 	if strings.Contains(unit.Source, "gorm.DB") || strings.Contains(unit.Source, "*gorm.DB") {
 		// global db without Session
@@ -499,7 +499,7 @@ func detectBP135(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP136(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP136(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-136")
 	src := unit.Source
 	if !strings.Contains(src, "AutoMigrate") {
@@ -543,14 +543,14 @@ func detectBP136(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP140(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP140(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-140")
 	src := unit.Source
 	if !strings.Contains(src, "sqlx") && !strings.Contains(src, "github.com/jmoiron/sqlx") {
 		return
 	}
 	methods := []string{".Get(", ".GetContext(", ".Select(", ".SelectContext(", ".StructScan(", ".NamedExec("}
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		methodIdx := -1
 		for _, m := range methods {
@@ -590,7 +590,7 @@ func detectBP140(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP142(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP142(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-142")
 	if strings.Contains(unit.Source, "sqlx.In(") && !strings.Contains(unit.Source, ".Rebind(") {
 		if pos := strings.Index(unit.Source, "sqlx.In("); pos >= 0 {
@@ -599,11 +599,11 @@ func detectBP142(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP143(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP143(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-143")
 	// redis cmd without .Err()
 	if strings.Contains(unit.Source, "redis.") || strings.Contains(unit.Source, ".Get(") {
-		for _, line := range codeLines(unit.Source) {
+		for _, line := range codeLinesFacts(facts, unit.Source) {
 			t := strings.TrimSpace(line.text)
 			if (strings.Contains(t, ".Get(") || strings.Contains(t, ".Set(")) && strings.Contains(unit.Source, "redis") {
 				if !strings.Contains(unit.Source, ".Err()") && !strings.Contains(t, "err") {
@@ -616,7 +616,7 @@ func detectBP143(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP145(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP145(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-145")
 	if !strings.Contains(unit.Source, ".Acquire(") && !strings.Contains(unit.Source, "pool.Acquire") {
 		return

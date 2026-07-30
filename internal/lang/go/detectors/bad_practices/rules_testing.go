@@ -24,24 +24,24 @@ func init() {
 	RegisterRule("BP-163", detectBP163)
 }
 
-func detectBP16(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP16(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-16")
 	if !isTestFile(unit) || !strings.Contains(unit.Source, "time.Sleep(") {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		if strings.Contains(line.text, "time.Sleep(") {
 			pushAt(unit, meta, line.byte, "time.Sleep in a test is brittle; prefer deterministic synchronization", out)
 		}
 	}
 }
 
-func detectBP17(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP17(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-17")
 	if !isTestFile(unit) {
 		return
 	}
-	lines := codeLines(unit.Source)
+	lines := codeLinesFacts(facts, unit.Source)
 	for i := 0; i < len(lines)-1; i++ {
 		cur := strings.TrimSpace(lines[i].text)
 		next := strings.TrimSpace(lines[i+1].text)
@@ -52,13 +52,13 @@ func detectBP17(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP18(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP18(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-18")
 	if !isTestFile(unit) {
 		return
 	}
 	// Rust parity: t.Error/f without an immediate terminating next statement.
-	lines := codeLines(unit.Source)
+	lines := codeLinesFacts(facts, unit.Source)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !(strings.HasPrefix(t, "t.Error(") || strings.HasPrefix(t, "t.Errorf(")) {
@@ -86,7 +86,7 @@ func detectBP18(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP19(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP19(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-19")
 	if !isTestFile(unit) {
 		return
@@ -96,7 +96,7 @@ func detectBP19(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if !strings.Contains(src, "*testing.T") {
 		return
 	}
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "func ") && strings.Contains(t, "*testing.T") && !strings.HasPrefix(t, "func Test") {
 			// check body for t.Helper
@@ -109,7 +109,7 @@ func detectBP19(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP20(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP20(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-20")
 	if !isTestFile(unit) {
 		return
@@ -125,7 +125,7 @@ func detectBP20(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP21(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP21(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-21")
 	if !isTestFile(unit) {
 		return
@@ -137,7 +137,7 @@ func detectBP21(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP22(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP22(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-22")
 	if !isTestFile(unit) || !strings.Contains(unit.Source, "func TestMain(") {
 		return
@@ -193,7 +193,7 @@ func detectBP23(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP24(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP24(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-24")
 	if !isTestFile(unit) {
 		return
@@ -203,12 +203,12 @@ func detectBP24(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP25(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP25(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-25")
 	if !isTestFile(unit) {
 		return
 	}
-	for _, line := range codeLines(unit.Source) {
+	for _, line := range codeLinesFacts(facts, unit.Source) {
 		t := strings.TrimSpace(line.text)
 		if strings.HasPrefix(t, "func ") && strings.Contains(t, "*testing.T") && strings.Contains(t, " error") &&
 			!strings.HasPrefix(t, "func Test") {
@@ -217,14 +217,14 @@ func detectBP25(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP161(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP161(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-161")
 	if !isTestFile(unit) {
 		return
 	}
 	src := unit.Source
 	// sql.Open or gorm.Open with a literal production marker in the call text.
-	for _, line := range codeLines(src) {
+	for _, line := range codeLinesFacts(facts, src) {
 		t := line.text
 		if !(strings.Contains(t, "sql.Open") || strings.Contains(t, "gorm.Open") ||
 			strings.Contains(t, "postgres.Open") || strings.Contains(t, "mysql.")) {
@@ -279,7 +279,7 @@ func containsLiteralProductionMarker(s string) bool {
 	return false
 }
 
-func detectBP162(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP162(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-162")
 	if !isTestFile(unit) || !strings.Contains(unit.Source, "t.Parallel()") {
 		return
@@ -290,7 +290,7 @@ func detectBP162(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Only fire when a parallel test body assigns to a package-level name.
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	inParallelTest := false
 	depth := 0
 	testDepth := 0
@@ -344,7 +344,7 @@ func detectBP162(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectBP163(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
+func detectBP163(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-163")
 	if !isTestFile(unit) {
 		return
@@ -361,7 +361,7 @@ func detectBP163(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	// Update branch with WriteFile or Create.
-	lines := codeLines(src)
+	lines := codeLinesFacts(facts, src)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		// if *update / if *updateGolden
