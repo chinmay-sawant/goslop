@@ -3,15 +3,15 @@
 // Status: WIP foundation for multi-language enable/disable (epic #39). This
 // package provides ID / Extensions / source-only ParseSource so the engine can
 // resolve .py files when the plugin is registered. There are no detectors yet
-// (Detectors / NewDetectors return empty). Full parse trees, detectors, config
-// TOML wiring, and ruleset JSON catalogues are out of scope for this stub.
+// (Detectors / NewDetectors return empty). Full parse trees, detectors, and
+// ruleset-backed catalogue execution are out of scope for this stub.
 //
 // Callers use:
 //
 //	python.NewPlugin() / python.Register(reg)
 //
 // DefaultRegistry stays Go-only; include Python via engine.NewRegistryWithLanguages
-// or Register when intentionally enabling the language (tests / future config).
+// or Register when intentionally enabling the language (tests / config languages).
 package python
 
 import (
@@ -23,7 +23,7 @@ type Plugin struct {
 	core.BasePlugin
 }
 
-// NewPlugin returns a LanguagePlugin for Python source files.
+// NewPlugin returns a LanguagePlugin for Python source files (.py).
 func NewPlugin() core.LanguagePlugin {
 	return &Plugin{}
 }
@@ -31,6 +31,7 @@ func NewPlugin() core.LanguagePlugin {
 // Register adds the Python plugin to an engine registry.
 // Accepts any value that implements RegisterPlugin(core.LanguagePlugin) with or
 // without an error return (same shape as golang.Register).
+// Prefer NewRegistry / NewRegistryWithLanguages so DefaultRegistry stays Go-only.
 func Register(reg any) {
 	if reg == nil {
 		return

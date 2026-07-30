@@ -8,7 +8,8 @@ import (
 	"github.com/chinmay-sawant/goslop/internal/lang/python"
 )
 
-func TestPythonPluginIDAndExtensions(t *testing.T) {
+func TestPythonPluginIdentityAndParse(t *testing.T) {
+	t.Parallel()
 	p := python.NewPlugin()
 	if p.ID() != core.LanguagePython {
 		t.Fatalf("ID() = %v, want LanguagePython", p.ID())
@@ -23,10 +24,7 @@ func TestPythonPluginIDAndExtensions(t *testing.T) {
 	if len(p.NewDetectors()) != 0 {
 		t.Fatalf("NewDetectors() = %d, want empty stub catalogue", len(p.NewDetectors()))
 	}
-}
 
-func TestPythonPluginParseSourceSetsLanguagePython(t *testing.T) {
-	p := python.NewPlugin()
 	const src = "def hello():\n    print('hi')\n"
 	result, err := p.ParseSource("sample.py", src)
 	if err != nil {
@@ -93,6 +91,32 @@ func TestRegisterHook(t *testing.T) {
 	}
 	if p := reg.PluginForPath("x.py"); p == nil || p.ID() != core.LanguagePython {
 		t.Fatal("Register: PluginForPath(.py) failed")
+	}
+}
+
+func TestPythonPluginRegisterInCustomRegistryOnly(t *testing.T) {
+	def := engine.DefaultRegistry()
+	if _, ok := def.Plugin(core.LanguagePython); ok {
+		t.Fatal("DefaultRegistry must not include Python plugin")
+	}
+	if _, ok := def.Plugin(core.LanguageGo); !ok {
+		t.Fatal("DefaultRegistry must include Go plugin")
+	}
+
+	reg, err := engine.NewRegistry([]core.LanguagePlugin{python.NewPlugin()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, ok := reg.Plugin(core.LanguagePython)
+	if !ok || p == nil {
+		t.Fatal("custom registry should register Python stub")
+	}
+	extMap := reg.ExtensionMap()
+	if lang, ok := extMap["py"]; !ok || lang != core.LanguagePython {
+		t.Fatalf("ExtensionMap py = (%v, %v), want python", lang, ok)
+	}
+	if n := len(reg.DetectorsForLanguage(core.LanguagePython)); n != 0 {
+		t.Fatalf("python detectors = %d, want 0", n)
 	}
 }
 

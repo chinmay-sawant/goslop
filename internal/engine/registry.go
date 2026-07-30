@@ -18,7 +18,15 @@ type RegistryError struct {
 
 func (e *RegistryError) Error() string { return e.Msg }
 
-// Registry holds language plugins and detectors indexed by language.
+// Registry holds language plugins and detectors indexed by LanguageID.
+//
+// Indexing:
+//   - byID / plugins: one LanguagePlugin per LanguageID
+//   - byExtension: file extension → plugin index (walk / collect files)
+//   - byLanguage: LanguageID → detector indices for that language's catalogue
+//
+// Detectors are never mixed across languages; AnalyzePaths selects detectors
+// via DetectorIndices(unit.Language) / scanSession.DetectorIndices.
 type Registry struct {
 	plugins     []core.LanguagePlugin
 	byExtension map[string]int
@@ -368,8 +376,9 @@ func SetDefaultRegistry(r *Registry) {
 }
 
 // DefaultRegistry returns the process-wide registry with the Go language plugin
-// and seed detectors registered. Python is intentionally not included; use
-// NewRegistryWithLanguages when opting into additional built-in languages.
+// and seed detectors registered. Production default is Go-only: LanguagePython
+// is not registered here (see core.DefaultEnabledLanguages). Opt into Python via
+// NewRegistryWithLanguages, RegistryForLanguages, or RegisterDefaultPlugin.
 // Language plugins must not import this package (avoids an import cycle); the
 // engine owns default composition.
 func DefaultRegistry() *Registry {
@@ -383,8 +392,7 @@ func DefaultRegistry() *Registry {
 	defer defaultRegMu.Unlock()
 	if defaultReg == nil {
 		// Go-only production default; keep construction explicit (not via
-		// NewRegistryWithLanguages) so sibling PRs that filter DefaultRegistry
-		// stay conflict-light.
+		// NewRegistryWithLanguages) so config filtering can wrap this registry.
 		reg, err := NewRegistry([]core.LanguagePlugin{golang.NewPlugin()})
 		if err != nil {
 			reg, _ = NewRegistry(nil)
