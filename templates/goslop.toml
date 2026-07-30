@@ -3,6 +3,12 @@
 # CLI default pack is --profile recommended (see documents/go-recommended-pack.md).
 # Profiles: recommended | perf | security | style | all
 
+# Enabled analysis languages. Default when unset: ["go"] (Go-only).
+# Unknown tokens and an explicit empty list are rejected at load time.
+# python is opt-in; only registered language plugins contribute to the scan.
+# languages = ["go"]
+# languages = ["go", "python"]
+
 # Only run the union of these rule IDs and any passed via --only.
 # only = ["CWE-22", "CWE-89"]
 

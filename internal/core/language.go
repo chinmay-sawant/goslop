@@ -53,3 +53,67 @@ func ParseLanguage(s string) (LanguageID, bool) {
 		return 0, false
 	}
 }
+
+// DefaultEnabledLanguages is the product default when languages is unset in config.
+// Production remains Go-only until additional plugins are registered and opted in.
+func DefaultEnabledLanguages() []LanguageID {
+	return []LanguageID{LanguageGo}
+}
+
+// ParseLanguages parses a list of language names into LanguageIDs.
+// Order is stable (first occurrence wins); duplicates are dropped.
+// Empty tokens are ignored. An empty or all-blank list returns an error —
+// callers that want the product default should use DefaultEnabledLanguages
+// when the config field is unset, not when it is explicitly empty.
+func ParseLanguages(names []string) ([]LanguageID, error) {
+	if len(names) == 0 {
+		return nil, &LanguageError{Msg: "languages list must not be empty"}
+	}
+	seen := make(map[LanguageID]struct{}, len(names))
+	out := make([]LanguageID, 0, len(names))
+	for _, raw := range names {
+		raw = strings.TrimSpace(raw)
+		if raw == "" {
+			continue
+		}
+		id, ok := ParseLanguage(raw)
+		if !ok {
+			return nil, &LanguageError{Msg: "unknown language " + quoteLang(raw)}
+		}
+		if _, dup := seen[id]; dup {
+			continue
+		}
+		seen[id] = struct{}{}
+		out = append(out, id)
+	}
+	if len(out) == 0 {
+		return nil, &LanguageError{Msg: "languages list must not be empty"}
+	}
+	return out, nil
+}
+
+// LanguageError is a configuration/parse error for language tokens.
+type LanguageError struct {
+	Msg string
+}
+
+func (e *LanguageError) Error() string {
+	if e == nil {
+		return "language error"
+	}
+	return e.Msg
+}
+
+func quoteLang(s string) string {
+	return `"` + s + `"`
+}
+
+// LanguageEnabled reports whether id is in the enabled set.
+func LanguageEnabled(enabled []LanguageID, id LanguageID) bool {
+	for _, e := range enabled {
+		if e == id {
+			return true
+		}
+	}
+	return false
+}

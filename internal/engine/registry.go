@@ -333,6 +333,37 @@ func SetDefaultRegistry(r *Registry) {
 	defaultReg = r
 }
 
+// RegistryForLanguages returns a new registry containing only plugins whose
+// language ID is in enabled. Languages that are enabled but have no registered
+// plugin are skipped (no error) so opting into python before a plugin exists
+// does not crash. When enabled is empty, the product default (Go) is used.
+//
+// The returned registry is independent of base: detectors are re-registered
+// from the filtered plugins. base itself is never mutated.
+func RegistryForLanguages(base *Registry, enabled []core.LanguageID) (*Registry, error) {
+	if base == nil {
+		return NewRegistry(nil)
+	}
+	if len(enabled) == 0 {
+		enabled = core.DefaultEnabledLanguages()
+	}
+	allow := make(map[core.LanguageID]struct{}, len(enabled))
+	for _, id := range enabled {
+		allow[id] = struct{}{}
+	}
+	// Preserve base plugin registration order among the filtered set.
+	var plugins []core.LanguagePlugin
+	for _, p := range base.Plugins() {
+		if p == nil {
+			continue
+		}
+		if _, ok := allow[p.ID()]; ok {
+			plugins = append(plugins, p)
+		}
+	}
+	return NewRegistry(plugins)
+}
+
 // DefaultRegistry returns the process-wide registry with the Go language plugin
 // and seed detectors registered. Language plugins must not import this package
 // (avoids an import cycle); the engine owns default composition.

@@ -93,20 +93,92 @@ not_a_real_field = true
 	}
 }
 
-func TestUnsupportedLanguageAndTypedConfigurationRejected(t *testing.T) {
-	for name, body := range map[string]string{
-		"languages": `[goslop]
-languages = ["go"]
-`,
-		"typed": `[goslop.typed]
+func TestTypedConfigurationStillRejected(t *testing.T) {
+	if _, err := config.Parse([]byte(`[goslop.typed]
 enabled = true
-`,
-	} {
-		t.Run(name, func(t *testing.T) {
-			if _, err := config.Parse([]byte(body)); err == nil {
-				t.Fatalf("expected unsupported %s configuration to be rejected", name)
-			}
-		})
+`)); err == nil {
+		t.Fatal("expected unsupported typed configuration to be rejected")
+	}
+}
+
+func TestValidLanguagesAccepted(t *testing.T) {
+	doc, err := config.Parse([]byte(`[goslop]
+languages = ["go"]
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(doc.Goslop.Languages) != 1 || doc.Goslop.Languages[0] != "go" {
+		t.Fatalf("languages=%v", doc.Goslop.Languages)
+	}
+
+	doc, err = config.Parse([]byte(`[goslop]
+languages = ["go", "python", "py"]
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(doc.Goslop.Languages) != 3 {
+		t.Fatalf("languages=%v", doc.Goslop.Languages)
+	}
+}
+
+func TestUnknownLanguageRejected(t *testing.T) {
+	if _, err := config.Parse([]byte(`[goslop]
+languages = ["ruby"]
+`)); err == nil {
+		t.Fatal("expected unknown language to be rejected")
+	}
+}
+
+func TestEmptyLanguagesRejected(t *testing.T) {
+	// Explicit empty list is rejected (not a silent no-op or empty scan).
+	// Unset languages falls back to Go-only at merge time.
+	if _, err := config.Parse([]byte(`[goslop]
+languages = []
+`)); err == nil {
+		t.Fatal("expected empty languages list to be rejected")
+	}
+}
+
+func TestLanguagesMergedDefaultAndExplicit(t *testing.T) {
+	// No config → default Go-only.
+	m, err := config.LoadAndMerge(config.MergeInput{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(m.Languages) != 1 || m.Languages[0] != core.LanguageGo {
+		t.Fatalf("default languages=%v", m.Languages)
+	}
+
+	dir := t.TempDir()
+	path := filepath.Join(dir, "goslop.toml")
+	if err := os.WriteFile(path, []byte(`[goslop]
+languages = ["python", "go"]
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	m, err = config.LoadAndMerge(config.MergeInput{ConfigPath: path})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(m.Languages) != 2 || m.Languages[0] != core.LanguagePython || m.Languages[1] != core.LanguageGo {
+		t.Fatalf("merged languages=%v", m.Languages)
+	}
+
+	// Config without languages key still defaults to Go.
+	path2 := filepath.Join(dir, "no-lang.toml")
+	if err := os.WriteFile(path2, []byte(`[goslop]
+fail_on = "none"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	m, err = config.LoadAndMerge(config.MergeInput{ConfigPath: path2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(m.Languages) != 1 || m.Languages[0] != core.LanguageGo {
+		t.Fatalf("unset languages=%v", m.Languages)
 	}
 }
 

@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/python-support.md`  
 > **Issue:** #42  
-> **Status:** not started  
+> **Status:** complete  
 > **Estimated effort:** medium–large  
 > **Branch:** `feat/config-languages`  
 > **Out of scope:** Full Python detectors; JSON catalogue content (Phase 4); docs-only product marketing (Phase 1)
@@ -36,41 +36,45 @@ Wire `languages` through schema → parse → merge → registry/scan so only en
 
 ## 3.1 Schema and templates
 
-- [ ] `goslop.schema.json` — add `languages` array of strings (enum or free string validated in Go)
-- [ ] `templates/goslop.toml` — commented example for `languages`
-- [ ] `internal/app/init_template.toml` — same if used by `goslop init`
+- [x] `goslop.schema.json` — add `languages` array of strings (enum or free string validated in Go)
+- [x] `templates/goslop.toml` — commented example for `languages`
+- [x] `internal/app/init_template.toml` — same if used by `goslop init`
 
 ## 3.2 Config model + validation
 
-- [ ] `internal/config.Section` — `Languages []string \`toml:"languages"\``
-- [ ] Validate each token via `core.ParseLanguage` (or Phase 2 helper); reject unknowns
-- [ ] Empty list: reject **or** treat as default Go — pick one, test it, document (recommend: empty rejected or falls back to default `["go"]` explicitly)
-- [ ] Rewrite `TestUnsupportedLanguageAndTypedConfigurationRejected`: **languages accepted when valid**; still reject `typed.enabled`
+- [x] `internal/config.Section` — `Languages []string \`toml:"languages"\``
+- [x] Validate each token via `core.ParseLanguage` (or Phase 2 helper); reject unknowns
+- [x] Empty list: reject **or** treat as default Go — pick one, test it, document (recommend: empty rejected or falls back to default `["go"]` explicitly)
+  - **Policy chosen:** explicit empty list rejected at parse; unset → merge default `[LanguageGo]`
+- [x] Rewrite `TestUnsupportedLanguageAndTypedConfigurationRejected`: **languages accepted when valid**; still reject `typed.enabled`
 
 ## 3.3 Merge
 
-- [ ] `Merged.Languages []core.LanguageID` (or string form with parse at use site)
-- [ ] Default when config missing / field unset: `[LanguageGo]`
-- [ ] Document CLI override policy if any
+- [x] `Merged.Languages []core.LanguageID` (or string form with parse at use site)
+- [x] Default when config missing / field unset: `[LanguageGo]`
+- [x] Document CLI override policy if any
+  - No CLI `--languages` in this phase; config-only. Documented in package comment + templates.
 
 ## 3.4 Engine / app application
 
-- [ ] Build registry from **enabled** plugins only (filter `DefaultRegistry` plugins or construct filtered registry)
-- [ ] Walk / collect files only for enabled extensions
-- [ ] `--list-rules` respects enabled languages when config present
-- [ ] Tests: with `languages = ["go"]` python files not scanned; with `["python"]` only (if stub plugin registered) go files skipped
+- [x] Build registry from **enabled** plugins only (filter `DefaultRegistry` plugins or construct filtered registry)
+- [x] Walk / collect files only for enabled extensions
+- [x] `--list-rules` respects enabled languages when config present
+- [x] Tests: with `languages = ["go"]` python files not scanned; with `["python"]` only (if stub plugin registered) go files skipped
+  - Production has no Python plugin: `languages=["python"]` → empty registry, 0 files, no crash; registry unit tests cover filter with stub plugin.
 
 ## 3.5 Python enable path (WIP)
 
-- [ ] When Python is enabled and a stub/plugin exists, `.py` files enter walk; zero findings OK
-- [ ] When Python disabled (default), `.py` files ignored even if present under scan root
+- [x] When Python is enabled and a stub/plugin exists, `.py` files enter walk; zero findings OK
+  - Covered by `TestRegistryForLanguagesFiltersPlugins` with stub Python plugin
+- [x] When Python disabled (default), `.py` files ignored even if present under scan root
 
 ## 3.6 Closure
 
-- [ ] `make lint` green — record  
-- [ ] `make test` green — record  
-- [ ] Filled PR body `plans/PR/v0.0.2/pr-phase-3-config.md`  
-- [ ] `Closes #42`, `Relates to #39`  
+- [x] `make lint` green — record  
+- [x] `make test` green — record  
+- [x] Filled PR body `plans/PR/v0.0.2/pr-phase-3-config.md`  
+- [x] `Closes #42`, `Relates to #39`  
 
 ---
 
