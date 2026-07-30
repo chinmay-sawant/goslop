@@ -10,7 +10,7 @@ This document is the **markdown run guide**: how to run goslop in the product st
 ## Quick start
 
 ```sh
-# From the goslop-go repo root
+# From the goslop repository root
 make build
 make run SCAN_PATH=/path/to/your/go/project
 ```
@@ -112,10 +112,11 @@ make run SCAN_PATH=./my-service RUN_ARGS="--export-context --export-chunks --chu
 
 ### Stderr - product summary (always)
 
-Example shape:
+Illustrative output shape (the file/line counts and wall time depend on the
+selected corpus and machine):
 
 ```text
-scanned 78 files (28120 lines) in 479.5ms
+scanned <files> files (<lines> lines) in <wall-time>
   cache: 0 hits, 78 misses (full re-analysis)
 915 findings
   severity: 10 high, 197 info, 312 low, 396 medium
@@ -171,13 +172,18 @@ make reference-metrics REFERENCE_PATH=./some/project REFERENCE_PROFILE=all
 | Severity | **10** high / **197** info / **312** low / **396** medium |
 | Top rules | BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44 |
 | Exports | **915** context + **37** chunks |
-| Wall (pure Go) | **&lt;400ms** hard gate; typical scan **~100–120 ms** after P0–P3 opts (see below) |
 
 The leading `-` on the scan command allows non-zero exit under fail policy so the summary still runs. Ledger: [`plans/port-phasewise-checklist.md`](../plans/port-phasewise-checklist.md) §12.4.
 
-### Performance (gopdfsuit, post P0–P3)
+The target verifies output parity, not wall-clock performance. Record timing only
+with the exact corpus, cache mode, Go version, and command used; compare runs
+on the same machine.
 
-Measured on pure-Go builds (`CGO_ENABLED=0`), full catalogue + export context/chunks, no cache.
+### Historical performance snapshot (gopdfsuit, post P0–P3)
+
+These are historical pure-Go measurements, not a current performance gate or a
+cross-machine promise. Re-run `make bench` or the exact `make run` command to
+produce current evidence.
 
 | Signal | Before opts | After opts |
 |--------|-------------|------------|

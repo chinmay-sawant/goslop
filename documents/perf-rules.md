@@ -5,10 +5,10 @@ detectors - not a complete listing of all **239** shipped rules.
 
 | Truth source | How to use |
 |--------------|------------|
-| Live inventory | `goslop --list-rules --rule-category performance` |
+| Live inventory | `goslop --list-rules | rg 'PERF-'` |
 | Titles / detection notes | `ruleset/golang/chunks/perf-*.json` + `goslop --explain PERF-N` |
-| Pack / tier policy | [perf-tiers.md](./perf-tiers.md), [go-recommended-pack.md](./go-recommended-pack.md) |
-| Catalog hub | [rule-catalog.md](./rule-catalog.md) |
+| Pack / tier policy | [go-recommended-pack.md](./go-recommended-pack.md) |
+| Catalog hub | [rule-catalog-and-maturity.md](./rule-catalog-and-maturity.md) |
 
 Canonical CLI IDs are unpadded (`PERF-1`, not `PERF-001`). Prefer the CLI and
 ruleset JSON when prose here conflicts.
@@ -99,6 +99,10 @@ ruleset JSON when prose here conflicts.
 
 - PERF-131, PERF-158, PERF-170, PERF-181, PERF-182, PERF-195, PERF-198 above also cover concurrency patterns.
 
-## Per-Detector Development
+## Detector development
 
-See [`documents/perf-detector-development.md`](./perf-detector-development.md) for the step-by-step guide to adding a new PERF detector.
+Use `--explain PERF-N` to inspect the live metadata before changing a rule.
+PERF detector code and its tests live in
+`internal/lang/go/detectors/perf/`; follow the existing metadata, registry, and
+fixture conventions. The repository workflow is documented in
+[development.md](./development.md) and [`CONTRIBUTING.md`](../CONTRIBUTING.md).

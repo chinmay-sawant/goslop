@@ -1,163 +1,101 @@
-# Recommended pack
+# Profiles and recommended pack
 
-Default CLI profile: `--profile recommended` (also `GOSLOP_PROFILE=recommended`).
+The default scan uses `--profile recommended`. Profiles select a useful rule
+set and its default failure policy; they do not change the supported command
+syntax. Select a profile with the CLI flag or use `goslop.toml` for the other
+scan settings.
 
-Aliases: `ci`, `default` → `recommended`.
+```sh
+./bin/goslop .
+./bin/goslop --profile perf .
+./bin/goslop --profile security .
+./bin/goslop --profile style .
+./bin/goslop --profile all .
+```
 
-## Goal
+There is no `GOSLOP_PROFILE` environment variable and no `goslop rules`
+subcommand. Use `--list-rules` and `--explain RULE_ID` for catalog discovery.
 
-A small, high-signal CI gate: **PERF footguns** teams actually fix, plus
-**taint-core CWE IDs** on the allow-list (taint engine off until you enable it).
+## Profile behavior
 
-Bad practices (`BP-*`) are **off**. Fail policy defaults to **strict**
-(high / critical only). Use `fail_on = "medium"` in `goslop.toml` to fail
-on medium findings too, or `--no-fail` for advisory scans.
+| Profile | Aliases | Rule selection | Taint | Bad practices | Default failure policy |
+|---|---|---|---|---|---|
+| `recommended` | `ci`, `default` | S-tier PERF plus taint-core CWE IDs | off | off | high / critical |
+| `perf` | `performance` | S-tier and A-tier PERF | off | off | high / critical |
+| `security` | `sec` | Security CWE pack | on | off | high / critical |
+| `style` | `bp`, `bad-practices`, `bad_practices` | `BP-*` except default skips | off | on | none (advisory) |
+| `all` | `full` | Full runtime catalog | off | on | medium and above |
 
-Full CLI: [cli-reference.md](./cli-reference.md). Product overview: [overview.md](./overview.md).
+`recommended`, `perf`, and `security` fail only on high and critical findings.
+Use `fail_on = "medium"` in `goslop.toml` to make medium findings fail too, or
+use `--no-fail` for an advisory scan.
 
----
+## Recommended rule selection
 
-## What actually fails under recommended
+The recommended pack includes these S-tier performance rules:
 
-| Finding class | Typical severity | Fails recommended default? |
-|---------------|------------------|----------------------------|
-| S-tier PERF | **medium** | **No** - visible only |
-| Taint-core CWE (when fired) | **high** | **Yes** |
-| BP | n/a (off) | - |
+| Rule | Purpose |
+|---|---|
+| `PERF-1` | Regex compilation in a loop |
+| `PERF-7` | `defer` in a loop |
+| `PERF-50` | `regexp.MatchString` in a loop |
+| `PERF-58` | Gin request body not closed |
+| `PERF-71` | GORM N+1 query pattern |
+| `PERF-101` | `http.Server` missing timeouts |
+| `PERF-103` | HTTP response body not closed |
+| `PERF-116` | Seeded hot-path performance detector |
+| `PERF-189` | HTTP response body not drained before close |
+| `PERF-190` | HTTP client missing a timeout |
 
-To fail CI on medium PERF (timeouts, body close, …), add this to
-`goslop.toml`:
+It also allow-lists `CWE-22`, `CWE-78`, `CWE-79`, `CWE-89`, `CWE-90`, and
+`CWE-91`. The experimental taint detector currently emits flows for the first
+four IDs only; the other security rules remain structural catalog entries. See
+[taint.md](./taint.md) for the precise taint scope.
+
+## Security and style details
+
+The security pack uses this exact allow-list:
+
+```text
+CWE-22, CWE-41, CWE-59, CWE-78, CWE-79, CWE-89, CWE-90, CWE-91, CWE-93
+```
+
+The `style` profile allows all `BP-*` rules but skips `BP-21`, `BP-28`, and
+`BP-30` by default because they are intentionally opinionated. Add an explicit
+`--only BP-28` (or configure `only`) when a skipped rule is wanted for a scan.
+
+## CI examples
+
+```sh
+# Default high-signal gate.
+./bin/goslop --profile recommended .
+
+# Security triage with machine-readable results without blocking the job.
+./bin/goslop --profile security --no-fail --format sarif . > goslop.sarif
+
+# Fail a recommended scan on medium and higher findings.
+./bin/goslop --profile recommended --format sarif . > goslop.sarif
+```
+
+For the final command, configure the threshold:
 
 ```toml
 [goslop]
 fail_on = "medium"
 ```
 
-Taint is **off** under recommended. The CWE IDs stay allow-listed so
-`goslop --taint --profile recommended .` works without switching packs.
-Use `--profile security` to turn taint on by default.
+Use [reporting-formats.md](./reporting-formats.md) for SARIF upload details and
+[suppressions-and-baselines.md](./suppressions-and-baselines.md) when adopting
+the tool in an existing repository.
 
----
+## Discovering the live catalog
 
-## Rules (exact list)
-
-### PERF (S-tier)
-
-| Rule | Why |
-|------|-----|
-| `PERF-1` | Regex compilation inside a loop |
-| `PERF-7` | `defer` inside a loop (same function scope) |
-| `PERF-50` | `regexp.MatchString` inside a loop |
-| `PERF-58` | Gin `c.Request.Body` not closed |
-| `PERF-71` | GORM N+1 query pattern |
-| `PERF-101` | `http.Server` missing timeouts |
-| `PERF-103` | HTTP response body not closed |
-| `PERF-189` | HTTP response body not drained before close |
-| `PERF-190` | HTTP client missing timeout |
-
-See [perf-tiers.md](./perf-tiers.md) for S/A/B/C policy.
-
-### CWE (taint-core allow-list)
-
-| Rule | Why |
-|------|-----|
-| `CWE-22` | Path traversal (taint) |
-| `CWE-78` | OS command injection (taint) |
-| `CWE-79` | XSS / template+HTTP write (taint) |
-| `CWE-89` | SQL injection heuristic (taint) |
-| `CWE-90` | LDAP injection (taint) |
-| `CWE-91` | XML injection (taint) |
-
----
-
-## Other profiles
-
-| Profile | Aliases | Contents | Taint | BP | Default fail |
-|---------|---------|----------|-------|----|--------------|
-| `recommended` | `ci`, `default` | S PERF + taint-core CWE | off | off | strict |
-| `perf` | - | S+A PERF (`PERF_TIER_S` + `PERF_TIER_A`) | off | off | strict |
-| `security` | `sec` | Security pack CWEs (below) | **on** | off | strict |
-| `style` | `bp`, `bad-practices` | `BP-*` | off | on | no-fail |
-| `all` | `full` | Full catalog | off | on | medium-as-errors |
-
-### Security pack rule IDs
-
-Exact allow-list (`SECURITY_PACK_RULES` in `src/rules/pack.rs`):
-
-`CWE-22`, `CWE-41`, `CWE-59`, `CWE-78`, `CWE-79`, `CWE-89`, `CWE-90`, `CWE-91`, `CWE-93`
-
-Taint auto-enables under `--profile security`.
-
-### Style pack defaults
-
-- Allow pattern: all `BP-*`
-- Default skip (opinionated / noisy): **`BP-21`**, **`BP-28`**, **`BP-30`**
- - BP-21: missing `t.Parallel` (policy)
- - BP-28: single-method interfaces (API style)
- - BP-30: external / capability interfaces
-- Opt back in with `--only BP-28` (etc.) under `--profile style`.
-
-### Perf profile
-
-S-tier + A-tier numeric lists: [perf-tiers.md](./perf-tiers.md).
-
----
-
-## Fixture-only quarantine
-
-Rules tagged `fixture-only` are **never** in recommended/security/perf default
-packs. They are available under `--profile all` (or explicit `--only <id>`), but
-that does **not** mean they are production-certified for CI hard-fail gates.
-
-Examples include long-tail CWE PRNG corpus patterns and other museum entries
-audited in
-[`plans/v0.0.5/cwe-catalog-trust-audit.md`](../plans/v0.0.5/cwe-catalog-trust-audit.md)
-(archive note - historical audit).
-
-Reserved rules (today: `BP-63`) follow the same quarantine: available under
-`--profile all`, not for production CI packs until completed.
-
-See `src/rules/maturity.rs` and `src/core/profile.rs`.
-
----
-
-## Rule explainability
-
-```bash
-goslop rules --explain CWE-334
-goslop --explain CWE-89
-goslop rules --category security
-goslop --list-rules --rule-category performance
+```sh
+./bin/goslop --list-rules
+./bin/goslop --explain PERF-101
+./bin/goslop --explain CWE-89
 ```
 
-The explain surface reuses the single maturity registry (`RuleMaturity` /
-`maturity_for`); it does not invent a second rule-status model.
-
----
-
-## CI one-liner
-
-```bash
-goslop --profile recommended --format sarif . > goslop.sarif
-```
-
-Fail on medium PERF too by setting `fail_on = "medium"` in `goslop.toml`:
-
-```bash
-goslop --profile recommended --format sarif . > goslop.sarif
-```
-
-Sample workflow: [ci-integration.md](./ci-integration.md),
-[`.github/workflows/goslop.yml`](../.github/workflows/goslop.yml).
-
----
-
-## Brownfield
-
-1. Start advisory: `--no-fail` or upload SARIF without blocking merge.
-2. Save a baseline: `goslop --profile recommended --baseline .`
-3. Suppress known local noise: `// goslop-ignore: PERF-101` (or file-level).
-4. Gate on new fingerprints; periodically `baseline diff|prune|update`.
-
-Full guide: [finding-identity.md](./finding-identity.md),
-[ci-integration.md](./ci-integration.md).
+The list labels rules as `production`, `experimental`, `fixture-only`, or
+`quarantined`. The labels help with rollout decisions; they do not add extra
+CLI modes. See [rule-catalog-and-maturity.md](./rule-catalog-and-maturity.md).
