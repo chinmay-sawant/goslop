@@ -19,6 +19,14 @@ var bpNeedles = []string{
 	"password", "secret", "api_key", "token", "private_key", "SECRET_KEY",
 	"debug=True", "DEBUG", "app.run", "secret_key",
 	"app.config",
+	// Batch 01-02: core extra, http, flask remainder
+	"raise", "Exception", "BaseException",
+	"import *",
+	"requests.", "session.", "sess.", "timeout",
+	"AsyncClient", "aclose",
+	"request.form", "request.get_json", "request.json", "request.files",
+	".route(", "errorhandler", "register_error_handler", "traceback",
+	"send_file", "send_from_directory", "safe_join",
 }
 
 // bpFacts is a light fact bag for Python source-pattern BP detectors.
