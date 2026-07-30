@@ -1,10 +1,12 @@
 # v0.0.2 / #53 — Python BP-PY bad-practice heuristics
 
-> **Parent:** `plans/v0.0.2/python-heuristics.md` — epic #51 rollup (BP stream)  
+> **Parent:** `plans/v0.0.2/heuristics/python-heuristics.md` — epic #51 rollup (BP stream)  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) — `python(bp): implement BP-PY bad-practice heuristics from catalogue`  
-> **Status:** Phase 1–3 + Batch C high-signal shipped on `feat/python-bp-heuristics` (A+B+C subset); Batch D/E deferred  
-> **Estimated effort:** multi-PR (priority subset first; remaining 50 as batches)  
-> **Ledger rule:** this file is the **canonical execution ledger** for #53. Mark `[x]` only with evidence; leave `make lint` / `make test` unchecked until both pass on the implement branch.
+> **Status:** priority subset **shipped** (14 rules via PR #58); remaining **36** planned as batchwise PRs under `bp-plans/`  
+> **Estimated effort:** multi-PR batches 01–08  
+> **Expansion ledgers:** [`bp-plans/README.md`](./bp-plans/README.md) (all remaining IDs; **no catalogue gap**)  
+> **Ledger rule:** Mark `[x]` only with evidence; for code batches run `make lint` + `make test`.  
+> **File size:** prefer ≤**1500** lines per Go file; **hard max 2000** — split domain `rules_*.go` files instead of growing past the cap.
 
 ---
 
@@ -13,15 +15,13 @@
 | Item | Current evidence |
 |------|------------------|
 | Catalogue | `ruleset/python/bad-practices.json` — **50** map keys `BP-PY-1` … `BP-PY-50` |
-| Catalogue README | `ruleset/python/README.md` — metadata only; **no** detectors claimed |
-| Python plugin | `internal/lang/python/plugin.go` — `Detectors()` / `NewDetectors()` return **nil** |
-| Plugin tests | `internal/lang/python/plugin_test.go` — asserts empty detector catalogue |
-| Parse quality | source-only (`ParseQualitySourceOnly`); no Python AST tree |
-| Go reference | `internal/lang/go/detectors/bad_practices/` — unified scan, `RegisterRule`, facts bag, fixture tests |
-| Pack routing | `internal/rules/pack.go` — `HasPrefix("BP-")` already classifies **`BP-PY-*`** as `PackBadPractice` |
-| Style profile | `StylePackPatterns` / `BP-*` globs cover `BP-PY-*` (prefix match) |
-| Fixtures today | `tests/fixtures/python/{sample,safe}.txt` only; no `BP-PY-*` hit/miss fixtures |
-| Issue body | `plans/PR/v0.0.2/issue-python-bp-heuristics-body.md` |
+| Implemented (`RegisterRule`) | **14:** 1,2,4,6,7,8–13,16,17,21 — see `bp-plans/batch-00-shipped.md` |
+| Missing (planned) | **36:** 3,5,14,15,18–20,22–50 — see `bp-plans/batch-01` … `batch-08` |
+| Package | `internal/lang/python/detectors/bad_practices/` — scan + rules_core/security/framework |
+| Parse quality | source-only (`ParseQualitySourceOnly`); pure-Go source patterns |
+| File size policy | ≤1500 preferred / **2000 hard max** per Go file (split domain files) |
+| Inventory | `bp-plans/_inventory.json` |
+| Batch index | [`bp-plans/README.md`](./bp-plans/README.md) |
 | Parent epic | #51 |
 
 **ID policy:** keep catalogue IDs as **`BP-PY-*`**. Do **not** emit Go `BP-*` for Python. Do **not** point Go `metadata_gen.go` at `ruleset/python/`.
