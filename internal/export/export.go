@@ -431,6 +431,18 @@ func functionWindow(f rules.Finding, content string, astCache map[string]*parsed
 	if f.Line < 1 {
 		return nil
 	}
+	// P2.3: skip expensive parse when whole-function span is impossible.
+	if !strings.HasSuffix(f.File, ".go") && !strings.HasSuffix(f.File, ".go.txt") {
+		// Display paths are almost always .go; non-Go sources use line window.
+		return nil
+	}
+	if content == "" || (!strings.Contains(content, "func ") && !strings.Contains(content, "func(")) {
+		return nil
+	}
+	// Package-level / go.mod-style findings: no enclosing function to expand.
+	if isPackageLevelExport(f) {
+		return nil
+	}
 	p := getParsed(f.File, content, astCache)
 	if p == nil || p.failed || p.file == nil {
 		return nil
@@ -440,6 +452,18 @@ func functionWindow(f rules.Finding, content string, astCache map[string]*parsed
 		return nil
 	}
 	return numberedLinesCached(content, p.lineStarts, startLine, endLine, f.Line)
+}
+
+// isPackageLevelExport reports findings that never sit inside a function body
+// (module/package hygiene and similar). Avoids parse for whole-function Context.
+func isPackageLevelExport(f rules.Finding) bool {
+	switch f.RuleID {
+	case "BP-41", // missing package doc
+		"BP-57", "BP-58", "BP-59", "BP-60", "BP-61", "BP-62", "BP-63", "BP-64", "BP-65":
+		return true
+	default:
+		return false
+	}
 }
 
 // enclosingFromSpans picks outermost FuncDecl containing hitLine, else outermost FuncLit.

@@ -1,13 +1,13 @@
 # v0.0.1 — Performance optimization checklist (from pprof)
 
-> **Status:** in progress — **P0 + P1 implemented**; measurement gates pending  
+> **Status:** in progress — **P0 + P1 + P2 code done**; P3 + re-profile gates open  
 > **Branch:** `perf/p0-p1-snapshot-export`  
 > **Evidence:** `/tmp/goslop-pprof/*` (pre-change) + unit/integration tests  
 > **Benches (pre-change median, gopdfsuit):**  
 > - `BenchmarkScanProfileAll` ~**164 ms**/op · 199 MB · 1.19M allocs  
 > - `BenchmarkScanAndExport` ~**367 ms**/op · 345 MB · 2.64M allocs  
 > - `BenchmarkExportOnly` ~**201 ms**/op · 149 MB · 1.47M allocs  
-> - Product **`make run` wall**: pre ~**190 ms** → post ~**122 ms** scan (915 findings, 915+37 exports unchanged; 2026-07-30)  
+> - Product **`make run` wall**: pre ~**190 ms** → post ~**122 ms** scan after P0/P1 (915 findings, 915+37 exports; 2026-07-30)  
 > **Corpus:** gopdfsuit · `internal/bench`
 
 Legend: `[ ]` not started · `[~]` partial · `[x]` done with evidence
@@ -90,24 +90,24 @@ Package: `internal/export`
 
 Package: `internal/lang/go/detectors/bad_practices` (`buildProjectSnapshot`)
 
-- [x] Skip `vendor/`, `.git/`, `node_modules/`, and other non-source dirs in snapshot walk (already in `skipProjectDirs`)
-- [ ] Prefer path heuristics before full-file `ReadFile` + `Contains`
-- [ ] Only open likely anchors (`go.mod`, `*.go`, known entrypoints) when possible
+- [x] Skip `vendor/`, `.git/`, `node_modules/`, and other non-source dirs in snapshot walk (`skipProjectDirs` + all dot-dirs + bin/dist/scripts/…)
+- [x] Prefer path heuristics before full-file `ReadFile` + `Contains` (skip `_test.go` / examples; stop content scan when flags complete)
+- [x] Root `go.mod`/`go.sum` only; non-test `.go` names for anchor; content uses preallocated `bytes.Contains` needles
 
 ### P2.2 Reduce `goparse.(*Tree).Slice` copies (~5% allocs)
 
 Package: `internal/lang/go/goparse` + PERF hot paths
 
-- [ ] Audit hot callers of `Tree.Slice` (`recordCallAST`, assign paths, etc.)
-- [ ] Prefer shared source + offset range over new string when safe
+- [x] Audit hot callers of `Tree.Slice` / `NodeText` (facts, taint, BP)
+- [x] Zero-copy `Slice` via `unsafe.String` over immutable `Tree.Source`
 - [ ] Re-profile: `Tree.Slice` alloc_space flat % drops
 
 ### P2.3 Package-level / non-function export early-out
 
 Package: `internal/export`
 
-- [ ] Skip whole-function parse for package-level / non-Go findings when span lookup is impossible
-- [ ] Keep `<context unavailable>` / line-window fallbacks
+- [x] Skip whole-function parse for package-level BP rules (BP-41, BP-57–65) and files without `func`
+- [x] Keep `<context unavailable>` / line-window fallbacks
 
 ---
 
@@ -157,8 +157,8 @@ go tool pprof -top -cum /tmp/goslop-pprof/scan-cpu.prof
 
 | PR | Checklist items | Theme | Status |
 |----|-----------------|--------|--------|
-| 1 | P0.1 + P0.2 + P1.1 + P1.2 + P1.3 | Snapshot Once + export span/format + codeLines | **code done** |
-| 2 | P2.* | Walk filters + Slice + early-out | open |
+| 1 | P0.1 + P0.2 + P1.1 + P1.2 + P1.3 | Snapshot Once + export span/format + codeLines | **committed** (`9105596`, ~122ms scan) |
+| 2 | P2.* | Walk filters + Slice + early-out | **code done** (this commit) |
 | 3 | P3.* | Rule scheduling / residual GC | open |
 
 ---
