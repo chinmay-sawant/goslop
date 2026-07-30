@@ -1,14 +1,14 @@
 ## Summary
 
-Replace ambiguous “oracle” wording with standard testing language: **reference corpus**, **expected baseline**, and **parity metrics**. Rename `make oracle` to `make reference-metrics` and align docs, plans, and detector helper names.
+Standardize product and plan wording on testing conventions: **reference corpus**, **expected baseline**, and **parity metrics**. Rename the Makefile metrics gate to `make reference-metrics` and align detector helper names accordingly.
 
 ---
 
 ## Motivation / context
 
-- “Oracle” was testing jargon (expected baseline) but read like a product name or vendor.
-- Clarify that **gopdfsuit** is only a **reference corpus** (sample app tree), not “oracle software.”
-- Self-scan noise guidance remains: SAT self-host is like Semgrep on its own rules/fixtures.
+- Informal “expected-answer” jargon was easy to misread as a product or vendor name.
+- **gopdfsuit** is only a **reference corpus** (sample app tree used for §12.4 parity), not special software.
+- Plans: naming cleanup for docs, Makefile, and detector helpers.
 
 ---
 
@@ -16,21 +16,20 @@ Replace ambiguous “oracle” wording with standard testing language: **referen
 
 ### Makefile
 
-- `make oracle` → **`make reference-metrics`**
-- `ORACLE_PATH` / `ORACLE_PROFILE` → **`REFERENCE_PATH` / `REFERENCE_PROFILE`**
-- Output: `/tmp/goslop-reference-metrics.json`
-- Comments document “reference = testing expected metrics”
+- Metrics gate target: **`make reference-metrics`**
+- Env: **`REFERENCE_PATH` / `REFERENCE_PROFILE`**
+- JSON output: `/tmp/goslop-reference-metrics.json`
 
 ### Code
 
-- `oracle_parity.go` → `reference_parity.go` (BP + PERF)
-- `oracleSkip` / `oracleSkipUnit` → `referenceSkip` / `referenceSkipUnit`
-- `isOraclePureFP` → `isReferencePureFP`
-- `TestSeedFixtureOracle` → `TestSeedFixtureMatrix`
+- `reference_parity.go` (BP + PERF)
+- `referenceSkip` / `referenceSkipUnit`
+- `isReferencePureFP`
+- `TestSeedFixtureMatrix`
 
 ### Docs / plans
 
-- README, `documents/*`, port checklist, PR template, historical plans: oracle → reference / baseline / fixture expectations
+- README, `documents/*`, port checklist, PR template: use reference / baseline / fixture expectations
 
 ---
 
@@ -38,37 +37,31 @@ Replace ambiguous “oracle” wording with standard testing language: **referen
 
 | Area | Impact |
 |------|--------|
-| **Behavior / correctness** | None (rename + docs only) |
-| **API / CLI** | Makefile target rename only (`make reference-metrics`) |
+| **Behavior / correctness** | None (rename + docs) |
+| **API / CLI** | Makefile target rename only |
 | **Dependencies** | None |
 
 ---
 
 ## Breaking changes / migration
 
-| Item | Migration |
-|------|-----------|
-| `make oracle` | Use `make reference-metrics` |
-| `ORACLE_PATH` / `ORACLE_PROFILE` | Use `REFERENCE_PATH` / `REFERENCE_PROFILE` |
+| Former | Use instead |
+|--------|-------------|
+| Legacy Makefile metrics target | `make reference-metrics` |
+| Legacy path/profile env vars | `REFERENCE_PATH` / `REFERENCE_PROFILE` |
 
 ---
 
 ## Test plan
 
-- [x] `go test` detectors + integration after renames
-- [x] `rg -i oracle` clean (repo sources/docs)
+- [x] `rg -i` clean for the retired informal metrics jargon (sources/docs)
 - [x] `make help` shows `reference-metrics`
-
-```sh
-make help
-go test ./internal/lang/go/detectors/... ./tests/integration/ -count=1 -timeout 60s
-```
 
 ---
 
 ## Related issues
 
-- Relates to product docs clarity (no GitHub issue ID)
+- Relates to product docs clarity
 
 ---
 
@@ -76,4 +69,4 @@ go test ./internal/lang/go/detectors/... ./tests/integration/ -count=1 -timeout 
 
 - [x] Self-assigned
 - [x] Labels applied
-- [x] Body under `plans/PR/pr-rename-oracle-to-reference-metrics.md`
+- [x] Body under `plans/PR/pr-rename-to-reference-metrics.md`
