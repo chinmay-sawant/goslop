@@ -237,12 +237,12 @@ Priority IDs from issue body. Implement + fixture per rule.
 ### 4.2 Django (`BP-PY-21`, `22`, `24`, `25`, `26`)
 
 - [x] `BP-PY-21` — `DEBUG = True` in `settings.py` / settings modules (skip tests / `local_settings` patterns if documented)
-- [~] `BP-PY-22` — `SECRET_KEY = '...'` literals in Django settings — deferred
-- [~] `BP-PY-24` — deferred
-- [~] `BP-PY-25` — deferred
-- [~] `BP-PY-26` — deferred
-- [ ] Register each + hit/miss fixtures
-- [ ] `[~]` `BP-PY-23`, `27`, `28` — ALLOWED_HOSTS / mass assignment / N+1; defer (noise or multi-line)
+- [x] `BP-PY-22` — `SECRET_KEY = '...'` literals in Django settings (`rules_django.go`)
+- [x] `BP-PY-24` — `objects.raw` / `cursor.execute` with f-string / `.format` / `%` (`rules_django.go`)
+- [x] `BP-PY-25` — `mark_safe` / `SafeString` on non-literal args (`rules_django.go`)
+- [x] `BP-PY-26` — `@csrf_exempt` on views (`rules_django.go`)
+- [x] Register each + hit/miss fixtures (`rules_django_test.go`)
+- [x] `BP-PY-23`, `27`, `28` — ALLOWED_HOSTS / mass assignment / N+1 (`rules_django.go`; N+1 is review-only heuristic)
 
 ### 4.3 FastAPI / Starlette (`BP-PY-30`, `32`)
 
@@ -394,10 +394,10 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-17 | Flask SECRET_KEY Hardcoded | high | Flask | [x] |
 | BP-PY-20 | Flask send_file User Path | high | Flask | [~] deferred |
 | BP-PY-21 | Django DEBUG True In Settings | high | Django | [x] |
-| BP-PY-22 | Django SECRET_KEY Hardcoded | high | Django | [~] deferred |
-| BP-PY-24 | Django raw SQL With Format | high | Django | [~] deferred |
-| BP-PY-25 | Django mark_safe On Dynamic Data | high | Django | [~] deferred |
-| BP-PY-26 | Django csrf_exempt On State-Changing View | high | Django | [~] deferred |
+| BP-PY-22 | Django SECRET_KEY Hardcoded | high | Django | [x] |
+| BP-PY-24 | Django raw SQL With Format | high | Django | [x] |
+| BP-PY-25 | Django mark_safe On Dynamic Data | high | Django | [x] |
+| BP-PY-26 | Django csrf_exempt On State-Changing View | high | Django | [x] |
 | BP-PY-30 | FastAPI Blocking I/O In Async Route | high | FastAPI | [~] deferred |
 | BP-PY-32 | Starlette FileResponse User Path | high | FastAPI | [~] deferred |
 
@@ -416,9 +416,9 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-15 | httpx Async Client Not Closed | medium | Resource Management | [~] deferred |
 | BP-PY-18 | Flask Route Missing Methods Restriction | low | Flask | [~] deferred |
 | BP-PY-19 | Flask jsonify Error Leaks Exception | medium | Flask | [~] deferred |
-| BP-PY-23 | Django ALLOWED_HOSTS Empty Or Star | medium | Django | [~] deferred |
-| BP-PY-27 | Django Mass Assignment From request.POST | medium | Django | [~] deferred |
-| BP-PY-28 | Django N+1 Query In Loop | medium | Django | [~] deferred |
+| BP-PY-23 | Django ALLOWED_HOSTS Empty Or Star | medium | Django | [x] |
+| BP-PY-27 | Django Mass Assignment From request.POST | medium | Django | [x] |
+| BP-PY-28 | Django N+1 Query In Loop | medium | Django | [x] heuristic/review-only |
 | BP-PY-29 | FastAPI Depends On Mutable Global | medium | FastAPI | [~] deferred |
 | BP-PY-31 | FastAPI response_model Disabled Unsafely | medium | FastAPI | [~] deferred |
 | BP-PY-34 | Jinja2 Markup Or safe Filter On Variables | high | Templates | [~] deferred |
