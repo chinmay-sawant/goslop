@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Instrument Serif', ui-serif, Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-danger: var(--danger);
+  --color-surface: var(--surface);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-xs: 0 1px 2px rgba(17, 17, 17, 0.04);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Light: warm bone canvas (product editorial) */
+:root {
+  --radius: 0.625rem;
+  --background: #f7f6f3;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #fafaf8;
+  --secondary: #efeee9;
+  --secondary-foreground: #111111;
+  --muted: #efeee9;
+  --muted-foreground: #6b6a66;
+  --accent: #efeee9;
+  --accent-foreground: #111111;
+  --destructive: #b42318;
+  --border: #e8e6e1;
+  --input: #e8e6e1;
+  --ring: #111111;
+  --success: #346538;
+  --warning: #956400;
+  --info: #1f6c9f;
+  --danger: #9f2f2d;
+  --surface: #ffffff;
+}
+
+/* Dark: same warm monochrome family, inverted */
+.dark {
+  --background: #121211;
+  --foreground: #f0efe9;
+  --card: #1a1a18;
+  --card-foreground: #f0efe9;
+  --popover: #1a1a18;
+  --popover-foreground: #f0efe9;
+  --primary: #f0efe9;
+  --primary-foreground: #121211;
+  --secondary: #242422;
+  --secondary-foreground: #f0efe9;
+  --muted: #242422;
+  --muted-foreground: #a09e96;
+  --accent: #2a2a27;
+  --accent-foreground: #f0efe9;
+  --destructive: #e06b63;
+  --border: #2e2e2a;
+  --input: #2e2e2a;
+  --ring: #c8c6bc;
+  --success: #7cb87f;
+  --warning: #d4a84b;
+  --info: #6ba8d4;
+  --danger: #d47270;
+  --surface: #1a1a18;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    line-height: 1.6;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--info) 22%, transparent);
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-up {
+    animation: var(--animate-fade-up);
+  }
+
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+}
