@@ -93,6 +93,38 @@ not_a_real_field = true
 	}
 }
 
+func TestExportWholeFunctionConfig(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "goslop.toml")
+	if err := os.WriteFile(path, []byte(`[goslop.export]
+whole_function = false
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	m, err := config.LoadAndMerge(config.MergeInput{ConfigPath: path})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.ExportWholeFunction == nil || *m.ExportWholeFunction {
+		t.Fatalf("expected whole_function=false, got %v", m.ExportWholeFunction)
+	}
+
+	// Unset → nil (export package defaults to true).
+	path2 := filepath.Join(dir, "empty.toml")
+	if err := os.WriteFile(path2, []byte(`[goslop]
+fail_on = "none"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	m2, err := config.LoadAndMerge(config.MergeInput{ConfigPath: path2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m2.ExportWholeFunction != nil {
+		t.Fatalf("expected nil ExportWholeFunction when unset, got %v", *m2.ExportWholeFunction)
+	}
+}
+
 func TestDiscover(t *testing.T) {
 	root := t.TempDir()
 	sub := filepath.Join(root, "a", "b")

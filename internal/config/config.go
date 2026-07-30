@@ -1,7 +1,7 @@
 // Package config loads and merges goslop.toml with CLI options.
 //
 // Schema mirrors the Rust product subset used by goslop: only/skip, fail_on,
-// include/exclude, exclude_tests, baseline, cache, taint, bad_practices.
+// include/exclude, exclude_tests, baseline, cache, taint, bad_practices, export.
 package config
 
 import (
@@ -37,6 +37,7 @@ type Section struct {
 	Taint        TaintConfig        `toml:"taint"`
 	Typed        TypedConfig        `toml:"typed"`
 	BadPractices BadPracticesConfig `toml:"bad_practices"`
+	Export       ExportConfig       `toml:"export"`
 }
 
 // BaselineConfig is [goslop.baseline].
@@ -70,6 +71,14 @@ type BadPracticesConfig struct {
 	Enabled           *bool             `toml:"enabled"`
 	Severity          *string           `toml:"severity"`
 	SeverityOverrides map[string]string `toml:"severity_overrides"`
+}
+
+// ExportConfig is [goslop.export] — on-disk context/chunk export options.
+type ExportConfig struct {
+	// WholeFunction, when true (default), expands Context in exported
+	// findings/chunks to the enclosing FuncDecl/FuncLit. When false, uses a
+	// nearby ~4-line window around the hit line.
+	WholeFunction *bool `toml:"whole_function"`
 }
 
 // Load reads path as TOML. Missing file returns (nil, nil).
@@ -195,6 +204,8 @@ type Merged struct {
 	// Cache sizing (optional)
 	CacheMaxSizeMB     *uint64
 	CacheMaxFileSizeMB *uint64
+	// ExportWholeFunction is nil when unset (export defaults to true).
+	ExportWholeFunction *bool
 }
 
 // LoadAndMerge discovers/loads goslop.toml and merges with CLI input.
@@ -299,6 +310,11 @@ func LoadAndMerge(in MergeInput) (*Merged, error) {
 				out.SeverityOverrides[id] = sev
 			}
 		}
+	}
+
+	// export context mode
+	if s.Export.WholeFunction != nil {
+		out.ExportWholeFunction = s.Export.WholeFunction
 	}
 
 	return out, nil
