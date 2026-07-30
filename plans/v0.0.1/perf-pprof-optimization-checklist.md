@@ -115,10 +115,13 @@ Package: `internal/export`
 
 ### P3.1 PERF / CWE rule scheduling
 
-Packages: `internal/lang/go/detectors/perf`, `.../cwe`
+Packages: `internal/lang/go/detectors/perf`, `.../cwe`, `.../bad_practices`
 
-- [ ] Skip rule domains when needles / facts are absent (callee / token index)
-- [ ] Reuse facts across PERF / CWE / BP where the same AST walk would repeat
+- [x] Immutable catalogue snapshot once after `init` (no per-file register lock + copy)
+- [x] Cached sorted `RuleIDs()` (no alloc/sort per file / per `anyRuleAllowed`)
+- [x] Keep `Allows` per file (safe for shared detector instances + parallel tests)
+- [ ] Skip rule domains when needles / facts are absent (callee / token index) — residual
+- [ ] Reuse facts across PERF / CWE / BP where the same AST walk would repeat — residual
 - [ ] Optional: domain-level disable in profiles without full catalogue cost
 
 ### P3.2 GC pressure (follow-on)
@@ -158,8 +161,9 @@ go tool pprof -top -cum /tmp/goslop-pprof/scan-cpu.prof
 | PR | Checklist items | Theme | Status |
 |----|-----------------|--------|--------|
 | 1 | P0.1 + P0.2 + P1.1 + P1.2 + P1.3 | Snapshot Once + export span/format + codeLines | **committed** (`9105596`, ~122ms scan) |
-| 2 | P2.* | Walk filters + Slice + early-out | **code done** (this commit) |
-| 3 | P3.* | Rule scheduling / residual GC | open |
+| 2 | P2.* | Walk filters + Slice + early-out | **committed** |
+| 3 | P3.1 catalogue snapshot + RuleIDs cache | Dispatch overhead | **code done** |
+| 4 | P3 residual | Needle gates / cross-pack facts / GC | open |
 
 ---
 

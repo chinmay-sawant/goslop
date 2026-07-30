@@ -65,16 +65,32 @@ func NewGoCweScan() *GoCweScan {
 // Language implements core.Detector.
 func (d *GoCweScan) Language() core.LanguageID { return core.LangGo }
 
+// Immutable catalogue snapshot after init() registration (P3.1).
+var (
+	cweCatalogueOnce sync.Once
+	cweCatalogue     []cweRuleEntry
+	cweRuleIDs       []string
+)
+
+func cweCatalogueSnapshot() []cweRuleEntry {
+	cweCatalogueOnce.Do(func() {
+		cweRegisterMu.Lock()
+		cweCatalogue = append([]cweRuleEntry(nil), cweRules...)
+		ids := make([]string, len(cweRules))
+		for i, e := range cweRules {
+			ids[i] = e.id
+		}
+		cweRegisterMu.Unlock()
+		sort.Strings(ids)
+		cweRuleIDs = ids
+	})
+	return cweCatalogue
+}
+
 // RuleIDs implements core.Detector.
 func (d *GoCweScan) RuleIDs() []string {
-	cweRegisterMu.Lock()
-	defer cweRegisterMu.Unlock()
-	ids := make([]string, len(cweRules))
-	for i, e := range cweRules {
-		ids[i] = e.id
-	}
-	sort.Strings(ids)
-	return ids
+	_ = cweCatalogueSnapshot()
+	return cweRuleIDs
 }
 
 // MetadataFor implements core.Detector.
@@ -92,29 +108,30 @@ func (d *GoCweScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rul
 	if unit == nil || out == nil {
 		return
 	}
-	cweRegisterMu.Lock()
-	rulesCopy := make([]cweRuleEntry, len(cweRules))
-	copy(rulesCopy, cweRules)
-	cweRegisterMu.Unlock()
-
+	all := cweCatalogueSnapshot()
+	taintOn := ctx != nil && ctx.TaintEnabled
 	any := false
-	for _, e := range rulesCopy {
-		if ctx == nil || ctx.Allows(e.id) {
-			any = true
-			break
+	for _, e := range all {
+		if ctx != nil && !ctx.Allows(e.id) {
+			continue
 		}
+		if taintOn && isTaintCoreRule(e.id) {
+			continue
+		}
+		any = true
+		break
 	}
 	if !any {
 		return
 	}
 
 	facts := BuildFacts(unit)
-	for _, e := range rulesCopy {
+	for _, e := range all {
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
 		// Full taint package owns these when enabled (avoid double findings).
-		if ctx != nil && ctx.TaintEnabled && isTaintCoreRule(e.id) {
+		if taintOn && isTaintCoreRule(e.id) {
 			continue
 		}
 		// Pure FPs vs Rust gopdfsuit reference corpus (issue #8) — SI museums too broad.
