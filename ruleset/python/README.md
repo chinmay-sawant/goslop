@@ -1,17 +1,21 @@
 # Python ruleset catalogues (WIP)
 
-> **Status:** seed only — **no** Python AST detectors in this tree  
+> **Status:** catalogue metadata only — **no** Python AST detectors in this tree  
 > **Issue:** #43 · epic #39 · plan: `plans/v0.0.2/phase-4-rulesets.md`  
-> **Audit:** `plans/v0.0.2/ruleset-reuse-audit.md`
+> **CWE mapping:** `plans/v0.0.2/python-cwe-from-699-mapping.md` (from `699.csv`)  
+> **BP audit:** `plans/v0.0.2/ruleset-reuse-audit.md`
 
 ## Layout
 
 ```text
 ruleset/python/
-  README.md              # this file
-  bad-practices.json     # BP-PY-* seeds (core + Flask/Django/FastAPI/SQLAlchemy/Jinja2)
+  README.md
+  bad-practices.json          # BP-PY-* (core + Flask/Django/FastAPI/SQLAlchemy/Jinja2)
   chunks/
-    cwe-seed.json        # portable CWE shells (CWE-22, 78, 79, 89)
+    cwe-001-050.json          # ≤50 rules per file; ID-range names like golang
+    cwe-051-100.json
+    …
+    cwe-1351-1400.json
 ```
 
 Sibling Go catalogues remain the default product source of truth:
@@ -19,41 +23,76 @@ Sibling Go catalogues remain the default product source of truth:
 - `ruleset/golang/bad-practices.json`
 - `ruleset/golang/chunks/*.json`
 
-## Reuse policy
+## CWE catalogue (from `699.csv`)
 
-1. **Same JSON shape** as golang CWE/PERF chunks and BP maps. Do not invent a second schema.
-2. **Portable CWE shells (class A):** keep `id`, `name`, `original_description`, `category`, `weakness_abstraction`. Rewrite `description` and `detection_notes` for Python sinks. Set `applicable_to` to include `"python"`.
-3. **Do not bulk-copy** Go PERF (`PERF-*`) or Go bad practices (`BP-*`). Those are runtime- and idiom-specific (see audit classes C/D). Python BP IDs use the **`BP-PY-*`** prefix so they never collide with Go `BP-*` when both catalogues are listed.
-4. **Do not** point Go generators (`metadata_gen.go`, `metadata_generated.go`) at this directory. Go loaders stay on `ruleset/golang/**`.
-5. `go_relevance` is retained for **schema parity** with golang chunks; it is a historical field name. Prefer language-neutral severity of the weakness, not “only relevant to Go.”
-6. Optional `applicable_to` on BP entries tags stacks: `python`, `flask`, `django`, `fastapi`, `starlette`, `jinja2`, `sqlalchemy`, `requests`, `httpx`.
+Source export: **CWE view 699** (Software Development), **399** rows.
 
-## Target frameworks (BP seeds)
+| Class | Count | Meaning |
+|-------|------:|---------|
+| **Included · generic** | ~339 | `Not Language-Specific` (portable weakness) |
+| **Included · python-specific** | 5 | Platforms list `LANGUAGE NAME:Python` |
+| **Excluded** | ~55 | C/C++/Java/… only, or C-style memory corruption |
 
-| Stack | Example rule themes |
-|-------|---------------------|
-| **Core Python** | bare except, mutable defaults, `assert` for validation, `open` without `with` |
-| **Security hygiene** | `shell=True`, pickle/yaml.load/eval, hardcoded secrets |
-| **Flask** | DEBUG/SECRET_KEY, `send_file` user paths, error leakage |
-| **Django** | DEBUG/SECRET_KEY/ALLOWED_HOSTS, raw SQL, `mark_safe`, `csrf_exempt`, N+1 |
-| **FastAPI / Starlette** | blocking I/O in `async def`, FileResponse paths, response_model leaks |
-| **Jinja2** | autoescape off, Markup/\|safe on variables |
-| **SQLAlchemy / DB-API** | `text()` f-strings, unclosed sessions, %-format execute |
-| **Production** | CORS `*` + credentials, `verify=False`, insecure cookie flags |
+**~344** CWE entries are written under `chunks/cwe-*.json`.
 
-## Seeds
+### File naming and 50-rule limit
+
+Same idea as golang (`cwe-001-050.json`, …):
+
+- Filename is a **CWE-ID range** of width 50 (`001-050`, `051-100`, …, then `1001-1050`, …).
+- Each file has **at most 50** JSON rule objects.
+- Sparse ranges still get a file when at least one included rule falls in that band.
+
+Regenerate from repo root:
+
+```sh
+# (generator was applied for this commit; see mapping doc for filter rules)
+python3 -c 'print("see plans/v0.0.2/python-cwe-from-699-mapping.md")'
+```
+
+### JSON shape (per rule)
+
+Same fields as golang CWE chunks:
+
+`id`, `name`, `original_description`, `description`, `detection_notes`,  
+`category`, `status`, `weakness_abstraction`, `go_relevance`, `applicable_to`
+
+- `applicable_to` always includes `"python"`.
+- `description` / `detection_notes` are Python-oriented (framework/stdlib sinks).
+- `go_relevance` kept for **schema parity** with the Go catalogue (not “Go only”).
+
+### Python-specific platform CWEs (from CSV filter)
+
+| CWE | Name |
+|-----|------|
+| CWE-396 | Declaration of Catch for Generic Exception |
+| CWE-397 | Declaration of Throws for Generic Exception |
+| CWE-478 | Missing Default Case in Multiple Condition Expression |
+| CWE-502 | Deserialization of Untrusted Data |
+| CWE-915 | Improperly Controlled Modification of Dynamically-Determined Object Attributes |
+
+## Bad practices
 
 | File | Contents |
 |------|----------|
-| `chunks/cwe-seed.json` | CWE-22, CWE-78, CWE-79, CWE-89 with `applicable_to: ["python"]` and Python-oriented `detection_notes` |
-| `bad-practices.json` | **50** `BP-PY-*` catalogue entries (metadata only; detectors not implemented) |
+| `bad-practices.json` | **50** `BP-PY-*` entries (metadata only) |
+
+IDs use **`BP-PY-*`** so they never collide with Go `BP-*` when both catalogues are listed.
+
+## Reuse policy
+
+1. **Same JSON shape** as golang CWE/PERF chunks and BP maps.
+2. **Do not bulk-copy** Go PERF or Go BP into Python.
+3. **Do not** point Go generators (`metadata_gen.go`) at this directory.
+4. Prefer rewriting detection notes for Python sinks rather than cloning gin/gorm text.
 
 ## What this is not
 
-- Not a claim of detector implementation or CLI Python scanning  
-- Not catalogue parity with the full 175 CWE / 242 PERF golang JSON sets  
+- Not a claim of detector implementation or full CLI Python scanning  
 - Not consumed by `goslop --list-rules` until a Python plugin embeds/loads these files  
 
 ## Validation
 
-JSON must parse as objects. Optional: `go test ./ruleset/python/`.
+```sh
+go test ./ruleset/python/
+```

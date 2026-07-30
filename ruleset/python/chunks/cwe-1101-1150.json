@@ -1,0 +1,366 @@
+{
+  "CWE-1101": {
+    "id": 1101,
+    "name": "Reliance on Runtime Component in Generated Code",
+    "original_description": "The product uses automatically-generated code that cannot be executed without a specific runtime support component.",
+    "description": "The product uses automatically-generated code that cannot be executed without a specific runtime support component. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1102": {
+    "id": 1102,
+    "name": "Reliance on Machine-Dependent Data Representation",
+    "original_description": "The code uses a data representation that relies on low-level data representation or constructs that may vary across different processors, physical machines, OSes, or other physical components.",
+    "description": "The code uses a data representation that relies on low-level data representation or constructs that may vary across different processors, physical machines, OSes, or other physical components. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1103": {
+    "id": 1103,
+    "name": "Use of Platform-Dependent Third Party Components",
+    "original_description": "The product relies on third-party components that do not provide equivalent functionality across all desirable platforms.",
+    "description": "The product relies on third-party components that do not provide equivalent functionality across all desirable platforms. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1104": {
+    "id": 1104,
+    "name": "Use of Unmaintained Third Party Components",
+    "original_description": "The product relies on third-party components that are not actively supported or maintained by the original developer or a trusted proxy for the original developer.",
+    "description": "The product relies on third-party components that are not actively supported or maintained by the original developer or a trusted proxy for the original developer. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1105": {
+    "id": 1105,
+    "name": "Insufficient Encapsulation of Machine-Dependent Functionality",
+    "original_description": "The product or code uses machine-dependent functionality, but it does not sufficiently encapsulate or isolate this functionality from the rest of the code.",
+    "description": "The product or code uses machine-dependent functionality, but it does not sufficiently encapsulate or isolate this functionality from the rest of the code. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1106": {
+    "id": 1106,
+    "name": "Insufficient Use of Symbolic Constants",
+    "original_description": "The source code uses literal constants that may need to change or evolve over time, instead of using symbolic constants.",
+    "description": "The source code uses literal constants that may need to change or evolve over time, instead of using symbolic constants. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1107": {
+    "id": 1107,
+    "name": "Insufficient Isolation of Symbolic Constant Definitions",
+    "original_description": "The source code uses symbolic constants, but it does not sufficiently place the definitions of these constants into a more centralized or isolated location.",
+    "description": "The source code uses symbolic constants, but it does not sufficiently place the definitions of these constants into a more centralized or isolated location. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1108": {
+    "id": 1108,
+    "name": "Excessive Reliance on Global Variables",
+    "original_description": "The code is structured in a way that relies too much on using or setting global variables throughout various points in the code, instead of preserving the associated information in a narrower, more local context.",
+    "description": "The code is structured in a way that relies too much on using or setting global variables throughout various points in the code, instead of preserving the associated information in a narrower, more local context. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1109": {
+    "id": 1109,
+    "name": "Use of Same Variable for Multiple Purposes",
+    "original_description": "The code contains a callable, block, or other code element in which the same variable is used to control more than one unique task or store more than one instance of data.",
+    "description": "The code contains a callable, block, or other code element in which the same variable is used to control more than one unique task or store more than one instance of data. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1110": {
+    "id": 1110,
+    "name": "Incomplete Design Documentation",
+    "original_description": "The product's design documentation does not adequately describe control flow, data flow, system initialization, relationships between tasks, components, rationales, or other important aspects of the design.",
+    "description": "The product's design documentation does not adequately describe control flow, data flow, system initialization, relationships between tasks, components, rationales, or other important aspects of the design. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1111": {
+    "id": 1111,
+    "name": "Incomplete I/O Documentation",
+    "original_description": "The product's documentation does not adequately define inputs, outputs, or system/software interfaces.",
+    "description": "The product's documentation does not adequately define inputs, outputs, or system/software interfaces. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1112": {
+    "id": 1112,
+    "name": "Incomplete Documentation of Program Execution",
+    "original_description": "The document does not fully define all mechanisms that are used to control or influence how product-specific programs are executed.",
+    "description": "The document does not fully define all mechanisms that are used to control or influence how product-specific programs are executed. This includes environmental variables, configuration files, registry keys, command-line switches or options, or system settings. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1113": {
+    "id": 1113,
+    "name": "Inappropriate Comment Style",
+    "original_description": "The source code uses comment styles or formats that are inconsistent or do not follow expected standards for the product.",
+    "description": "The source code uses comment styles or formats that are inconsistent or do not follow expected standards for the product. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1114": {
+    "id": 1114,
+    "name": "Inappropriate Whitespace Style",
+    "original_description": "The source code contains whitespace that is inconsistent across the code or does not follow expected standards for the product.",
+    "description": "The source code contains whitespace that is inconsistent across the code or does not follow expected standards for the product. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1115": {
+    "id": 1115,
+    "name": "Source Code Element without Standard Prologue",
+    "original_description": "The source code contains elements such as source files that do not consistently provide a prologue or header that has been standardized for the project.",
+    "description": "The source code contains elements such as source files that do not consistently provide a prologue or header that has been standardized for the project. Standard prologues or headers may contain information such as module name, version number, author, date, purpose, function, assumptions, limitations, accuracy considerations, etc. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Information Disclosure",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1116": {
+    "id": 1116,
+    "name": "Inaccurate Source Code Comments",
+    "original_description": "The source code contains comments that do not accurately describe or explain aspects of the portion of the code with which the comment is associated.",
+    "description": "The source code contains comments that do not accurately describe or explain aspects of the portion of the code with which the comment is associated. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1117": {
+    "id": 1117,
+    "name": "Callable with Insufficient Behavioral Summary",
+    "original_description": "The code contains a function or method whose signature and/or associated inline documentation does not sufficiently describe the callable's inputs, outputs, side effects, assumptions, or return codes.",
+    "description": "The code contains a function or method whose signature and/or associated inline documentation does not sufficiently describe the callable's inputs, outputs, side effects, assumptions, or return codes. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1118": {
+    "id": 1118,
+    "name": "Insufficient Documentation of Error Handling Techniques",
+    "original_description": "The documentation does not sufficiently describe the techniques that are used for error handling, exception processing, or similar mechanisms.",
+    "description": "The documentation does not sufficiently describe the techniques that are used for error handling, exception processing, or similar mechanisms. Documentation may need to cover error handling techniques at multiple layers, such as module, executable, compilable code unit, or callable. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Error Handling",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1119": {
+    "id": 1119,
+    "name": "Excessive Use of Unconditional Branching",
+    "original_description": "The code uses too many unconditional branches (such as goto).",
+    "description": "The code uses too many unconditional branches (such as goto). In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1121": {
+    "id": 1121,
+    "name": "Excessive McCabe Cyclomatic Complexity",
+    "original_description": "The code contains McCabe cyclomatic complexity that exceeds a desirable maximum.",
+    "description": "The code contains McCabe cyclomatic complexity that exceeds a desirable maximum. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1122": {
+    "id": 1122,
+    "name": "Excessive Halstead Complexity",
+    "original_description": "The code is structured in a way that a Halstead complexity measure exceeds a desirable maximum.",
+    "description": "The code is structured in a way that a Halstead complexity measure exceeds a desirable maximum. A variety of Halstead complexity measures exist, such as program vocabulary size or volume. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1123": {
+    "id": 1123,
+    "name": "Excessive Use of Self-Modifying Code",
+    "original_description": "The product uses too much self-modifying code.",
+    "description": "The product uses too much self-modifying code. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1124": {
+    "id": 1124,
+    "name": "Excessively Deep Nesting",
+    "original_description": "The code contains a callable or other code grouping in which the nesting / branching is too deep.",
+    "description": "The code contains a callable or other code grouping in which the nesting / branching is too deep. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1125": {
+    "id": 1125,
+    "name": "Excessive Attack Surface",
+    "original_description": "The product has an attack surface whose quantitative measurement exceeds a desirable maximum.",
+    "description": "The product has an attack surface whose quantitative measurement exceeds a desirable maximum. Originating from software security, an attack surface measure typically reflects the number of input points and output points that can be utilized by an untrusted party, i.e. a potential attacker. A larger attack surface provides more places to attack, and more opportunities for developers to introduce weaknesses. In some cases, this measure may reflect other aspects of quality besides security; e.g., a product with many inputs and outputs may require a large number of tests in order to improve code coverage. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1126": {
+    "id": 1126,
+    "name": "Declaration of Variable with Unnecessarily Wide Scope",
+    "original_description": "The source code declares a variable in one scope, but the variable is only used within a narrower scope.",
+    "description": "The source code declares a variable in one scope, but the variable is only used within a narrower scope. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  },
+  "CWE-1127": {
+    "id": 1127,
+    "name": "Compilation with Insufficient Warnings or Errors",
+    "original_description": "The code is compiled without sufficient warnings enabled, which may prevent the detection of subtle bugs or quality issues.",
+    "description": "The code is compiled without sufficient warnings enabled, which may prevent the detection of subtle bugs or quality issues. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Manual Analysis. Inspect scripts and tools that invoke the compiler. Ensure that the appropriate command line switches and/or configuration are specified to report warnings and errors. Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Error Handling",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "go_relevance": "Medium",
+    "applicable_to": [
+      "python"
+    ]
+  }
+}
