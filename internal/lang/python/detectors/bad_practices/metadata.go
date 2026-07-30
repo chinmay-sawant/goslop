@@ -97,6 +97,60 @@ var metaByID = map[string]*rules.RuleMetadata{
 		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
 		Fix: "Set DEBUG from environment; keep False in production settings.",
 	},
+	"BP-PY-29": {
+		ID: "BP-PY-29", Title: "FastAPI Depends On Mutable Global",
+		Description: "FastAPI/Starlette dependencies or routes mutate module-level global state.",
+		Severity:    rules.SeverityMedium, Pack: rules.PackBadPractice,
+		Fix: "Prefer request-scoped dependencies and a proper store instead of mutating globals.",
+	},
+	"BP-PY-30": {
+		ID: "BP-PY-30", Title: "FastAPI Blocking I/O In Async Route",
+		Description: "An `async def` route calls blocking I/O (time.sleep, requests, sync ORM) on the event loop.",
+		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
+		Fix: "Use await asyncio.sleep, httpx.AsyncClient, run_in_executor, or a sync def route.",
+	},
+	"BP-PY-31": {
+		ID: "BP-PY-31", Title: "FastAPI response_model Disabled Unsafely",
+		Description: "Response returns ORM/internal objects without `response_model`, leaking fields.",
+		Severity:    rules.SeverityMedium, Pack: rules.PackBadPractice,
+		Fix: "Declare response_model with a Pydantic schema or return an explicit DTO.",
+	},
+	"BP-PY-32": {
+		ID: "BP-PY-32", Title: "Starlette FileResponse User Path",
+		Description: "`FileResponse` / static file helpers use a path from user input without confinement.",
+		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
+		Fix: "Resolve the path and enforce a trusted prefix before FileResponse.",
+	},
+	"BP-PY-33": {
+		ID: "BP-PY-33", Title: "Jinja2 autoescape Disabled",
+		Description: "Jinja2 Environment is created with `autoescape=False` or missing autoescape for HTML.",
+		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
+		Fix: "Enable autoescape=True or select_autoescape for HTML/XML templates.",
+	},
+	"BP-PY-34": {
+		ID: "BP-PY-34", Title: "Jinja2 Markup Or safe Filter On Variables",
+		Description: "Template or Python marks dynamic values as safe HTML.",
+		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
+		Fix: "Only mark trusted, sanitized literals as safe; escape untrusted input.",
+	},
+	"BP-PY-35": {
+		ID: "BP-PY-35", Title: "SQLAlchemy text With F-String",
+		Description: "`sqlalchemy.text` / execute builds SQL with f-strings or format instead of bound params.",
+		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
+		Fix: "Use text(\"... WHERE id = :id\") with bindparams instead of f-strings.",
+	},
+	"BP-PY-36": {
+		ID: "BP-PY-36", Title: "SQLAlchemy Session Not Closed",
+		Description: "A Session/sessionmaker session is created without context manager or close in finally.",
+		Severity:    rules.SeverityMedium, Pack: rules.PackBadPractice,
+		Fix: "Use `with Session() as session:` or call session.close() on all exit paths.",
+	},
+	"BP-PY-37": {
+		ID: "BP-PY-37", Title: "DB-API Cursor Execute With Percent Format",
+		Description: "DB-API `cursor.execute` uses Python `%` formatting on the SQL string.",
+		Severity:    rules.SeverityHigh, Pack: rules.PackBadPractice,
+		Fix: "Pass SQL with placeholders and a params sequence: execute(sql, params).",
+	},
 }
 
 // MetadataForID returns catalogue metadata for a BP-PY rule id.

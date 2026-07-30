@@ -19,6 +19,15 @@ var bpNeedles = []string{
 	"password", "secret", "api_key", "token", "private_key", "SECRET_KEY",
 	"debug=True", "DEBUG", "app.run", "secret_key",
 	"app.config",
+	// FastAPI / Starlette (batch 04)
+	"FastAPI", "APIRouter", "fastapi", "starlette",
+	"Depends", "FileResponse", "response_model",
+	"time.sleep", "requests.", "global ", "nonlocal ",
+	// Templates (batch 05)
+	"Environment", "autoescape", "Markup", "|safe", "jinja2",
+	// Database (batch 05)
+	"text(", "SessionLocal", "Session(", "sessionmaker", ".execute(",
+	"sqlalchemy",
 }
 
 // bpFacts is a light fact bag for Python source-pattern BP detectors.
