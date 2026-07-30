@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // ProjectUnit is accumulated per-file state for project finalize.

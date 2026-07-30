@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chinmay/goslop/tests/integration"
+	"github.com/chinmay-sawant/goslop/tests/integration"
 )
 
 // TestPERFFixturesMatrix ports Rust go_perf_fixtures_fire_vulnerable_and_silence_safe

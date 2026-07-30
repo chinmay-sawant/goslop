@@ -7,10 +7,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/fixture"
-	badpractices "github.com/chinmay/goslop/internal/lang/go/detectors/bad_practices"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/fixture"
+	badpractices "github.com/chinmay-sawant/goslop/internal/lang/go/detectors/bad_practices"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestBPRulesRegistered(t *testing.T) {

@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/fixture"
-	"github.com/chinmay/goslop/internal/lang/go/detectors/cwe"
-	"github.com/chinmay/goslop/internal/lang/go/detectors/cwe/taint"
-	"github.com/chinmay/goslop/internal/lang/go/goparse"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/fixture"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/detectors/cwe"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/detectors/cwe/taint"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/goparse"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Quarantined honest FNs: known unsupported shapes (see documents/taint.md).

@@ -4,8 +4,8 @@ import (
 	goast "go/ast"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/lang/go/goparse"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/goparse"
 )
 
 // ExtractCallGraph builds a per-file call graph from the unit AST.

@@ -16,7 +16,7 @@ Rename the product from codehound to **goslop** across the Go module, CLI binary
 
 ### Module and CLI
 
-- Module path: `github.com/chinmay/codehound` → `github.com/chinmay/goslop`
+- Module path: `github.com/chinmay/codehound` → `github.com/chinmay-sawant/goslop`
 - `cmd/codehound` → `cmd/goslop`
 - Binary: `bin/goslop` (`make build`, CI, Makefile run/reference-metrics)
 
@@ -62,7 +62,7 @@ Rename the product from codehound to **goslop** across the Go module, CLI binary
 | Cache | Delete `.codehound-cache` or rename; new default `.goslop-cache` |
 | Baseline | Rename `.codehound-baseline.json` → `.goslop-baseline.json`; fingerprints change prefix |
 | Ignore comments | `// codehound-ignore` → `// goslop-ignore` |
-| Go imports | `github.com/chinmay/codehound/...` → `github.com/chinmay/goslop/...` |
+| Go imports | `github.com/chinmay/codehound/...` → `github.com/chinmay-sawant/goslop/...` |
 
 ---
 
@@ -88,7 +88,7 @@ make test
 
 ```
 0.1.0-dev
-ok  github.com/chinmay/goslop/... (all packages)
+ok  github.com/chinmay-sawant/goslop/... (all packages)
 ```
 
 ---

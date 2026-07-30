@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // SARIFReporter emits a minimal valid SARIF 2.1.0 log.
@@ -18,6 +18,7 @@ func (r SARIFReporter) Write(findings []rules.Finding, w io.Writer) error {
 	if version == "" {
 		version = DefaultVersion
 	}
+	findings = normalizedFindings(findings)
 
 	// Collect unique rules.
 	type ruleMeta struct {
@@ -51,7 +52,6 @@ func (r SARIFReporter) Write(findings []rules.Finding, w io.Writer) error {
 	results := make([]sarifResult, 0, len(findings))
 	for i := range findings {
 		f := &findings[i]
-		f.EnsureFingerprint()
 		line := f.Line
 		col := f.Column
 		if line <= 0 {
@@ -89,7 +89,7 @@ func (r SARIFReporter) Write(findings []rules.Finding, w io.Writer) error {
 			Tool: sarifTool{
 				Driver: sarifDriver{
 					Name:           "goslop",
-					InformationURI: "https://github.com/chinmay/goslop",
+					InformationURI: "https://github.com/chinmay-sawant/goslop",
 					Version:        version,
 					Rules:          rulesArr,
 				},

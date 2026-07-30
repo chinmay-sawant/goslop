@@ -3,8 +3,8 @@ package goparse_test
 import (
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/lang/go/goparse"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/goparse"
 )
 
 func TestTreeForUnit_ReusesAttachedTree(t *testing.T) {

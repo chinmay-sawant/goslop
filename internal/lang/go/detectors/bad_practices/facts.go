@@ -3,10 +3,10 @@ package badpractices
 import (
 	"strings"
 
-	"github.com/chinmay/goslop/internal/ast"
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/lang/go/astfacts"
-	"github.com/chinmay/goslop/internal/lang/go/goparse"
+	"github.com/chinmay-sawant/goslop/internal/ast"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/astfacts"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/goparse"
 )
 
 // Shared needle table for BP fast-paths (Rust parity intent).
@@ -31,6 +31,9 @@ type bpFacts struct {
 	Source string
 	Index  ast.SourceIndex
 	tree   *goparse.Tree
+	// projectFacts is owned by the current detector scan. Rules must obtain
+	// cross-file facts through it rather than a process-global cache.
+	projectFacts *bpProjectCaches
 	// lines is built once per file (codeLines / stripLineComment cost).
 	lines       []codeLine
 	assignNodes []nodeSpan
@@ -65,8 +68,8 @@ type funcSpan struct {
 	params string
 }
 
-func buildFacts(unit *core.ParsedUnit) *bpFacts {
-	f := &bpFacts{}
+func buildFacts(unit *core.ParsedUnit, projectFacts *bpProjectCaches) *bpFacts {
+	f := &bpFacts{projectFacts: projectFacts}
 	if unit == nil {
 		return f
 	}
@@ -106,6 +109,18 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 		})
 	}
 	return f
+}
+
+func (f *bpFacts) projectSnapshot(unit *core.ParsedUnit) *ProjectSnapshot {
+	return projectSnapshot(unit, f.projectFacts)
+}
+
+func (f *bpFacts) packageDocSnapshot(unit *core.ParsedUnit) *PackageDocSnapshot {
+	return packageDocSnapshotForUnit(unit, f.projectFacts)
+}
+
+func (f *bpFacts) packageTypeFacts(unit *core.ParsedUnit) *packageTypeFacts {
+	return packageTypeFactsForUnit(unit, f.projectFacts)
 }
 
 // close releases any BP-owned resources. The shared unit AST is not closed here

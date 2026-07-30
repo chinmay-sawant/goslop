@@ -7,12 +7,22 @@ import (
 	"os"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Reporter writes findings to an io.Writer.
 type Reporter interface {
 	Write(findings []rules.Finding, w io.Writer) error
+}
+
+// normalizedFindings returns an owned rendering value. Reporters may enrich
+// it with defaults without changing the analysis result that their caller owns.
+func normalizedFindings(findings []rules.Finding) []rules.Finding {
+	out := append([]rules.Finding(nil), findings...)
+	for i := range out {
+		out[i].EnsureFingerprint()
+	}
+	return out
 }
 
 // New returns a Reporter for format (text|json|sarif).

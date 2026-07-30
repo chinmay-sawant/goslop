@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/fixture"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/fixture"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // ScanOptions configures a fixture matrix scan (Rust Analyzer::builder defaults).
@@ -42,6 +42,12 @@ func DefaultMatrixOptions() ScanOptions {
 // (Rust assert_fixture_rules semantics: require target rule on vulnerable;
 // silence only the rule class on safe).
 func MaterializeAndScanOpts(relPath string, opts ScanOptions) (Result, error) {
+	return materializeAndScanOpts(relPath, opts, scanMaterializedFixture)
+}
+
+type matrixFixtureScanner func(ctx *core.ScanContext, srcPath string) (*engine.AnalysisResult, error)
+
+func materializeAndScanOpts(relPath string, opts ScanOptions, scan matrixFixtureScanner) (Result, error) {
 	fx, err := FixturesRoot()
 	if err != nil {
 		return Result{}, err
@@ -53,6 +59,7 @@ func MaterializeAndScanOpts(relPath string, opts ScanOptions) (Result, error) {
 	if err != nil {
 		return Result{}, err
 	}
+	defer os.RemoveAll(outRoot)
 	srcPath, err := fixture.MaterializeFixtureFile(txt, outRoot)
 	if err != nil {
 		return Result{}, fmt.Errorf("materialize %s: %w", relPath, err)
@@ -68,20 +75,9 @@ func MaterializeAndScanOpts(relPath string, opts ScanOptions) (Result, error) {
 		ctx.TaintEnabled = true
 	}
 
-	analyzer := engine.NewAnalyzerBuilder().
-		Registry(engine.DefaultRegistry()).
-		ScanContext(ctx).
-		Workers(1).
-		Build()
-
-	// Analyze the file path when possible so single-file fixtures work.
-	res, err := analyzer.AnalyzePaths([]string{srcPath})
+	res, err := scan(ctx, srcPath)
 	if err != nil {
-		// Fall back to parent dir walk.
-		res, err = analyzer.AnalyzePaths([]string{filepath.Dir(srcPath)})
-		if err != nil {
-			return Result{}, fmt.Errorf("analyze %s: %w", srcPath, err)
-		}
+		return Result{}, fmt.Errorf("analyze %s: %w", srcPath, err)
 	}
 	findings := res.Findings
 	if findings == nil {
@@ -98,6 +94,22 @@ func MaterializeAndScanOpts(relPath string, opts ScanOptions) (Result, error) {
 		Findings:   findings,
 		Fired:      HasRule(findings, ruleID),
 	}, nil
+}
+
+func scanMaterializedFixture(ctx *core.ScanContext, srcPath string) (*engine.AnalysisResult, error) {
+	analyzer := engine.NewAnalyzerBuilder().
+		Registry(engine.DefaultRegistry()).
+		ScanContext(ctx).
+		Workers(1).
+		Build()
+
+	// Analyze the file path when possible so single-file fixtures work.
+	res, err := analyzer.AnalyzePaths([]string{srcPath})
+	if err == nil {
+		return res, nil
+	}
+	// Fall back to a parent-directory walk.
+	return analyzer.AnalyzePaths([]string{filepath.Dir(srcPath)})
 }
 
 // AssertVulnerable requires ruleID among findings.

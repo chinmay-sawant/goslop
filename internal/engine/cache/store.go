@@ -2,13 +2,14 @@ package cache
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Store is an on-disk incremental analysis cache.
@@ -93,9 +94,11 @@ func Open(cacheDir string, opts OpenOptions) (*Store, error) {
 			s.dirty = true
 		} else if m.ToolVersion != opts.ToolVersion {
 			// Tool version change → mass-stale (empty manifest, drop entries)
+			if clearErr := clearFilesDir(filesDir, os.RemoveAll); clearErr != nil {
+				return nil, &Error{Op: "clear", Path: filesDir, Err: clearErr}
+			}
 			s.manifest = emptyManifest(opts.ToolVersion)
 			s.dirty = true
-			_ = clearFilesDir(filesDir)
 		} else {
 			if m.Files == nil {
 				m.Files = make(map[string]FileCacheMeta)
@@ -205,6 +208,16 @@ func (s *Store) Lookup(file, contentHash string) (Lookup, *Entry) {
 
 // Put stores findings for a file (overwrites existing).
 func (s *Store) Put(file, contentHash string, findings []rules.Finding, suppressed int) error {
+	return s.PutWithParseDiagnostic(file, contentHash, findings, suppressed, "")
+}
+
+// PutWithParseDiagnostic stores findings and a non-fatal parser diagnostic.
+func (s *Store) PutWithParseDiagnostic(
+	file, contentHash string,
+	findings []rules.Finding,
+	suppressed int,
+	parseDiagnostic string,
+) error {
 	if s == nil {
 		return nil
 	}
@@ -220,6 +233,7 @@ func (s *Store) Put(file, contentHash string, findings []rules.Finding, suppress
 		RuleConfigHash:  s.manifest.RuleConfigHash,
 		Findings:        cloneFindings(findings),
 		SuppressedCount: suppressed,
+		ParseDiagnostic: parseDiagnostic,
 		CachedAt:        now,
 	}
 	if entry.Findings == nil {
@@ -459,13 +473,16 @@ func (s *Store) evictLocked() error {
 	return nil
 }
 
-func clearFilesDir(dir string) error {
+func clearFilesDir(dir string, removeAll func(string) error) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return err
 	}
 	for _, e := range entries {
-		_ = os.RemoveAll(filepath.Join(dir, e.Name()))
+		path := filepath.Join(dir, e.Name())
+		if err := removeAll(path); err != nil {
+			return fmt.Errorf("remove %s: %w", path, err)
+		}
 	}
 	return nil
 }

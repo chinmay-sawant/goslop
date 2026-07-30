@@ -3,10 +3,10 @@ package golang_test
 import (
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	golang "github.com/chinmay/goslop/internal/lang/go"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	golang "github.com/chinmay-sawant/goslop/internal/lang/go"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestGoPluginRegistration(t *testing.T) {
@@ -33,6 +33,23 @@ func TestGoPluginRegistration(t *testing.T) {
 		if !seen {
 			t.Errorf("missing rule %s in registry", id)
 		}
+	}
+}
+
+func TestGoPluginParseSourceReportsPartialQuality(t *testing.T) {
+	p := golang.NewPlugin()
+	result, err := p.ParseSource("broken.go", "package sample\nfunc broken( {\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result == nil || result.Unit == nil {
+		t.Fatal("expected a usable fallback unit")
+	}
+	if result.Quality != core.ParseQualityPartial && result.Quality != core.ParseQualitySourceOnly {
+		t.Fatalf("quality=%v, want partial or source-only", result.Quality)
+	}
+	if result.Diagnostic == "" {
+		t.Fatal("expected parse diagnostic")
 	}
 }
 

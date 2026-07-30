@@ -1,8 +1,5 @@
 # goslop configuration. All fields are optional; unknown fields are rejected.
 [goslop]
-# Limit analysis to specific languages.
-# languages = ["go", "python"]
-
 # CLI default pack is --profile recommended (see documents/go-recommended-pack.md).
 # Profiles: recommended | perf | security | style | all
 
@@ -12,7 +9,7 @@
 # Skip the union of these rule IDs and any passed via --skip.
 # skip = ["CWE-15"]
 
-# Exit policy: "none" | "never" | "medium" | "warnings" | "high" | "strict".
+# Exit policy: "none" | "never" | "medium" | "high" | "strict".
 # Unknown values are rejected at load time (no silent fallback).
 # recommended/security/perf profiles default fail_on to high when unset on CLI.
 # fail_on = "high"

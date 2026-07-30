@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func init() {
@@ -27,7 +27,7 @@ var goVersionRe = regexp.MustCompile(`(?m)^go\s+(\d+)\.(\d+)`)
 
 func detectBP57(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-57")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
@@ -46,7 +46,7 @@ func detectBP57(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 func detectBP58(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-58")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
@@ -81,7 +81,7 @@ func detectBP59(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 func detectBP60(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-60")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
@@ -118,7 +118,7 @@ func hasTestOnlyRequire(snap *ProjectSnapshot) bool {
 
 func detectBP61(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-61")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
@@ -154,7 +154,7 @@ func detectBP61(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 func detectBP62(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	// Rust: external direct dep imported by exactly one non-test file, project has ≥2 non-test files.
 	meta := MetadataForID("BP-62")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
@@ -254,7 +254,7 @@ func detectBP63(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 func detectBP64(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-64")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}
@@ -274,7 +274,7 @@ func detectBP65(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	meta := MetadataForID("BP-65")
-	snap := projectSnapshot(unit)
+	snap := facts.projectSnapshot(unit)
 	if snap.GoModText == "" {
 		return
 	}

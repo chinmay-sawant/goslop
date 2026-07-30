@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Go Code Style &amp; Design Review — Goslop</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #08111f; }
+    .gridline { background-image: linear-gradient(rgba(148,163,184,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,.07) 1px, transparent 1px); background-size: 32px 32px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 font-sans text-slate-100">
+  <main class="gridline mx-auto max-w-6xl px-6 py-14 lg:px-10">
+    <header class="mb-12 border-l-4 border-cyan-400 pl-5">
+      <p class="mb-3 text-sm font-semibold uppercase tracking-[.22em] text-cyan-300">Goslop · 30 July 2026</p>
+      <h1 class="max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">Go code style &amp; design-patterns review</h1>
+      <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">A source-backed re-rating after the phase-wise remediation work. The result is a focused improvement list, not a generic refactor proposal.</p>
+    </header>
+
+    <section class="mb-10 grid gap-4 md:grid-cols-3">
+      <article class="rounded-2xl border border-cyan-400/30 bg-slate-900/90 p-6 shadow-xl shadow-cyan-950/30">
+        <p class="text-sm font-medium text-cyan-200">Go code style</p>
+        <p class="mt-2 text-5xl font-bold text-white">9.1<span class="text-xl text-slate-400">/10</span></p>
+        <p class="mt-3 text-sm leading-6 text-slate-300">Export/config seams are explicit, cohesive, and fully validated.</p>
+      </article>
+      <article class="rounded-2xl border border-amber-400/30 bg-slate-900/90 p-6 shadow-xl shadow-amber-950/20">
+        <p class="text-sm font-medium text-amber-200">Go design patterns</p>
+        <p class="mt-2 text-5xl font-bold text-white">9.0<span class="text-xl text-slate-400">/10</span></p>
+        <p class="mt-3 text-sm leading-6 text-slate-300">Strong scan ownership, bounded concurrency, and explicit cleanup error flow.</p>
+      </article>
+      <article class="rounded-2xl border border-emerald-400/30 bg-slate-900/90 p-6 shadow-xl shadow-emerald-950/20">
+        <p class="text-sm font-medium text-emerald-200">Overall rating</p>
+        <p class="mt-2 text-5xl font-bold text-white">9.0<span class="text-xl text-slate-400">/10</span></p>
+        <p class="mt-3 text-sm leading-6 text-slate-300">All concrete review items are closed; no high-severity regression was found.</p>
+      </article>
+    </section>
+
+    <section class="mb-10 rounded-2xl border border-slate-700 bg-slate-900/85 p-6">
+      <h2 class="text-xl font-bold text-white">Review boundary</h2>
+      <div class="mt-4 grid gap-4 md:grid-cols-2 text-sm leading-6 text-slate-300">
+        <p><span class="font-semibold text-emerald-300">Included:</span> prior Ponytail/architecture checklist closures, plus remediation commits <code class="text-cyan-200">0a5de57</code> and <code class="text-cyan-200">7f64ffa</code>.</p>
+        <p><span class="font-semibold text-emerald-300">Fresh validation:</span> this implementation batch passed lint-all, the full test suite, race tests, and diff hygiene.</p>
+      </div>
+    </section>
+
+    <section class="mb-10">
+      <div class="mb-4 flex items-end justify-between gap-6">
+        <h2 class="text-2xl font-bold text-white">Completed remediation</h2>
+        <span class="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-200">4 checklist items closed</span>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-2">
+        <article class="rounded-2xl border border-amber-400/30 bg-slate-900 p-6">
+          <p class="text-xs font-semibold uppercase tracking-[.16em] text-emerald-300">G-STYLE-1 · complete</p>
+          <h3 class="mt-2 text-lg font-bold text-white">Path validation is read-only</h3>
+          <p class="mt-3 leading-7 text-slate-300"><code>dirsEqual</code> now compares absolute paths without writes; a rejected collision leaves no output directory behind.</p>
+          <p class="mt-4 text-sm text-slate-400">Evidence: <code>internal/export/export.go:84,139</code></p>
+        </article>
+        <article class="rounded-2xl border border-amber-400/30 bg-slate-900 p-6">
+          <p class="text-xs font-semibold uppercase tracking-[.16em] text-emerald-300">G-DESIGN-1 · complete</p>
+          <h3 class="mt-2 text-lg font-bold text-white">Cache cleanup failures are visible</h3>
+          <p class="mt-3 leading-7 text-slate-300">Version invalidation now returns a wrapped cache error when stale-entry removal fails, with a deterministic regression test.</p>
+          <p class="mt-4 text-sm text-slate-400">Evidence: <code>internal/engine/cache/store.go:94,473</code></p>
+        </article>
+        <article class="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+          <p class="text-xs font-semibold uppercase tracking-[.16em] text-emerald-300">G-STYLE-2 · complete</p>
+          <h3 class="mt-2 text-lg font-bold text-white">Export rendering state is cohesive</h3>
+          <p class="mt-3 leading-7 text-slate-300">An unexported per-export state owns caches, policy, and reusable blocks; dual output exactly matches separate output modes.</p>
+          <p class="mt-4 text-sm text-slate-400">Evidence: <code>internal/export/export.go:202,262</code></p>
+        </article>
+        <article class="rounded-2xl border border-slate-700 bg-slate-900 p-6">
+          <p class="text-xs font-semibold uppercase tracking-[.16em] text-emerald-300">G-STYLE-3/4 · complete</p>
+          <h3 class="mt-2 text-lg font-bold text-white">Intentional policies are legible</h3>
+          <p class="mt-3 leading-7 text-slate-300">TOML bytes use <code>bytes.NewReader</code>, and the partial-AST error policy is expressed at the parser call.</p>
+          <p class="mt-4 text-sm text-slate-400">Evidence: <code>internal/config/config.go:98</code>, <code>internal/export/export.go:386</code></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-10 rounded-2xl border border-emerald-400/25 bg-emerald-950/20 p-6">
+      <h2 class="text-2xl font-bold text-white">Keep as-is</h2>
+      <div class="mt-5 grid gap-x-8 gap-y-4 md:grid-cols-2 text-sm leading-6 text-slate-200">
+        <p>✓ The fluent analyzer builder models real optional dependencies; functional options would not improve this call site.</p>
+        <p>✓ Scan-local detector sessions and single-flight BP facts avoid global mutable analysis state.</p>
+        <p>✓ Bounded worker concurrency and parser-quality diagnostics give failures explicit, usable semantics.</p>
+        <p>✓ Do not split the detector interface or <code>app.run</code> before a second concrete use case creates a true seam.</p>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-slate-700 bg-slate-900/90 p-6">
+      <h2 class="text-2xl font-bold text-white">Conditional backlog</h2>
+      <ol class="mt-4 space-y-3 text-sm leading-6 text-slate-300">
+        <li><span class="font-semibold text-slate-100">Late plugin registration:</span> freeze or synchronize mutations only if plugins may be registered after scan/list activity begins.</li>
+        <li><span class="font-semibold text-slate-100">ScanContext immutability:</span> document or snapshot only for externally concurrent reconfiguration.</li>
+        <li><span class="font-semibold text-slate-100">Export filesystem seam:</span> replace the narrow test-only function variable only when parallel fault-injection testing needs it.</li>
+      </ol>
+      <p class="mt-6 border-t border-slate-700 pt-5 text-sm leading-6 text-slate-400">Full phase-wise acceptance criteria and source locations are in <code>go-code-style-and-design-review.md</code>.</p>
+    </section>
+  </main>
+</body>
+</html>

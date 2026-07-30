@@ -3,9 +3,11 @@ package reporting
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"sync"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestSARIFReporterMinimalShape(t *testing.T) {
@@ -119,6 +121,99 @@ func TestSARIFReporterEmptyFindings(t *testing.T) {
 	}
 	if len(results) != 0 {
 		t.Fatalf("want empty results, got %v", results)
+	}
+}
+
+func TestReportersDoNotMutateFindings(t *testing.T) {
+	findings := []rules.Finding{{
+		RuleID: "PERF-1", File: "main.go", Line: 1, Column: 1,
+		Message: "test", Severity: rules.SeverityLow,
+	}}
+	for _, reporter := range []Reporter{
+		JSONReporter{Version: "v"},
+		SARIFReporter{Version: "v"},
+	} {
+		var buf bytes.Buffer
+		if err := reporter.Write(findings, &buf); err != nil {
+			t.Fatal(err)
+		}
+		if findings[0].Fingerprint != "" {
+			t.Fatalf("%T mutated caller finding", reporter)
+		}
+	}
+}
+
+func TestMachineReportersPreserveFingerprintAndLocationParity(t *testing.T) {
+	findings := []rules.Finding{{
+		RuleID: "CWE-78", RuleTitle: "Command Injection", File: "cmd.go",
+		Line: 17, Column: 4, Message: "unsanitized command", Severity: rules.SeverityHigh,
+	}}
+	var jsonBuf, sarifBuf bytes.Buffer
+	if err := (JSONReporter{Version: "v"}).Write(findings, &jsonBuf); err != nil {
+		t.Fatal(err)
+	}
+	if err := (SARIFReporter{Version: "v"}).Write(findings, &sarifBuf); err != nil {
+		t.Fatal(err)
+	}
+
+	var jsonOutput struct {
+		Findings []rules.Finding `json:"findings"`
+	}
+	if err := json.Unmarshal(jsonBuf.Bytes(), &jsonOutput); err != nil {
+		t.Fatal(err)
+	}
+	var sarifOutput sarifLog
+	if err := json.Unmarshal(sarifBuf.Bytes(), &sarifOutput); err != nil {
+		t.Fatal(err)
+	}
+	if len(jsonOutput.Findings) != 1 || len(sarifOutput.Runs) != 1 || len(sarifOutput.Runs[0].Results) != 1 {
+		t.Fatalf("unexpected report shapes: json=%+v sarif=%+v", jsonOutput, sarifOutput)
+	}
+	jsonFinding := jsonOutput.Findings[0]
+	sarifFinding := sarifOutput.Runs[0].Results[0]
+	location := sarifFinding.Locations[0].PhysicalLocation
+	if jsonFinding.Fingerprint == "" || jsonFinding.Fingerprint != sarifFinding.PartialFingerprints["primaryLocationLineHash"] {
+		t.Fatalf("fingerprints differ: json=%q sarif=%q", jsonFinding.Fingerprint, sarifFinding.PartialFingerprints)
+	}
+	if jsonFinding.File != location.ArtifactLocation.URI || jsonFinding.Line != location.Region.StartLine || jsonFinding.Column != location.Region.StartColumn {
+		t.Fatalf("locations differ: json=%+v sarif=%+v", jsonFinding, location)
+	}
+	if findings[0].Fingerprint != "" {
+		t.Fatalf("reporters mutated caller finding: %q", findings[0].Fingerprint)
+	}
+}
+
+func TestMachineReportersSupportConcurrentWrites(t *testing.T) {
+	findings := []rules.Finding{{
+		RuleID: "PERF-1", File: "main.go", Line: 1, Column: 1,
+		Message: "allocation", Severity: rules.SeverityLow,
+	}}
+	reporters := []Reporter{JSONReporter{Version: "v"}, SARIFReporter{Version: "v"}}
+	errs := make(chan error, len(reporters)*16)
+	var wg sync.WaitGroup
+	for _, reporter := range reporters {
+		for range 16 {
+			wg.Add(1)
+			go func(reporter Reporter) {
+				defer wg.Done()
+				var out bytes.Buffer
+				if err := reporter.Write(findings, &out); err != nil {
+					errs <- err
+					return
+				}
+				if !json.Valid(out.Bytes()) {
+					errs <- fmt.Errorf("%T wrote invalid JSON: %q", reporter, out.String())
+				}
+			}(reporter)
+		}
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Error(err)
+	}
+	if findings[0].Fingerprint != "" {
+		t.Fatalf("concurrent reporters mutated caller finding: %q", findings[0].Fingerprint)
 	}
 }
 

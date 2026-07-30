@@ -1,6 +1,6 @@
 package perf
 
-import "github.com/chinmay/goslop/internal/rules"
+import "github.com/chinmay-sawant/goslop/internal/rules"
 
 // Batch 4 metadata: PERF-164..214 (excluding PERF-208).
 

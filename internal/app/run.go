@@ -12,15 +12,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chinmay/goslop/internal/cli"
-	"github.com/chinmay/goslop/internal/config"
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/engine/baseline"
-	"github.com/chinmay/goslop/internal/engine/cache"
-	"github.com/chinmay/goslop/internal/export"
-	"github.com/chinmay/goslop/internal/reporting"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/cli"
+	"github.com/chinmay-sawant/goslop/internal/config"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/engine/baseline"
+	"github.com/chinmay-sawant/goslop/internal/engine/cache"
+	"github.com/chinmay-sawant/goslop/internal/export"
+	"github.com/chinmay-sawant/goslop/internal/reporting"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Run is the CLI entry used by cmd/goslop.
@@ -45,7 +45,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	}
 
 	if opts.Command == "init" {
-		return runInit()
+		return runInit(stdout)
 	}
 	if opts.Version {
 		_, _ = fmt.Fprintln(stdout, Version)
@@ -86,71 +86,31 @@ func run(args []string, stdout, stderr io.Writer) error {
 		return &ExitCodeError{Code: ExitConfig, Err: merr}
 	}
 
-	ctx := core.NewScanContext(profile, merged.Only, merged.Skip)
-	ctx.IncludeTests = merged.IncludeTests
-	ctx.NoCache = merged.NoCache
-	ctx.ShowIgnored = opts.ShowIgnored
-	ctx.ShowBaselined = opts.ShowBaselined
-	ctx.NoBaseline = merged.NoBaseline
-	if merged.FailPolicy != nil {
-		ctx.FailPolicy = *merged.FailPolicy
-	}
-	if merged.BadPracticesEnabled != nil {
-		ctx.BadPracticesEnabled = *merged.BadPracticesEnabled
-	}
-	if merged.BPSeverity != nil {
-		ctx.BadPracticeSeverity = merged.BPSeverity
-	}
-	if len(merged.SeverityOverrides) > 0 {
-		if ctx.SeverityOverrides == nil {
-			ctx.SeverityOverrides = map[string]rules.Severity{}
-		}
-		for k, v := range merged.SeverityOverrides {
-			ctx.SeverityOverrides[k] = v
-		}
-	}
-	if merged.NoTaint {
-		ctx.TaintEnabled = false
-	} else if merged.Taint {
-		ctx.TaintEnabled = true
-	}
-	if opts.TaintDepth > 0 {
-		ctx.TaintMaxDepth = opts.TaintDepth
-	}
-	ctx.TaintShowPaths = merged.TaintShowPaths
-	// Retain sources only when export needs them (Rust parity).
-	if opts.ExportContext || opts.ExportChunks {
-		ctx.RetainSources = true
-	}
+	plan := resolveScanPlan(profile, opts, merged)
+	scope := engine.ResolveScanScope(opts.Paths)
+	ctx := plan.context
 	reg := engine.DefaultRegistry()
 
 	// Cache open / rebuild / prune.
 	var store *cache.Store
-	if !merged.NoCache {
-		cacheDir := merged.CacheDir
-		if cacheDir == "" {
-			cacheDir = cache.DEFAULT_CACHE_DIR
-		}
-		openOpts := cache.OpenOptions{
-			MaxSizeMB:     500,
-			MaxFileSizeMB: 4,
-			ToolVersion:   Version,
-		}
-		if merged.CacheMaxSizeMB != nil {
-			openOpts.MaxSizeMB = *merged.CacheMaxSizeMB
-		}
-		if merged.CacheMaxFileSizeMB != nil {
-			openOpts.MaxFileSizeMB = *merged.CacheMaxFileSizeMB
-		}
+	if !plan.cacheDisabled {
+		cacheDir := plan.cacheDir
+		openOpts := plan.cacheOptions
 		if opts.RebuildCache {
 			store, err = cache.Rebuild(cacheDir, openOpts)
 			if err != nil {
+				if opts.PruneCache {
+					return &ExitCodeError{Code: ExitInternal, Err: fmt.Errorf("rebuild cache before pruning: %w", err)}
+				}
 				_, _ = fmt.Fprintf(stderr, "warning: could not rebuild cache: %v\n", err)
 				store = nil
 			}
 		} else {
 			store, err = cache.Open(cacheDir, openOpts)
 			if err != nil {
+				if opts.PruneCache {
+					return &ExitCodeError{Code: ExitInternal, Err: fmt.Errorf("open cache for pruning: %w", err)}
+				}
 				_, _ = fmt.Fprintf(stderr, "warning: could not open cache: %v\n", err)
 				store = nil
 			}
@@ -158,13 +118,13 @@ func run(args []string, stdout, stderr io.Writer) error {
 	}
 
 	if opts.PruneCache {
-		return runPruneCache(opts, reg, store, stdout, stderr)
+		return runPruneCache(opts, reg, store, scope, stdout, stderr)
 	}
 
 	// Baseline discovery / load.
 	var bl *baseline.Baseline
-	if !merged.NoBaseline {
-		path := merged.BaselineFile
+	if !plan.baselineDisabled {
+		path := plan.baselineFile
 		if path == "" {
 			path = baseline.Discover(".")
 		}
@@ -177,39 +137,22 @@ func run(args []string, stdout, stderr io.Writer) error {
 		}
 	}
 
-	// Project root for cache-relative keys: first path if dir, else parent.
-	projectRoot := "."
-	if len(opts.Paths) > 0 {
-		p := opts.Paths[0]
-		if fi, serr := os.Stat(p); serr == nil && fi.IsDir() {
-			if abs, aerr := filepath.Abs(p); aerr == nil {
-				projectRoot = abs
-			} else {
-				projectRoot = p
-			}
-		} else if abs, aerr := filepath.Abs(filepath.Dir(p)); aerr == nil {
-			projectRoot = abs
-		}
-	}
-
-	walkOpts := engine.DefaultWalkOptions()
-	walkOpts.IncludeTests = merged.IncludeTests
-	walkOpts.Include = merged.Include
-	walkOpts.Exclude = merged.Exclude
-
 	analyzer := engine.NewAnalyzerBuilder().
 		Registry(reg).
 		ScanContext(ctx).
-		WalkOptions(walkOpts).
+		WalkOptions(plan.walkOptions).
 		Cache(store).
 		Baseline(bl).
-		ProjectRoot(projectRoot).
+		ProjectRoot(scope.ProjectRoot()).
 		Build()
 
 	t0 := time.Now()
 	res, err := analyzer.AnalyzePaths(opts.Paths)
 	wall := time.Since(t0)
 	if err != nil {
+		return &ExitCodeError{Code: ExitInternal, Err: err}
+	}
+	if err := flushCache(store); err != nil {
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}
 
@@ -227,6 +170,14 @@ func run(args []string, stdout, stderr io.Writer) error {
 	// Product-style scan summary (Rust make run / --no-terminal).
 	// Always on stderr so JSON/SARIF stdout stays pure for tooling.
 	printScanSummary(stderr, res, findings, wall)
+	reportScanDiagnostics(stderr, res.Diagnostics)
+	if len(res.Errors) > 0 {
+		reportScanErrors(stderr, res.Errors)
+		return &ExitCodeError{
+			Code: ExitInternal,
+			Err:  fmt.Errorf("analysis incomplete: %d file(s) could not be analyzed", len(res.Errors)),
+		}
+	}
 
 	// --no-terminal: summary only (no per-finding text dump). Still emit
 	// machine formats when explicitly requested (json/sarif).
@@ -286,7 +237,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	return nil
 }
 
-func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, stdout, stderr io.Writer) error {
+func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, scope engine.ScanScope, stdout, stderr io.Writer) error {
 	if store == nil {
 		_, _ = fmt.Fprintln(stdout, "cache disabled; nothing to prune")
 		return nil
@@ -300,24 +251,8 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 		return &ExitCodeError{Code: ExitInternal, Err: err}
 	}
 	scanned := make(map[string]struct{}, len(entries))
-	// Prune uses project-relative keys; normalize to basenames-relative as stored.
-	// Use path as absolute normalized for best-effort match with scan-time keys.
-	projectRoot := "."
-	if len(opts.Paths) > 0 {
-		if abs, aerr := filepath.Abs(opts.Paths[0]); aerr == nil {
-			if fi, serr := os.Stat(abs); serr == nil && !fi.IsDir() {
-				projectRoot = filepath.Dir(abs)
-			} else {
-				projectRoot = abs
-			}
-		}
-	}
 	for _, e := range entries {
-		rel, rerr := filepath.Rel(projectRoot, e.Path)
-		if rerr != nil {
-			rel = e.Path
-		}
-		scanned[cache.NormalizePath(rel)] = struct{}{}
+		scanned[scope.CacheKey(e.Path)] = struct{}{}
 	}
 	pruned, err := store.Prune(scanned)
 	if err != nil {
@@ -337,6 +272,18 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 		_, _ = fmt.Fprintf(stdout, "Cache at %s is clean (0 stale entries, 0 orphans)\n", store.Dir())
 	}
 	_ = stderr
+	return nil
+}
+
+// flushCache reconciles orphaned cache files after analyzer-owned prune and
+// flush have completed successfully.
+func flushCache(store *cache.Store) error {
+	if store == nil {
+		return nil
+	}
+	if _, err := store.CleanOrphans(); err != nil {
+		return fmt.Errorf("prune cache: %w", err)
+	}
 	return nil
 }
 
@@ -362,7 +309,13 @@ func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.
 	if st.FilesSkipped > 0 {
 		_, _ = fmt.Fprintf(w, "  skipped %d files\n", st.FilesSkipped)
 	}
+	if len(res.Errors) > 0 {
+		_, _ = fmt.Fprintf(w, "  incomplete: %d file(s) could not be analyzed\n", len(res.Errors))
+	}
 	if len(findings) == 0 {
+		if len(res.Errors) > 0 {
+			return
+		}
 		_, _ = fmt.Fprintln(w, "no slop detected")
 		return
 	}
@@ -415,6 +368,18 @@ func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.
 	_, _ = fmt.Fprintf(w, "  top rules: %s\n", strings.Join(parts, ", "))
 	if exampleCount > 0 {
 		_, _ = fmt.Fprintf(w, "  example findings: %d (of %d total)\n", exampleCount, len(findings))
+	}
+}
+
+func reportScanErrors(w io.Writer, scanErrors []engine.ScanError) {
+	for _, scanErr := range scanErrors {
+		_, _ = fmt.Fprintf(w, "analysis error [%s]: %s\n", scanErr.Kind, scanErr.Error())
+	}
+}
+
+func reportScanDiagnostics(w io.Writer, diagnostics []engine.ScanDiagnostic) {
+	for _, diagnostic := range diagnostics {
+		_, _ = fmt.Fprintf(w, "analysis warning [%s]: %s\n", diagnostic.Kind, diagnostic.String())
 	}
 }
 

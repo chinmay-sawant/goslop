@@ -19,9 +19,9 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/export"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/export"
 )
 
 // defaultScanPath matches Makefile SCAN_PATH (gopdfsuit §12.4 reference corpus).

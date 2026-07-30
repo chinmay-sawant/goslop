@@ -1,6 +1,6 @@
 package goparse
 
-import "github.com/chinmay/goslop/internal/core"
+import "github.com/chinmay-sawant/goslop/internal/core"
 
 // AsTree type-asserts v to a *Tree with a non-nil File suitable for inspection.
 func AsTree(v any) *Tree {

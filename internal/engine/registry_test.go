@@ -3,8 +3,8 @@ package engine_test
 import (
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
 )
 
 func TestDefaultRegistryEmptyOrRegistered(t *testing.T) {

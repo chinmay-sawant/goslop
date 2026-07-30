@@ -18,7 +18,7 @@ import (
 	"go/token"
 	"unsafe"
 
-	"github.com/chinmay/goslop/internal/ast"
+	"github.com/chinmay-sawant/goslop/internal/ast"
 )
 
 // Tree holds a parsed *ast.File, file set, source, and line-start table.
@@ -120,7 +120,7 @@ func (t *Tree) Slice(start, end int) string {
 		return ""
 	}
 	b := src[start:end]
-	// Source is owned by Tree and not mutated after Parse.
+	// #nosec G103 -- Tree.Source is immutable after Parse and callers receive a read-only string view.
 	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 

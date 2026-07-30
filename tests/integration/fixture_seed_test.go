@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chinmay/goslop/tests/integration"
+	"github.com/chinmay-sawant/goslop/tests/integration"
 )
 
 // TestSeedFixtureMatrix exercises the Phase 12 integration harness on a small

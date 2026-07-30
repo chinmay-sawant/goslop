@@ -6,10 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/cwe"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/cwe"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 var execCommandMeta = &rules.RuleMetadata{
@@ -58,6 +58,13 @@ type goTestPlugin struct {
 func (p *goTestPlugin) ID() core.LanguageID  { return core.LangGo }
 func (p *goTestPlugin) Extensions() []string { return []string{"go"} }
 func (p *goTestPlugin) Detectors() []core.Detector {
+	if p.dets != nil {
+		return p.dets
+	}
+	return []core.Detector{&execCommandDetector{}}
+}
+
+func (p *goTestPlugin) NewDetectors() []core.Detector {
 	if p.dets != nil {
 		return p.dets
 	}

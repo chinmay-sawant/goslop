@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/export"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/export"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestExportContextAndChunks(t *testing.T) {
@@ -73,6 +73,114 @@ func TestExportContextAndChunks(t *testing.T) {
 	// Default whole_function: Context should include the full Bad() body.
 	if !strings.Contains(text, "func Bad()") {
 		t.Fatalf("default whole-function context missing func:\n%s", text)
+	}
+}
+
+func TestExportDualSurfaceMatchesSingleSurfaceRendering(t *testing.T) {
+	dir := t.TempDir()
+	srcPath := filepath.Join(dir, "sample.go")
+	src := "package sample\n\nfunc Flag() {\n\t_ = 1\n}\n"
+	if err := os.WriteFile(srcPath, []byte(src), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	finding := rules.Finding{
+		RuleID: "PERF-1", File: srcPath, Line: 4, Column: 2,
+		Message: "test", Severity: rules.SeverityLow,
+		Fingerprint: "goslop:2:PERF-1:sample.go:abcd",
+	}
+	sources := map[string]string{srcPath: src}
+	contextOnlyDir := filepath.Join(dir, "context-only")
+	chunksOnlyDir := filepath.Join(dir, "chunks-only")
+	dualContextDir := filepath.Join(dir, "dual-context")
+	dualChunksDir := filepath.Join(dir, "dual-chunks")
+
+	if _, err := export.ExportFindings([]rules.Finding{finding}, export.Options{
+		ExportContext: true, ContextOutputDir: contextOnlyDir,
+	}, sources); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := export.ExportFindings([]rules.Finding{finding}, export.Options{
+		ExportChunks: true, ChunksOutputDir: chunksOnlyDir,
+	}, sources); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := export.ExportFindings([]rules.Finding{finding}, export.Options{
+		ExportContext: true, ContextOutputDir: dualContextDir,
+		ExportChunks: true, ChunksOutputDir: dualChunksDir,
+	}, sources); err != nil {
+		t.Fatal(err)
+	}
+
+	if got, want := readFile(t, filepath.Join(dualContextDir, "1.txt")), readFile(t, filepath.Join(contextOnlyDir, "1.txt")); got != want {
+		t.Fatalf("dual context differs from context-only output:\n%s", got)
+	}
+	if got, want := readFile(t, filepath.Join(dualChunksDir, "Chunk_1_1.txt")), readFile(t, filepath.Join(chunksOnlyDir, "Chunk_1_1.txt")); got != want {
+		t.Fatalf("dual chunks differ from chunks-only output:\n%s", got)
+	}
+}
+
+func TestExportContextPreservesUnownedTextFiles(t *testing.T) {
+	dir := t.TempDir()
+	ctxDir := filepath.Join(dir, "ctx")
+	if err := os.MkdirAll(ctxDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	keepPath := filepath.Join(ctxDir, "notes.txt")
+	if err := os.WriteFile(keepPath, []byte("keep"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	stalePath := filepath.Join(ctxDir, "1.txt")
+	if err := os.WriteFile(stalePath, []byte("stale"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := export.ExportFindings(nil, export.Options{
+		ExportContext:    true,
+		ContextOutputDir: ctxDir,
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := readFile(t, keepPath); got != "keep" {
+		t.Fatalf("unowned file changed: %q", got)
+	}
+	if _, err := os.Stat(stalePath); !os.IsNotExist(err) {
+		t.Fatalf("owned stale output remains, stat error=%v", err)
+	}
+}
+
+func TestExportRejectsContextAndChunkDirectoryCollision(t *testing.T) {
+	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "output")
+	_, err := export.ExportFindings(nil, export.Options{
+		ExportContext:    true,
+		ExportChunks:     true,
+		ContextOutputDir: outputDir,
+		ChunksOutputDir:  outputDir,
+	}, nil)
+	if err == nil || !strings.Contains(err.Error(), "must use different output directories") {
+		t.Fatalf("expected directory collision error, got %v", err)
+	}
+	if _, err := os.Stat(outputDir); !os.IsNotExist(err) {
+		t.Fatalf("rejected collision must not create output dir, stat error=%v", err)
+	}
+}
+
+func TestExportReturnsContextWriteFailureAfterCleanup(t *testing.T) {
+	dir := t.TempDir()
+	ctxDir := filepath.Join(dir, "ctx")
+	if err := os.MkdirAll(filepath.Join(ctxDir, "1.txt"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	_, err := export.ExportFindings([]rules.Finding{{
+		RuleID: "PERF-1", File: "missing.go", Line: 1, Column: 1,
+		Message: "test", Severity: rules.SeverityLow,
+	}}, export.Options{
+		ExportContext:    true,
+		ContextOutputDir: ctxDir,
+	}, nil)
+	if err == nil || !strings.Contains(err.Error(), "write context") {
+		t.Fatalf("expected context write failure, got %v", err)
 	}
 }
 

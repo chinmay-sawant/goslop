@@ -3,6 +3,7 @@ package app
 import (
 	_ "embed"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -11,7 +12,7 @@ import (
 var initTemplate []byte
 
 // runInit writes templates/goslop.toml content to ./goslop.toml when absent.
-func runInit() error {
+func runInit(stdout io.Writer) error {
 	path := "goslop.toml"
 	if st, err := os.Stat(path); err == nil && !st.IsDir() {
 		return &ExitCodeError{
@@ -33,6 +34,6 @@ func runInit() error {
 	if err != nil {
 		abs = path
 	}
-	fmt.Printf("wrote starter goslop.toml to %s\n", abs)
+	_, _ = fmt.Fprintf(stdout, "wrote starter goslop.toml to %s\n", abs)
 	return nil
 }

@@ -30,24 +30,36 @@ type ProjectContext struct {
 type LanguagePlugin interface {
 	ID() LanguageID
 	Extensions() []string
+	// Detectors returns the immutable catalogue used for registration and rule
+	// listing. Implementations must not expose scan-lifecycle state here.
 	Detectors() []Detector
-	ParseSource(path, source string) (*ParsedUnit, error)
+	// NewDetectors returns fresh detector instances for one AnalyzePaths call.
+	// Stateful detectors must never be shared by two calls.
+	NewDetectors() []Detector
+	ParseSource(path, source string) (*ParseResult, error)
 	PrepareProject(ctx *ScanContext, projectRoots []string)
 	ExtractDeps(unit *ParsedUnit, project ProjectContext) []string
 }
 
 // BasePlugin provides default implementations for optional LanguagePlugin methods.
+// Its empty NewDetectors result is valid only for plugins with an empty
+// catalogue; the engine rejects a session that does not match Detectors.
 type BasePlugin struct{}
 
 // ParseSource returns a source-only ParsedUnit (no AST). Language defaults to Go;
 // plugins should override ParseSource when language is not Go.
-func (BasePlugin) ParseSource(path, source string) (*ParsedUnit, error) {
-	return NewParsedUnit(LanguageGo, path, source), nil
+func (BasePlugin) ParseSource(path, source string) (*ParseResult, error) {
+	return &ParseResult{
+		Unit:    NewParsedUnit(LanguageGo, path, source),
+		Quality: ParseQualitySourceOnly,
+	}, nil
 }
 
 func (BasePlugin) PrepareProject(*ScanContext, []string) {}
 
 func (BasePlugin) ExtractDeps(*ParsedUnit, ProjectContext) []string { return nil }
+
+func (BasePlugin) NewDetectors() []Detector { return nil }
 
 // ParserConfigurer is implemented by plugins that configure a reusable parser.
 // Optional; pure-Go plugins typically parse per-file in ParseSource with no pool.
@@ -64,5 +76,28 @@ type ProjectPreparer interface {
 // UnitParser is an optional capability for custom source parsing.
 // LanguagePlugin already includes ParseSource; this alias supports type asserts.
 type UnitParser interface {
-	ParseSource(path, source string) (*ParsedUnit, error)
+	ParseSource(path, source string) (*ParseResult, error)
+}
+
+// ParseQuality describes how completely a language plugin understood a source file.
+type ParseQuality uint8
+
+const (
+	// ParseQualityUnknown is the zero value for an unspecified parse outcome.
+	ParseQualityUnknown ParseQuality = iota
+	// ParseQualityComplete means the source produced a complete syntax tree.
+	ParseQualityComplete
+	// ParseQualityPartial means a syntax tree was recovered with diagnostics.
+	ParseQualityPartial
+	// ParseQualitySourceOnly means analysis can continue without a syntax tree.
+	ParseQualitySourceOnly
+)
+
+// ParseResult separates a fatal parsing failure from a usable unit with a
+// non-fatal quality diagnostic. Engine policy can therefore retain source-only
+// analysis while still exposing incomplete syntax to callers.
+type ParseResult struct {
+	Unit       *ParsedUnit
+	Quality    ParseQuality
+	Diagnostic string
 }

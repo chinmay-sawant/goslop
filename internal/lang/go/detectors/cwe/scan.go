@@ -6,17 +6,17 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // cweRuleFn is one CWE detector over a prebuilt fact bag.
 type cweRuleFn func(unit *core.ParsedUnit, facts *GoCweFacts, out *[]rules.Finding)
 
 type cweRuleEntry struct {
-	id    string
-	fn    cweRuleFn
-	meta  *rules.RuleMetadata
+	id   string
+	fn   cweRuleFn
+	meta *rules.RuleMetadata
 	// gates are optional SourceIndex needles (any-of). When non-empty, Run
 	// skips the rule when facts.Index has none of them. Nil/empty = always run.
 	// Must be FN-safe: only needles the rule needs before it can emit.

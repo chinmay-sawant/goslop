@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
 )
 
 func TestCollectFiles_SkipParityHiddenAndIgnored(t *testing.T) {

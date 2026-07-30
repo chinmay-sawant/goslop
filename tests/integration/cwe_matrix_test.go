@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/tests/integration"
+	"github.com/chinmay-sawant/goslop/tests/integration"
 )
 
 // TestCWEFixturesMatrix ports Rust go_cwe_fixtures_fire_vulnerable_and_silence_safe

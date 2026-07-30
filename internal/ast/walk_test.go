@@ -3,7 +3,7 @@ package ast_test
 import (
 	"testing"
 
-	"github.com/chinmay/goslop/internal/ast"
+	"github.com/chinmay-sawant/goslop/internal/ast"
 )
 
 func TestSourceIndexStillWorksWithoutTreeSitter(t *testing.T) {

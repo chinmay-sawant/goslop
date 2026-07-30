@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chinmay/goslop/internal/core"
-	golang "github.com/chinmay/goslop/internal/lang/go"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	golang "github.com/chinmay-sawant/goslop/internal/lang/go"
 )
 
 // RegistryError is a plugin composition error.
@@ -25,6 +25,46 @@ type Registry struct {
 	detectors   []core.Detector
 	byLanguage  map[core.LanguageID][]int
 	allIndices  []int
+}
+
+// scanSession owns the detector instances and lifecycle state for exactly one
+// Analyzer.AnalyzePaths call. Registry keeps the immutable catalogue used by
+// rule listing and file discovery; a session gets fresh detector instances.
+type scanSession struct {
+	detectors  []core.Detector
+	byLanguage map[core.LanguageID][]int
+}
+
+// DetectorCount returns the number of detectors available to this scan.
+func (s *scanSession) DetectorCount() int {
+	if s == nil {
+		return 0
+	}
+	return len(s.detectors)
+}
+
+// Detectors returns session-local detectors in registration order.
+func (s *scanSession) Detectors() []core.Detector {
+	if s == nil {
+		return nil
+	}
+	return s.detectors
+}
+
+// DetectorIndices returns session-local detector indices for a language.
+func (s *scanSession) DetectorIndices(language core.LanguageID) []int {
+	if s == nil {
+		return nil
+	}
+	return s.byLanguage[language]
+}
+
+// Detector returns a session-local detector by index.
+func (s *scanSession) Detector(index int) core.Detector {
+	if s == nil || index < 0 || index >= len(s.detectors) {
+		return nil
+	}
+	return s.detectors[index]
 }
 
 // NewRegistry builds a registry from plugins. Each plugin's Detectors() is
@@ -91,6 +131,72 @@ func (r *Registry) RegisterPlugin(plugin core.LanguagePlugin) error {
 	}
 	r.plugins = append(r.plugins, plugin)
 	return nil
+}
+
+// newScanSession creates fresh detector instances for one scan. NewDetectors
+// is an explicit factory seam so a plugin cannot accidentally reuse lifecycle
+// state that the registry holds for catalogue listing.
+func (r *Registry) newScanSession() (*scanSession, error) {
+	if r == nil {
+		return nil, &RegistryError{Msg: "nil registry"}
+	}
+	session := &scanSession{byLanguage: make(map[core.LanguageID][]int, len(r.plugins))}
+	for _, plugin := range r.plugins {
+		id := plugin.ID()
+		catalogue := r.DetectorsForLanguage(id)
+		sessionDetectors := plugin.NewDetectors()
+		if !sameDetectorCatalogue(catalogue, sessionDetectors) {
+			return nil, &RegistryError{
+				Msg: fmt.Sprintf("scan detector catalogue does not match registered catalogue for language %s", id),
+			}
+		}
+		for _, det := range sessionDetectors {
+			if det == nil {
+				return nil, &RegistryError{Msg: "nil scan detector"}
+			}
+			if det.Language() != id {
+				return nil, &RegistryError{
+					Msg: fmt.Sprintf("scan detector language %s does not match plugin language %s", det.Language(), id),
+				}
+			}
+			idx := len(session.detectors)
+			session.detectors = append(session.detectors, det)
+			session.byLanguage[id] = append(session.byLanguage[id], idx)
+		}
+	}
+	return session, nil
+}
+
+// sameDetectorCatalogue compares detector-set shape without requiring session
+// instances to share identity with the immutable registry catalogue.
+func sameDetectorCatalogue(catalogue, session []core.Detector) bool {
+	if len(catalogue) != len(session) {
+		return false
+	}
+	catalogueRules := ruleIDMultiplicity(catalogue)
+	sessionRules := ruleIDMultiplicity(session)
+	if len(catalogueRules) != len(sessionRules) {
+		return false
+	}
+	for ruleID, count := range catalogueRules {
+		if sessionRules[ruleID] != count {
+			return false
+		}
+	}
+	return true
+}
+
+func ruleIDMultiplicity(detectors []core.Detector) map[string]int {
+	counts := make(map[string]int)
+	for _, detector := range detectors {
+		if detector == nil {
+			return nil
+		}
+		for _, ruleID := range detector.RuleIDs() {
+			counts[ruleID]++
+		}
+	}
+	return counts
 }
 
 // DetectorCount returns the number of registered detectors.

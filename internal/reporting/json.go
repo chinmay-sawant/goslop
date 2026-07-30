@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // JSONReporter writes a simple envelope:
@@ -25,12 +25,8 @@ func (r JSONReporter) Write(findings []rules.Finding, w io.Writer) error {
 	if version == "" {
 		version = DefaultVersion
 	}
-	// Ensure fingerprints for stable machine output.
-	out := make([]rules.Finding, len(findings))
-	copy(out, findings)
-	for i := range out {
-		out[i].EnsureFingerprint()
-	}
+	// Ensure fingerprints for stable machine output without mutating callers.
+	out := normalizedFindings(findings)
 	env := jsonEnvelope{
 		Findings: out,
 		Version:  version,

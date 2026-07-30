@@ -58,7 +58,7 @@ go build -o bin/goslop ./cmd/goslop
 - [x] Copy PERF (+ CWE) detector registries into `internal/lang/go/detectors/*/registry/`
 - [x] Copy `scripts/findings` and `scripts/chunks` corpora
 - [x] Copy selected product docs + `goslop.schema.json` + `templates/goslop.toml`
-- [x] `go mod init github.com/chinmay/goslop` (module path: `github.com/chinmay/goslop`)
+- [x] `go mod init github.com/chinmay-sawant/goslop` (module path: `github.com/chinmay-sawant/goslop`)
 - [x] Root `README.md` describing Go port status and how to run
 - [x] Root `Makefile` with `build`, `test`, `lint` targets
 - [x] `.gitignore` for `bin/`, materialize dirs, cache
