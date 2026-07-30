@@ -5,6 +5,7 @@ import (
 
 	"github.com/chinmay-sawant/goslop/internal/core"
 	"github.com/chinmay-sawant/goslop/internal/engine"
+	golang "github.com/chinmay-sawant/goslop/internal/lang/go"
 	"github.com/chinmay-sawant/goslop/internal/lang/python"
 )
 
@@ -72,7 +73,6 @@ func TestNewRegistryWithLanguagesUnknown(t *testing.T) {
 }
 
 func TestRegistryIndexesDetectorsByLanguageID(t *testing.T) {
-	// Go-only default: all detectors keyed under LanguageGo.
 	reg := engine.DefaultRegistry()
 	goDet := reg.DetectorsForLanguage(core.LanguageGo)
 	if len(goDet) == 0 {
@@ -87,7 +87,6 @@ func TestRegistryIndexesDetectorsByLanguageID(t *testing.T) {
 		t.Fatalf("python detector indices should be empty without plugin, got %d", n)
 	}
 
-	// Custom multi-language registry: python stub adds zero detectors under LanguagePython.
 	multi, err := engine.NewRegistry([]core.LanguagePlugin{
 		python.NewPlugin(),
 	})
@@ -99,5 +98,70 @@ func TestRegistryIndexesDetectorsByLanguageID(t *testing.T) {
 	}
 	if _, ok := multi.Plugin(core.LanguagePython); !ok {
 		t.Fatal("python plugin missing from multi registry")
+	}
+}
+
+func TestRegistryForLanguagesFiltersPlugins(t *testing.T) {
+	base, err := engine.NewRegistry([]core.LanguagePlugin{
+		golang.NewPlugin(),
+		python.NewPlugin(),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	goOnly, err := engine.RegistryForLanguages(base, []core.LanguageID{core.LanguageGo})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := goOnly.Plugin(core.LanguageGo); !ok {
+		t.Fatal("expected Go plugin")
+	}
+	if _, ok := goOnly.Plugin(core.LanguagePython); ok {
+		t.Fatal("python plugin should be filtered out")
+	}
+	if _, ok := goOnly.ExtensionMap()["py"]; ok {
+		t.Fatal("py extension should not be in go-only map")
+	}
+	if _, ok := goOnly.ExtensionMap()["go"]; !ok {
+		t.Fatal("go extension missing")
+	}
+
+	pyOnly, err := engine.RegistryForLanguages(base, []core.LanguageID{core.LanguagePython})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := pyOnly.Plugin(core.LanguageGo); ok {
+		t.Fatal("go should be filtered out")
+	}
+	if _, ok := pyOnly.Plugin(core.LanguagePython); !ok {
+		t.Fatal("expected python plugin")
+	}
+	if pyOnly.DetectorCount() != 0 {
+		t.Fatalf("detector count=%d", pyOnly.DetectorCount())
+	}
+}
+
+func TestRegistryForLanguagesSkipsMissingPlugin(t *testing.T) {
+	// Default production registry has Go only. Enabling python must not crash
+	// when the plugin is not in the base registry.
+	base := engine.DefaultRegistry()
+	reg, err := engine.RegistryForLanguages(base, []core.LanguageID{core.LanguagePython})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(reg.Plugins()) != 0 {
+		t.Fatalf("expected empty registry when python plugin absent, got %d plugins", len(reg.Plugins()))
+	}
+	// Enabling go+python keeps go and skips missing python from DefaultRegistry.
+	reg, err = engine.RegistryForLanguages(base, []core.LanguageID{core.LanguageGo, core.LanguagePython})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := reg.Plugin(core.LanguageGo); !ok {
+		t.Fatal("expected Go plugin")
+	}
+	if _, ok := reg.Plugin(core.LanguagePython); ok {
+		t.Fatal("python must not appear without a registered plugin on base")
 	}
 }

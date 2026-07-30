@@ -117,7 +117,10 @@ make bench BENCHTIME=20x
 
 Call out every compatibility change in the PR body and in the affected documentation or schema. Include the old behavior, new behavior, migration step, and validation proof.
 
-The current known configuration migration is intentional: the unsupported `languages` and `typed.enabled` promises were removed. Remove those settings from `goslop.toml`; supported Go scanning and active configuration options remain unchanged.
+Configuration notes:
+
+- `languages` is a supported key again (v0.0.2 Phase 3). Default when unset is `["go"]`. Unknown tokens and an explicit empty list are rejected. Only registered language plugins contribute detectors and file extensions; enabling `python` before a Python plugin is registered is a no-op for that language (no crash).
+- `typed.enabled` remains unsupported and is still rejected at load time.
 
 If you change a CLI flag, config field, output schema, rule identifier, baseline fingerprint, or exported file format, add migration guidance and compatibility tests before marking the checklist row complete.
 

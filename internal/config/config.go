@@ -1,7 +1,12 @@
 // Package config loads and merges goslop.toml with CLI options.
 //
-// Schema mirrors the Rust product subset used by goslop: only/skip, fail_on,
-// include/exclude, exclude_tests, baseline, cache, taint, bad_practices, export.
+// Schema mirrors the Rust product subset used by goslop: languages, only/skip,
+// fail_on, include/exclude, exclude_tests, baseline, cache, taint,
+// bad_practices, export.
+//
+// languages: when unset, Merged.Languages defaults to [LanguageGo]. An
+// explicit empty list is rejected. Unknown tokens are rejected via
+// core.ParseLanguages. There is no CLI --languages override in this phase.
 package config
 
 import (
@@ -28,6 +33,10 @@ type Document struct {
 
 // Section is the [goslop] table.
 type Section struct {
+	// Languages lists enabled analysis languages (e.g. "go", "python").
+	// When unset, the product default is Go-only (see Merged.Languages).
+	// An explicit empty list is rejected at parse time.
+	Languages    []string           `toml:"languages"`
 	FailOn       *string            `toml:"fail_on"`
 	Skip         []string           `toml:"skip"`
 	Only         []string           `toml:"only"`
@@ -108,6 +117,14 @@ func Parse(data []byte) (*Document, error) {
 }
 
 func validate(s *Section) error {
+	// languages: when the key is present (including empty array), validate tokens.
+	// TOML decode leaves Languages as nil when the key is absent, and as a
+	// non-nil (possibly empty) slice when the key is present.
+	if s.Languages != nil {
+		if _, err := core.ParseLanguages(s.Languages); err != nil {
+			return fmt.Errorf("goslop.languages: %w", err)
+		}
+	}
 	if s.FailOn != nil {
 		if _, err := core.ParseFailPolicy(*s.FailOn); err != nil {
 			return fmt.Errorf("goslop.fail_on: %w", err)
@@ -182,8 +199,12 @@ type MergeInput struct {
 
 // Merged is config applied onto CLI defaults for the app layer.
 type Merged struct {
-	Doc            *Document // nil when no config file
-	ConfigPath     string
+	Doc        *Document // nil when no config file
+	ConfigPath string
+	// Languages are the enabled analysis languages after merge.
+	// Always non-empty: defaults to [LanguageGo] when the config key is unset
+	// or no config file is present. There is no CLI override in this phase.
+	Languages      []core.LanguageID
 	Only           []string
 	Skip           []string
 	Include        []string
@@ -220,6 +241,7 @@ func LoadAndMerge(in MergeInput) (*Merged, error) {
 		path = Discover(start)
 	}
 	out := &Merged{
+		Languages:      core.DefaultEnabledLanguages(),
 		Only:           append([]string(nil), in.Only...),
 		Skip:           append([]string(nil), in.Skip...),
 		IncludeTests:   in.IncludeTests,
@@ -244,6 +266,16 @@ func LoadAndMerge(in MergeInput) (*Merged, error) {
 	out.Doc = doc
 	out.ConfigPath = path
 	s := doc.Goslop
+
+	// languages: explicit config wins; unset keeps product default (Go-only).
+	// Validated in Parse; re-parse here so Merged holds LanguageID values.
+	if s.Languages != nil {
+		langs, lerr := core.ParseLanguages(s.Languages)
+		if lerr != nil {
+			return nil, fmt.Errorf("goslop.languages: %w", lerr)
+		}
+		out.Languages = langs
+	}
 
 	// only / skip are additive (union of config + CLI).
 	out.Only = unionStable(s.Only, in.Only)

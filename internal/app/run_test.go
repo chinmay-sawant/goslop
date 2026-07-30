@@ -137,6 +137,108 @@ func TestRunParseFallbackWritesWarningAndKeepsMachineOutput(t *testing.T) {
 	}
 }
 
+func TestRunLanguagesGoOnlyIgnoresPythonFiles(t *testing.T) {
+	dir := t.TempDir()
+	// Default (unset languages) and explicit languages=["go"] both ignore .py.
+	if err := os.WriteFile(filepath.Join(dir, "goslop.toml"), []byte(`[goslop]
+languages = ["go"]
+fail_on = "none"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "ok.go"), []byte("package sample\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// A deliberately "bad" python file that would fail encoding/parse if scanned.
+	if err := os.WriteFile(filepath.Join(dir, "bad.py"), []byte("print('hi')\n\xff"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	if err := run([]string{"--format", "json", "--no-cache", dir}, &out, &errBuf); err != nil {
+		t.Fatalf("go-only scan should ignore .py: %v\nstderr=%s", err, errBuf.String())
+	}
+	// scanned 1 file (the .go), not the .py
+	if !strings.Contains(errBuf.String(), "scanned 1 files") {
+		t.Fatalf("expected single go file scanned, stderr=%q", errBuf.String())
+	}
+}
+
+func TestRunLanguagesPythonOnlyWithoutPluginDoesNotCrash(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "goslop.toml"), []byte(`[goslop]
+languages = ["python"]
+fail_on = "none"
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte("package sample\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "app.py"), []byte("x = 1\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	// No Python plugin on main → empty registry → zero files scanned, clean exit.
+	if err := run([]string{"--format", "json", "--no-cache", dir}, &out, &errBuf); err != nil {
+		t.Fatalf("python-only without plugin must not crash: %v\nstderr=%s", err, errBuf.String())
+	}
+	if !strings.Contains(errBuf.String(), "scanned 0 files") {
+		t.Fatalf("expected zero files scanned, stderr=%q", errBuf.String())
+	}
+	if !strings.Contains(out.String(), `"findings"`) {
+		t.Fatalf("json: %q", out.String())
+	}
+}
+
+func TestRunListRulesRespectsLanguagesConfig(t *testing.T) {
+	dir := t.TempDir()
+	// languages=["python"] with no plugin → no rules listed.
+	cfg := filepath.Join(dir, "goslop.toml")
+	if err := os.WriteFile(cfg, []byte(`[goslop]
+languages = ["python"]
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	if err := run([]string{"--list-rules", "--config", cfg}, &out, &errBuf); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "no rules registered") {
+		t.Fatalf("expected empty rule list when only unregistered language enabled: %q", out.String())
+	}
+
+	// languages=["go"] still lists Go rules.
+	if err := os.WriteFile(cfg, []byte(`[goslop]
+languages = ["go"]
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out.Reset()
+	errBuf.Reset()
+	if err := run([]string{"--list-rules", "--config", cfg}, &out, &errBuf); err != nil {
+		t.Fatal(err)
+	}
+	s := out.String()
+	if !strings.Contains(s, "CWE-") && !strings.Contains(s, "PERF-") {
+		t.Fatalf("expected go rules: %q", s)
+	}
+}
+
+func TestRunInvalidLanguagesConfigRejected(t *testing.T) {
+	dir := t.TempDir()
+	cfg := filepath.Join(dir, "goslop.toml")
+	if err := os.WriteFile(cfg, []byte(`[goslop]
+languages = ["ruby"]
+`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	err := run([]string{"--list-rules", "--config", cfg}, &out, &errBuf)
+	if ExitCode(err) != ExitConfig {
+		t.Fatalf("exit=%d err=%v", ExitCode(err), err)
+	}
+}
+
 func TestRunConfigFailPolicyHasObservableEffect(t *testing.T) {
 	makeProject := func(t *testing.T, configBody string) string {
 		t.Helper()
