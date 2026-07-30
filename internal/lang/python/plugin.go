@@ -1,16 +1,17 @@
 // Package python implements the Python LanguagePlugin for goslop.
 //
-// Status: multi-language foundation (#39) plus priority CWE heuristics (#52).
-// ParseSource is source-only (no Python AST / CGO tree-sitter). Detectors scan
-// unit.Source via pure-Go patterns (see detectors/cwe). BP (#53) and PERF (#54)
-// are out of scope for this package's current catalogue.
+// Status: multi-language foundation (#39) plus priority CWE heuristics (#52)
+// and BP-PY bad-practice heuristics (#53). ParseSource is source-only (no
+// Python AST / CGO tree-sitter). Detectors scan unit.Source via pure-Go
+// patterns under detectors/{cwe,bad_practices}. PERF (#54) is deferred.
+//
+// Production DefaultRegistry stays Go-only; include Python via
+// engine.NewRegistryWithLanguages or python.Register when intentionally
+// enabling the language (tests / config languages).
 //
 // Callers use:
 //
 //	python.NewPlugin() / python.Register(reg)
-//
-// DefaultRegistry stays Go-only; include Python via engine.NewRegistryWithLanguages
-// or Register when intentionally enabling the language (tests / config languages).
 package python
 
 import (
@@ -18,7 +19,7 @@ import (
 	"github.com/chinmay-sawant/goslop/internal/lang/python/detectors"
 )
 
-// Plugin is the Python language plugin (source-only parse, CWE detectors).
+// Plugin is the Python language plugin (source-only parse + CWE/BP detectors).
 type Plugin struct {
 	core.BasePlugin
 }

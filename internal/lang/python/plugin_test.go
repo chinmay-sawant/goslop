@@ -1,6 +1,7 @@
 package python_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -20,14 +21,17 @@ func TestPythonPluginIdentityAndParse(t *testing.T) {
 	}
 	dets := p.Detectors()
 	if len(dets) == 0 {
-		t.Fatal("Detectors() empty; expected CWE scan detector")
+		t.Fatal("Detectors() empty; expected CWE + BP-PY detectors")
 	}
 	fresh := p.NewDetectors()
 	if len(fresh) != len(dets) {
 		t.Fatalf("NewDetectors() len = %d, want %d", len(fresh), len(dets))
 	}
-	// Priority CWE rule IDs must be present on the catalogue.
-	wantIDs := []string{"CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-502"}
+	// Priority CWE + sample BP-PY rule IDs must be present on the catalogue.
+	wantIDs := []string{
+		"CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-502",
+		"BP-PY-1", "BP-PY-8",
+	}
 	have := map[string]bool{}
 	for _, d := range dets {
 		if d.Language() != core.LanguagePython {
@@ -65,6 +69,36 @@ func TestPythonPluginIdentityAndParse(t *testing.T) {
 	}
 	if result.Unit.Path != "sample.py" {
 		t.Fatalf("path = %q", result.Unit.Path)
+	}
+}
+
+func TestPythonPluginHasBPPYRules(t *testing.T) {
+	t.Parallel()
+	p := python.NewPlugin()
+	dets := p.NewDetectors()
+	if len(dets) == 0 {
+		t.Fatal("expected at least one Python detector")
+	}
+	var foundBP bool
+	for _, d := range dets {
+		if d.Language() != core.LanguagePython {
+			t.Errorf("detector language = %v, want Python", d.Language())
+		}
+		for _, id := range d.RuleIDs() {
+			if strings.HasPrefix(id, "BP-PY-") {
+				foundBP = true
+				meta := d.MetadataFor(id)
+				if meta == nil {
+					t.Errorf("MetadataFor(%s) = nil", id)
+				}
+			}
+			if strings.HasPrefix(id, "BP-") && !strings.HasPrefix(id, "BP-PY-") {
+				t.Errorf("bare Go BP id on Python detector: %s", id)
+			}
+		}
+	}
+	if !foundBP {
+		t.Fatal("expected at least one BP-PY-* rule id on Python detectors")
 	}
 }
 
@@ -137,7 +171,7 @@ func TestPythonPluginRegisterInCustomRegistryOnly(t *testing.T) {
 		t.Fatalf("ExtensionMap py = (%v, %v), want python", lang, ok)
 	}
 	if n := len(reg.DetectorsForLanguage(core.LanguagePython)); n == 0 {
-		t.Fatal("python detectors should be non-empty (CWE scan)")
+		t.Fatal("python detectors should be non-empty (CWE + BP)")
 	}
 }
 

@@ -27,7 +27,7 @@
 
 | Fact | Evidence |
 |------|----------|
-| Python plugin source-only, **zero detectors** | `internal/lang/python/plugin.go` |
+| Python plugin source-only + **BP-PY detectors** (A+B+C subset) | `internal/lang/python/` + `detectors/bad_practices/` |
 | CWE catalogue ~344 rules | `ruleset/python/chunks/cwe-*.json` (`python_relevance`) |
 | BP catalogue 50 `BP-PY-*` | `ruleset/python/bad-practices.json` |
 | **No** Python PERF JSON | no `ruleset/python/chunks/perf-*` |
@@ -69,8 +69,8 @@
 ### BP — #53
 
 - [x] Detail checklist complete in [python-heuristics-bp.md](./python-heuristics-bp.md) (docs-only plan, 2026-07-31)
-- [ ] Priority `BP-PY-*` batch green on fixtures
-- [ ] Validation: `make lint` + `make test` recorded on implement branch
+- [x] Priority `BP-PY-*` batch green (A+B + C high-signal; inline unit tests; D/E deferred)
+- [x] Validation: `make lint` + `make test` green on `feat/python-bp-heuristics` (2026-07-31)
 
 ### PERF — #54 (deferred)
 
@@ -82,9 +82,11 @@
 
 ### Epic closure
 
-- [ ] #52 and #53 have shipped initial heuristic batches (or explicit partial `[~]` with remaining IDs listed)
-- [ ] #54 remains deferred or unblocked with catalogue + first detectors
-- [ ] Epic #51 success criteria reviewed against evidence
+- [x] #52 and #53 have shipped initial heuristic batches on `chore/epic-51-integration`  
+  **Evidence:** CWE-22/78/79/89/502 + BP-PY A/B + C high-signal; remaining BP/CWE/PERF still deferred (`[~]`).  
+  **Validation (integration):** `make lint` + `make test` green 2026-07-31.
+- [x] #54 remains deferred (no PERF catalogue)
+- [ ] Epic #51 closed when integration PR lands (or left open for remaining expansion)
 
 ---
 
