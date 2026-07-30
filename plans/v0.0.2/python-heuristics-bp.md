@@ -1,0 +1,480 @@
+# v0.0.2 / #53 — Python BP-PY bad-practice heuristics
+
+> **Parent:** `plans/v0.0.2/python-heuristics.md` — epic #51 rollup (BP stream)  
+> **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) — `python(bp): implement BP-PY bad-practice heuristics from catalogue`  
+> **Status:** not started — catalogue exists; **zero** Python BP detectors  
+> **Estimated effort:** multi-PR (priority subset first; remaining 50 as batches)  
+> **Ledger rule:** this file is the **canonical execution ledger** for #53. Mark `[x]` only with evidence; leave `make lint` / `make test` unchecked until both pass on the implement branch.
+
+---
+
+## Overview
+
+| Item | Current evidence |
+|------|------------------|
+| Catalogue | `ruleset/python/bad-practices.json` — **50** map keys `BP-PY-1` … `BP-PY-50` |
+| Catalogue README | `ruleset/python/README.md` — metadata only; **no** detectors claimed |
+| Python plugin | `internal/lang/python/plugin.go` — `Detectors()` / `NewDetectors()` return **nil** |
+| Plugin tests | `internal/lang/python/plugin_test.go` — asserts empty detector catalogue |
+| Parse quality | source-only (`ParseQualitySourceOnly`); no Python AST tree |
+| Go reference | `internal/lang/go/detectors/bad_practices/` — unified scan, `RegisterRule`, facts bag, fixture tests |
+| Pack routing | `internal/rules/pack.go` — `HasPrefix("BP-")` already classifies **`BP-PY-*`** as `PackBadPractice` |
+| Style profile | `StylePackPatterns` / `BP-*` globs cover `BP-PY-*` (prefix match) |
+| Fixtures today | `tests/fixtures/python/{sample,safe}.txt` only; no `BP-PY-*` hit/miss fixtures |
+| Issue body | `plans/PR/v0.0.2/issue-python-bp-heuristics-body.md` |
+| Parent epic | #51 |
+
+**ID policy:** keep catalogue IDs as **`BP-PY-*`**. Do **not** emit Go `BP-*` for Python. Do **not** point Go `metadata_gen.go` at `ruleset/python/`.
+
+**Detection strategy (v0):** pure-Go **source-pattern heuristics** over `ParsedUnit.Source` (mirror Go text fallbacks / needles). Full Python AST is out of scope for the first landings; refine later if a pure-Go parse path appears.
+
+**Priority subsets (issue #53 / product signal):**
+
+| Batch | Rules | Theme |
+|------:|-------|-------|
+| A — Core | `BP-PY-1`, `2`, `4`, `6`, `7` (+ optional `3`, `5`) | bare except / pass, mutable defaults, assert validation, `open` without `with` |
+| B — Security hygiene | `BP-PY-8` … `13` | `shell=True`, `os.system`, pickle, `yaml.load`, eval/exec, hardcoded secrets |
+| C — Framework high-signal | Flask `16`,`17`,`20`; Django `21`,`22`,`24`,`25`,`26`; FastAPI `30`,`32` | DEBUG/SECRET_KEY/`send_file`/raw SQL/`mark_safe`/`csrf_exempt`/blocking I/O/user path |
+| D — Templates / DB | `BP-PY-33`, `35` (+ optional `34`,`37`) | Jinja2 autoescape off; SQLAlchemy `text()` f-strings |
+| E — Rest | remaining of 50 | second+ PR; may ship as `[~]` deferred after A–D |
+
+Avoid shipping all **50** in the first PR if size risks review; first PR success = **A+B+C+D** (or A+B minimum with C/D follow-up), registered, fixture-backed.
+
+---
+
+## Executive Summary
+
+### Why this work
+
+- Epic #39 / PR #50 shipped catalogues + plugin stub; `BP-PY-*` never run.
+- Go already proves the product shape: one `*BadPracticeScan` detector, many registered rule fns, catalogue metadata, hit/miss fixtures.
+- Python must stay **opt-in** (`languages = ["python"]`); default registry remains Go-only.
+
+### Non-goals
+
+- CWE / PERF families (siblings #52 / #54)
+- Porting all **135** Go BP rules
+- Full framework type inference or cross-file taint
+- Tree-sitter / CGO Python parse requirement for first ship
+- Claiming catalogue coverage without fixtures
+
+### Dependency graph
+
+```text
+#39 foundation (done)
+    └─ #53 BP heuristics
+         Phase 1 scaffold + metadata + plugin wire
+              ├─ Phase 2 core (A)
+              ├─ Phase 3 security (B)
+              ├─ Phase 4 framework + templates/DB (C+D)
+              └─ Phase 5 remaining (E) optional / multi-PR
+         Phase 6 closure: fixtures manifest, list-rules, lint/test
+```
+
+Sibling #52 (CWE) may land package layout under `internal/lang/python/detectors/` first — **share** package tree; do not fork a second plugin.
+
+---
+
+## Phase 1: Scaffold, metadata, plugin registration
+
+### 1.1 Package layout (mirror Go, Python-local)
+
+- [ ] Create `internal/lang/python/detectors/` package root (or co-own if #52 already created it)
+- [ ] Create `internal/lang/python/detectors/bad_practices/` with files modeled on Go:
+  - [ ] `register.go` — `RegisterRule(id, fn)`, snapshot catalogue (`ruleEntry` + mutex or init-only append)
+  - [ ] `scan.go` — `PythonBadPracticeScan` implementing `core.Detector` (`Language() == LanguagePython`, `RuleIDs`, `Run`, lifecycle via `core.BaseDetector` unless project cache needed)
+  - [ ] `common.go` — finding push helpers, path display, test-file skip (`*_test.py`, `test_*.py`, `tests/`)
+  - [ ] `facts.go` — optional light fact bag (line index, needle index via `internal/ast.Build` if useful); **no** `go/ast` dependency
+  - [ ] `metadata.go` — load `BP-PY-*` → `rules.RuleMetadata` from Python catalogue (hand-written map **or** `//go:embed` of `ruleset/python/bad-practices.json` decoded at init)
+- [ ] Explicitly **do not** import or regenerate `internal/lang/go/detectors/bad_practices/metadata_gen.go`
+- [ ] Export constructor `NewPythonBadPracticeScan() *PythonBadPracticeScan` (name bikeshed OK; keep stable in tests)
+
+### 1.2 Metadata contract
+
+- [ ] Every registered rule id resolves non-nil metadata via `MetadataFor` / `MetadataForID`
+- [ ] Severity string mapping matches catalogue (`info|low|medium|high|critical` → `rules.Severity*`)
+- [ ] `Pack` set to `rules.PackBadPractice` (or rely on `PackFromRuleID("BP-PY-…")` which already returns bad-practice)
+- [ ] Title/name from catalogue `name`; description from catalogue `description`; fix/detection notes optional in Fix field
+- [ ] Unit test: catalogue size ≥ 50 keys parseable; implemented subset has metadata for each registered id
+- [ ] Unit test: no registered id is bare `BP-<n>` (collision guard)
+
+### 1.3 Plugin wire-up
+
+- [ ] Add `internal/lang/python/detectors/all.go` (or equivalent) returning `[]core.Detector{ badpractices.New…() }` (CWE may append later)
+- [ ] Change `internal/lang/python/plugin.go` `Detectors()` / `NewDetectors()` to return session detectors (same pattern as `internal/lang/go/plugin.go`)
+- [ ] Update package doc on `plugin.go`: no longer “zero detectors”
+- [ ] Update `internal/lang/python/plugin_test.go`: empty-catalogue assertions become **non-empty** when BP is registered; assert at least one detector with `BP-PY-*` in `RuleIDs()`
+- [ ] Keep `DefaultRegistry` Go-only; Python still via `NewRegistryWithLanguages` / config `languages`
+
+### 1.4 Scan gating
+
+- [ ] `Run` early-returns when unit language ≠ Python or source empty
+- [ ] Respect `ScanContext.Allows(ruleID)` and `BadPracticesEnabled` (engine already filters; still skip disabled packs if detectors are invoked broadly)
+- [ ] Needle / cheap prefilter before expensive windows (copy Go BP style)
+- [ ] No hang on unbalanced braces/strings (add regression if scanners use brace matching)
+
+### 1.5 Phase 1 validation
+
+- [ ] `gofmt -w` on touched Go files
+- [ ] `make lint` — unchecked until green on implement branch
+- [ ] `make test` — unchecked until green on implement branch
+- [ ] Proof: `go test ./internal/lang/python/...` shows registered BP detector without requiring all 50 rules yet
+
+---
+
+## Phase 2: Core language & error handling (Batch A)
+
+Priority IDs from issue body. Implement + fixture per rule.
+
+### 2.1 `BP-PY-1` Bare Except Clause
+
+- [ ] Detector: match `except:` or broad `except Exception` / `except BaseException` with weak handling (pass / bare continue / log-only without re-raise — start with `except:` and `except Exception:` + `pass`)
+- [ ] Path: `internal/lang/python/detectors/bad_practices/` (e.g. `rules_core.go` / `rules_error.go`)
+- [ ] Register `BP-PY-1` in `init()`
+- [ ] Fixture hit: `tests/fixtures/python/bp/BP-PY-1-vulnerable.txt` — expects finding `BP-PY-1`
+- [ ] Fixture miss: `tests/fixtures/python/bp/BP-PY-1-safe.txt` — specific `except ValueError` / re-raise; **no** `BP-PY-1`
+- [ ] Test: table or `runFixtureRule`-style helper asserts true positive / true negative
+
+### 2.2 `BP-PY-2` Except Pass
+
+- [ ] Detector: except suite is solely `pass` (optional comment)
+- [ ] Register `BP-PY-2`
+- [ ] Fixtures: `BP-PY-2-vulnerable.txt` / `BP-PY-2-safe.txt`
+- [ ] Proof: test green for hit/miss
+
+### 2.3 `BP-PY-4` Mutable Default Argument
+
+- [ ] Detector: `def` / `async def` defaults that are `[]`, `{}`, `set()`, or bare list/dict/set literals in signature text
+- [ ] Register `BP-PY-4` (high severity per catalogue)
+- [ ] Fixtures hit/miss; miss uses `None` default pattern
+- [ ] Proof: severity from metadata is **high**
+
+### 2.4 `BP-PY-6` assert Used For Runtime Validation
+
+- [ ] Detector: `assert` in non-test modules (skip `test_*.py`, `*_test.py`, `tests/`); optional needle for request/auth patterns later
+- [ ] Register `BP-PY-6`
+- [ ] Fixtures: library module hit; test file miss
+- [ ] Proof: test file does not fire
+
+### 2.5 `BP-PY-7` open Without Context Manager
+
+- [ ] Detector: `open(` / `.open(` assigned or used without surrounding `with`
+- [ ] Register `BP-PY-7`
+- [ ] Fixtures: bare `f = open(...)` hit; `with open(...) as f` miss
+- [ ] Proof: hit/miss tests
+
+### 2.6 Optional core (same PR if small)
+
+- [ ] `[~]` `BP-PY-3` Raise Generic Exception — defer if PR size; reason: lower severity / noise; next gate Phase 5
+- [ ] `[~]` `BP-PY-5` Wildcard Import — defer if PR size; allowlist `__init__.py` when implemented
+
+### 2.7 Phase 2 validation
+
+- [ ] All Phase 2 registered IDs appear in `RuleIDs()`
+- [ ] `make lint` — unchecked until green
+- [ ] `make test` — unchecked until green
+
+---
+
+## Phase 3: Security hygiene (Batch B)
+
+### 3.1 `BP-PY-8` subprocess With shell=True
+
+- [ ] Detector: `subprocess.(run|Popen|call|check_output|check_call)` with `shell=True`
+- [ ] Register + fixtures hit/miss (`shell=False` / argv list miss)
+- [ ] Proof: finding severity **high**
+
+### 3.2 `BP-PY-9` os.system Or os.popen
+
+- [ ] Detector: `os.system(` / `os.popen(`
+- [ ] Register + fixtures hit/miss
+- [ ] Proof: true positive on vulnerable fixture
+
+### 3.3 `BP-PY-10` pickle Loads Untrusted Data
+
+- [ ] Detector: `pickle.load` / `pickle.loads` / `_pickle` / `cloudpickle` calls
+- [ ] Register + fixtures (non-constant source preferred; literal-only may still flag at v0 with note)
+- [ ] Proof: hit/miss tests
+
+### 3.4 `BP-PY-11` yaml.load Without SafeLoader
+
+- [ ] Detector: `yaml.load(` without `Loader=yaml.SafeLoader` / `CSafeLoader`; prefer flagging bare `yaml.load`
+- [ ] Miss: `yaml.safe_load` / explicit SafeLoader
+- [ ] Register + fixtures
+- [ ] Proof: hit/miss tests
+
+### 3.5 `BP-PY-12` eval Or exec On Dynamic Input
+
+- [ ] Detector: `eval(` / `exec(` / `compile(..., 'exec')` with non-literal args (v0: any non-string-literal call site)
+- [ ] Register + fixtures
+- [ ] Proof: hit/miss tests
+
+### 3.6 `BP-PY-13` Hardcoded Secret In Source
+
+- [ ] Detector: assignments to names matching `password|secret|api_key|token|private_key` (case-insensitive) with non-empty string literals
+- [ ] Skip obvious placeholders (`changeme`, empty, env-lookup patterns) only if documented false-positive policy
+- [ ] Register + fixtures
+- [ ] Proof: hit/miss tests
+
+### 3.7 Phase 3 validation
+
+- [ ] Batch B all registered and fixture-backed
+- [ ] `make lint` — unchecked until green
+- [ ] `make test` — unchecked until green
+
+---
+
+## Phase 4: Framework high-signal + templates/DB (Batches C + D)
+
+### 4.1 Flask (`BP-PY-16`, `17`, `20`)
+
+- [ ] `BP-PY-16` — `app.run(debug=True)`, `DEBUG = True` / `app.config['DEBUG'] = True` in non-test modules
+- [ ] `BP-PY-17` — `app.secret_key = '...'` / `SECRET_KEY = '...'` string literals in Flask-ish config
+- [ ] `BP-PY-20` — `send_file` / `send_from_directory` with path from `request.args` / `request.form` / view args (heuristic)
+- [ ] Register each; fixtures under `tests/fixtures/python/bp/`
+- [ ] `[~]` `BP-PY-18`, `19` — lower signal / harder heuristics; defer to Phase 5 unless free
+
+### 4.2 Django (`BP-PY-21`, `22`, `24`, `25`, `26`)
+
+- [ ] `BP-PY-21` — `DEBUG = True` in `settings.py` / settings modules (skip tests / `local_settings` patterns if documented)
+- [ ] `BP-PY-22` — `SECRET_KEY = '...'` literals in Django settings
+- [ ] `BP-PY-24` — `objects.raw` / `cursor().execute` with f-string / `.format` / `%` on SQL
+- [ ] `BP-PY-25` — `mark_safe(` on non-literal / dynamic args
+- [ ] `BP-PY-26` — `@csrf_exempt` on views using POST-like handling (heuristic: decorator + `request.POST` / methods)
+- [ ] Register each + hit/miss fixtures
+- [ ] `[~]` `BP-PY-23`, `27`, `28` — ALLOWED_HOSTS / mass assignment / N+1; defer (noise or multi-line)
+
+### 4.3 FastAPI / Starlette (`BP-PY-30`, `32`)
+
+- [ ] `BP-PY-30` — `async def` route/dependency bodies calling `time.sleep`, `requests.`, sync SQLAlchemy session, blocking `open` (heuristic windows)
+- [ ] `BP-PY-32` — `FileResponse` / path from path params / query without sanitization needle
+- [ ] Register + fixtures
+- [ ] `[~]` `BP-PY-29`, `31` — mutable global Depends / response_model; defer
+
+### 4.4 Templates / DB (`BP-PY-33`, `35`)
+
+- [ ] `BP-PY-33` — `jinja2.Environment(autoescape=False)` (and obvious autoescape off)
+- [ ] `BP-PY-35` — `text(f"...")` / `text("...".format` / concatenated SQL into `text(`
+- [ ] Register + fixtures
+- [ ] `[~]` `BP-PY-34` Markup/`|safe` — templates may be non-`.py`; defer or limited Python-side Markup()
+- [ ] `[~]` `BP-PY-36`, `37` — session close / DB-API `%` format; optional same PR if small
+
+### 4.5 Phase 4 validation
+
+- [ ] All Phase 4 shipped IDs fixture-backed with true positives
+- [ ] Severity/category match catalogue metadata for sampled rules
+- [ ] `make lint` — unchecked until green
+- [ ] `make test` — unchecked until green
+
+---
+
+## Phase 5: Remaining catalogue (Batch E) — optional follow-up PR
+
+Ship only after A–D stable. Prefer one rules file per domain (async, testing, deps, observability, production).
+
+### 5.1 Production hardening
+
+- [ ] `BP-PY-14` requests without timeout
+- [ ] `BP-PY-48` CORS `*` with credentials
+- [ ] `BP-PY-49` TLS verify disabled (`verify=False`, etc.)
+- [ ] `BP-PY-50` insecure cookie flags
+- [ ] Each: register + hit/miss fixtures + proof
+
+### 5.2 Resource / HTTP client
+
+- [ ] `BP-PY-15` httpx AsyncClient not closed
+- [ ] Fixtures + proof
+
+### 5.3 Async
+
+- [ ] `BP-PY-38` create_task without reference
+- [ ] `BP-PY-39` time.sleep in async def (overlaps `30`; keep distinct rule ids)
+- [ ] `BP-PY-40` threading without join — review-only / low confidence OK if documented
+- [ ] Fixtures + proof
+
+### 5.4 Testing / deps / observability
+
+- [ ] `BP-PY-41`, `42` testing hygiene
+- [ ] `BP-PY-43` requirements without pins — may need non-`.py` path or project scan; `[~]` if only `.py` units in v0
+- [ ] `BP-PY-44` deprecated stdlib imports
+- [ ] `BP-PY-45` `sys.path` mutation
+- [ ] `BP-PY-46` print debugging (info)
+- [ ] `BP-PY-47` logging f-string before logger
+- [ ] Fixtures + proof per shipped rule
+
+### 5.5 Deferred leftovers (explicit)
+
+- [ ] List any unshipped `BP-PY-*` here as `[~]` with reason, owner (#53 follow-up), next gate
+- [ ] Do not claim “50/50 implemented” until every id has detector + fixture or an explicit `[~]` row
+
+### 5.6 Phase 5 validation
+
+- [ ] `make lint` — unchecked until green
+- [ ] `make test` — unchecked until green
+
+---
+
+## Phase 6: Integration, product surface, closure
+
+### 6.1 Fixtures manifest
+
+- [ ] Add `[[fixture]]` entries to `tests/fixtures/manifest.toml` for each shipped vulnerable fixture (`lang = "python"`, `required_rules = ["BP-PY-N"]`) and safe fixtures (`required_rules = []`)
+- [ ] Materialize path remains `.txt` → `.py` via `internal/fixture` (already supports `LangPython`)
+
+### 6.2 Engine / CLI smoke
+
+- [ ] With `languages = ["python"]` (or registry including Python), scan of vulnerable fixture root surfaces `BP-PY-*` findings
+- [ ] Severity/category match catalogue for at least one rule per phase batch
+- [ ] Go-only default still produces **no** Python findings on pure-Go scans
+- [ ] Optional: `./bin/goslop --list-rules` (or equivalent) lists registered `BP-PY-*` when Python enabled — only if product already lists by plugin
+
+### 6.3 Docs / README honesty
+
+- [ ] Update `ruleset/python/README.md` “What this is not” / status: detectors exist for **implemented subset**; list shipped IDs or point at this ledger
+- [ ] Cross-link parent `plans/v0.0.2/python-heuristics.md` BP rollup rows when first PR lands
+- [ ] Issue body success criteria in `plans/PR/v0.0.2/issue-python-bp-heuristics-body.md` remain the bar
+
+### 6.4 PR hygiene
+
+- [ ] Branch e.g. `feat/python-bp-heuristics` (or batch branches `…-core`, `…-security`, `…-framework`)
+- [ ] Filled PR body under `plans/PR/v0.0.2/` from `plans/PR/PR_TEMPLATE.md`
+- [ ] `Closes #53` only when priority success criteria met; else `Relates to #53` + partial `[~]` inventory
+- [ ] `Relates to #51`
+
+### 6.5 Final validation gates (required for non-docs code)
+
+- [ ] `gofmt -w` on all touched Go files
+- [ ] `make lint` — unchecked until green; record command + date beside this row when proven
+- [ ] `make test` — unchecked until green; record command + date beside this row when proven
+- [ ] `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop`
+- [ ] Optional smoke: `./bin/goslop --format text --no-cache <python-fixture-root>` with Python enabled
+
+### 6.6 Success criteria (issue #53)
+
+- [ ] Priority BP heuristics (Batches **A+B+C+D** minimum, or documented smaller set with remaining `[~]`) implemented and registered on Python plugin
+- [ ] Fixtures prove true positives for each **shipped** `BP-PY-*`
+- [ ] `languages = ["python"]` surfaces `BP-PY-*` findings
+- [ ] Severity/category match catalogue metadata
+- [ ] `make lint` + `make test` green
+
+---
+
+## Rule inventory (all 50)
+
+Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fixture proof; `[~]` needs reason.
+
+### Batch A — Core / error (priority)
+
+| ID | Name | Sev | Category | Status |
+|----|------|-----|----------|--------|
+| BP-PY-1 | Bare Except Clause | medium | Error Handling | [ ] |
+| BP-PY-2 | Except Pass | medium | Error Handling | [ ] |
+| BP-PY-3 | Raise Generic Exception | low | Error Handling | [ ] optional |
+| BP-PY-4 | Mutable Default Argument | high | Core Language | [ ] |
+| BP-PY-5 | Wildcard Import | low | Core Language | [ ] optional |
+| BP-PY-6 | assert Used For Runtime Validation | high | Core Language | [ ] |
+| BP-PY-7 | open Without Context Manager | medium | Resource Management | [ ] |
+
+### Batch B — Security hygiene (priority)
+
+| ID | Name | Sev | Category | Status |
+|----|------|-----|----------|--------|
+| BP-PY-8 | subprocess With shell=True | high | Security Hygiene | [ ] |
+| BP-PY-9 | os.system Or os.popen | high | Security Hygiene | [ ] |
+| BP-PY-10 | pickle Loads Untrusted Data | high | Security Hygiene | [ ] |
+| BP-PY-11 | yaml.load Without SafeLoader | high | Security Hygiene | [ ] |
+| BP-PY-12 | eval Or exec On Dynamic Input | high | Security Hygiene | [ ] |
+| BP-PY-13 | Hardcoded Secret In Source | high | Security Hygiene | [ ] |
+
+### Batch C — Framework high-signal (priority)
+
+| ID | Name | Sev | Category | Status |
+|----|------|-----|----------|--------|
+| BP-PY-16 | Flask DEBUG True In Production Code | high | Flask | [ ] |
+| BP-PY-17 | Flask SECRET_KEY Hardcoded | high | Flask | [ ] |
+| BP-PY-20 | Flask send_file User Path | high | Flask | [ ] |
+| BP-PY-21 | Django DEBUG True In Settings | high | Django | [ ] |
+| BP-PY-22 | Django SECRET_KEY Hardcoded | high | Django | [ ] |
+| BP-PY-24 | Django raw SQL With Format | high | Django | [ ] |
+| BP-PY-25 | Django mark_safe On Dynamic Data | high | Django | [ ] |
+| BP-PY-26 | Django csrf_exempt On State-Changing View | high | Django | [ ] |
+| BP-PY-30 | FastAPI Blocking I/O In Async Route | high | FastAPI | [ ] |
+| BP-PY-32 | Starlette FileResponse User Path | high | FastAPI | [ ] |
+
+### Batch D — Templates / DB (priority)
+
+| ID | Name | Sev | Category | Status |
+|----|------|-----|----------|--------|
+| BP-PY-33 | Jinja2 autoescape Disabled | high | Templates | [ ] |
+| BP-PY-35 | SQLAlchemy text With F-String | high | Database | [ ] |
+
+### Batch E — Remaining (follow-up)
+
+| ID | Name | Sev | Category | Status |
+|----|------|-----|----------|--------|
+| BP-PY-14 | requests Without Timeout | medium | Production Hardening | [ ] |
+| BP-PY-15 | httpx Async Client Not Closed | medium | Resource Management | [ ] |
+| BP-PY-18 | Flask Route Missing Methods Restriction | low | Flask | [ ] |
+| BP-PY-19 | Flask jsonify Error Leaks Exception | medium | Flask | [ ] |
+| BP-PY-23 | Django ALLOWED_HOSTS Empty Or Star | medium | Django | [ ] |
+| BP-PY-27 | Django Mass Assignment From request.POST | medium | Django | [ ] |
+| BP-PY-28 | Django N+1 Query In Loop | medium | Django | [ ] |
+| BP-PY-29 | FastAPI Depends On Mutable Global | medium | FastAPI | [ ] |
+| BP-PY-31 | FastAPI response_model Disabled Unsafely | medium | FastAPI | [ ] |
+| BP-PY-34 | Jinja2 Markup Or safe Filter On Variables | high | Templates | [ ] |
+| BP-PY-36 | SQLAlchemy Session Not Closed | medium | Database | [ ] |
+| BP-PY-37 | DB-API Cursor Execute With Percent Format | high | Database | [ ] |
+| BP-PY-38 | asyncio create_task Without Reference | medium | Async | [ ] |
+| BP-PY-39 | time.sleep In Async Function | high | Async | [ ] |
+| BP-PY-40 | threading Without Join Or Shutdown | low | Async | [ ] |
+| BP-PY-41 | pytest assert With Side Effects Only | info | Testing | [ ] |
+| BP-PY-42 | unittest Assert Without Context On Raises | low | Testing | [ ] |
+| BP-PY-43 | requirements Without Pins | low | Dependency Hygiene | [ ] |
+| BP-PY-44 | Import Deprecated stdlib Module | low | Dependency Hygiene | [ ] |
+| BP-PY-45 | sys.path Mutation At Runtime | low | Dependency Hygiene | [ ] |
+| BP-PY-46 | print Debugging In Library Code | info | Observability | [ ] |
+| BP-PY-47 | logging With String Format Before Logger | info | Observability | [ ] |
+| BP-PY-48 | CORS Allow Origins Star With Credentials | high | Production Hardening | [ ] |
+| BP-PY-49 | TLS Verification Disabled | high | Production Hardening | [ ] |
+| BP-PY-50 | Django/Flask CSRF Or Session Cookie Insecure Flags | medium | Production Hardening | [ ] |
+
+---
+
+## Suggested first PR slice
+
+Minimal shippable PR (closes or substantially advances #53):
+
+1. Phase 1 scaffold + metadata + plugin registration  
+2. Phase 2 Batch A (`1`,`2`,`4`,`6`,`7`)  
+3. Phase 3 Batch B (`8`–`13`)  
+4. Phase 4 subset if review budget allows (`16`,`17`,`21`,`22`,`30`,`33`,`35` high-signal)  
+5. Phase 6 gates: fixtures + `make lint` + `make test`  
+
+Second PR: remainder of C/D + Batch E.
+
+---
+
+## Dependencies
+
+| Depends on | Note |
+|------------|------|
+| Epic #39 / PR #50 | Plugin stub, `languages`, `ruleset/python/bad-practices.json` |
+| Parent epic #51 | Rollup ledger `plans/v0.0.2/python-heuristics.md` |
+| `core.LanguagePlugin` / `core.Detector` | Registration surface on Python plugin |
+| `internal/rules` | `RuleMetadata`, `Finding`, `PackFromRuleID` (`BP-` prefix already OK for `BP-PY-*`) |
+| Go BP package | **Pattern reference only** — `internal/lang/go/detectors/bad_practices/` |
+| Sibling #52 | May create `internal/lang/python/detectors/` first; coordinate package root, do not block on full CWE |
+| Out of scope | #54 PERF; tree-sitter; Go `BP-*` IDs |
+
+---
+
+## References
+
+- Issue body: `plans/PR/v0.0.2/issue-python-bp-heuristics-body.md`  
+- Epic body: `plans/PR/v0.0.2/issue-epic-python-heuristics-body.md`  
+- Catalogue: `ruleset/python/bad-practices.json`  
+- README: `ruleset/python/README.md`  
+- Skill: `plans/skills/phase-wise-checklist/SKILLS.md`  
+- Foundation: `plans/v0.0.2/python-support.md`  
+- Go detectors: `internal/lang/go/detectors/bad_practices/{register,scan,rules_core,common,facts,metadata_gen}.go`  
+- Plugin stub: `internal/lang/python/plugin.go`  
