@@ -7,7 +7,7 @@ import (
 	"github.com/chinmay/goslop/internal/core"
 )
 
-// pureFalsePositiveRules fire on gopdfsuit in Go but never in the Rust oracle
+// pureFalsePositiveRules fire on gopdfsuit in Go but never in the Rust reference baseline
 // (issue #8). Suppress until rewritten to Rust parity — but only on real
 // project tree scans so fixture / unit tests keep full catalogue coverage.
 var pureFalsePositiveRules = map[string]struct{}{
@@ -16,15 +16,15 @@ var pureFalsePositiveRules = map[string]struct{}{
 	"BP-104": {}, "BP-109": {}, "BP-111": {},
 }
 
-func oracleSkip(id string) bool {
+func referenceSkip(id string) bool {
 	_, ok := pureFalsePositiveRules[id]
 	return ok
 }
 
-// oracleSkipUnit reports whether pure-FP museum rules should be suppressed
+// referenceSkipUnit reports whether pure-FP museum rules should be suppressed
 // for this unit. Unit tests and fixture corpora always keep the rules live.
-func oracleSkipUnit(unit *core.ParsedUnit, id string) bool {
-	if !oracleSkip(id) {
+func referenceSkipUnit(unit *core.ParsedUnit, id string) bool {
+	if !referenceSkip(id) {
 		return false
 	}
 	return isRealProjectScan(unit)

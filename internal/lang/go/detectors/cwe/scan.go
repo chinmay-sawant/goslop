@@ -117,17 +117,17 @@ func (d *GoCweScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rul
 		if ctx != nil && ctx.TaintEnabled && isTaintCoreRule(e.id) {
 			continue
 		}
-		// Pure FPs vs Rust gopdfsuit oracle (issue #8) — SI museums too broad.
+		// Pure FPs vs Rust gopdfsuit reference corpus (issue #8) — SI museums too broad.
 		// Never suppress fixture / unit-test units (catalogue must stay green).
-		if isOraclePureFP(e.id) && isRealProjectScan(unit) {
+		if isReferencePureFP(e.id) && isRealProjectScan(unit) {
 			continue
 		}
 		e.fn(unit, facts, out)
 	}
 }
 
-// isOraclePureFP lists CWE IDs that fire on gopdfsuit in Go but never in Rust.
-func isOraclePureFP(id string) bool {
+// isReferencePureFP lists CWE IDs that fire on gopdfsuit in Go but never in Rust.
+func isReferencePureFP(id string) bool {
 	switch id {
 	case "CWE-140", "CWE-212", "CWE-252", "CWE-257", "CWE-260",
 		"CWE-319", "CWE-459", "CWE-915", "CWE-918":

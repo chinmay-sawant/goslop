@@ -139,7 +139,7 @@ flowchart LR
 - [x] Manual: `--list-rules` shows 241 lines (239 PERF + 2 CWE)
 - [x] Manual: `--only PERF-6` fires on loop `fmt.Sprintf` sample
 - [ ] Optional: full 490 PERF fixture matrix as CI gate
-- [ ] Optional: FN/FP spot-check vs Rust oracle corpus
+- [ ] Optional: FN/FP spot-check vs Rust reference corpus
 
 ### Commands
 
@@ -195,7 +195,7 @@ PERF-6 /tmp/perf6_sample.go:6:21 fmt-based formatting is performed inside a loop
 - Phase 9 taint graph (#5)
 - Phase 10 cache / baseline / ignore (#6)
 - Phase 11 packs / maturity (#7)
-- Phase 12 parity gates + §12.4 oracle (915 findings / exports) (#8)
+- Phase 12 parity gates + §12.4 parity baseline (915 findings / exports) (#8)
 
 ---
 

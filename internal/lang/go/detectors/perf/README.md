@@ -44,7 +44,7 @@ Performance heuristics for Go hot paths and stdlib misuse.
 
 ## Quality note
 
-Batch ports are **behavioral heuristics** aligned with Rust detectors and fixtures, not a mechanical transpile. Some rules use source-token guards where shared `perfNeedles` is incomplete (shared `facts.go` intentionally frozen during parallel landings). Tighten against the Rust oracle in follow-ups; full §12.4 gate still requires BP + packs + export.
+Batch ports are **behavioral heuristics** aligned with Rust detectors and fixtures, not a mechanical transpile. Some rules use source-token guards where shared `perfNeedles` is incomplete (shared `facts.go` intentionally frozen during parallel landings). Tighten against the Rust reference baseline in follow-ups; full §12.4 gate still requires BP + packs + export.
 
 ## Proof
 

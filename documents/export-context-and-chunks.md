@@ -70,7 +70,7 @@ make run SCAN_PATH=/path/to/project
 # defaults: --export-context --export-chunks --no-cache
 # (plus --profile all --no-fail --no-terminal)
 
-make oracle   # wipe + re-export + count checks (915 + 37 on gopdfsuit)
+make reference-metrics   # wipe + re-export + count checks (915 + 37 on gopdfsuit)
 ```
 
 Stderr after a successful export:
@@ -226,7 +226,7 @@ Separator is **100** `=` characters between findings.
 
 ## Generated snippet examples
 
-Examples below match the §12.4 **gopdfsuit** oracle export tree that may already exist under the repo after `make run` / `make oracle`.
+Examples below match the §12.4 **gopdfsuit** reference export tree that may already exist under the repo after `make run` / `make reference-metrics`.
 
 ### Function ref - `scripts/findings/functions/1.txt`
 
@@ -308,7 +308,7 @@ Finding 902/915
 
 ---
 
-## Oracle counts (reference)
+## Reference baseline counts (reference)
 
 | Artifact | Count | Location |
 |----------|------:|----------|

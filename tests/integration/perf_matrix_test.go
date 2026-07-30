@@ -8,7 +8,7 @@ import (
 )
 
 // TestPERFFixturesMatrix ports Rust go_perf_fixtures_fire_vulnerable_and_silence_safe
-// with --only PERF-N pinning (primary-rule oracle).
+// with --only PERF-N pinning (primary-rule expectation).
 func TestPERFFixturesMatrix(t *testing.T) {
 	cases, err := integration.DiscoverPERFCases()
 	if err != nil {

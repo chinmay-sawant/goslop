@@ -289,7 +289,7 @@ Starter template with comments: [`templates/goslop.toml`](../templates/goslop.to
 ## Related docs
 
 - [overview.md](./overview.md) - product features  
-- [make-run.md](./make-run.md) - `make run` / `make oracle`  
+- [make-run.md](./make-run.md) - `make run` / `make reference-metrics`  
 - [reporting-formats.md](./reporting-formats.md) - text / JSON / SARIF  
 - [export-context-and-chunks.md](./export-context-and-chunks.md) - exports  
 - [go-recommended-pack.md](./go-recommended-pack.md) - pack contents  

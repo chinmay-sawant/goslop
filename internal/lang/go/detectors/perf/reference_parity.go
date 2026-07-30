@@ -7,7 +7,7 @@ import (
 	"github.com/chinmay/goslop/internal/core"
 )
 
-// pureFalsePositiveRules fire on gopdfsuit in Go but never in the Rust oracle
+// pureFalsePositiveRules fire on gopdfsuit in Go but never in the Rust reference baseline
 // (issue #8). Suppress until rewritten to Rust parity — but only on real
 // project tree scans so fixture / unit tests keep full catalogue coverage.
 var pureFalsePositiveRules = map[string]struct{}{
@@ -15,15 +15,15 @@ var pureFalsePositiveRules = map[string]struct{}{
 	"PERF-132": {}, "PERF-144": {}, "PERF-158": {}, "PERF-159": {},
 }
 
-func oracleSkip(id string) bool {
+func referenceSkip(id string) bool {
 	_, ok := pureFalsePositiveRules[id]
 	return ok
 }
 
-// oracleSkipUnit reports whether pure-FP museum rules should be suppressed
+// referenceSkipUnit reports whether pure-FP museum rules should be suppressed
 // for this unit. Unit tests and fixture corpora always keep the rules live.
-func oracleSkipUnit(unit *core.ParsedUnit, id string) bool {
-	if !oracleSkip(id) {
+func referenceSkipUnit(unit *core.ParsedUnit, id string) bool {
+	if !referenceSkip(id) {
 		return false
 	}
 	return isRealProjectScan(unit)
@@ -45,7 +45,7 @@ func isRealProjectScan(unit *core.ParsedUnit) bool {
 			strings.Contains(p, "-safe") {
 			return false
 		}
-		// Absolute path → product scan (e.g. gopdfsuit oracle), but never
+		// Absolute path → product scan (e.g. gopdfsuit reference corpus), but never
 		// go-test temp materializations (fixture matrix harness).
 		if filepath.IsAbs(p) {
 			if isTempMaterializePath(p) {

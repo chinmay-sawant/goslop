@@ -18,7 +18,7 @@ Rename the product from codehound to **goslop** across the Go module, CLI binary
 
 - Module path: `github.com/chinmay/codehound` → `github.com/chinmay/goslop`
 - `cmd/codehound` → `cmd/goslop`
-- Binary: `bin/goslop` (`make build`, CI, Makefile run/oracle)
+- Binary: `bin/goslop` (`make build`, CI, Makefile run/reference-metrics)
 
 ### Config and on-disk artifacts
 

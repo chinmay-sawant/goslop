@@ -1,6 +1,6 @@
 ## Summary
 
-Land **Phase 12 scaffolding only**: GitHub Actions CI (with CGO/tree-sitter toolchain), a seed materialized-fixture integration harness, profile/CLI contract tests, JSON/SARIF shape smoke tests, Makefile targets, multi-arch release notes stub, and a README status update. **§12.4 product oracle remains intentionally incomplete** until Phases 7-11 integrate.
+Land **Phase 12 scaffolding only**: GitHub Actions CI (with CGO/tree-sitter toolchain), a seed materialized-fixture integration harness, profile/CLI contract tests, JSON/SARIF shape smoke tests, Makefile targets, multi-arch release notes stub, and a README status update. **§12.4 product parity baseline remains intentionally incomplete** until Phases 7-11 integrate.
 
 ---
 
@@ -8,7 +8,7 @@ Land **Phase 12 scaffolding only**: GitHub Actions CI (with CGO/tree-sitter tool
 
 - Plans: [`plans/port-phasewise-checklist.md`](../port-phasewise-checklist.md) §Phase 12, [`plans/phase-parallel/README.md`](../phase-parallel/README.md)
 - Issue **#8** tracks full Phase 12 + the §12.4 ship gate (915 findings / export counts). This PR delivers the **unlocked subset** only.
-- Full oracle needs export/cache/BP/taint surface from phases 7-11 - do not treat this PR as closing §12.4.
+- Full baseline needs export/cache/BP/taint surface from phases 7-11 - do not treat this PR as closing §12.4.
 
 ---
 
@@ -22,7 +22,7 @@ Land **Phase 12 scaffolding only**: GitHub Actions CI (with CGO/tree-sitter tool
 ### Integration harness (seed)
 
 - `tests/integration` package: materialize `.txt` fixtures → scan with default registry
-- Seed oracle: CWE-78/89 vulnerable+safe, PERF-6 vulnerable+safe
+- Seed fixture expectations: CWE-78/89 vulnerable+safe, PERF-6 vulnerable+safe
 - Expand later; not the full fixture matrix
 
 ### Contract / schema tests
@@ -105,7 +105,7 @@ flowchart LR
 | Path | Change |
 |------|--------|
 | `.github/workflows/ci.yml` | New CI workflow |
-| `tests/integration/*` | Harness + seed oracle tests |
+| `tests/integration/*` | Harness + seed fixture expectations tests |
 | `internal/cli/contract_test.go` | CLI contract tests |
 | `internal/core/profile_contract_test.go` | Profile contract tests |
 | `internal/reporting/sarif_test.go` | SARIF/JSON shape smoke |
@@ -174,7 +174,7 @@ ok  github.com/chinmay/goslop/tests/integration   0.008s
 - Full materialized fixture matrix as CI gate
 - Perf smoke budgets
 - GoReleaser release job (stub only)
-- Phases 7-11 detector/cache/pack work that unblocks the oracle
+- Phases 7-11 detector/cache/pack work that unblocks the parity baseline
 
 ---
 
@@ -192,4 +192,4 @@ ok  github.com/chinmay/goslop/tests/integration   0.008s
 
 ## Release notes (if user-facing)
 
-CI workflow and integration-test scaffolding for the goslop Go port (Phase 12 partial). Product parity oracle (§12.4) still pending.
+CI workflow and integration-test scaffolding for the goslop Go port (Phase 12 partial). Product parity baseline (§12.4) still pending.

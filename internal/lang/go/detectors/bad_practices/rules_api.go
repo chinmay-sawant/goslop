@@ -1855,7 +1855,7 @@ func detectBP76(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	if strings.Contains(src, "sort.") {
 		return
 	}
-	// Ordered-output sink: strings.Join is the fixture oracle; also fmt prints.
+	// Ordered-output sink: strings.Join is the fixture expectation; also fmt prints.
 	if !strings.Contains(src, "strings.Join") &&
 		!strings.Contains(src, "strings.Join(") &&
 		!strings.Contains(src, "fmt.Print") &&

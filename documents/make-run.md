@@ -1,6 +1,6 @@
 # Product run guide (`make run`)
 
-This document is the **markdown run guide**: how to run goslop in the product style used for full-catalogue scans, export generation, and the §12.4 oracle gate.
+This document is the **markdown run guide**: how to run goslop in the product style used for full-catalogue scans, export generation, and the §12.4 parity baseline gate.
 
 > There is **no** `--format markdown`. Machine formats are `text` | `json` | `sarif`.  
 > “Markdown run” here means **documenting and operating the product run** (Makefile + CLI).
@@ -15,7 +15,24 @@ make build
 make run SCAN_PATH=/path/to/your/go/project
 ```
 
-Default without overrides scans `SCAN_PATH` (repo default points at the `gopdfsuit` oracle tree) and writes exports under `scripts/`.
+Default without overrides scans `SCAN_PATH` (repo default points at the `gopdfsuit` reference corpus) and writes exports under `scripts/`.
+
+### Do not use self-scan finding counts as quality
+
+```sh
+# High volume — expected, not a product FP benchmark
+make run SCAN_PATH=.
+# or: ./bin/goslop --profile all … /path/to/goslop
+```
+
+This repository is a **static analysis tool (SAT)** plus **fixture corpora** and **pattern catalogues**. Running goslop on itself is like running **Semgrep** (or another SAT) on its **own rules, needles, and intentional vulnerable tests**: detectors match the patterns they encode as data, so finding counts explode.
+
+| Prefer | Avoid as a quality signal |
+|--------|---------------------------|
+| `make run` / `make reference-metrics` on **gopdfsuit** (or your real app) | Judging precision from a full **goslop** tree self-scan |
+| Product debt: scan app packages, exclude detectors + fixtures | “Fix all” self-scan findings to silence the tool |
+
+Details: [overview.md — Scanning the goslop repo itself](./overview.md#scanning-the-goslop-repo-itself-high-finding-counts).
 
 ---
 
@@ -61,7 +78,7 @@ mkdir -p scripts/findings/functions scripts/chunks
 | `--no-terminal` | **Summary only** on stderr (no multi-thousand-line text dump) |
 | `--export-context` | Write one file per finding → `scripts/findings/functions/` |
 | `--export-chunks` | Write batches of findings → `scripts/chunks/` |
-| `--no-cache` | Full re-analysis (oracle-style, reproducible) |
+| `--no-cache` | Full re-analysis (reference-style, reproducible) |
 
 **Context shape:** both export surfaces default to the **whole enclosing function**
 in each finding’s `Context:` block (`[goslop.export] whole_function = true` when
@@ -74,16 +91,19 @@ nearby ~4-line window. See [export-context-and-chunks.md](./export-context-and-c
 ## Overrides
 
 ```sh
-# Scan a different project
+# Scan a different project (preferred for product demos)
 make run SCAN_PATH=./my-service
 
 # Change extra flags (replace RUN_ARGS entirely)
 make run RUN_ARGS="--export-context --export-chunks --no-cache"
-make run RUN_ARGS="" SCAN_PATH=.                 # summary only, no export, cache allowed
-make run RUN_ARGS="--format json --no-cache" SCAN_PATH=.
+make run RUN_ARGS="" SCAN_PATH=./my-service      # summary only, no export, cache allowed
+make run RUN_ARGS="--format json --no-cache" SCAN_PATH=./my-service
 
 # Custom chunk size / dirs via RUN_ARGS
-make run SCAN_PATH=. RUN_ARGS="--export-context --export-chunks --chunk-size 50 --no-cache"
+make run SCAN_PATH=./my-service RUN_ARGS="--export-context --export-chunks --chunk-size 50 --no-cache"
+
+# Self-scan of this repo works but is noisy (SAT self-host + fixtures); see overview.md
+# make run SCAN_PATH=.
 ```
 
 ---
@@ -107,7 +127,7 @@ With `--no-terminal` and default `text` format, **no per-finding lines** are pri
 
 ### Disk - exports (when `RUN_ARGS` includes export flags)
 
-| Artifact | Path | Count (gopdfsuit oracle) |
+| Artifact | Path | Count (gopdfsuit reference corpus) |
 |----------|------|---------------------------|
 | Per-finding refs | `scripts/findings/functions/1.txt` … `N.txt` | **915** |
 | Chunks for delegation | `scripts/chunks/Chunk_1_25.txt` … | **37** (size 25) |
@@ -122,25 +142,25 @@ See [export-context-and-chunks.md](./export-context-and-chunks.md).
 
 ---
 
-## `make oracle` - hard metrics gate
+## `make reference-metrics` - hard metrics gate
 
-The oracle target rebuilds exports, writes JSON, and prints count checks used for §12.4 parity:
+The `reference-metrics` target rebuilds exports, writes JSON, and prints count checks used for §12.4 parity (expected baseline vs a fixed **reference corpus** — testing jargon, not a product name):
 
 ```make
-oracle: build
+reference-metrics: build
 	@rm -rf scripts/findings/functions scripts/chunks
 	@mkdir -p scripts/findings/functions scripts/chunks
-	-./bin/goslop --profile $(ORACLE_PROFILE) --format json \
+	-./bin/goslop --profile $(REFERENCE_PROFILE) --format json \
 		--export-context --export-chunks --no-cache \
 		--context-dir scripts/findings/functions --chunks-dir scripts/chunks \
-		$(ORACLE_PATH) > /tmp/goslop-oracle.json
+		$(REFERENCE_PATH) > /tmp/goslop-reference-metrics.json
 	# Python: findings count, severity histogram, top-5 rules
 	# Also: context file count, chunk file count
 ```
 
 ```sh
-make oracle
-make oracle ORACLE_PATH=./some/project ORACLE_PROFILE=all
+make reference-metrics
+make reference-metrics REFERENCE_PATH=./some/project REFERENCE_PROFILE=all
 ```
 
 ### Hard targets (default `gopdfsuit` corpus)
@@ -198,7 +218,7 @@ make run SCAN_PATH=/path/to/project
 ./bin/goslop --profile all --no-fail --no-terminal --no-cache /path/to/project
 ```
 
-### C. JSON + exports (oracle-like, custom path)
+### C. JSON + exports (reference-style, custom path)
 
 ```sh
 ./bin/goslop --profile all --format json \
@@ -227,7 +247,7 @@ make lint && make test && make build
 
 ## CI note
 
-GitHub Actions (`.github/workflows/ci.yml`) runs **vet / test / build** and smoke `--version` / `--list-rules`. It does **not** run `make run` or `make oracle` against external corpora. Use those locally or in a dedicated workflow.
+GitHub Actions (`.github/workflows/ci.yml`) runs **vet / test / build** and smoke `--version` / `--list-rules`. It does **not** run `make run` or `make reference-metrics` against external corpora. Use those locally or in a dedicated workflow.
 
 ---
 

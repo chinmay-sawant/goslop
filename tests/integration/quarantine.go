@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// Fixture quarantine: known heuristic gaps vs Rust fixture oracles.
+// Fixture quarantine: known heuristic gaps vs Rust fixture expectations.
 // Entries are paths relative to tests/fixtures/ (slash form), one per line.
 // Blank lines and # comments are ignored.
 //
