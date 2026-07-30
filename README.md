@@ -27,7 +27,7 @@ Use it as a local linter, a CI gate, or a triage pipeline that exports findings 
 
 ## Requirements
 
-- **Go 1.22+** (see `go.mod` for the module’s declared toolchain)
+- **Go 1.26.4** (the version declared in `go.mod`)
 - Linux / macOS / Windows
 - No C toolchain required for the default pure-Go build
 
@@ -225,6 +225,9 @@ Detailed guides live under [`documents/`](./documents/):
 | [`documents/go-recommended-pack.md`](./documents/go-recommended-pack.md) | Recommended pack and profile tables |
 | [`documents/perf-rules.md`](./documents/perf-rules.md) | PERF rule notes |
 | [`documents/taint.md`](./documents/taint.md) | Taint engine |
+| [`documents/suppressions-and-baselines.md`](./documents/suppressions-and-baselines.md) | Inline ignores and baseline rollout |
+| [`documents/rule-catalog-and-maturity.md`](./documents/rule-catalog-and-maturity.md) | Live catalog discovery and maturity labels |
+| [`documents/development.md`](./documents/development.md) | Build, validation, CI, scan, and benchmark commands |
 | [`documents/architecture-performance.md`](./documents/architecture-performance.md) | Engine pipeline and performance design |
 
 ---
@@ -245,33 +248,3 @@ Detailed guides live under [`documents/`](./documents/):
 | `.github/workflows/` | CI |
 
 ---
-
-## License
-
-This project is licensed under the **MIT License**.
-
-See the full text in [`LICENSE`](./LICENSE).
-
-```
-MIT License
-
-Copyright (c) 2026 Chinmay Sawant
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```

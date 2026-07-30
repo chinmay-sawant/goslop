@@ -14,8 +14,8 @@ goslop is a **pure-Go** static analysis tool (SAT) for Go codebases. It uses `go
 | **Reporters** | `text` (default), `json`, `sarif` (SARIF 2.1.0). Summary always on **stderr**. |
 | **Exports** | Per-finding context (`scripts/findings/functions`) and batched chunks (`scripts/chunks`) for agent work. **Context defaults to the whole enclosing function** (`[goslop.export] whole_function = true`). |
 | **Cache** | Incremental per-file cache under `.goslop-cache/`. |
-| **Baseline** | Suppress known findings via `.goslop-baseline.json`. |
-| **Ignore** | Inline `// goslop-ignore` directives and path ignores. |
+| **Baseline** | Suppress known findings via `.goslop-baseline.json`. See [suppressions-and-baselines.md](./suppressions-and-baselines.md). |
+| **Ignore** | Inline `// goslop-ignore` directives and path ignores. See [suppressions-and-baselines.md](./suppressions-and-baselines.md). |
 
 ## Status (shipped)
 
@@ -193,7 +193,7 @@ File: **`.goslop-baseline.json`** (discovered upward from cwd unless `--baseline
 
 Match priority: fingerprint (`goslop:2:{rule}:{file}:{msgHash16}`), else file/line/column.
 
-> **Note:** The Go CLI **loads and filters** baselines; a dedicated “save baseline” subcommand is not exposed yet. You can author the JSON from prior JSON findings / scripts. See brownfield notes in [go-recommended-pack.md](./go-recommended-pack.md).
+> **Note:** The Go CLI loads and filters baselines; it does not expose a baseline-generation subcommand. See [suppressions-and-baselines.md](./suppressions-and-baselines.md) for the file format and rollout guidance.
 
 ## Incremental cache
 

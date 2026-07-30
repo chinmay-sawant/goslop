@@ -13,6 +13,9 @@ goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristi
 | [**make-run.md**](./make-run.md) | Product `make run` / `make reference-metrics` / `make bench`; reference corpus vs self-scan; perf numbers |
 | [**reporting-formats.md**](./reporting-formats.md) | Text, JSON, and **SARIF** with full examples |
 | [**export-context-and-chunks.md**](./export-context-and-chunks.md) | Function refs vs chunks; whole-function Context (default); AI delegation |
+| [**suppressions-and-baselines.md**](./suppressions-and-baselines.md) | Inline ignores, baseline discovery, matching, and rollout constraints |
+| [**rule-catalog-and-maturity.md**](./rule-catalog-and-maturity.md) | `--list-rules`, `--explain`, runtime counts, and maturity labels |
+| [**development.md**](./development.md) | Build, validation, CI, product scan, and benchmark commands |
 
 ## Deeper topic guides (existing)
 
