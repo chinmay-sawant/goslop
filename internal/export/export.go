@@ -378,7 +378,7 @@ func functionWindow(f rules.Finding, content string, astCache map[string]*parsed
 //
 // Named decls win over tiny inner closures so a hit inside `defer func() { ... }`
 // still exports the full surrounding method.
-func enclosingFunctionLines(fset *token.FileSet, file *goast.File, hitLine int) (startLine, endLine int) {
+func enclosingFunctionLines(fset *token.FileSet, file *goast.File, hitLine int) (int, int) {
 	var declStart, declEnd, litStart, litEnd int
 	var declSpan, litSpan int // track largest (outermost)
 	goast.Inspect(file, func(n goast.Node) bool {

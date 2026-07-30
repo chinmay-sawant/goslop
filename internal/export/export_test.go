@@ -149,7 +149,11 @@ func Process(x int) int {
 		t.Fatalf("window mode missing hit marker:\n%s", windowBody)
 	}
 	// Window is at most ~4 content lines under Context:
-	ctxPart := windowBody[strings.Index(windowBody, "Context:"):]
+	ctxIdx := strings.Index(windowBody, "Context:")
+	if ctxIdx < 0 {
+		t.Fatalf("missing Context: section:\n%s", windowBody)
+	}
+	ctxPart := windowBody[ctxIdx:]
 	lineCount := strings.Count(ctxPart, "\n")
 	if lineCount > 6 { // "Context:" + up to 4 lines + trailing
 		t.Fatalf("window context too large (%d lines):\n%s", lineCount, ctxPart)
@@ -214,7 +218,11 @@ type closer interface{ Close() error }
 	if !strings.Contains(body, "return nil") {
 		t.Fatalf("expected full Handler body:\n%s", body)
 	}
-	ctx := body[strings.Index(body, "Context:"):]
+	ctxIdx := strings.Index(body, "Context:")
+	if ctxIdx < 0 {
+		t.Fatalf("missing Context: section:\n%s", body)
+	}
+	ctx := body[ctxIdx:]
 	if strings.Count(ctx, "\n") < 8 {
 		t.Fatalf("context too small for outer function:\n%s", body)
 	}
