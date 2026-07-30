@@ -2,7 +2,7 @@
 
 The runtime catalog currently exposes 239 `PERF-*`, 175 `CWE-*`, and 135
 `BP-*` rules. The command output is authoritative because it reflects the
-rules registered in the binary you are running.
+rules registered in the binary you are running (Go plugin only today).
 
 ```sh
 ./bin/goslop --list-rules
@@ -13,6 +13,17 @@ rules registered in the binary you are running.
 
 There is no category filter or `rules` subcommand. Filter the plain-text list
 in the shell when needed.
+
+## Catalogue roots (JSON)
+
+| Language | Path | Notes |
+|----------|------|--------|
+| **Go** (default, loaded by generators / runtime metadata) | `ruleset/golang/` | `bad-practices.json`, `chunks/cwe-*.json`, `chunks/perf-*.json` |
+| **Python** (WIP seeds; not registered in the binary yet) | `ruleset/python/` | Portable CWE shells + empty BP map; see README and `plans/v0.0.2/ruleset-reuse-audit.md` |
+
+Reuse policy: same JSON field shapes across languages; rewrite
+`detection_notes` / `applicable_to` per language. Do not bulk-copy Go PERF or
+BP into Python.
 
 ## Maturity labels
 
@@ -40,3 +51,4 @@ and a production label are separate properties.
 
 For detector authors, metadata and pack selection live under `internal/rules/`;
 the Go detector registries are under `internal/lang/go/detectors/`.
+Python catalogue seeds live under `ruleset/python/` (no detector package yet).

@@ -15,7 +15,7 @@
 | `engine/` | `engine/` | 2-3, 10 | [ ] |
 | `ast/` | `ast/` | 2 | [ ] |
 | `lang/go/` | `lang/go/` | 2, 6-9 | [ ] |
-| `lang/python/` | - | defer | [~] out of scope v0 |
+| `lang/python/` | - | v0.0.2 epic #39 | [~] foundation WIP; catalogues → #43 `ruleset/python/` |
 | `reporting/` | `reporting/` | 5 | [ ] |
 | `export/` | `export/` | 5 | [ ] |
 | `fixture/` | `fixture/` | 2 | [ ] |
@@ -38,7 +38,7 @@ Update counts from `goslop --list-rules` when Rust binary available; registries 
 | Path | Files (copied) | Notes |
 |------|---------------:|-------|
 | `tests/fixtures/go/**` | bulk of 1746 | primary expectations |
-| `tests/fixtures/python/**` | small | [~] skip until Python plugin |
+| `tests/fixtures/python/**` | small | [~] still skip for detectors; catalogue seeds in `ruleset/python/` (#43) |
 | `tests/fixtures/manifest.toml` | 1 | materializer must read |
 
 ## CLI flag parity (minimum)

@@ -62,7 +62,7 @@ CLI flags + goslop.toml + profile
 | Detectors | `internal/lang/go/detectors` |
 | Reporting | `internal/reporting` |
 | Export | `internal/export` |
-| Rule metadata | `ruleset/golang/` |
+| Rule metadata | `ruleset/golang/` (default); WIP Python seeds in `ruleset/python/` |
 
 ## Profiles (packs)
 
