@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/bp-plans/README.md` — batch inventory + PR order  
 > **Canonical ledger:** `plans/v0.0.2/heuristics/python-heuristics-bp.md` (#53)  
 > **Catalogue:** `ruleset/python/bad-practices.json`  
-> **Status:** planned — not started  
+> **Status:** **complete** — shipped on `main` (PR #65 / merge `2b3e635`); 50/50 catalogue coverage
 > **Estimated effort:** one PR (medium; 4 rules)  
 > **Branch suggestion:** `feat/python-bp-batch-04-fastapi`  
 > **Ledger rule:** mark `[x]` only with detector + unit hit/miss proof; record `make lint` / `make test` outcomes on the implement branch.
@@ -72,7 +72,7 @@ Phase 1 scaffold (done)
 | Category | FastAPI |
 | detection_notes | Match `async def` route/dependency bodies calling `time.sleep`, `requests.*`, sync sqlalchemy session, `open().read` large, or `subprocess` without asyncio. Prefer `asyncio.sleep`, `httpx.AsyncClient`, `run_in_executor`, or `def` routes. |
 
-- [ ] **Detection approach:**
+- [x] **Detection approach:**
   - Identify async route/dependency defs: `async def` under FastAPI-ish module (import/`FastAPI`/`APIRouter`/`@app.`/`@router.` needles) **or** any `async def` decorated with `@app.` / `@router.` / that takes `Depends`
   - In function body window (indent-based until next top-level/sibling def): flag calls matching blocking needles:
     - `time.sleep(`
@@ -81,13 +81,13 @@ Phase 1 scaffold (done)
     - optional: `open(` + read patterns; sync `Session(` / `session.query` / `session.execute` when sqlalchemy markers present
   - Miss: `await asyncio.sleep(`; `httpx.AsyncClient`; sync `def` routes (not async)
   - Distinct from future `BP-PY-39`: this rule requires FastAPI/route context **or** documents broader async-def scope if v0 chooses module-wide async def + blocking needle (prefer route-scoped for lower noise)
-- [ ] Path: `internal/lang/python/detectors/bad_practices/rules_fastapi.go` — `detectBPPY30`
-- [ ] Register: `RegisterRule("BP-PY-30", detectBPPY30)` in `init()`
-- [ ] Unit hit: FastAPI app + `@app.get` + `async def` body with `time.sleep(1)` or `requests.get(...)`
-- [ ] Unit miss: same with `await asyncio.sleep(1)`
-- [ ] Unit miss: sync `def` route with `time.sleep` (not this rule)
-- [ ] Optional fixture hit/miss
-- [ ] Severity **high** from metadata
+- [x] Path: `internal/lang/python/detectors/bad_practices/rules_fastapi.go` — `detectBPPY30`
+- [x] Register: `RegisterRule("BP-PY-30", detectBPPY30)` in `init()`
+- [x] Unit hit: FastAPI app + `@app.get` + `async def` body with `time.sleep(1)` or `requests.get(...)`
+- [x] Unit miss: same with `await asyncio.sleep(1)`
+- [x] Unit miss: sync `def` route with `time.sleep` (not this rule)
+- [x] Optional fixture hit/miss
+- [x] Severity **high** from metadata
 
 ### 1.2 `BP-PY-32` Starlette FileResponse User Path
 
@@ -97,22 +97,22 @@ Phase 1 scaffold (done)
 | Category | FastAPI |
 | detection_notes | Match `starlette.responses.FileResponse` or `StaticFiles` usage with path from path params/query without resolve+prefix check. Complements CWE-22. |
 
-- [ ] **Detection approach:**
+- [x] **Detection approach:**
   - Match `FileResponse(` (and optional `StaticFiles`)
   - Fire when first/path argument expression text contains user-input needles: `request.`, path param name reuse, f-string / concatenation with variables, or bare name that is a function parameter (heuristic: param names used in `FileResponse(param)` for route with `{param}` or typed path params)
   - v0 practical rule: `FileResponse(` with non-literal path arg **and** (file has FastAPI/Starlette markers) **and** (arg involves f-string / `request` / `+` concat / `.format` / path param identifier from signature)
   - Miss: `FileResponse("/var/www/static/report.pdf")` constant; or path passed through `os.path.realpath` + prefix check needles (optional miss if too hard — document)
-- [ ] Path: `rules_fastapi.go` — `detectBPPY32`
-- [ ] Register `BP-PY-32`
-- [ ] Unit hit: `@app.get("/files/{name}")` + `return FileResponse(name)` or `FileResponse(f"/data/{name}")`
-- [ ] Unit miss: `FileResponse("/safe/fixed.pdf")`
-- [ ] Optional fixture
-- [ ] Severity **high**
+- [x] Path: `rules_fastapi.go` — `detectBPPY32`
+- [x] Register `BP-PY-32`
+- [x] Unit hit: `@app.get("/files/{name}")` + `return FileResponse(name)` or `FileResponse(f"/data/{name}")`
+- [x] Unit miss: `FileResponse("/safe/fixed.pdf")`
+- [x] Optional fixture
+- [x] Severity **high**
 
 ### 1.3 Phase 1 validation
 
-- [ ] Both high-sev rules registered with hit/miss tests
-- [ ] `gofmt -w` on touched files
+- [x] Both high-sev rules registered with hit/miss tests
+- [x] `gofmt -w` on touched files
 
 ---
 
@@ -126,15 +126,15 @@ Phase 1 scaffold (done)
 | Category | FastAPI |
 | detection_notes | Match `global`/`nonlocal` writes or module-level dict/list mutation inside route handlers/dependencies. Prefer request-scoped deps and proper stores. |
 
-- [ ] **Detection approach:**
+- [x] **Detection approach:**
   - In FastAPI-ish modules, inside route/dependency functions: flag `global ` statements; `nonlocal ` writes; or mutations of module-level names (hard) — v0 minimum: `global foo` in route/dep body; optional `cache[key] =` when `cache` assigned at module level as `{}`/`[]`
   - Miss: pure function deps without global; request-state patterns
-- [ ] Path: `rules_fastapi.go` — `detectBPPY29`
-- [ ] Register `BP-PY-29`
-- [ ] Unit hit: module-level `STORE = {}` + route/dep does `global STORE` or `STORE[k] = v`
-- [ ] Unit miss: route uses local dict only
-- [ ] Optional fixture
-- [ ] Severity **medium**
+- [x] Path: `rules_fastapi.go` — `detectBPPY29`
+- [x] Register `BP-PY-29`
+- [x] Unit hit: module-level `STORE = {}` + route/dep does `global STORE` or `STORE[k] = v`
+- [x] Unit miss: route uses local dict only
+- [x] Optional fixture
+- [x] Severity **medium**
 
 ### 2.2 `BP-PY-31` FastAPI response_model Disabled Unsafely
 
@@ -144,22 +144,22 @@ Phase 1 scaffold (done)
 | Category | FastAPI |
 | detection_notes | Heuristic: FastAPI route returns SQLAlchemy/Django model instances without `response_model=` or `response_model_exclude`. Prefer Pydantic response models. |
 
-- [ ] **Detection approach (heuristic, document limits):**
+- [x] **Detection approach (heuristic, document limits):**
   - Find route decorators `@app.get/post/...` / `@router.get/...` **without** `response_model=` in decorator args
   - And function body `return` of names that look like ORM instances: `return db_user`, `return User.query...`, `return session.get(...)`, `return models.X` patterns — v0: fire when decorator lacks `response_model` **and** return expr matches ORM-ish needles (`session.query`, `.query.get`, `db.query`, SQLAlchemy model class call) **or** simpler v0: any FastAPI route decorator missing `response_model=` that returns a non-dict non-literal name when sqlalchemy/django models imported
   - Prefer precision: require both missing `response_model` and ORM return needle
   - Miss: `@app.get(..., response_model=UserOut)` or returns `UserOut(...)` / plain `dict`
-- [ ] Path: `rules_fastapi.go` — `detectBPPY31`
-- [ ] Register `BP-PY-31`
-- [ ] Unit hit: `@app.get("/u/{id}")` without response_model + `return session.query(User).get(id)` (or similar)
-- [ ] Unit miss: same with `response_model=UserOut`
-- [ ] Optional fixture
-- [ ] Severity **medium**; message notes heuristic
+- [x] Path: `rules_fastapi.go` — `detectBPPY31`
+- [x] Register `BP-PY-31`
+- [x] Unit hit: `@app.get("/u/{id}")` without response_model + `return session.query(User).get(id)` (or similar)
+- [x] Unit miss: same with `response_model=UserOut`
+- [x] Optional fixture
+- [x] Severity **medium**; message notes heuristic
 
 ### 2.3 Phase 2 validation
 
-- [ ] `29` and `31` registered + hit/miss
-- [ ] No ID collision with Django/Flask rules
+- [x] `29` and `31` registered + hit/miss
+- [x] No ID collision with Django/Flask rules
 
 ---
 
@@ -167,30 +167,30 @@ Phase 1 scaffold (done)
 
 ### 3.1 Registration & catalogue surface
 
-- [ ] `TestBPRulesRegistered` (or fastapi-specific) includes `BP-PY-29`…`BP-PY-32`
-- [ ] Each id: non-nil metadata, `PackBadPractice`, `BP-PY-` prefix only
-- [ ] Collision guard unchanged
+- [x] `TestBPRulesRegistered` (or fastapi-specific) includes `BP-PY-29`…`BP-PY-32`
+- [x] Each id: non-nil metadata, `PackBadPractice`, `BP-PY-` prefix only
+- [x] Collision guard unchanged
 
 ### 3.2 File-size gate (required after implementation)
 
-- [ ] `wc -l internal/lang/python/detectors/bad_practices/*.go` — each file **≤1500 preferred**, **hard max 2000**
-- [ ] Default: all four detectors live in **`rules_fastapi.go`**
-- [ ] If tests bloat `scan_test.go` past comfort, use `rules_fastapi_test.go`
-- [ ] Record line counts when closing the PR
+- [x] `wc -l internal/lang/python/detectors/bad_practices/*.go` — each file **≤1500 preferred**, **hard max 2000**
+- [x] Default: all four detectors live in **`rules_fastapi.go`**
+- [x] If tests bloat `scan_test.go` past comfort, use `rules_fastapi_test.go`
+- [x] Record line counts when closing the PR
 
 ### 3.3 Quality gates (required for non-docs)
 
-- [ ] `gofmt -w` on all touched Go files
-- [ ] `make lint` — leave unchecked until green; record outcome
-- [ ] `make test` — leave unchecked until green; record outcome
-- [ ] Optional: `go test ./internal/lang/python/detectors/bad_practices/ -count=1`
+- [x] `gofmt -w` on all touched Go files
+- [x] `make lint` — leave unchecked until green; record outcome
+- [x] `make test` — leave unchecked until green; record outcome
+- [x] Optional: `go test ./internal/lang/python/detectors/bad_practices/ -count=1`
 
 ### 3.4 PR hygiene
 
-- [ ] One PR for this batch (`batch-04-fastapi`)
-- [ ] `Relates to #53` / `#51`
-- [ ] Update `python-heuristics-bp.md` inventory rows for `29`–`32` when proven
-- [ ] Update `_inventory.json` implemented/missing when batch lands
+- [x] One PR for this batch (`batch-04-fastapi`)
+- [x] `Relates to #53` / `#51`
+- [x] Update `python-heuristics-bp.md` inventory rows for `29`–`32` when proven
+- [x] Update `_inventory.json` implemented/missing when batch lands
 
 ---
 
@@ -227,3 +227,12 @@ Phase 1 scaffold (done)
 - Inventory: `plans/v0.0.2/heuristics/bp-plans/_inventory.json`
 - Parent ledger: `plans/v0.0.2/heuristics/python-heuristics-bp.md`
 - Skill: `plans/skills/phase-wise-checklist/SKILLS.md`
+
+---
+
+## Completion stamp
+
+- [x] Batch ledger synchronized to code on `main` (PR #65, `2b3e635`, 2026-07-31)
+- [x] All catalogue IDs in this batch have `RegisterRule` + hit/miss tests (or prior shipped evidence)
+- [x] File size policy observed (≤1500 soft / 2000 hard per Go domain file)
+- [x] Validation: `make lint` + `make test` green on integration before merge
