@@ -21,6 +21,9 @@ func TestBPRulesRegistered(t *testing.T) {
 		"BP-PY-8", "BP-PY-9", "BP-PY-10", "BP-PY-11", "BP-PY-12", "BP-PY-13",
 		"BP-PY-16", "BP-PY-17", "BP-PY-21",
 		"BP-PY-22", "BP-PY-23", "BP-PY-24", "BP-PY-25", "BP-PY-26", "BP-PY-27", "BP-PY-28",
+		"BP-PY-29", "BP-PY-30", "BP-PY-31", "BP-PY-32",
+		"BP-PY-33", "BP-PY-34",
+		"BP-PY-35", "BP-PY-36", "BP-PY-37",
 		"BP-PY-48", "BP-PY-49", "BP-PY-50",
 	}
 	if len(ids) < len(want) {

@@ -27,6 +27,15 @@ var bpNeedles = []string{
 	"request.form", "request.get_json", "request.json", "request.files",
 	".route(", "errorhandler", "register_error_handler", "traceback",
 	"send_file", "send_from_directory", "safe_join",
+	// FastAPI / Starlette (batch 04)
+	"FastAPI", "APIRouter", "fastapi", "starlette",
+	"Depends", "FileResponse", "response_model",
+	"time.sleep", "global ", "nonlocal ",
+	// Templates (batch 05)
+	"Environment", "autoescape", "Markup", "|safe", "jinja2",
+	// Database (batch 05)
+	"text(", "SessionLocal", "Session(", "sessionmaker", ".execute(",
+	"sqlalchemy",
 	// BP-PY-48 CORS star + credentials
 	"CORSMiddleware", "allow_origins", "allow_credentials",
 	"supports_credentials", "CORS_ALLOW_ALL_ORIGINS", "CORS_ORIGIN_ALLOW_ALL",
