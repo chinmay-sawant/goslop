@@ -1,1 +1,452 @@
-{}
+{
+  "BP-PY-1": {
+    "id": "BP-PY-1",
+    "name": "Bare Except Clause",
+    "description": "A bare `except:` or `except Exception` without handling or re-raise swallows failures and hides bugs.",
+    "detection_notes": "Match `except:` or broad `except Exception` / `except BaseException` blocks that pass, only log without re-raise, or continue without recording the exception type. Prefer specific exception types.",
+    "severity": "medium",
+    "category": "Error Handling",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-2": {
+    "id": "BP-PY-2",
+    "name": "Except Pass",
+    "description": "An exception handler body is only `pass`, discarding the failure silently.",
+    "detection_notes": "Match except handlers whose suite is solely `pass` (optionally with a comment). Flag library and request-path code more strictly than top-level CLI mains.",
+    "severity": "medium",
+    "category": "Error Handling",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-3": {
+    "id": "BP-PY-3",
+    "name": "Raise Generic Exception",
+    "description": "Code raises bare `Exception` or `BaseException` instead of a domain-specific error type.",
+    "detection_notes": "Match `raise Exception(...)` / `raise BaseException(...)` outside tests. Prefer project-defined exceptions or stdlib types (ValueError, RuntimeError, OSError).",
+    "severity": "low",
+    "category": "Error Handling",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-4": {
+    "id": "BP-PY-4",
+    "name": "Mutable Default Argument",
+    "description": "A function default uses a mutable value (`[]`, `{}`, `set()`) shared across calls.",
+    "detection_notes": "Match FunctionDef/AsyncFunctionDef defaults that are List, Dict, Set, or Call to list/dict/set. Suggest `None` + assign inside body.",
+    "severity": "high",
+    "category": "Core Language",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-5": {
+    "id": "BP-PY-5",
+    "name": "Wildcard Import",
+    "description": "`from module import *` pollutes the namespace and breaks static analysis.",
+    "detection_notes": "Match ImportFrom with names containing `*`. Allow only `__init__.py` re-export patterns if explicitly documented; default flag in app code.",
+    "severity": "low",
+    "category": "Core Language",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-6": {
+    "id": "BP-PY-6",
+    "name": "assert Used For Runtime Validation",
+    "description": "`assert` is used for input or security checks that disappear with `python -O`.",
+    "detection_notes": "Match assert on request/CLI inputs, authz checks, or path validation in non-test files. Prefer `if` + raise ValueError/HTTPException.",
+    "severity": "high",
+    "category": "Core Language",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-7": {
+    "id": "BP-PY-7",
+    "name": "open Without Context Manager",
+    "description": "A file is opened without a `with` statement, risking resource leaks.",
+    "detection_notes": "Match Call to open/Path.open assigned to a name without being the context expression of a With. Ignore temporary open().read() one-liners if closed by GC policy—prefer always requiring with.",
+    "severity": "medium",
+    "category": "Resource Management",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-8": {
+    "id": "BP-PY-8",
+    "name": "subprocess With shell=True",
+    "description": "`subprocess` is invoked with `shell=True`, enabling shell injection and quoting bugs.",
+    "detection_notes": "Match subprocess.run/Popen/call/check_output/check_call with keyword shell=True. Prefer argv list and shell=False. Overlaps CWE-78 when input is untrusted.",
+    "severity": "high",
+    "category": "Security Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-9": {
+    "id": "BP-PY-9",
+    "name": "os.system Or os.popen",
+    "description": "Legacy `os.system` / `os.popen` runs a shell command string.",
+    "detection_notes": "Match Attribute calls os.system / os.popen. Prefer subprocess with list argv.",
+    "severity": "high",
+    "category": "Security Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-10": {
+    "id": "BP-PY-10",
+    "name": "pickle Loads Untrusted Data",
+    "description": "`pickle.loads` / `pickle.load` deserializes data that may be attacker-controlled.",
+    "detection_notes": "Match pickle.load/loads, _pickle, cloudpickle on non-constant sources (request body, file from user path, cache). Prefer json or a safe schema. Related to CWE-502.",
+    "severity": "high",
+    "category": "Security Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-11": {
+    "id": "BP-PY-11",
+    "name": "yaml.load Without SafeLoader",
+    "description": "`yaml.load` without SafeLoader/FullLoader policy can execute arbitrary constructors.",
+    "detection_notes": "Match yaml.load(...) missing Loader=yaml.SafeLoader (or CSafeLoader). Prefer yaml.safe_load. PyYAML 6+ requires Loader= keyword—still flag FullLoader on untrusted input when policy is strict.",
+    "severity": "high",
+    "category": "Security Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-12": {
+    "id": "BP-PY-12",
+    "name": "eval Or exec On Dynamic Input",
+    "description": "`eval` / `exec` runs dynamically built code strings.",
+    "detection_notes": "Match eval/exec/compile(..., 'exec') with non-literal arguments. Flag request/env-derived strings especially hard.",
+    "severity": "high",
+    "category": "Security Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-13": {
+    "id": "BP-PY-13",
+    "name": "Hardcoded Secret In Source",
+    "description": "A password, API key, or token appears as a string literal in source.",
+    "detection_notes": "Heuristic: assignments to names matching password/secret/api_key/token/private_key with string literals that look like secrets (length, entropy). Exclude test fixtures and obvious placeholders (changeme, xxx).",
+    "severity": "high",
+    "category": "Security Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-14": {
+    "id": "BP-PY-14",
+    "name": "requests Without Timeout",
+    "description": "`requests` HTTP calls omit `timeout=`, risking hung workers.",
+    "detection_notes": "Match requests.get/post/put/patch/delete/request/Session.* without timeout keyword. Prefer explicit timeout=(connect, read).",
+    "severity": "medium",
+    "category": "Production Hardening",
+    "applicable_to": ["python", "requests"]
+  },
+  "BP-PY-15": {
+    "id": "BP-PY-15",
+    "name": "httpx Async Client Not Closed",
+    "description": "An `httpx.AsyncClient` is created without `async with` or explicit aclose.",
+    "detection_notes": "Match httpx.AsyncClient() assigned without With/AsyncWith context and without await client.aclose() on known paths. Prefer async with httpx.AsyncClient().",
+    "severity": "medium",
+    "category": "Resource Management",
+    "applicable_to": ["python", "httpx"]
+  },
+  "BP-PY-16": {
+    "id": "BP-PY-16",
+    "name": "Flask DEBUG True In Production Code",
+    "description": "Flask app runs with `debug=True` or ENV-like config enabling debugger.",
+    "detection_notes": "Match app.run(debug=True), FLASK_DEBUG/DEBUG = True in settings modules, or app.config['DEBUG'] = True outside tests. Prefer env-driven config defaulting false.",
+    "severity": "high",
+    "category": "Flask",
+    "applicable_to": ["python", "flask"]
+  },
+  "BP-PY-17": {
+    "id": "BP-PY-17",
+    "name": "Flask SECRET_KEY Hardcoded",
+    "description": "Flask `SECRET_KEY` is a string literal in source instead of environment/config.",
+    "detection_notes": "Match app.secret_key = '...' or SECRET_KEY = '...' in Flask config modules with non-empty literals. Prefer os.environ / secrets management.",
+    "severity": "high",
+    "category": "Flask",
+    "applicable_to": ["python", "flask"]
+  },
+  "BP-PY-18": {
+    "id": "BP-PY-18",
+    "name": "Flask Route Missing Methods Restriction",
+    "description": "A mutating endpoint accepts all methods because `@app.route` omits `methods=`.",
+    "detection_notes": "Heuristic: route handlers that call request.form/get_json/POST-like logic without methods=['POST',...] or methods list. Flag CSRF-sensitive form posts especially.",
+    "severity": "low",
+    "category": "Flask",
+    "applicable_to": ["python", "flask"]
+  },
+  "BP-PY-19": {
+    "id": "BP-PY-19",
+    "name": "Flask jsonify Error Leaks Exception",
+    "description": "Error handlers return str(e) or traceback details to clients.",
+    "detection_notes": "Match Flask errorhandler/register_error_handler bodies returning str(exc), traceback.format_exc(), or repr(e) in JSON/HTML responses.",
+    "severity": "medium",
+    "category": "Flask",
+    "applicable_to": ["python", "flask"]
+  },
+  "BP-PY-20": {
+    "id": "BP-PY-20",
+    "name": "Flask send_file User Path",
+    "description": "`send_file` / `send_from_directory` is fed a path derived from request input without a jail.",
+    "detection_notes": "Match flask.send_file/send_from_directory where path/filename comes from request.args/form/view args without safe_join + root check. Complements CWE-22.",
+    "severity": "high",
+    "category": "Flask",
+    "applicable_to": ["python", "flask"]
+  },
+  "BP-PY-21": {
+    "id": "BP-PY-21",
+    "name": "Django DEBUG True In Settings",
+    "description": "`DEBUG = True` in Django settings that may ship to production.",
+    "detection_notes": "Match DEBUG = True in settings.py / settings/*.py excluding tests and local_settings patterns named explicitly. Prefer env var.",
+    "severity": "high",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-22": {
+    "id": "BP-PY-22",
+    "name": "Django SECRET_KEY Hardcoded",
+    "description": "Django `SECRET_KEY` is a literal in settings.",
+    "detection_notes": "Match SECRET_KEY = '...' string literals in Django settings modules. Prefer environment or secrets backend.",
+    "severity": "high",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-23": {
+    "id": "BP-PY-23",
+    "name": "Django ALLOWED_HOSTS Empty Or Star",
+    "description": "`ALLOWED_HOSTS` is empty with DEBUG off risk, or uses `*` in production-like settings.",
+    "detection_notes": "Match ALLOWED_HOSTS = [] or ['*'] / [\"*\"] in settings. Flag * always; empty list when DEBUG is False nearby.",
+    "severity": "medium",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-24": {
+    "id": "BP-PY-24",
+    "name": "Django raw SQL With Format",
+    "description": "Django `raw()` / cursor.execute builds SQL via f-string or %-format with variables.",
+    "detection_notes": "Match Model.objects.raw, connection.cursor().execute with JoinedStr/BinOp/Call format on SQL. Prefer params= binding. Complements CWE-89.",
+    "severity": "high",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-25": {
+    "id": "BP-PY-25",
+    "name": "Django mark_safe On Dynamic Data",
+    "description": "`mark_safe` / `SafeString` wraps non-literal values that may be untrusted.",
+    "detection_notes": "Match django.utils.safestring.mark_safe or format_html misuse with variables from request/model fields. Prefer auto-escaping templates. Complements CWE-79.",
+    "severity": "high",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-26": {
+    "id": "BP-PY-26",
+    "name": "Django csrf_exempt On State-Changing View",
+    "description": "`@csrf_exempt` disables CSRF on a view that mutates state.",
+    "detection_notes": "Match csrf_exempt decorator on views that handle POST/PUT/PATCH/DELETE or use request.POST. Allow documented webhook exceptions with additional auth checks.",
+    "severity": "high",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-27": {
+    "id": "BP-PY-27",
+    "name": "Django Mass Assignment From request.POST",
+    "description": "Model is constructed/updated from full `request.POST` / `request.data` without field allowlists.",
+    "detection_notes": "Match Model(**request.POST), Model.objects.create(**request.data), form.save with unrestricted fields, or serializer without Meta.fields. Prefer explicit fields / ModelForm.",
+    "severity": "medium",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-28": {
+    "id": "BP-PY-28",
+    "name": "Django N+1 Query In Loop",
+    "description": "Related objects are accessed in a loop without select_related/prefetch_related.",
+    "detection_notes": "Heuristic: for-loop over queryset accessing `.foreign` or reverse relations without prior select_related/prefetch_related on the queryset definition. Review-only; cannot prove all graphs.",
+    "severity": "medium",
+    "category": "Django",
+    "applicable_to": ["python", "django"]
+  },
+  "BP-PY-29": {
+    "id": "BP-PY-29",
+    "name": "FastAPI Depends On Mutable Global",
+    "description": "FastAPI/Starlette dependencies or routes mutate module-level global state.",
+    "detection_notes": "Match global/nonlocal writes or module-level dict/list mutation inside route handlers/dependencies. Prefer request-scoped deps and proper stores.",
+    "severity": "medium",
+    "category": "FastAPI",
+    "applicable_to": ["python", "fastapi", "starlette"]
+  },
+  "BP-PY-30": {
+    "id": "BP-PY-30",
+    "name": "FastAPI Blocking I/O In Async Route",
+    "description": "An `async def` route calls blocking I/O (time.sleep, requests, sync ORM) on the event loop.",
+    "detection_notes": "Match async def route/dependency bodies calling time.sleep, requests.*, sync sqlalchemy session, open().read large, or subprocess without asyncio. Prefer asyncio.sleep, httpx.AsyncClient, run_in_executor, or def routes.",
+    "severity": "high",
+    "category": "FastAPI",
+    "applicable_to": ["python", "fastapi", "starlette"]
+  },
+  "BP-PY-31": {
+    "id": "BP-PY-31",
+    "name": "FastAPI response_model Disabled Unsafely",
+    "description": "Response returns ORM/internal objects without `response_model`, leaking fields.",
+    "detection_notes": "Heuristic: FastAPI route returns SQLAlchemy/Django model instances without response_model= or response_model_exclude. Prefer Pydantic response models.",
+    "severity": "medium",
+    "category": "FastAPI",
+    "applicable_to": ["python", "fastapi"]
+  },
+  "BP-PY-32": {
+    "id": "BP-PY-32",
+    "name": "Starlette FileResponse User Path",
+    "description": "`FileResponse` / static file helpers use a path from user input without confinement.",
+    "detection_notes": "Match starlette.responses.FileResponse or StaticFiles usage with path from path params/query without resolve+prefix check. Complements CWE-22.",
+    "severity": "high",
+    "category": "FastAPI",
+    "applicable_to": ["python", "fastapi", "starlette"]
+  },
+  "BP-PY-33": {
+    "id": "BP-PY-33",
+    "name": "Jinja2 autoescape Disabled",
+    "description": "Jinja2 Environment is created with `autoescape=False` or missing autoescape for HTML.",
+    "detection_notes": "Match jinja2.Environment(autoescape=False) or select_autoescape not used for .html templates. Complements CWE-79.",
+    "severity": "high",
+    "category": "Templates",
+    "applicable_to": ["python", "jinja2", "flask"]
+  },
+  "BP-PY-34": {
+    "id": "BP-PY-34",
+    "name": "Jinja2 Markup Or safe Filter On Variables",
+    "description": "Template or Python marks dynamic values as safe HTML.",
+    "detection_notes": "Match Markup(...), |safe, |forceescape misuse in templates or Python. Flag non-literal arguments to Markup.",
+    "severity": "high",
+    "category": "Templates",
+    "applicable_to": ["python", "jinja2", "flask"]
+  },
+  "BP-PY-35": {
+    "id": "BP-PY-35",
+    "name": "SQLAlchemy text With F-String",
+    "description": "`sqlalchemy.text` / execute builds SQL with f-strings or format instead of bound params.",
+    "detection_notes": "Match text(f\"...\"), text(\"...\".format(...)), or execute with concatenated SQL. Prefer text(\"... WHERE id = :id\") with bindparams. Complements CWE-89.",
+    "severity": "high",
+    "category": "Database",
+    "applicable_to": ["python", "sqlalchemy"]
+  },
+  "BP-PY-36": {
+    "id": "BP-PY-36",
+    "name": "SQLAlchemy Session Not Closed",
+    "description": "A Session/sessionmaker session is created without context manager or close in finally.",
+    "detection_notes": "Match Session() / SessionLocal() without with/contextlib.closing and without .close() on exit paths. Prefer session scope context managers.",
+    "severity": "medium",
+    "category": "Database",
+    "applicable_to": ["python", "sqlalchemy"]
+  },
+  "BP-PY-37": {
+    "id": "BP-PY-37",
+    "name": "DB-API Cursor Execute With Percent Format",
+    "description": "DB-API `cursor.execute` uses Python `%` formatting on the SQL string.",
+    "detection_notes": "Match execute(\"...%s...\" % (...)) or execute(f\"...\") patterns. Prefer execute(sql, params) binding. Complements CWE-89.",
+    "severity": "high",
+    "category": "Database",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-38": {
+    "id": "BP-PY-38",
+    "name": "asyncio create_task Without Reference",
+    "description": "`asyncio.create_task` result is discarded, risking silent task loss and missed errors.",
+    "detection_notes": "Match create_task/ensure_future calls whose return value is unused (Expr statement). Prefer storing tasks and awaiting/gather with exception handling.",
+    "severity": "medium",
+    "category": "Async",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-39": {
+    "id": "BP-PY-39",
+    "name": "time.sleep In Async Function",
+    "description": "`time.sleep` blocks the event loop inside `async def`.",
+    "detection_notes": "Match time.sleep in AsyncFunctionDef bodies. Prefer await asyncio.sleep.",
+    "severity": "high",
+    "category": "Async",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-40": {
+    "id": "BP-PY-40",
+    "name": "threading Without Join Or Shutdown",
+    "description": "A Thread is started without join or a clear shutdown protocol.",
+    "detection_notes": "Match threading.Thread(...).start() without later join/daemon policy documentation. Review-only heuristic for non-daemon workers.",
+    "severity": "low",
+    "category": "Async",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-41": {
+    "id": "BP-PY-41",
+    "name": "pytest assert With Side Effects Only",
+    "description": "Tests call production code without assertions (placeholder tests).",
+    "detection_notes": "Heuristic: test_* functions that call APIs but have no assert/pytest.raises/unittest asserts. Low confidence; style signal.",
+    "severity": "info",
+    "category": "Testing",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-42": {
+    "id": "BP-PY-42",
+    "name": "unittest Assert Without Context On Raises",
+    "description": "Tests use a bare try/except instead of assertRaises/pytest.raises.",
+    "detection_notes": "Match test functions with try/except AssertionError or broad except used to 'expect' failures. Prefer assertRaises context managers.",
+    "severity": "low",
+    "category": "Testing",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-43": {
+    "id": "BP-PY-43",
+    "name": "requirements Without Pins",
+    "description": "requirements.txt lists direct deps without version pins, risking non-reproducible builds.",
+    "detection_notes": "Parse requirements*.txt lines that are bare package names without ==, ~=, >= constraints (excluding -e and -r includes). Prefer pinned lock files for apps.",
+    "severity": "low",
+    "category": "Dependency Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-44": {
+    "id": "BP-PY-44",
+    "name": "Import Deprecated stdlib Module",
+    "description": "Code imports a deprecated or removed stdlib module (e.g. `imp`, `asyncore`, `cgi` patterns).",
+    "detection_notes": "Match imports of known deprecated modules: imp, asyncore, asynchat, cgi (3.13+), telnetlib, etc. Prefer modern replacements.",
+    "severity": "low",
+    "category": "Dependency Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-45": {
+    "id": "BP-PY-45",
+    "name": "sys.path Mutation At Runtime",
+    "description": "`sys.path.insert/append` is used to fix imports instead of proper packaging.",
+    "detection_notes": "Match sys.path.insert/append/extend outside tests and packaging bootstrap. Prefer installable packages / PYTHONPATH at process start.",
+    "severity": "low",
+    "category": "Dependency Hygiene",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-46": {
+    "id": "BP-PY-46",
+    "name": "print Debugging In Library Code",
+    "description": "`print` is used for operational logging in non-script modules.",
+    "detection_notes": "Match print(...) in modules that are not __main__ guards and not tests. Prefer logging module. Info severity.",
+    "severity": "info",
+    "category": "Observability",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-47": {
+    "id": "BP-PY-47",
+    "name": "logging With String Format Before Logger",
+    "description": "Log messages are eagerly formatted with f-strings instead of lazy `%s`/`{}` args.",
+    "detection_notes": "Match logger.debug/info/warning/error(f\"...\") or .format before call. Prefer logger.info(\"x %s\", val) for lazy formatting and safer structured logs.",
+    "severity": "info",
+    "category": "Observability",
+    "applicable_to": ["python"]
+  },
+  "BP-PY-48": {
+    "id": "BP-PY-48",
+    "name": "CORS Allow Origins Star With Credentials",
+    "description": "CORS is configured with `*` origins while allowing credentials.",
+    "detection_notes": "Match FastAPI CORSMiddleware, flask-cors, django-cors-headers configs combining allow_origins=['*'] / True with allow_credentials=True.",
+    "severity": "high",
+    "category": "Production Hardening",
+    "applicable_to": ["python", "fastapi", "flask", "django"]
+  },
+  "BP-PY-49": {
+    "id": "BP-PY-49",
+    "name": "TLS Verification Disabled",
+    "description": "HTTP clients disable TLS verification (`verify=False`).",
+    "detection_notes": "Match requests/httpx/urllib3 verify=False, ssl._create_unverified_context, or CERT_NONE in production code paths.",
+    "severity": "high",
+    "category": "Production Hardening",
+    "applicable_to": ["python", "requests", "httpx"]
+  },
+  "BP-PY-50": {
+    "id": "BP-PY-50",
+    "name": "Django/Flask CSRF Or Session Cookie Insecure Flags",
+    "description": "Session/CSRF cookies lack Secure/HttpOnly/SameSite in production settings.",
+    "detection_notes": "Match SESSION_COOKIE_SECURE/CSRF_COOKIE_SECURE/SESSION_COOKIE_HTTPONLY = False or missing Secure when DEBUG is False. Flask: SESSION_COOKIE_SECURE False.",
+    "severity": "medium",
+    "category": "Production Hardening",
+    "applicable_to": ["python", "django", "flask"]
+  }
+}

@@ -154,7 +154,7 @@ Object map key form: `"CWE-22"`, `"PERF-101"`, etc.
 | Data Handling | 1 | Review case-by-case; do not bulk-copy |
 | Configuration | 1 | Review case-by-case; do not bulk-copy |
 
-**Conclusion:** do **not** bulk-copy `bad-practices.json` into Python. Start with `{}` or purpose-written Python idioms (exceptions, typing, venv) in a later phase.
+**Conclusion:** do **not** bulk-copy Go `bad-practices.json` into Python. Purpose-written **`BP-PY-*`** seeds now live in `ruleset/python/bad-practices.json` (core idioms + Flask/Django/FastAPI/SQLAlchemy/Jinja2/production).
 
 ### Go code consumption / hard-coded `ruleset/golang` paths
 
@@ -227,7 +227,7 @@ ruleset/
   golang/          # existing; unchanged ownership for Go plugin
   python/          # WIP Python catalogues (this phase)
     README.md
-    bad-practices.json   # {} for now — no bulk Go BP copy
+    bad-practices.json   # BP-PY-* seeds (framework-targeted; no bulk Go BP copy)
     chunks/
       cwe-seed.json      # portable CWE shells only (CWE-22/78/79/89)
   shared/          # OPTIONAL later: pure CWE ID→name map without language notes

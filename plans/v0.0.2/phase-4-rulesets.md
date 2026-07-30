@@ -45,7 +45,7 @@ Evidence: scripted counts in audit (CWE 175, PERF 242, BP 135; **0** `python` ta
 
 - [x] Create `ruleset/python/README.md` explaining WIP + reuse policy  
 - [x] Seed minimal Python catalogues, reusing field names from golang where possible:
-  - [x] `ruleset/python/bad-practices.json` — empty `{}` (do not copy all Go BP)  
+  - [x] `ruleset/python/bad-practices.json` — **50** `BP-PY-*` seeds (core + Flask/Django/FastAPI/SQLAlchemy/Jinja2; not a Go BP copy)
   - [x] `ruleset/python/chunks/` — `cwe-seed.json` for CWE-22/78/79/89 with `applicable_to` including `python` and python-oriented `detection_notes`  
 - [x] Do **not** break `ruleset/golang/**` or generated Go metadata  
 
