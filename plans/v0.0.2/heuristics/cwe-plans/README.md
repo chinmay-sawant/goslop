@@ -45,11 +45,99 @@ Batch plans under this directory are **live execution ledgers** for #52 follow-u
 | Detection v0 | pure-Go **source-pattern** heuristics over `ParsedUnit.Source` (+ `PyCweFacts` / needles) |
 | Metadata | hand-authored `MetaCWE*` aligned with chunk `name` / `detection_notes` |
 | File size | **1500 soft / 2000 hard** lines per Go file — split before growing |
-| Fixtures | `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` + matrix `tests/integration/python/cwe_matrix_test.go` |
+| Fixtures (text) | `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` — same `.txt` contract as `tests/fixtures/python/bp/` |
+| Unit tests | `internal/lang/python/detectors/cwe/*_test.go` hit/miss per ID |
+| Integration | `tests/integration/python/cwe_matrix_test.go` (`make integration-python`) — **not** Go matrix |
 | Product default | Go-only registry; Python opt-in via `languages = ["python"]` |
 | Go CWE | **read-only** inspiration — never modify Go detectors for Python work |
 
 **Do not** reopen shipped IDs as pending — see [batch-00-shipped.md](./batch-00-shipped.md).
+
+---
+
+## Testing contract (required for every implement batch)
+
+Mirror the BP-PY layout under `tests/fixtures/python/bp/` and `tests/integration/python/`.  
+**A rule is not done until all three layers below are green for that ID.**
+
+### 1. Fixture text files (hit / miss corpus)
+
+| Item | Requirement |
+|------|-------------|
+| Directory | `tests/fixtures/python/cwe/` (**not** under `python/bp/` or `python/` root) |
+| Naming | **Exactly** `CWE-<N>-vulnerable.txt` and `CWE-<N>-safe.txt` (same stem pattern as `BP-PY-N-{vulnerable,safe}.txt`) |
+| Format | Plain `.txt` fixtures only — see `tests/fixtures/README.md` |
+| Header | `lang: python` + optional `file: CWE-<N>-….py` + `---` + Python body |
+| Vulnerable | Must cause `RegisterRule("CWE-<N>")` to fire when scanned with `languages=["python"]` and `--only CWE-<N>` |
+| Safe | Must **not** emit `CWE-<N>` (parameterized / safe API / confined path / etc.) |
+| No committed `.py` | Only `.txt`; materialization is test-time |
+
+**Example** (same shape as BP fixtures):
+
+```text
+# Fixture for CWE-90 (vulnerable)
+lang: python
+file: CWE-90-vulnerable.py
+---
+import ldap3
+# ... sink that must fire CWE-90 ...
+```
+
+Shipped reference pairs (batch-00):
+
+```text
+tests/fixtures/python/cwe/CWE-22-{vulnerable,safe}.txt
+tests/fixtures/python/cwe/CWE-78-{vulnerable,safe}.txt
+tests/fixtures/python/cwe/CWE-79-{vulnerable,safe}.txt
+tests/fixtures/python/cwe/CWE-89-{vulnerable,safe}.txt
+tests/fixtures/python/cwe/CWE-502-{vulnerable,safe}.txt
+```
+
+BP analogue for comparison:
+
+```text
+tests/fixtures/python/bp/BP-PY-1-{vulnerable,safe}.txt
+… (50 pairs) …
+```
+
+### 2. Individual (unit) tests — package-local
+
+| Item | Requirement |
+|------|-------------|
+| Package | `internal/lang/python/detectors/cwe/` |
+| Files | extend `rules_test.go` / `scan_test.go`, **or** domain `rules_<theme>_test.go` when approaching 1500-line soft cap |
+| Per ID | At least one **hit** snippet and one **miss** snippet asserting `RuleID == "CWE-<N>"` presence/absence |
+| Catalogue | Keep / extend registration want-list (all registered IDs after the batch) |
+| Command | `go test ./internal/lang/python/detectors/cwe/ -count=1` |
+
+### 3. Integration matrix tests — Python-only package
+
+| Item | Requirement |
+|------|-------------|
+| Package | `tests/integration/python/` (**separate** from Go `tests/integration/`) |
+| Test | `TestPythonCWEFixturesMatrix` in `cwe_matrix_test.go` |
+| Discovery | `integration.DiscoverPythonCWECases()` — auto-picks every paired stem under `tests/fixtures/python/cwe/` |
+| Paths | `integration.PythonCWEFixtureRel(case, vulnerable\|safe)` |
+| Scan opts | `Languages = [LanguagePython]`, `Only = [CWE-N]`, typically `ProfileAll` |
+| Registry | Python opt-in registry (not `DefaultRegistry` / Go-only) |
+| Command | `go test ./tests/integration/python/ -count=1` **or** `make integration-python` |
+| BP analogue | `TestPythonBPFixturesMatrix` + `DiscoverPythonBPCases` over `tests/fixtures/python/bp/` |
+
+**Do not** put Python CWE pairs into `tests/fixtures/go/` or the Go CWE matrix (`tests/integration/cwe_matrix_test.go`).
+
+### 4. Definition of done (per CWE ID in an implement batch)
+
+- [ ] Detector + `RegisterRule` + meta + gates
+- [ ] Unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go`
+- [ ] Fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt`
+- [ ] Integration matrix picks up the new pair (no hard-coded allowlist required if discovery is glob-based — verify count increases)
+- [ ] `make lint` + `make test` green (includes unit + usually integration via `./...` if configured; always run `make integration-python` before merge)
+- [ ] Inventory / ledger checkboxes updated
+
+### 5. What deferred IDs skip
+
+IDs in [batch-deferred.md](./batch-deferred.md) need **no** fixtures, unit tests, or matrix rows until promoted into an implement batch.
+
 
 ---
 
@@ -98,7 +186,10 @@ Every catalogue ID appears in **exactly one** batch (00, 01–16, or deferred). 
 1. One PR per implement batch (`python(cwe): batch-NN …` / `Relates to #52` / `Relates to #51`).
 2. Optional **infra PR first**: split shipped detectors out of monolith `rules.go` into domain files before P0 flood.
 3. Before PR: `gofmt`, `make lint`, `make test`; record outcomes in batch Phase validation.
-4. Add hit/miss unit tests + fixture pair + matrix discovery for each new ID.
+4. **Testing triad for each new ID** (required):
+   - unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go`
+   - fixture pair under `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` (BP-style `.txt`)
+   - green `TestPythonCWEFixturesMatrix` / `make integration-python`
 5. Update `_inventory.json` `implemented` / `missing` when a batch lands.
 6. Do **not** `Closes #52` until deferred inventory is honest in parent `python-heuristics-cwe.md`.
 7. Batch-16 (tier-B) may be split into multiple PRs at implement time if still >15 IDs.

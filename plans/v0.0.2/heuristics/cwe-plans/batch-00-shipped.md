@@ -52,3 +52,28 @@ These five rules are **already implemented** on `main` (priority #52 batch). Thi
 ## Do not implement here
 
 Any remaining catalogue IDs belong to batch-01+ or `batch-deferred.md`.
+
+## Shipped fixtures + tests (reference pattern)
+
+These are the gold standard for expansion batches (same layout as BP under `tests/fixtures/python/bp/`).
+
+### Fixture pairs (`tests/fixtures/python/cwe/`)
+
+| Rule | Vulnerable | Safe |
+|------|------------|------|
+| CWE-22 | `CWE-22-vulnerable.txt` | `CWE-22-safe.txt` |
+| CWE-78 | `CWE-78-vulnerable.txt` | `CWE-78-safe.txt` |
+| CWE-79 | `CWE-79-vulnerable.txt` | `CWE-79-safe.txt` |
+| CWE-89 | `CWE-89-vulnerable.txt` | `CWE-89-safe.txt` |
+| CWE-502 | `CWE-502-vulnerable.txt` | `CWE-502-safe.txt` |
+
+### Unit tests
+
+- [x] `internal/lang/python/detectors/cwe/rules_test.go` (+ `scan_test.go`) hit/miss for each of the five
+
+### Integration
+
+- [x] `tests/integration/python/cwe_matrix_test.go` — `TestPythonCWEFixturesMatrix`
+- [x] Discovery via `DiscoverPythonCWECases()` over `tests/fixtures/python/cwe/`
+- [x] `make integration-python` / `go test ./tests/integration/python/`
+

@@ -66,8 +66,9 @@
 - [x] Validation: `make lint` + `make test` recorded on implement branch  
   **Evidence:** `make lint` / `make test` green; `CGO_ENABLED=0 go build` OK (2026-07-31, `feat/python-cwe-heuristics`).
 - [x] **Remaining CWE batch plans** under [cwe-plans/](./cwe-plans/) after chunk scan (2026-07-31, post-PR #67 on `main`)  
-  **Evidence:** `cwe-plans/README.md` + `_inventory.json` — 344 partition (5 shipped / 154 implement / 185 deferred); waves P0–P3.
-- [ ] Execute cwe-plans implement waves (start **P0** batches 01–04)
+  **Evidence:** `cwe-plans/README.md` + `_inventory.json` — 344 partition (5 shipped / 154 implement / 185 deferred); waves P0–P3.  
+  **Testing triad:** unit tests + `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` (BP-style, parallel to `python/bp/`) + `make integration-python` / `TestPythonCWEFixturesMatrix`.
+- [ ] Execute cwe-plans implement waves (start **P0** batches 01–04; each ID ships unit + fixtures + matrix)
 
 ### BP — #53
 

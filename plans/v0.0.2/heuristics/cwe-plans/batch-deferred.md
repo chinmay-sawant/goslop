@@ -417,3 +417,7 @@ These catalogue entries remain **registered in JSON only**. They lack a high-sig
 - [~] `CWE-1127` — Compilation with Insufficient Warnings or Errors (Error Handling) — deferred: no v0 pure-Go sink plan
 
 **Count:** 185
+
+## Testing (none until promotion)
+
+Deferred IDs intentionally have **no** fixture pairs under `tests/fixtures/python/cwe/`, no unit cases, and no matrix rows. When promoting an ID into an implement batch, add the full testing triad (unit + `CWE-N-{vulnerable,safe}.txt` + integration matrix) in that batch PR.

@@ -1278,5 +1278,28 @@
     ]
   },
   "scanned_by": "5 parallel agents over ruleset/python/chunks (2026-07-31)",
-  "note": "Partition: implemented \u222a missing \u222a deferred = full catalogue. Success for #52 expansion \u2260 full 344 RegisterRule."
+  "note": "Partition: implemented \u222a missing \u222a deferred = full catalogue. Success for #52 expansion \u2260 full 344 RegisterRule.",
+  "testing": {
+    "fixtures_dir": "tests/fixtures/python/cwe/",
+    "fixture_naming": "CWE-N-{vulnerable,safe}.txt",
+    "fixture_format": "lang: python header + --- + body (see tests/fixtures/README.md; same as python/bp/)",
+    "bp_analogue_dir": "tests/fixtures/python/bp/",
+    "unit_tests": "internal/lang/python/detectors/cwe/*_test.go",
+    "integration_package": "tests/integration/python/",
+    "integration_test": "TestPythonCWEFixturesMatrix",
+    "integration_discovery": "DiscoverPythonCWECases",
+    "commands": [
+      "go test ./internal/lang/python/detectors/cwe/ -count=1",
+      "go test ./tests/integration/python/ -count=1",
+      "make integration-python",
+      "make lint",
+      "make test"
+    ],
+    "definition_of_done": [
+      "RegisterRule + detector",
+      "unit hit/miss",
+      "fixture vulnerable+safe pair",
+      "integration matrix green"
+    ]
+  }
 }

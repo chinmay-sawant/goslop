@@ -23,7 +23,9 @@
 | **File size policy** | Target max **1500** / hard max **2000** per Go file |
 | Target file(s) | `rules_platform.go` |
 | Validation | `make lint` + `make test` unchecked until green |
-| Fixtures | `tests/fixtures/python/cwe/CWE-N-{{vulnerable,safe}}.txt` |
+| Fixtures (text) | **Required:** `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` (BP-style; see Testing section) |
+| Unit tests | **Required:** hit/miss in `internal/lang/python/detectors/cwe/*_test.go` |
+| Integration | **Required:** `tests/integration/python/cwe_matrix_test.go` / `make integration-python` |
 
 ## Overview
 
@@ -68,12 +70,13 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] Prefer high-signal positive; document safe suppressions
 - [ ] Message catalogue-aligned; confidence documented
 
-### Hit / miss tests + fixtures
+### Hit / miss tests + fixtures (triad)
 
-- [ ] Unit hit: vulnerable snippet → finding `CWE-396`
+- [ ] **Unit hit:** vulnerable snippet → finding `CWE-396`
 - [ ] Unit miss: safe pattern → no `CWE-396`
-- [ ] Fixtures: `tests/fixtures/python/cwe/CWE-396-vulnerable.txt` + `-safe.txt`
-- [ ] Matrix discovers pair via integration python CWE suite
+- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-396-vulnerable.txt` + `CWE-396-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
@@ -97,12 +100,13 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] Prefer high-signal positive; document safe suppressions
 - [ ] Message catalogue-aligned; confidence documented
 
-### Hit / miss tests + fixtures
+### Hit / miss tests + fixtures (triad)
 
-- [ ] Unit hit: vulnerable snippet → finding `CWE-397`
+- [ ] **Unit hit:** vulnerable snippet → finding `CWE-397`
 - [ ] Unit miss: safe pattern → no `CWE-397`
-- [ ] Fixtures: `tests/fixtures/python/cwe/CWE-397-vulnerable.txt` + `-safe.txt`
-- [ ] Matrix discovers pair via integration python CWE suite
+- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-397-vulnerable.txt` + `CWE-397-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
@@ -126,12 +130,13 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] Prefer high-signal positive; document safe suppressions
 - [ ] Message catalogue-aligned; confidence documented
 
-### Hit / miss tests + fixtures
+### Hit / miss tests + fixtures (triad)
 
-- [ ] Unit hit: vulnerable snippet → finding `CWE-478`
+- [ ] **Unit hit:** vulnerable snippet → finding `CWE-478`
 - [ ] Unit miss: safe pattern → no `CWE-478`
-- [ ] Fixtures: `tests/fixtures/python/cwe/CWE-478-vulnerable.txt` + `-safe.txt`
-- [ ] Matrix discovers pair via integration python CWE suite
+- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-478-vulnerable.txt` + `CWE-478-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
@@ -155,12 +160,13 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] Prefer high-signal positive; document safe suppressions
 - [ ] Message catalogue-aligned; confidence documented
 
-### Hit / miss tests + fixtures
+### Hit / miss tests + fixtures (triad)
 
-- [ ] Unit hit: vulnerable snippet → finding `CWE-252`
+- [ ] **Unit hit:** vulnerable snippet → finding `CWE-252`
 - [ ] Unit miss: safe pattern → no `CWE-252`
-- [ ] Fixtures: `tests/fixtures/python/cwe/CWE-252-vulnerable.txt` + `-safe.txt`
-- [ ] Matrix discovers pair via integration python CWE suite
+- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-252-vulnerable.txt` + `CWE-252-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
@@ -184,12 +190,13 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] Prefer high-signal positive; document safe suppressions
 - [ ] Message catalogue-aligned; confidence documented
 
-### Hit / miss tests + fixtures
+### Hit / miss tests + fixtures (triad)
 
-- [ ] Unit hit: vulnerable snippet → finding `CWE-390`
+- [ ] **Unit hit:** vulnerable snippet → finding `CWE-390`
 - [ ] Unit miss: safe pattern → no `CWE-390`
-- [ ] Fixtures: `tests/fixtures/python/cwe/CWE-390-vulnerable.txt` + `-safe.txt`
-- [ ] Matrix discovers pair via integration python CWE suite
+- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-390-vulnerable.txt` + `CWE-390-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
@@ -213,12 +220,13 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] Prefer high-signal positive; document safe suppressions
 - [ ] Message catalogue-aligned; confidence documented
 
-### Hit / miss tests + fixtures
+### Hit / miss tests + fixtures (triad)
 
-- [ ] Unit hit: vulnerable snippet → finding `CWE-584`
+- [ ] **Unit hit:** vulnerable snippet → finding `CWE-584`
 - [ ] Unit miss: safe pattern → no `CWE-584`
-- [ ] Fixtures: `tests/fixtures/python/cwe/CWE-584-vulnerable.txt` + `-safe.txt`
-- [ ] Matrix discovers pair via integration python CWE suite
+- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-584-vulnerable.txt` + `CWE-584-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
@@ -229,10 +237,72 @@ Ship **6** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 - [ ] `gofmt -w` on touched files
 - [ ] `make lint`
 - [ ] `make test`
-- [ ] `go test ./tests/integration/python/ -count=1` (CWE matrix)
+- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` (individual unit tests)
+- [ ] `go test ./tests/integration/python/ -count=1` **or** `make integration-python` (CWE matrix over all `python/cwe` pairs)
+- [ ] Confirm every batch ID has both `CWE-N-vulnerable.txt` and `CWE-N-safe.txt` under `tests/fixtures/python/cwe/`
+- [ ] Fixture count: `DiscoverPythonCWECases` includes all new IDs (pair discovery, not a manual allowlist)
 - [ ] Update `_inventory.json`: move batch IDs from `missing` → `implemented`
 - [ ] Update this ledger statuses to `[x]` with evidence
 - [ ] Package files still ≤2000 lines (split if not)
+
+
+## Testing requirements (fixtures + unit + integration)
+
+> Same bar as BP-PY: detector alone is **not** enough. Each owned `CWE-N` needs the triad below.
+
+### Fixture text files (required)
+
+| Path | Purpose |
+|------|---------|
+| `tests/fixtures/python/cwe/CWE-N-vulnerable.txt` | Hit corpus — scan must emit `CWE-N` |
+| `tests/fixtures/python/cwe/CWE-N-safe.txt` | Miss corpus — scan must **not** emit `CWE-N` |
+
+**Format** (see `tests/fixtures/README.md` and BP examples under `tests/fixtures/python/bp/`):
+
+```text
+# Fixture for CWE-N (vulnerable|safe)
+lang: python
+file: CWE-N-vulnerable.py   # or -safe.py
+---
+# python source body
+```
+
+- Keep fixtures under **`python/cwe/`** only (parallel to **`python/bp/`** for BP-PY).
+- Do **not** commit `.py` sources; discovery is pair-based (`DiscoverPythonCWECases`).
+
+### Individual unit tests (required)
+
+| Path | Purpose |
+|------|---------|
+| `internal/lang/python/detectors/cwe/rules_test.go` (or domain `rules_*_test.go` / `scan_test.go`) | Hit + miss table tests per ID |
+| Registration catalogue test | Want-list includes every new `CWE-N` from this batch |
+
+```sh
+go test ./internal/lang/python/detectors/cwe/ -count=1
+```
+
+### Integration matrix (required)
+
+| Path | Purpose |
+|------|---------|
+| `tests/integration/python/cwe_matrix_test.go` | `TestPythonCWEFixturesMatrix` — scans every discovered pair |
+| Helpers | `integration.DiscoverPythonCWECases`, `PythonCWEFixtureRel` in `tests/integration/discover.go` |
+
+```sh
+go test ./tests/integration/python/ -count=1
+# or
+make integration-python
+```
+
+BP analogue (do not mix): `tests/fixtures/python/bp/` + `bp_matrix_test.go` + `DiscoverPythonBPCases`.
+
+### Per-ID checklist (repeat for every rule in this batch)
+
+- [ ] Unit hit/miss for `CWE-N`
+- [ ] `tests/fixtures/python/cwe/CWE-N-vulnerable.txt`
+- [ ] `tests/fixtures/python/cwe/CWE-N-safe.txt`
+- [ ] Matrix auto-discovers pair; vulnerable asserts finding; safe asserts absence
+- [ ] `make lint` + `make test` + `make integration-python` green before PR merge
 
 ## Dependencies
 
