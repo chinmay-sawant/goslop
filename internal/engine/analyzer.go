@@ -559,14 +559,3 @@ func distinctRoots(paths []string) []string {
 	}
 	return roots
 }
-
-func relPath(root, path string) string {
-	if root == "" {
-		root = "."
-	}
-	rel, err := filepath.Rel(root, path)
-	if err != nil {
-		return path
-	}
-	return rel
-}

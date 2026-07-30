@@ -379,7 +379,7 @@ func reportScanErrors(w io.Writer, scanErrors []engine.ScanError) {
 
 func reportScanDiagnostics(w io.Writer, diagnostics []engine.ScanDiagnostic) {
 	for _, diagnostic := range diagnostics {
-		_, _ = fmt.Fprintf(w, "analysis warning [%s]: %s\n", diagnostic.Kind, diagnostic.Error())
+		_, _ = fmt.Fprintf(w, "analysis warning [%s]: %s\n", diagnostic.Kind, diagnostic.String())
 	}
 }
 

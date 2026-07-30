@@ -53,8 +53,8 @@ type ScanDiagnostic struct {
 	Message string
 }
 
-// Error returns a human-readable diagnostic message.
-func (d ScanDiagnostic) Error() string {
+// String returns a human-readable diagnostic message.
+func (d ScanDiagnostic) String() string {
 	if d.Path == "" {
 		return d.Message
 	}

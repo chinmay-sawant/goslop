@@ -60,7 +60,7 @@ func resolveScanPlan(profile core.ScanProfile, opts *cli.Options, merged *config
 	}
 	cacheOptions := cache.OpenOptions{
 		MaxSizeMB:        500,
-		EvictTargetRatio: 0.9,
+		EvictTargetRatio: cache.DefaultEvictTargetRatio,
 		MaxFileSizeMB:    4,
 		ToolVersion:      Version,
 	}

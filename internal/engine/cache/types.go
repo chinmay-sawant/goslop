@@ -12,6 +12,9 @@ const CACHE_VERSION uint32 = 3
 // DEFAULT_CACHE_DIR is the conventional cache directory name.
 const DEFAULT_CACHE_DIR = ".goslop-cache"
 
+// DefaultEvictTargetRatio is the fraction of the cache to retain after eviction.
+const DefaultEvictTargetRatio = 0.9
+
 const (
 	manifestName = "manifest.json"
 	filesSubdir  = "files"

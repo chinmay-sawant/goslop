@@ -502,13 +502,6 @@ func enclosingFromSpans(spans []funcSpan, hitLine int) (int, int) {
 	return litStart, litEnd
 }
 
-// enclosingFunctionLines returns the 1-based [start, end] line span of the
-// function-like node containing hitLine. Prefer outermost FuncDecl over FuncLit.
-// Used by tests and as a thin wrapper over collectFuncSpans.
-func enclosingFunctionLines(fset *token.FileSet, file *goast.File, hitLine int) (int, int) {
-	return enclosingFromSpans(collectFuncSpans(fset, file), hitLine)
-}
-
 func lineWindow(f rules.Finding, content string) []string {
 	start := f.Line - 2
 	if start < 1 {

@@ -5,6 +5,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -118,7 +119,7 @@ func validate(s *Section) error {
 	}
 	if ratio := s.Cache.EvictTargetRatio; ratio != nil &&
 		(math.IsNaN(*ratio) || math.IsInf(*ratio, 0) || *ratio < 0.1 || *ratio > 0.99) {
-		return fmt.Errorf("goslop.cache.evict_target_ratio must be between 0.1 and 0.99")
+		return errors.New("goslop.cache.evict_target_ratio must be between 0.1 and 0.99")
 	}
 	for id, sev := range s.BadPractices.SeverityOverrides {
 		if _, err := rules.ParseSeverity(sev); err != nil {
