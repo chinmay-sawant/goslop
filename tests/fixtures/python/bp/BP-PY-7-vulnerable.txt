@@ -1,0 +1,7 @@
+# Fixture for BP-PY-7 (vulnerable)
+lang: python
+file: BP-PY-7-vulnerable.py
+---
+def read(path):
+    f = open(path)
+    return f.read()

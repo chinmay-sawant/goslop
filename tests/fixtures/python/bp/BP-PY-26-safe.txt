@@ -1,0 +1,6 @@
+# Fixture for BP-PY-26 (safe)
+lang: python
+file: BP-PY-26-safe.py
+---
+def webhook(request):
+    return handle(request)

@@ -1,0 +1,10 @@
+# Fixture for BP-PY-19 (vulnerable)
+lang: python
+file: BP-PY-19-vulnerable.py
+---
+from flask import Flask, jsonify
+app = Flask(__name__)
+
+@app.errorhandler(Exception)
+def on_error(e):
+    return jsonify(error=str(e)), 500

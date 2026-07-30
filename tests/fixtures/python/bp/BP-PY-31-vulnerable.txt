@@ -1,0 +1,11 @@
+# Fixture for BP-PY-31 (vulnerable)
+lang: python
+file: BP-PY-31-vulnerable.py
+---
+from fastapi import FastAPI
+from sqlalchemy.orm import Session
+app = FastAPI()
+
+@app.get("/users/{uid}")
+def get_user(uid: int, db: Session):
+    return db.query(User).get(uid)

@@ -1,0 +1,6 @@
+# Fixture for BP-PY-15 (vulnerable)
+lang: python
+file: BP-PY-15-vulnerable.py
+---
+import httpx
+client = httpx.AsyncClient()

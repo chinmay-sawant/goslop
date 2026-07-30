@@ -1,0 +1,7 @@
+# Fixture for BP-PY-50 (safe)
+lang: python
+file: BP-PY-50-safe.py
+---
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True

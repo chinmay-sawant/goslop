@@ -1,0 +1,6 @@
+# Fixture for BP-PY-33 (vulnerable)
+lang: python
+file: BP-PY-33-vulnerable.py
+---
+from jinja2 import Environment
+env = Environment(autoescape=False)

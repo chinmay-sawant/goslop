@@ -1,0 +1,12 @@
+# Fixture for BP-PY-48 (vulnerable)
+lang: python
+file: BP-PY-48-vulnerable.py
+---
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+)

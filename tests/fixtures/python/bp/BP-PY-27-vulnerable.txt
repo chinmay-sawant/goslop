@@ -1,0 +1,6 @@
+# Fixture for BP-PY-27 (vulnerable)
+lang: python
+file: BP-PY-27-vulnerable.py
+---
+def create(request):
+    return Model.objects.create(**request.POST)

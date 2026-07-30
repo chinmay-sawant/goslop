@@ -1,0 +1,9 @@
+# Fixture for BP-PY-47 (vulnerable)
+lang: python
+file: BP-PY-47-vulnerable.py
+---
+import logging
+logger = logging.getLogger(__name__)
+
+def f(name):
+    logger.info(f"hello {name}")

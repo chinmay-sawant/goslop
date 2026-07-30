@@ -1,0 +1,5 @@
+# Fixture for BP-PY-5 (vulnerable)
+lang: python
+file: BP-PY-5-vulnerable.py
+---
+from os.path import *

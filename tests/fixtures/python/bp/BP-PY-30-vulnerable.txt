@@ -1,0 +1,12 @@
+# Fixture for BP-PY-30 (vulnerable)
+lang: python
+file: BP-PY-30-vulnerable.py
+---
+import time
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/slow")
+async def slow():
+    time.sleep(1)
+    return {"ok": True}

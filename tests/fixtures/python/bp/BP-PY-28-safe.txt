@@ -1,0 +1,9 @@
+# Fixture for BP-PY-28 (safe)
+lang: python
+file: BP-PY-28-safe.py
+---
+def list_titles():
+    out = []
+    for order in Order.objects.select_related("customer__profile").all():
+        out.append(order.customer.profile.name)
+    return out

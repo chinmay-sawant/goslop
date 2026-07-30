@@ -1,0 +1,8 @@
+# Fixture for BP-PY-38 (vulnerable)
+lang: python
+file: BP-PY-38-vulnerable.py
+---
+import asyncio
+
+async def main():
+    asyncio.create_task(work())

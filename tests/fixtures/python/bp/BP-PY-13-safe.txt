@@ -1,0 +1,6 @@
+# Fixture for BP-PY-13 (safe)
+lang: python
+file: BP-PY-13-safe.py
+---
+import os
+API_KEY = os.environ["API_KEY"]

@@ -1,0 +1,5 @@
+# Fixture for BP-PY-13 (vulnerable)
+lang: python
+file: BP-PY-13-vulnerable.py
+---
+API_KEY = "sk_live_example_not_a_real_key_1234567890"

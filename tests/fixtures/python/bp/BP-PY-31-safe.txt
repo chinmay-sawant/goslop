@@ -1,0 +1,15 @@
+# Fixture for BP-PY-31 (safe)
+lang: python
+file: BP-PY-31-safe.py
+---
+from fastapi import FastAPI
+from pydantic import BaseModel
+app = FastAPI()
+
+class UserOut(BaseModel):
+    id: int
+    name: str
+
+@app.get("/users/{uid}", response_model=UserOut)
+def get_user(uid: int):
+    return UserOut(id=uid, name="x")

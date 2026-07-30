@@ -27,6 +27,10 @@ type ScanOptions struct {
 	// ClassPrefix for safe-fixture silence checks: "BP-", "PERF-", "CWE-".
 	// When empty and Only is set, safe checks only the Only rules.
 	ClassPrefix string
+	// Languages selects built-in language plugins for the scan registry.
+	// Empty defaults to Go-only (DefaultRegistry). Python fixture matrices
+	// must set Languages to include core.LanguagePython.
+	Languages []core.LanguageID
 }
 
 // DefaultMatrixOptions returns product-style options for heuristic matrices.
@@ -75,7 +79,13 @@ func materializeAndScanOpts(relPath string, opts ScanOptions, scan matrixFixture
 		ctx.TaintEnabled = true
 	}
 
-	res, err := scan(ctx, srcPath)
+	// Prefer language-aware scanner so Python fixtures use the Python plugin.
+	var res *engine.AnalysisResult
+	if scan == nil || len(opts.Languages) > 0 {
+		res, err = scanMaterializedFixtureWithLangs(ctx, srcPath, opts.Languages)
+	} else {
+		res, err = scan(ctx, srcPath)
+	}
 	if err != nil {
 		return Result{}, fmt.Errorf("analyze %s: %w", srcPath, err)
 	}
@@ -97,8 +107,21 @@ func materializeAndScanOpts(relPath string, opts ScanOptions, scan matrixFixture
 }
 
 func scanMaterializedFixture(ctx *core.ScanContext, srcPath string) (*engine.AnalysisResult, error) {
+	// Back-compat for call sites that do not pass languages through opts.
+	return scanMaterializedFixtureWithLangs(ctx, srcPath, nil)
+}
+
+func scanMaterializedFixtureWithLangs(ctx *core.ScanContext, srcPath string, langs []core.LanguageID) (*engine.AnalysisResult, error) {
+	reg := engine.DefaultRegistry()
+	if len(langs) > 0 {
+		var err error
+		reg, err = engine.NewRegistryWithLanguages(langs...)
+		if err != nil {
+			return nil, err
+		}
+	}
 	analyzer := engine.NewAnalyzerBuilder().
-		Registry(engine.DefaultRegistry()).
+		Registry(reg).
 		ScanContext(ctx).
 		Workers(1).
 		Build()
@@ -140,6 +163,9 @@ func ruleIDFromFixtureRel(rel string) string {
 	base = strings.TrimSuffix(base, "-vulnerable")
 	base = strings.TrimSuffix(base, "-safe")
 	switch {
+	case strings.HasPrefix(base, "BP-PY-"):
+		// BP-PY-1 / BP-PY-12 → full id (Python catalogue).
+		return PythonBPRuleID(base)
 	case strings.HasPrefix(base, "BP-"):
 		return BPRuleID(base)
 	case strings.HasPrefix(base, "PERF-"):

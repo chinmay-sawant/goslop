@@ -1,0 +1,8 @@
+# Fixture for BP-PY-34 (safe)
+lang: python
+file: BP-PY-34-safe.py
+---
+from markupsafe import escape
+
+def render(user):
+    return escape(user)

@@ -1,0 +1,9 @@
+# Fixture for BP-PY-38 (safe)
+lang: python
+file: BP-PY-38-safe.py
+---
+import asyncio
+
+async def main():
+    task = asyncio.create_task(work())
+    await task

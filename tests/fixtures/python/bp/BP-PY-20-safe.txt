@@ -1,0 +1,13 @@
+# Fixture for BP-PY-20 (safe)
+lang: python
+file: BP-PY-20-safe.py
+---
+from flask import Flask, request, send_from_directory, safe_join
+app = Flask(__name__)
+ROOT = "/var/data"
+
+@app.route("/dl")
+def dl():
+    name = request.args["name"]
+    path = safe_join(ROOT, name)
+    return send_from_directory(ROOT, name)

@@ -1,0 +1,7 @@
+# Fixture for BP-PY-7 (safe)
+lang: python
+file: BP-PY-7-safe.py
+---
+def read(path):
+    with open(path) as f:
+        return f.read()

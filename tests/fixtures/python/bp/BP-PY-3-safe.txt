@@ -1,0 +1,6 @@
+# Fixture for BP-PY-3 (safe)
+lang: python
+file: BP-PY-3-safe.py
+---
+def f():
+    raise ValueError("bad")

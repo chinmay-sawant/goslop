@@ -1,0 +1,7 @@
+# Fixture for BP-PY-16 (vulnerable)
+lang: python
+file: BP-PY-16-vulnerable.py
+---
+from flask import Flask
+app = Flask(__name__)
+app.run(debug=True)

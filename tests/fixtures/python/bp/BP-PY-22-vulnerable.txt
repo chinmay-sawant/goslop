@@ -1,0 +1,5 @@
+# Fixture for BP-PY-22 (vulnerable)
+lang: python
+file: BP-PY-22-vulnerable.py
+---
+SECRET_KEY = "django-insecure-dev-only-key-flash-sale"

@@ -1,0 +1,6 @@
+# Fixture for BP-PY-22 (safe)
+lang: python
+file: BP-PY-22-safe.py
+---
+import os
+SECRET_KEY = os.environ["SECRET_KEY"]

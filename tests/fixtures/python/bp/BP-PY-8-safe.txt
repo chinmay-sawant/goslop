@@ -1,0 +1,6 @@
+# Fixture for BP-PY-8 (safe)
+lang: python
+file: BP-PY-8-safe.py
+---
+import subprocess
+subprocess.run(["ls", "-la"], shell=False)

@@ -1,0 +1,14 @@
+# Fixture for BP-PY-29 (safe)
+lang: python
+file: BP-PY-29-safe.py
+---
+from fastapi import FastAPI, Depends
+app = FastAPI()
+
+def get_store():
+    return {}
+
+@app.get("/x")
+def x(k: str, v: str, store=Depends(get_store)):
+    store[k] = v
+    return store

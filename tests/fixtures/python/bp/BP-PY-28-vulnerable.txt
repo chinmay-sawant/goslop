@@ -1,0 +1,9 @@
+# Fixture for BP-PY-28 (vulnerable)
+lang: python
+file: BP-PY-28-vulnerable.py
+---
+def list_titles():
+    out = []
+    for order in Order.objects.all():
+        out.append(order.customer.profile.name)
+    return out

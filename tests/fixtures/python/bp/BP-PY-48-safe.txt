@@ -1,0 +1,12 @@
+# Fixture for BP-PY-48 (safe)
+lang: python
+file: BP-PY-48-safe.py
+---
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://example.com"],
+    allow_credentials=True,
+)

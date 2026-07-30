@@ -1,0 +1,6 @@
+# Fixture for BP-PY-12 (safe)
+lang: python
+file: BP-PY-12-safe.py
+---
+def run():
+    return eval("1+1")

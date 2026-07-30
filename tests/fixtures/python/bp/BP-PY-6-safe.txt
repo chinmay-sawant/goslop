@@ -1,0 +1,10 @@
+# Fixture for BP-PY-6 (safe)
+lang: python
+file: BP-PY-6-safe.py
+---
+def check_user(user):
+    if user is None:
+        raise ValueError("missing user")
+    if not user.is_active:
+        raise ValueError("inactive")
+    return user

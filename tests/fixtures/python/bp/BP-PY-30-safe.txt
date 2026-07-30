@@ -1,0 +1,12 @@
+# Fixture for BP-PY-30 (safe)
+lang: python
+file: BP-PY-30-safe.py
+---
+import asyncio
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/slow")
+async def slow():
+    await asyncio.sleep(1)
+    return {"ok": True}

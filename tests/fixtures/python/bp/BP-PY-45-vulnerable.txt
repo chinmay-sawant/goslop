@@ -1,0 +1,6 @@
+# Fixture for BP-PY-45 (vulnerable)
+lang: python
+file: BP-PY-45-vulnerable.py
+---
+import sys
+sys.path.insert(0, "./vendor")

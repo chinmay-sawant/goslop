@@ -1,0 +1,6 @@
+# Fixture for BP-PY-3 (vulnerable)
+lang: python
+file: BP-PY-3-vulnerable.py
+---
+def f():
+    raise Exception("bad")

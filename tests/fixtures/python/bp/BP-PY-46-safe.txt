@@ -1,0 +1,10 @@
+# Fixture for BP-PY-46 (safe)
+lang: python
+file: BP-PY-46-safe.py
+---
+import logging
+log = logging.getLogger(__name__)
+
+def compute(x):
+    log.debug("debug %s", x)
+    return x * 2

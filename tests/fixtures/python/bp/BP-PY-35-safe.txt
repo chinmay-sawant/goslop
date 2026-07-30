@@ -1,0 +1,8 @@
+# Fixture for BP-PY-35 (safe)
+lang: python
+file: BP-PY-35-safe.py
+---
+from sqlalchemy import text
+
+def q(conn, name):
+    return conn.execute(text("SELECT * FROM t WHERE name = :name"), {"name": name})

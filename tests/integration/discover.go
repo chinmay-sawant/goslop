@@ -51,7 +51,8 @@ func DiscoverPairedCases(dir string) ([]string, error) {
 	return vuln, nil
 }
 
-// DiscoverBPCases lists BP fixture cases under tests/fixtures/go/bad_practices.
+// DiscoverBPCases lists Go BP fixture cases under tests/fixtures/go/bad_practices.
+// Python BP fixtures live under tests/fixtures/python/bp and use DiscoverPythonBPCases.
 func DiscoverBPCases() ([]string, error) {
 	fx, err := FixturesRoot()
 	if err != nil {
@@ -67,14 +68,91 @@ func DiscoverBPCases() ([]string, error) {
 	return cases, nil
 }
 
-// BPRuleID maps case stem BP-1 / BP-1-variant → BP-1.
+// DiscoverPythonBPCases lists Python BP-PY fixture pairs under tests/fixtures/python/bp.
+func DiscoverPythonBPCases() ([]string, error) {
+	fx, err := FixturesRoot()
+	if err != nil {
+		return nil, err
+	}
+	cases, err := DiscoverPairedCases(filepath.Join(fx, "python", "bp"))
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(cases, func(i, j int) bool {
+		return comparePythonBPCase(cases[i], cases[j]) < 0
+	})
+	return cases, nil
+}
+
+// DiscoverPythonCWECases lists Python CWE fixture pairs under tests/fixtures/python/cwe.
+func DiscoverPythonCWECases() ([]string, error) {
+	fx, err := FixturesRoot()
+	if err != nil {
+		return nil, err
+	}
+	return DiscoverPairedCases(filepath.Join(fx, "python", "cwe"))
+}
+
+// BPRuleID maps case stem BP-1 / BP-1-variant → BP-1 (Go catalogue).
 func BPRuleID(caseName string) string {
 	// BP-<num>[-variant...]
 	parts := strings.Split(caseName, "-")
 	if len(parts) < 2 || parts[0] != "BP" {
 		return caseName
 	}
+	// Do not strip Python catalogue ids (BP-PY-N).
+	if len(parts) >= 3 && parts[1] == "PY" {
+		return PythonBPRuleID(caseName)
+	}
 	return "BP-" + parts[1]
+}
+
+// PythonBPRuleID maps stem BP-PY-1 → BP-PY-1 (stable catalogue id).
+func PythonBPRuleID(caseName string) string {
+	// BP-PY-<num>[-variant...]
+	parts := strings.Split(caseName, "-")
+	if len(parts) < 3 || parts[0] != "BP" || parts[1] != "PY" {
+		return caseName
+	}
+	return "BP-PY-" + parts[2]
+}
+
+// PythonBPFixtureRel returns path relative to tests/fixtures/ for a BP-PY case.
+func PythonBPFixtureRel(caseName string, vulnerable bool) string {
+	suf := "safe"
+	if vulnerable {
+		suf = "vulnerable"
+	}
+	return filepath.ToSlash(filepath.Join("python", "bp", caseName+"-"+suf+".txt"))
+}
+
+// PythonCWEFixtureRel returns path relative to tests/fixtures/ for a CWE case.
+func PythonCWEFixtureRel(caseName string, vulnerable bool) string {
+	suf := "safe"
+	if vulnerable {
+		suf = "vulnerable"
+	}
+	return filepath.ToSlash(filepath.Join("python", "cwe", caseName+"-"+suf+".txt"))
+}
+
+func comparePythonBPCase(a, b string) int {
+	an := parsePythonBPNum(a)
+	bn := parsePythonBPNum(b)
+	if an != bn {
+		return an - bn
+	}
+	return strings.Compare(a, b)
+}
+
+func parsePythonBPNum(s string) int {
+	// BP-PY-12 → 12
+	rest, ok := strings.CutPrefix(s, "BP-PY-")
+	if !ok {
+		return 0
+	}
+	numStr, _, _ := strings.Cut(rest, "-")
+	n, _ := strconv.Atoi(numStr)
+	return n
 }
 
 // BPFixtureRel returns path relative to tests/fixtures/.

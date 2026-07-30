@@ -1,0 +1,9 @@
+# Fixture for BP-PY-36 (safe)
+lang: python
+file: BP-PY-36-safe.py
+---
+from sqlalchemy.orm import Session
+
+def work(engine):
+    with Session(engine) as session:
+        session.query(User).all()

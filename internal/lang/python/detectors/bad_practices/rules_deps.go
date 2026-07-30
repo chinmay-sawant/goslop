@@ -33,9 +33,9 @@ func init() {
 	RegisterRule("BP-PY-45", detectBPPY45)
 }
 
-// isRequirementsPath reports requirements*.txt style unit paths (Path A for BP-PY-43).
-// Unit tests pass LanguagePython + path requirements.txt; plugin Extensions stay .py-only
-// so production scans of requirements.txt need a future walk extension (documented).
+// isRequirementsPath reports requirements* unit paths (Path A for BP-PY-43).
+// Accepts requirements*.txt (real projects) and requirements*.py (fixtures:
+// walk only collects language extensions, so matrices materialize as .py).
 func isRequirementsPath(unit *core.ParsedUnit) bool {
 	if unit == nil {
 		return false
@@ -45,16 +45,19 @@ func isRequirementsPath(unit *core.ParsedUnit) bool {
 			continue
 		}
 		base := strings.ToLower(filepath.Base(p))
-		// requirements.txt, requirements-dev.txt, requirements_test.txt
+		// requirements.txt, requirements-dev.txt, requirements_test.txt,
+		// requirements-vulnerable.py (fixture materialization).
 		if base == "requirements.txt" {
 			return true
 		}
-		if strings.HasPrefix(base, "requirements") && strings.HasSuffix(base, ".txt") {
+		if strings.HasPrefix(base, "requirements") &&
+			(strings.HasSuffix(base, ".txt") || strings.HasSuffix(base, ".py")) {
 			return true
 		}
 		// requirements/base.txt style
 		norm := filepath.ToSlash(strings.ToLower(p))
-		if strings.Contains(norm, "/requirements/") && strings.HasSuffix(norm, ".txt") {
+		if strings.Contains(norm, "/requirements/") &&
+			(strings.HasSuffix(norm, ".txt") || strings.HasSuffix(norm, ".py")) {
 			return true
 		}
 	}

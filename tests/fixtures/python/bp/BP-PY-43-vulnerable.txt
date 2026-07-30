@@ -1,0 +1,7 @@
+# Fixture for BP-PY-43 (vulnerable)
+lang: python
+file: requirements-vulnerable.py
+---
+django
+requests
+flask

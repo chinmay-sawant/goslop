@@ -1,0 +1,13 @@
+# Fixture for BP-PY-29 (vulnerable)
+lang: python
+file: BP-PY-29-vulnerable.py
+---
+from fastapi import FastAPI
+app = FastAPI()
+CACHE = {}
+
+@app.get("/x")
+def x(k: str, v: str):
+    global CACHE
+    CACHE[k] = v
+    return CACHE

@@ -1,0 +1,10 @@
+# Fixture for BP-PY-2 (safe)
+lang: python
+file: BP-PY-2-safe.py
+---
+def f():
+    try:
+        x()
+    except ValueError as e:
+        logger.exception("x")
+        raise

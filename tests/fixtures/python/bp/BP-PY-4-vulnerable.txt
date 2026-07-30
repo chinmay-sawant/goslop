@@ -1,0 +1,7 @@
+# Fixture for BP-PY-4 (vulnerable)
+lang: python
+file: BP-PY-4-vulnerable.py
+---
+def append_item(x, items=[]):
+    items.append(x)
+    return items
