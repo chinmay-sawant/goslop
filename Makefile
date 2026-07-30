@@ -1,12 +1,17 @@
-.PHONY: build test vet fmt lint lint-all ci integration version help reference-metrics run bench
+.PHONY: build test vet fmt lint lint-all ci integration version help reference-metrics run run-python bench
 # Pure Go by default (go/ast parse path — no tree-sitter / CGO).
 export CGO_ENABLED ?= 0
 
 # Default scan path for product-style runs (Rust makefile parity).
 SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
+# Python-only product scan (opt-in languages = ["python"]).
+PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory
+PYTHON_CONFIG ?= templates/goslop-python.toml
 # Rust: make run RUN_ARGS="--export-context --export-chunks --no-cache"
 # Defaults match product reference-export surface; override with RUN_ARGS=... as needed.
 RUN_ARGS ?= --export-context --export-chunks --no-cache
+# Python runs default to no-cache text summary; override with PYTHON_RUN_ARGS=...
+PYTHON_RUN_ARGS ?= --no-cache
 
 # Product benches (ns/op, B/op, allocs/op). Override path/time as needed.
 #   make bench
@@ -42,11 +47,15 @@ version: build
 	./bin/goslop --version
 
 help:
-	@echo "Targets: build test integration vet fmt lint lint-all ci version run reference-metrics bench"
+	@echo "Targets: build test integration vet fmt lint lint-all ci version run run-python reference-metrics bench"
 	@echo "CGO_ENABLED=$(CGO_ENABLED) (0 = pure Go / go/ast; default)"
 	@echo "run: product summary scan (profile all, --no-fail --no-terminal + RUN_ARGS)"
 	@echo "  SCAN_PATH=$(SCAN_PATH)"
 	@echo "  RUN_ARGS=$(RUN_ARGS)"
+	@echo "run-python: Python-only scan (languages=[\"python\"] via PYTHON_CONFIG)"
+	@echo "  PYTHON_SCAN_PATH=$(PYTHON_SCAN_PATH)"
+	@echo "  PYTHON_CONFIG=$(PYTHON_CONFIG)"
+	@echo "  PYTHON_RUN_ARGS=$(PYTHON_RUN_ARGS)"
 	@echo "reference-metrics: §12.4 parity baseline on REFERENCE_PATH (testing expected metrics; not a product name)"
 	@echo "  REFERENCE_PATH=$(REFERENCE_PATH)  REFERENCE_PROFILE=$(REFERENCE_PROFILE)"
 	@echo "bench: go test -bench (ns/op B/op allocs/op); BENCHTIME=$(BENCHTIME) GOSLOP_BENCH_SCAN_PATH=$(GOSLOP_BENCH_SCAN_PATH)"
@@ -67,6 +76,15 @@ lint-all:
 run: build
 	@mkdir -p scripts/findings/functions scripts/chunks
 	./bin/goslop --profile all --no-fail --no-terminal $(RUN_ARGS) $(SCAN_PATH)
+
+# Python-only product scan (epic #51 heuristics; opt-in languages via config).
+#   make run-python
+#   make run-python PYTHON_SCAN_PATH=/path/to/project
+#   make run-python PYTHON_RUN_ARGS="--format json --no-cache"
+run-python: build
+	@test -f "$(PYTHON_CONFIG)" || (echo "missing PYTHON_CONFIG=$(PYTHON_CONFIG)" >&2; exit 1)
+	@test -d "$(PYTHON_SCAN_PATH)" || (echo "missing PYTHON_SCAN_PATH=$(PYTHON_SCAN_PATH)" >&2; exit 1)
+	./bin/goslop --profile all --no-fail --no-terminal --config "$(PYTHON_CONFIG)" $(PYTHON_RUN_ARGS) "$(PYTHON_SCAN_PATH)"
 
 # §12.4 export/scan parity gate on a fixed reference corpus (default: gopdfsuit).
 # "reference" = testing jargon for expected baseline metrics — not a product name.
