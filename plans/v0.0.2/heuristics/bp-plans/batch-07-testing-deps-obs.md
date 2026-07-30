@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/bp-plans/README.md` — batch index  
 > **Canonical #53 ledger:** `plans/v0.0.2/heuristics/python-heuristics-bp.md`  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) expansion under epic [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
-> **Status:** not started — implementation checklist  
+> **Status:** implemented — `rules_testing.go` / `rules_deps.go` / `rules_observability.go` (BP-PY-41..47)  
 > **Estimated effort:** 1 PR (medium)  
 > **PR policy:** single batchwise PR; title e.g. `python(bp): batch-07 testing/deps/obs (BP-PY-41..47)`
 
