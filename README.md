@@ -20,7 +20,7 @@ Use it as a local linter, a CI gate, or a triage pipeline that exports findings 
 - **Optional taint** - experimental inter-procedural graph for high-signal injection CWEs
 - **Incremental cache** - `.goslop-cache/` for fast re-scans
 - **Baseline & ignore** - ship with known debt; suppress with `// goslop-ignore`
-- **Export for agents** - per-finding refs under `scripts/findings/functions/`, batched **chunks** under `scripts/chunks/`
+- **Export for agents** - per-finding refs under `scripts/findings/functions/`, batched **chunks** under `scripts/chunks/` (Context defaults to the **whole enclosing function**; `[goslop.export] whole_function`)
 - **Pure Go** - `CGO_ENABLED=0` by default; easy cross-compile
 
 ---

@@ -53,3 +53,9 @@
 # [goslop.taint]
 # enabled = true
 # show_paths = true
+
+# On-disk export context for --export-context / --export-chunks.
+# whole_function (default true): Context includes the full enclosing function.
+# Set false for the previous nearby ~4-line window around the hit.
+# [goslop.export]
+# whole_function = true

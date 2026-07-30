@@ -12,7 +12,7 @@ goslop is a **pure-Go** static analysis tool (SAT) for Go codebases. It uses `go
 | **Bad practices (BP)** | Style / hygiene / project-level rules (`BP-*`). On for `style` and `all` profiles. |
 | **Profiles (packs)** | `recommended`, `perf`, `security`, `style`, `all` - curated rule surfaces and defaults. |
 | **Reporters** | `text` (default), `json`, `sarif` (SARIF 2.1.0). Summary always on **stderr**. |
-| **Exports** | Per-finding context (`scripts/findings/functions`) and batched chunks (`scripts/chunks`) for agent work. |
+| **Exports** | Per-finding context (`scripts/findings/functions`) and batched chunks (`scripts/chunks`) for agent work. **Context defaults to the whole enclosing function** (`[goslop.export] whole_function = true`). |
 | **Cache** | Incremental per-file cache under `.goslop-cache/`. |
 | **Baseline** | Suppress known findings via `.goslop-baseline.json`. |
 | **Ignore** | Inline `// goslop-ignore` directives and path ignores. |
@@ -198,6 +198,19 @@ Template: [`templates/goslop.toml`](../templates/goslop.toml).
 Schema: [`goslop.schema.json`](../goslop.schema.json).  
 Merge rules: [cli-reference.md](./cli-reference.md#config-file-and-cli-merge).
 
+### Export context mode
+
+When using `--export-context` / `--export-chunks`, each finding’s **Context** block
+defaults to the **full enclosing Go function** (outermost `FuncDecl` when the hit
+sits inside a nested closure such as `defer func()`). Opt out with:
+
+```toml
+[goslop.export]
+whole_function = false   # nearby ~4-line window instead
+```
+
+Details: [export-context-and-chunks.md](./export-context-and-chunks.md).
+
 ## Outputs at a glance
 
 | Output | How | Docs |
@@ -205,8 +218,8 @@ Merge rules: [cli-reference.md](./cli-reference.md#config-file-and-cli-merge).
 | Terminal findings | default `--format text` | [reporting-formats.md](./reporting-formats.md) |
 | JSON envelope | `--format json` | [reporting-formats.md](./reporting-formats.md) |
 | SARIF 2.1.0 | `--format sarif` | [reporting-formats.md](./reporting-formats.md#sarif-210) |
-| Per-finding refs | `--export-context` → `scripts/findings/functions/N.txt` | [export-context-and-chunks.md](./export-context-and-chunks.md) |
-| Batches for agents | `--export-chunks` → `scripts/chunks/Chunk_A_B.txt` | [export-context-and-chunks.md](./export-context-and-chunks.md) |
+| Per-finding refs (whole function by default) | `--export-context` → `scripts/findings/functions/N.txt` | [export-context-and-chunks.md](./export-context-and-chunks.md) |
+| Batches for agents (same Context) | `--export-chunks` → `scripts/chunks/Chunk_A_B.txt` | [export-context-and-chunks.md](./export-context-and-chunks.md) |
 | Product run | `make run` | [make-run.md](./make-run.md) |
 
 ## Typical workflows

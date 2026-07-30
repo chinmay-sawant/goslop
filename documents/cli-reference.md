@@ -179,6 +179,17 @@ Details: [taint.md](./taint.md).
 ./bin/goslop --export-chunks --chunk-size 50 --chunks-dir /tmp/chunks .
 ```
 
+**Context content (default: whole function).** Both export surfaces share the same
+Context builder. By default each finding’s **Context** is the **full enclosing
+Go function** (`FuncDecl` preferred over inner `FuncLit` / `defer func()` so
+agents get the named method body). Configure via `goslop.toml`:
+
+```toml
+[goslop.export]
+whole_function = true   # default when omitted
+# whole_function = false  # nearby ~4-line window (line-2 … line+1)
+```
+
 **Use chunks to delegate work** (each chunk is a batch of combined findings).  
 **Use `scripts/findings/functions/N.txt` for individual finding refs.**
 
@@ -225,6 +236,7 @@ Discovery order:
 | `[goslop.cache]` | `enabled`, `path`, `max_size_mb`, `max_file_size_mb`, … |
 | `[goslop.taint]` | `enabled`, `show_paths` |
 | `[goslop.bad_practices]` | `enabled`, `severity`, `severity_overrides` |
+| `[goslop.export]` | `whole_function` (default **true**: full enclosing function in Context for `--export-context` / `--export-chunks`; set `false` for nearby ~4-line window) |
 
 ### Precedence (summary)
 
@@ -236,7 +248,8 @@ Discovery order:
 | cache dir | CLI `--cache-dir` else config |
 | baseline off | CLI `--no-baseline` or config `enabled=false` |
 | taint on/off | CLI `--taint` / `--no-taint` else config |
-| profile / format / export / no-terminal | CLI only |
+| export context mode (`whole_function`) | Config only (`[goslop.export]`; default true when unset) |
+| profile / format / export on-off / no-terminal | CLI only |
 
 Starter template with comments: [`templates/goslop.toml`](../templates/goslop.toml).
 

@@ -255,6 +255,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 			ChunkSize:        opts.ChunkSize,
 			ContextOutputDir: opts.ContextDir,
 			ChunksOutputDir:  opts.ChunksDir,
+			WholeFunction:    merged.ExportWholeFunction, // nil → default true
 		}, res.SourceCache)
 		if xerr != nil {
 			return &ExitCodeError{Code: ExitInternal, Err: xerr}

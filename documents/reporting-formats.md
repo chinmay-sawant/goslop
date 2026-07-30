@@ -407,4 +407,4 @@ Still emits one `run` with driver metadata; `results` is `[]`. Rule array may be
 
 - [cli-reference.md](./cli-reference.md)  
 - [make-run.md](./make-run.md)  
-- [export-context-and-chunks.md](./export-context-and-chunks.md) - disk exports are **independent** of `--format`  
+- [export-context-and-chunks.md](./export-context-and-chunks.md) - disk exports are **independent** of `--format`; Context defaults to the **whole enclosing function** (`[goslop.export] whole_function`)

@@ -139,6 +139,18 @@
               }
             }
           }
+        },
+        "export": {
+          "description": "On-disk export context/chunk options (--export-context / --export-chunks).",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "whole_function": {
+              "description": "When true (default), Context in exported findings and chunks includes the full enclosing function. When false, uses a nearby ~4-line window around the hit.",
+              "type": "boolean",
+              "default": true
+            }
+          }
         }
       }
     }

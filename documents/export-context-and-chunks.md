@@ -24,7 +24,7 @@ Use for:
 
 Files: `1.txt`, `2.txt`, … `N.txt` (1-based scan order).
 
-> The directory name is `functions` for historical product parity. Each file is a **finding block** with a small source window (not necessarily a whole function body).
+> The directory name is `functions` for historical product parity. By default each file’s **Context** is the **whole enclosing function** (outermost `FuncDecl` preferred; otherwise `FuncLit`). Set `[goslop.export] whole_function = false` for the previous nearby ~4-line window. After upgrading, run `make build` (or `make run`) so regenerated files replace stale short windows.
 
 ### `scripts/chunks/` - combined findings for delegation
 
@@ -90,6 +90,21 @@ exported 915 context file(s) to scripts/findings/functions; exported 37 chunk fi
 | `--context-dir` | `scripts/findings/functions` | Override context directory |
 | `--chunks-dir` | `scripts/chunks` | Override chunks directory |
 | `--chunk-size` | **25** | Findings per chunk |
+
+### Config: whole-function vs line window
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `[goslop.export] whole_function` | **`true`** | When true, Context includes the full enclosing function. When false, uses `line-2 … line+1` around the hit. |
+
+```toml
+# goslop.toml
+[goslop.export]
+whole_function = true   # default; omit for the same effect
+# whole_function = false  # nearby ~4-line window only
+```
+
+Both **function refs** and **chunks** share this setting (same `formatFindingBlock` path).
 
 ```sh
 # Both surfaces (typical)
@@ -179,6 +194,15 @@ Context:
 
 ### Context lines
 
+With **`whole_function = true`** (default):
+
+1. Resolve the enclosing function via pure-Go `go/parser` + `go/ast`: prefer the **outermost `FuncDecl`** containing the hit (so a hit inside `defer func() { ... }` still exports the full named method); otherwise the outermost `FuncLit`.  
+2. Emit that full line span with `>` on the hit line.  
+3. If no enclosing function (package-level finding, non-Go source, parse failure) → fall back to the nearby window.  
+4. Missing source → `<context unavailable>` (or detector `Snippet` if present).
+
+With **`whole_function = false`**:
+
 1. Prefer `Finding.Snippet` when present.  
 2. Else a window from source cache / disk: **line-2 … line+1**, with `>` on the hit line.  
 3. Missing source → `<context unavailable>`.
@@ -220,7 +244,7 @@ Context:
           2: package main
 ```
 
-### Function ref with multi-line window - `scripts/findings/functions/915.txt`
+### Function ref with whole function - `scripts/findings/functions/915.txt`
 
 ```text
 Finding 915/915
@@ -232,11 +256,12 @@ Severity: info
 Message: fmt.Sprintf / Errorf boxes arguments through interface{} on a hot path
 Fix: Cast non-string args to a concrete type or use strconv/strings builders to avoid interface boxing.
 Context:
-       1254: // fmtFloat formats a float64 for PDF with 2 decimal places.
        1255: func fmtFloat(f float64) string {
     >  1256: 	return fmt.Sprintf("%.2f", f)
        1257: }
 ```
+
+(With default `whole_function = true`, larger functions include every line of the enclosing body, not only a 4-line window.)
 
 ### Chunk (abbreviated) - `scripts/chunks/Chunk_1_25.txt`
 
@@ -310,7 +335,7 @@ make run SCAN_PATH=/path/to/project
 
 Prompt sketch:
 
-> You are reviewing goslop findings. The attached chunk contains up to 25 findings with source context. For each finding: confirm true/false positive, propose a minimal fix, and note the rule id and file:line. If you need a single finding alone, ask for `scripts/findings/functions/{i}.txt`.
+> You are reviewing goslop findings. The attached chunk contains up to 25 findings. Each finding’s Context block is the full enclosing Go function (unless the project set `whole_function = false`). For each finding: confirm true/false positive, propose a minimal fix, and note the rule id and file:line. If you need a single finding alone, ask for `scripts/findings/functions/{i}.txt`.
 
 ### Single-finding deep dive
 
@@ -341,9 +366,10 @@ Stdout JSON is independent of the text files under `scripts/`.
 ## Defaults (code constants)
 
 ```go
-DefaultContextDir = "scripts/findings/functions"
-DefaultChunksDir  = "scripts/chunks"
-DefaultChunkSize  = 25
+DefaultContextDir      = "scripts/findings/functions"
+DefaultChunksDir       = "scripts/chunks"
+DefaultChunkSize       = 25
+DefaultWholeFunction   = true
 ```
 
 Paths are relative to the **process working directory** unless absolute paths are passed via `--context-dir` / `--chunks-dir`.
