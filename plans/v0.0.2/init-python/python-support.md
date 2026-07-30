@@ -1,7 +1,7 @@
 # v0.0.2 — Introduce Python language support (foundation)
 
 > **Parent:** GitHub epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) — Epic: Introduce Python language support  
-> **Status:** integration branch open (foundation only; not full detector parity)  
+> **Status:** foundation **shipped** (PR #50 / epic #39 closed); detectors → [python-heuristics.md](./python-heuristics.md) (#51)  
 > **Estimated effort:** multi-PR epic (4 workstreams + integration)  
 > **Ledger rule:** this file is the **canonical execution ledger**. Phase detail lives in sibling markdowns; update checkboxes only with evidence (`make lint` / `make test` when code changes).
 
