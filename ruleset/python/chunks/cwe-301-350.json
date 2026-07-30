@@ -8,10 +8,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-303": {
     "id": 303,
@@ -22,10 +22,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-305": {
     "id": 305,
@@ -36,10 +36,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-306": {
     "id": 306,
@@ -50,10 +50,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-307": {
     "id": 307,
@@ -64,10 +64,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-308": {
     "id": 308,
@@ -78,10 +78,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-309": {
     "id": 309,
@@ -92,10 +92,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-312": {
     "id": 312,
@@ -106,10 +106,10 @@
     "category": "Information Disclosure",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-319": {
     "id": 319,
@@ -120,10 +120,10 @@
     "category": "Information Disclosure",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-322": {
     "id": 322,
@@ -134,10 +134,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-323": {
     "id": 323,
@@ -148,10 +148,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-324": {
     "id": 324,
@@ -162,10 +162,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-325": {
     "id": 325,
@@ -176,10 +176,10 @@
     "category": "Cryptography",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-328": {
     "id": 328,
@@ -190,10 +190,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-331": {
     "id": 331,
@@ -204,10 +204,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-334": {
     "id": 334,
@@ -218,10 +218,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-335": {
     "id": 335,
@@ -232,10 +232,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-338": {
     "id": 338,
@@ -246,10 +246,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-341": {
     "id": 341,
@@ -260,10 +260,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-342": {
     "id": 342,
@@ -274,10 +274,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-343": {
     "id": 343,
@@ -288,10 +288,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-344": {
     "id": 344,
@@ -302,10 +302,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-346": {
     "id": 346,
@@ -316,10 +316,10 @@
     "category": "Error Handling",
     "status": "Draft",
     "weakness_abstraction": "Class",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-347": {
     "id": 347,
@@ -330,10 +330,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-348": {
     "id": 348,
@@ -344,10 +344,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-349": {
     "id": 349,
@@ -358,9 +358,9 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   }
 }

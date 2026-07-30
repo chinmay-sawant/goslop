@@ -8,10 +8,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1102": {
     "id": 1102,
@@ -22,10 +22,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1103": {
     "id": 1103,
@@ -36,10 +36,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1104": {
     "id": 1104,
@@ -50,10 +50,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1105": {
     "id": 1105,
@@ -64,10 +64,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1106": {
     "id": 1106,
@@ -78,10 +78,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1107": {
     "id": 1107,
@@ -92,10 +92,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1108": {
     "id": 1108,
@@ -106,10 +106,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1109": {
     "id": 1109,
@@ -120,10 +120,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1110": {
     "id": 1110,
@@ -134,10 +134,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1111": {
     "id": 1111,
@@ -148,10 +148,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1112": {
     "id": 1112,
@@ -162,10 +162,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1113": {
     "id": 1113,
@@ -176,10 +176,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1114": {
     "id": 1114,
@@ -190,10 +190,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1115": {
     "id": 1115,
@@ -204,10 +204,10 @@
     "category": "Information Disclosure",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1116": {
     "id": 1116,
@@ -218,10 +218,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1117": {
     "id": 1117,
@@ -232,10 +232,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1118": {
     "id": 1118,
@@ -246,10 +246,10 @@
     "category": "Error Handling",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1119": {
     "id": 1119,
@@ -260,10 +260,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1121": {
     "id": 1121,
@@ -274,10 +274,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1122": {
     "id": 1122,
@@ -288,10 +288,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1123": {
     "id": 1123,
@@ -302,10 +302,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1124": {
     "id": 1124,
@@ -316,10 +316,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1125": {
     "id": 1125,
@@ -330,10 +330,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1126": {
     "id": 1126,
@@ -344,10 +344,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-1127": {
     "id": 1127,
@@ -358,9 +358,9 @@
     "category": "Error Handling",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   }
 }

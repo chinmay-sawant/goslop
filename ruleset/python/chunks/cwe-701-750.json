@@ -8,10 +8,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-749": {
     "id": 749,
@@ -22,9 +22,9 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   }
 }

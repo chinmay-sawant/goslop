@@ -8,10 +8,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-353": {
     "id": 353,
@@ -22,10 +22,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-354": {
     "id": 354,
@@ -36,10 +36,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-356": {
     "id": 356,
@@ -50,10 +50,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-357": {
     "id": 357,
@@ -64,10 +64,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-358": {
     "id": 358,
@@ -78,10 +78,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-359": {
     "id": 359,
@@ -92,10 +92,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-360": {
     "id": 360,
@@ -106,10 +106,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-367": {
     "id": 367,
@@ -120,10 +120,10 @@
     "category": "Resource Management",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-368": {
     "id": 368,
@@ -134,10 +134,10 @@
     "category": "Resource Management",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-369": {
     "id": 369,
@@ -148,10 +148,10 @@
     "category": "Numeric",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-372": {
     "id": 372,
@@ -162,10 +162,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-378": {
     "id": 378,
@@ -176,10 +176,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-379": {
     "id": 379,
@@ -190,10 +190,10 @@
     "category": "Path Traversal",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-385": {
     "id": 385,
@@ -204,10 +204,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-386": {
     "id": 386,
@@ -218,10 +218,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-390": {
     "id": 390,
@@ -232,10 +232,10 @@
     "category": "Error Handling",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-391": {
     "id": 391,
@@ -246,10 +246,10 @@
     "category": "Error Handling",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-392": {
     "id": 392,
@@ -260,10 +260,10 @@
     "category": "Error Handling",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-393": {
     "id": 393,
@@ -274,10 +274,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-394": {
     "id": 394,
@@ -288,10 +288,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-396": {
     "id": 396,
@@ -302,10 +302,10 @@
     "category": "Error Handling",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Low",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "High"
   },
   "CWE-397": {
     "id": 397,
@@ -316,9 +316,9 @@
     "category": "Error Handling",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Low",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "High"
   }
 }

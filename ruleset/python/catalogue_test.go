@@ -118,7 +118,7 @@ func TestPythonCWEChunksFrom699(t *testing.T) {
 
 	required := []string{
 		"id", "name", "description", "original_description", "detection_notes",
-		"category", "status", "weakness_abstraction", "go_relevance", "applicable_to",
+		"category", "status", "weakness_abstraction", "python_relevance", "applicable_to",
 	}
 	total := 0
 	seenIDs := map[int]string{}
@@ -189,6 +189,13 @@ func TestPythonCWEChunksFrom699(t *testing.T) {
 			}
 			if !foundPython {
 				t.Errorf("%s %s: applicable_to must include python", name, key)
+			}
+			if _, ok := entry["go_relevance"]; ok {
+				t.Errorf("%s %s: use python_relevance, not go_relevance", name, key)
+			}
+			rel, _ := entry["python_relevance"].(string)
+			if rel != "High" && rel != "Medium" && rel != "Low" {
+				t.Errorf("%s %s: invalid python_relevance %q", name, key, rel)
 			}
 		}
 	}

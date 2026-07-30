@@ -8,10 +8,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-455": {
     "id": 455,
@@ -22,10 +22,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-459": {
     "id": 459,
@@ -36,10 +36,10 @@
     "category": "File Processing",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-472": {
     "id": 472,
@@ -50,10 +50,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-474": {
     "id": 474,
@@ -64,10 +64,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-475": {
     "id": 475,
@@ -78,10 +78,10 @@
     "category": "General",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-477": {
     "id": 477,
@@ -92,10 +92,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-478": {
     "id": 478,
@@ -106,10 +106,10 @@
     "category": "Configuration",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Low",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "High"
   },
   "CWE-480": {
     "id": 480,
@@ -120,10 +120,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-484": {
     "id": 484,
@@ -134,10 +134,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-488": {
     "id": 488,
@@ -148,10 +148,10 @@
     "category": "Security",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-489": {
     "id": 489,
@@ -162,10 +162,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-494": {
     "id": 494,
@@ -176,10 +176,10 @@
     "category": "General",
     "status": "Draft",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   },
   "CWE-497": {
     "id": 497,
@@ -190,9 +190,9 @@
     "category": "Information Disclosure",
     "status": "Incomplete",
     "weakness_abstraction": "Base",
-    "go_relevance": "Medium",
     "applicable_to": [
       "python"
-    ]
+    ],
+    "python_relevance": "Medium"
   }
 }

@@ -55,11 +55,11 @@ python3 -c 'print("see plans/v0.0.2/python-cwe-from-699-mapping.md")'
 Same fields as golang CWE chunks:
 
 `id`, `name`, `original_description`, `description`, `detection_notes`,  
-`category`, `status`, `weakness_abstraction`, `go_relevance`, `applicable_to`
+`category`, `status`, `weakness_abstraction`, `python_relevance`, `applicable_to`
 
 - `applicable_to` always includes `"python"`.
 - `description` / `detection_notes` are Python-oriented (framework/stdlib sinks).
-- `go_relevance` kept for **schema parity** with the Go catalogue (not “Go only”).
+- `python_relevance` is the Python-catalogue counterpart of golang’s `go_relevance` (`High` / `Medium` / `Low`).
 
 ### Python-specific platform CWEs (from CSV filter)
 
