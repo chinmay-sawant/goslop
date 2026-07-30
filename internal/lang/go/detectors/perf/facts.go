@@ -59,25 +59,19 @@ type GoPerfFacts struct {
 	SourceIndex           ast.SourceIndex
 }
 
-// BuildFacts walks the unit AST (parsing on demand when unit.Tree is unset).
+// BuildFacts walks the unit AST once for this pack.
+// Reuses unit.Tree when set (analyzer / prior pack); otherwise parses once via
+// goparse.TreeForUnit and pins the tree on the unit for cross-pack reuse.
 func BuildFacts(unit *core.ParsedUnit) *GoPerfFacts {
 	facts := &GoPerfFacts{VarKinds: map[string]VarKind{}}
 	if unit == nil || unit.Source == "" {
 		return facts
 	}
 
-	src := []byte(unit.Source)
-	var tree *goparse.Tree
-	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
-		tree = t
-	} else {
-		t, err := goparse.Parse(src)
-		if t == nil || t.File == nil {
-			_ = err
-			facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
-			return facts
-		}
-		tree = t
+	tree := goparse.TreeForUnit(unit)
+	if tree == nil {
+		facts.SourceIndex = ast.Build(unit.Source, perfNeedles)
+		return facts
 	}
 
 	// Pass 1: collect for/range spans (innermost wins via reverse search).

@@ -412,6 +412,10 @@ func closeUnitTree(unit *core.ParsedUnit) {
 	unit.Tree = nil
 }
 
+// buildUnit produces one ParsedUnit per file. For languages with a plugin
+// ParseSource (Go: goparse), this is the single parse for the file: the AST is
+// attached as unit.Tree before any detector Run. PERF / BP / taint must reuse
+// unit.Tree (via goparse.TreeForUnit) and must not re-parse when Tree is set.
 func (a *Analyzer) buildUnit(entry ScanEntry, display, source string) (*core.ParsedUnit, error) {
 	plugin := a.registry.PluginForID(entry.Language)
 	if plugin != nil {

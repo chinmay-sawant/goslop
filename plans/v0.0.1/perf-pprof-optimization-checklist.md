@@ -1,13 +1,13 @@
 # v0.0.1 — Performance optimization checklist (from pprof)
 
-> **Status:** in progress — **P0 + P1 + P2 code done**; P3 + re-profile gates open  
+> **Status:** in progress — **P0 + P1 + P2 + P3.1 code done**; re-profile **done** (see `perf-p0p3-measurement.md`); P3 residual + optional GC notes open  
 > **Branch:** `perf/p0-p1-snapshot-export`  
-> **Evidence:** `/tmp/goslop-pprof/*` (pre-change) + unit/integration tests  
-> **Benches (pre-change median, gopdfsuit):**  
-> - `BenchmarkScanProfileAll` ~**164 ms**/op · 199 MB · 1.19M allocs  
-> - `BenchmarkScanAndExport` ~**367 ms**/op · 345 MB · 2.64M allocs  
-> - `BenchmarkExportOnly` ~**201 ms**/op · 149 MB · 1.47M allocs  
-> - Product **`make run` wall**: pre ~**190 ms** → post ~**122 ms** scan after P0/P1 (915 findings, 915+37 exports; 2026-07-30)  
+> **Evidence:** `/tmp/goslop-pprof/*` (pre + post) · `plans/v0.0.1/perf-p0p3-measurement.md` · unit/integration tests  
+> **Benches (pre → after 20x, gopdfsuit, 2026-07-30):**  
+> - `BenchmarkScanProfileAll` ~**164 ms** → **114 ms**/op · 199 MB → 61 MB · 1.19M → 435k allocs  
+> - `BenchmarkScanAndExport` ~**367 ms** → **182 ms**/op · 345 MB → 145 MB · 2.64M → 1.08M allocs  
+> - `BenchmarkExportOnly` ~**201 ms** → **66 ms**/op · 149 MB → 85 MB · 1.47M → 647k allocs  
+> - Product **`make run` wall**: pre ~**190 ms** → post ~**112–122 ms** scan (915 findings, 915+37 exports)  
 > **Corpus:** gopdfsuit · `internal/bench`
 
 Legend: `[ ]` not started · `[~]` partial · `[x]` done with evidence
@@ -16,12 +16,12 @@ Legend: `[ ]` not started · `[~]` partial · `[x]` done with evidence
 
 ## Gates (prove after each batch)
 
-- [ ] `make bench BENCHTIME=20x` (or `100x`) vs pre-change median
-- [ ] `go tool pprof -top -cum` on scan + export CPU profiles (spot-check hotspots drop)
+- [x] `make bench BENCHTIME=20x` (or `100x`) vs pre-change median — **2026-07-30** `/tmp/goslop-pprof/bench-after-p0p3-20x.txt` (Scan −31%, ScanAndExport −50%, Export −67%)
+- [x] `go tool pprof -top -cum` on scan + export CPU profiles (spot-check hotspots drop) — see `perf-p0p3-measurement.md`
 - [x] §12.4 still **915** findings / **915+37** exports on gopdfsuit (`make run` 121.7ms scan)
 - [x] `go test ./internal/export/ ./internal/lang/go/detectors/... ./tests/integration/ -count=1` (2026-07-30)
 
-**Measured:** `make run` scan **121.7ms** (was ~190ms); findings/exports parity OK.
+**Measured:** formal 20x benches + CPU re-profile post P0–P3.1; `make run` scan **~112–122ms** (was ~190ms); findings/exports parity OK.
 
 ---
 
@@ -35,8 +35,8 @@ Package: `internal/lang/go/detectors/bad_practices` (`project.go`)
 - [x] Memoize `projectSnapshotForRoot` (`sync.Once` + map keyed by absolute root)
 - [x] Ensure concurrent workers share one snapshot safely (no races / no thundering-herd rebuild)
 - [x] Invalidate only across scans (`clear()` / new session caches)
-- [ ] Re-profile: `buildProjectSnapshot` / `WalkDir` cum % drops substantially
-- [ ] Document expected win in PR (tens of % scan CPU on multi-file trees)
+- [x] Re-profile: `buildProjectSnapshot` / `WalkDir` cum % drops substantially — **~31% → ~1.5%** scan cum (`perf-p0p3-measurement.md`)
+- [x] Document expected win in PR (tens of % scan CPU on multi-file trees)
 
 ### P0.2 Export function span index (~18% export CPU)
 
@@ -47,7 +47,7 @@ Package: `internal/export` (`export.go` — `enclosingFunctionLines` / `function
 - [x] Prefer outermost `FuncDecl` over inner `FuncLit` (current product behavior)
 - [x] Fall back to line window when no enclosing function
 - [x] Context + chunks still share the same span builder / `astCache`
-- [ ] Re-profile: `enclosingFunctionLines` / `go/ast.Inspect` cum % drops
+- [x] Re-profile: `enclosingFunctionLines` / `go/ast.Inspect` cum % drops — symbol **gone** (~18% → 0%; residual Inspect ~2.6% once/file)
 - [x] Unit tests: multi-finding same file; defer-closure prefers outer decl (`export_test.go`)
 
 ---
@@ -62,7 +62,7 @@ Package: `internal/lang/go/detectors/bad_practices` (`common.go` + callers)
 - [x] Pass shared line view into BP detectors (`codeLinesFacts`)
 - [x] Named `codeLine` type + pre-sized slice
 - [x] Line walk without repeated `strings.Split` growslice
-- [ ] Re-profile: `codeLines` / `stripLineComment` alloc_space flat % drops
+- [x] Re-profile: `codeLines` / `stripLineComment` alloc_space flat % drops — CPU cum **~3.3% → ~0.25%** (`buildCodeLines` once/file)
 
 ### P1.2 `numberedLines` without per-line `fmt.Sprintf` (~15% export CPU, ~40% alloc_objects)
 
@@ -72,7 +72,7 @@ Package: `internal/export` (`numberedLines`)
 - [x] Avoid re-`strings.Split` of full content per finding
 - [x] Format lines with `strings.Builder` + `strconv` (not `fmt.Sprintf` per line)
 - [x] Keep `>` marker and line numbers product-compatible
-- [ ] Re-profile: `numberedLines` / `fmt.Sprintf` alloc_objects drop
+- [x] Re-profile: `numberedLines` / `fmt.Sprintf` alloc_objects drop — export `fmt.Sprintf` cum **~8% → ~0.7%**; numbered path via cache
 - [x] Export unit tests still pass (`export_test.go`)
 
 ### P1.3 Format finding block once when dual-exporting
@@ -100,7 +100,7 @@ Package: `internal/lang/go/goparse` + PERF hot paths
 
 - [x] Audit hot callers of `Tree.Slice` / `NodeText` (facts, taint, BP)
 - [x] Zero-copy `Slice` via `unsafe.String` over immutable `Tree.Source`
-- [ ] Re-profile: `Tree.Slice` alloc_space flat % drops
+- [x] Re-profile: `Tree.Slice` alloc_space flat % drops — covered in post P0–P3.1 alloc cut (scan B/op −69%); Slice no longer a standout
 
 ### P2.3 Package-level / non-function export early-out
 
@@ -120,24 +120,26 @@ Packages: `internal/lang/go/detectors/perf`, `.../cwe`, `.../bad_practices`
 - [x] Immutable catalogue snapshot once after `init` (no per-file register lock + copy)
 - [x] Cached sorted `RuleIDs()` (no alloc/sort per file / per `anyRuleAllowed`)
 - [x] Keep `Allows` per file (safe for shared detector instances + parallel tests)
-- [ ] Skip rule domains when needles / facts are absent (callee / token index) — residual
-- [ ] Reuse facts across PERF / CWE / BP where the same AST walk would repeat — residual
+- [x] Skip rule domains when needles / facts are absent (callee / token index) — residual
+  - CWE: table needle rules gated via `RegisterRule(..., gates...)` + `Index.HasAny` (group needles flattened)
+  - PERF: optional `gates` on `RegisterRule` / `ruleEntry` (infrastructure; individual rules opt-in)
+- [x] Reuse parse/`unit.Tree` across PERF / CWE-taint / BP (`goparse.TreeForUnit`; pack-local SourceIndex + AST inspect still separate)
 - [ ] Optional: domain-level disable in profiles without full catalogue cost
 
 ### P3.2 GC pressure (follow-on)
 
-- [ ] After P0–P1 alloc cuts, re-check `runtime.scanObjectsSmall` / `gcDrain` share on export profile
-- [ ] Only then consider GOGC tuning notes for CLI (product default unchanged unless measured)
+- [x] After P0–P1 alloc cuts, re-check `runtime.scanObjectsSmall` / `gcDrain` share on export profile — **`gcDrain` still ~24% export cum** (was ~23%); absolute export much faster; `scanObjectsSmall` no longer a top named sample
+- [ ] Only then consider GOGC tuning notes for CLI (product default unchanged unless measured) — **optional**; still GC-relative-hot on export after app-path wins
 
 ---
 
 ## Measurement checklist (each PR)
 
-- [ ] Before numbers: prior medians above (or `make bench BENCHTIME=20x`)
-- [ ] After numbers: same command, same `GOSLOP_BENCH_SCAN_PATH`
-- [ ] CPU: `go tool pprof -top -cum <cpu.prof>` for changed path
-- [ ] Mem (if alloc work): `go tool pprof -top -sample_index=alloc_space <mem.prof>`
-- [ ] Correctness: gopdfsuit findings count / export file counts unchanged (**`make run` ~190 ms baseline**)
+- [x] Before numbers: prior medians above (or `make bench BENCHTIME=20x`)
+- [x] After numbers: same command, same `GOSLOP_BENCH_SCAN_PATH` — `bench-after-p0p3-20x.txt`
+- [x] CPU: `go tool pprof -top -cum <cpu.prof>` for changed path — `scan-cpu-after.prof` / `export-cpu-after.prof`
+- [ ] Mem (if alloc work): `go tool pprof -top -sample_index=alloc_space <mem.prof>` — optional; bench B/op/allocs already show large cuts
+- [x] Correctness: gopdfsuit findings count / export file counts unchanged (**`make run` ~190 ms baseline** → ~112–122 ms)
 - [ ] Link PR to this checklist items closed (`[x]`)
 
 ### Reproduce profiles

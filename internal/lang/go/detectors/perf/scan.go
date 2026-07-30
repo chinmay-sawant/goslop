@@ -15,6 +15,10 @@ type ruleEntry struct {
 	id   string
 	fn   ruleFn
 	meta *rules.RuleMetadata
+	// gates are optional SourceIndex needles (any-of). When non-empty, Run
+	// skips the rule when facts.SourceIndex has none of them. Nil/empty = always run.
+	// Needles must appear in perfNeedles (Build table) or Has returns false.
+	gates []string
 }
 
 // goPerfRules is the implemented PERF catalogue (filled via RegisterRule / init).
@@ -97,6 +101,10 @@ func (d *GoPerfScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]ru
 		}
 		// Pure-FP museums vs gopdfsuit reference corpus — never suppress fixture/unit tests.
 		if referenceSkipUnit(unit, e.id) {
+			continue
+		}
+		// Needle/domain gate: skip when the file has no relevant SourceIndex hits.
+		if len(e.gates) > 0 && !facts.SourceIndex.HasAny(e.gates) {
 			continue
 		}
 		e.fn(unit, facts, out)

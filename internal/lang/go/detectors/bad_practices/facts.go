@@ -28,10 +28,9 @@ type codeLine struct {
 
 // bpFacts is the fused fact bag for BP detectors.
 type bpFacts struct {
-	Source      string
-	Index       ast.SourceIndex
-	tree        *goparse.Tree
-	ownedTree   bool
+	Source string
+	Index  ast.SourceIndex
+	tree   *goparse.Tree
 	// lines is built once per file (codeLines / stripLineComment cost).
 	lines       []codeLine
 	assignNodes []nodeSpan
@@ -76,21 +75,10 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 	f.lines = buildCodeLines(unit.Source)
 	f.Index = ast.Build(unit.Source, bpNeedles)
 
-	src := []byte(unit.Source)
-	var tree *goparse.Tree
-	if t, ok := unit.Tree.(*goparse.Tree); ok && t != nil && t.File != nil {
-		tree = t
-	} else if unit.Source != "" {
-		t, err := goparse.Parse(src)
-		if err == nil && t != nil && t.File != nil {
-			tree = t
-			f.ownedTree = true
-		} else if t != nil && t.File != nil {
-			tree = t
-			f.ownedTree = true
-		}
-	}
-	if tree == nil || tree.File == nil {
+	// Reuse unit.Tree when set; else parse once and pin for cross-pack reuse.
+	// Tree lifetime is owned by the unit / analyzer closeUnitTree (not BP).
+	tree := goparse.TreeForUnit(unit)
+	if tree == nil {
 		return f
 	}
 	f.tree = tree
@@ -145,9 +133,10 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 	return f
 }
 
+// close releases any BP-owned resources. The shared unit AST is not closed here
+// (analyzer closeUnitTree owns unit.Tree lifetime for cross-pack reuse).
 func (f *bpFacts) close() {
-	if f != nil && f.ownedTree && f.tree != nil {
-		f.tree.Close()
+	if f != nil {
 		f.tree = nil
 	}
 }

@@ -14,9 +14,13 @@ import (
 type cweRuleFn func(unit *core.ParsedUnit, facts *GoCweFacts, out *[]rules.Finding)
 
 type cweRuleEntry struct {
-	id   string
-	fn   cweRuleFn
-	meta *rules.RuleMetadata
+	id    string
+	fn    cweRuleFn
+	meta  *rules.RuleMetadata
+	// gates are optional SourceIndex needles (any-of). When non-empty, Run
+	// skips the rule when facts.Index has none of them. Nil/empty = always run.
+	// Must be FN-safe: only needles the rule needs before it can emit.
+	gates []string
 }
 
 var (
@@ -26,15 +30,22 @@ var (
 
 // RegisterRule appends a CWE rule to the global catalogue.
 // Call from init() so domain/table files can register in parallel.
-func RegisterRule(id string, fn cweRuleFn, meta *rules.RuleMetadata) {
+// Optional gates are any-of SourceIndex needles; when set, the rule is skipped
+// if none are present in the file (see facts.Index / cweNeedles).
+func RegisterRule(id string, fn cweRuleFn, meta *rules.RuleMetadata, gates ...string) {
 	if id == "" || fn == nil || meta == nil {
 		return
 	}
+	var gateCopy []string
+	if len(gates) > 0 {
+		gateCopy = append([]string(nil), gates...)
+	}
 	cweRegisterMu.Lock()
 	defer cweRegisterMu.Unlock()
+	entry := cweRuleEntry{id: id, fn: fn, meta: meta, gates: gateCopy}
 	for i, e := range cweRules {
 		if e.id == id {
-			cweRules[i] = cweRuleEntry{id: id, fn: fn, meta: meta}
+			cweRules[i] = entry
 			if metaByID == nil {
 				metaByID = map[string]*rules.RuleMetadata{}
 			}
@@ -42,7 +53,7 @@ func RegisterRule(id string, fn cweRuleFn, meta *rules.RuleMetadata) {
 			return
 		}
 	}
-	cweRules = append(cweRules, cweRuleEntry{id: id, fn: fn, meta: meta})
+	cweRules = append(cweRules, entry)
 	if metaByID == nil {
 		metaByID = map[string]*rules.RuleMetadata{}
 	}
@@ -137,6 +148,10 @@ func (d *GoCweScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rul
 		// Pure FPs vs Rust gopdfsuit reference corpus (issue #8) — SI museums too broad.
 		// Never suppress fixture / unit-test units (catalogue must stay green).
 		if isReferencePureFP(e.id) && isRealProjectScan(unit) {
+			continue
+		}
+		// Needle/domain gate: skip when the file has no relevant SourceIndex hits.
+		if len(e.gates) > 0 && !facts.Index.HasAny(e.gates) {
 			continue
 		}
 		e.fn(unit, facts, out)

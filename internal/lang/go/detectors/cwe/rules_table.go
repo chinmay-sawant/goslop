@@ -63,6 +63,29 @@ func runNeedleRule(unit *core.ParsedUnit, facts *GoCweFacts, r cweNeedleRule, ou
 	rules.PushFindingWithConfidence(r.meta, unitFile(unit), line, col, r.msg, 0.55, out)
 }
 
+// needleRuleGates flattens unique non-empty needles from groups (any-of).
+// Safe to use as RegisterRule gates: if none are present, no group can match.
+func needleRuleGates(groups []needleGroup) []string {
+	if len(groups) == 0 {
+		return nil
+	}
+	seen := make(map[string]struct{}, 8)
+	var out []string
+	for _, g := range groups {
+		for _, n := range g {
+			if n == "" {
+				continue
+			}
+			if _, ok := seen[n]; ok {
+				continue
+			}
+			seen[n] = struct{}{}
+			out = append(out, n)
+		}
+	}
+	return out
+}
+
 var cweNeedleRules = []cweNeedleRule{
 	{
 		id: "CWE-15",
@@ -1841,8 +1864,9 @@ func init() {
 	for i := range cweNeedleRules {
 		i := i
 		rule := cweNeedleRules[i]
+		gates := needleRuleGates(rule.groups)
 		RegisterRule(rule.id, func(unit *core.ParsedUnit, facts *GoCweFacts, out *[]rules.Finding) {
 			runNeedleRule(unit, facts, cweNeedleRules[i], out)
-		}, rule.meta)
+		}, rule.meta, gates...)
 	}
 }
