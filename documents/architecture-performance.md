@@ -33,13 +33,24 @@ immutable catalogue for rule listing and file-language resolution.
 
 ## Language seam
 
-Go is the only shipped language. Its plugin uses the standard library parser
-and keeps Go AST details out of the engine. A future language plugin must:
+**Go** is the only **shipped** production language today. Its plugin uses the
+standard library parser (`go/parser` + `go/ast`) and keeps Go AST details out of
+the engine. **Python** is reserved (`LanguagePython`, fixtures under
+`tests/fixtures/python/`) as **WIP** under epic
+[#39](https://github.com/chinmay-sawant/goslop/issues/39) /
+[`plans/v0.0.2/python-support.md`](../plans/v0.0.2/python-support.md)—there is
+**no full Python detector plugin** yet.
+
+The engine is language-agnostic via `core.LanguagePlugin`. Guidance for adding a
+second language without CGO lives on `LanguagePlugin` in
+[`internal/core/plugin.go`](../internal/core/plugin.go) ("Adding a second
+language"). A language plugin must:
 
 1. implement `LanguagePlugin` for its extensions and parser;
 2. return immutable catalogue detectors from `Detectors`;
 3. return fresh session-local instances from `NewDetectors`;
-4. keep language-specific AST values behind `ParsedUnit.Tree`.
+4. keep language-specific AST values behind `ParsedUnit.Tree`;
+5. prefer a **pure-Go** parser (no tree-sitter / CGO in the default build).
 
 This preserves the engine's language-neutral interface while making stateful
 detectors safe under bounded file parallelism.

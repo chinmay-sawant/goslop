@@ -15,7 +15,7 @@
 | `engine/` | `engine/` | 2-3, 10 | [ ] |
 | `ast/` | `ast/` | 2 | [ ] |
 | `lang/go/` | `lang/go/` | 2, 6-9 | [ ] |
-| `lang/python/` | - | defer | [~] out of scope v0 |
+| `lang/python/` | `lang/python/` (planned) | v0.0.2 / [#39](https://github.com/chinmay-sawant/goslop/issues/39) | [~] foundation WIP — see [`plans/v0.0.2/python-support.md`](./v0.0.2/python-support.md); not full detector parity |
 | `reporting/` | `reporting/` | 5 | [ ] |
 | `export/` | `export/` | 5 | [ ] |
 | `fixture/` | `fixture/` | 2 | [ ] |
@@ -38,7 +38,7 @@ Update counts from `goslop --list-rules` when Rust binary available; registries 
 | Path | Files (copied) | Notes |
 |------|---------------:|-------|
 | `tests/fixtures/go/**` | bulk of 1746 | primary expectations |
-| `tests/fixtures/python/**` | small | [~] skip until Python plugin |
+| `tests/fixtures/python/**` | small | [~] reserved until Python plugin — epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) / [`plans/v0.0.2/python-support.md`](./v0.0.2/python-support.md) |
 | `tests/fixtures/manifest.toml` | 1 | materializer must read |
 
 ## CLI flag parity (minimum)
