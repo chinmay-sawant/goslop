@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics-bp.md` — canonical #53 ledger  
 > **Epic:** [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) expansion — batchwise PRs for remaining `BP-PY-*`  
-> **Status:** batch ledgers split for parallel / sequential implement PRs  
+> **Status:** all 50 BP-PY RegisterRule-implemented on integration branch (2026-07-31); batch ledgers evidence  
 > **Inventory snapshot:** `plans/v0.0.2/heuristics/bp-plans/_inventory.json`
 
 ---

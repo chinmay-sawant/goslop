@@ -15,9 +15,9 @@
 | Item | Current evidence |
 |------|------------------|
 | Catalogue | `ruleset/python/bad-practices.json` — **50** map keys `BP-PY-1` … `BP-PY-50` |
-| Implemented (`RegisterRule`) | **14:** 1,2,4,6,7,8–13,16,17,21 — see `bp-plans/batch-00-shipped.md` |
-| Missing (planned) | **36:** 3,5,14,15,18–20,22–50 — see `bp-plans/batch-01` … `batch-08` |
-| Package | `internal/lang/python/detectors/bad_practices/` — scan + rules_core/security/framework |
+| Implemented (`RegisterRule`) | **17:** 1,2,4,6,7,8–13,16,17,21,48–50 — see `bp-plans/batch-00-shipped.md` + batch-08 |
+| Missing (planned) | **33:** 3,5,14,15,18–20,22–47 — see `bp-plans/batch-01` … `batch-07` |
+| Package | `internal/lang/python/detectors/bad_practices/` — scan + rules_core/security/framework/prod |
 | Parse quality | source-only (`ParseQualitySourceOnly`); pure-Go source patterns |
 | File size policy | ≤1500 preferred / **2000 hard max** per Go file (split domain files) |
 | Inventory | `bp-plans/_inventory.json` |
@@ -237,12 +237,12 @@ Priority IDs from issue body. Implement + fixture per rule.
 ### 4.2 Django (`BP-PY-21`, `22`, `24`, `25`, `26`)
 
 - [x] `BP-PY-21` — `DEBUG = True` in `settings.py` / settings modules (skip tests / `local_settings` patterns if documented)
-- [~] `BP-PY-22` — `SECRET_KEY = '...'` literals in Django settings — deferred
-- [~] `BP-PY-24` — deferred
-- [~] `BP-PY-25` — deferred
-- [~] `BP-PY-26` — deferred
-- [ ] Register each + hit/miss fixtures
-- [ ] `[~]` `BP-PY-23`, `27`, `28` — ALLOWED_HOSTS / mass assignment / N+1; defer (noise or multi-line)
+- [x] `BP-PY-22` — `SECRET_KEY = '...'` literals in Django settings (`rules_django.go`)
+- [x] `BP-PY-24` — `objects.raw` / `cursor.execute` with f-string / `.format` / `%` (`rules_django.go`)
+- [x] `BP-PY-25` — `mark_safe` / `SafeString` on non-literal args (`rules_django.go`)
+- [x] `BP-PY-26` — `@csrf_exempt` on views (`rules_django.go`)
+- [x] Register each + hit/miss fixtures (`rules_django_test.go`)
+- [x] `BP-PY-23`, `27`, `28` — ALLOWED_HOSTS / mass assignment / N+1 (`rules_django.go`; N+1 is review-only heuristic)
 
 ### 4.3 FastAPI / Starlette (`BP-PY-30`, `32`)
 
@@ -275,10 +275,10 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 ### 5.1 Production hardening
 
 - [ ] `BP-PY-14` requests without timeout
-- [ ] `BP-PY-48` CORS `*` with credentials
-- [ ] `BP-PY-49` TLS verify disabled (`verify=False`, etc.)
-- [ ] `BP-PY-50` insecure cookie flags
-- [ ] Each: register + hit/miss fixtures + proof
+- [x] `BP-PY-48` CORS `*` with credentials — `rules_prod.go` `detectBPPY48`; hit/miss in `rules_prod_test.go`
+- [x] `BP-PY-49` TLS verify disabled (`verify=False`, etc.) — `rules_prod.go` `detectBPPY49`; hit/miss in `rules_prod_test.go`
+- [x] `BP-PY-50` insecure cookie flags — `rules_prod.go` `detectBPPY50`; hit/miss in `rules_prod_test.go`
+- [x] Each: register + hit/miss fixtures + proof (batch-08: 48–50 only; 14 still batch-01)
 
 ### 5.2 Resource / HTTP client
 
@@ -394,10 +394,10 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-17 | Flask SECRET_KEY Hardcoded | high | Flask | [x] |
 | BP-PY-20 | Flask send_file User Path | high | Flask | [~] deferred |
 | BP-PY-21 | Django DEBUG True In Settings | high | Django | [x] |
-| BP-PY-22 | Django SECRET_KEY Hardcoded | high | Django | [~] deferred |
-| BP-PY-24 | Django raw SQL With Format | high | Django | [~] deferred |
-| BP-PY-25 | Django mark_safe On Dynamic Data | high | Django | [~] deferred |
-| BP-PY-26 | Django csrf_exempt On State-Changing View | high | Django | [~] deferred |
+| BP-PY-22 | Django SECRET_KEY Hardcoded | high | Django | [x] |
+| BP-PY-24 | Django raw SQL With Format | high | Django | [x] |
+| BP-PY-25 | Django mark_safe On Dynamic Data | high | Django | [x] |
+| BP-PY-26 | Django csrf_exempt On State-Changing View | high | Django | [x] |
 | BP-PY-30 | FastAPI Blocking I/O In Async Route | high | FastAPI | [~] deferred |
 | BP-PY-32 | Starlette FileResponse User Path | high | FastAPI | [~] deferred |
 
@@ -416,9 +416,9 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-15 | httpx Async Client Not Closed | medium | Resource Management | [~] deferred |
 | BP-PY-18 | Flask Route Missing Methods Restriction | low | Flask | [~] deferred |
 | BP-PY-19 | Flask jsonify Error Leaks Exception | medium | Flask | [~] deferred |
-| BP-PY-23 | Django ALLOWED_HOSTS Empty Or Star | medium | Django | [~] deferred |
-| BP-PY-27 | Django Mass Assignment From request.POST | medium | Django | [~] deferred |
-| BP-PY-28 | Django N+1 Query In Loop | medium | Django | [~] deferred |
+| BP-PY-23 | Django ALLOWED_HOSTS Empty Or Star | medium | Django | [x] |
+| BP-PY-27 | Django Mass Assignment From request.POST | medium | Django | [x] |
+| BP-PY-28 | Django N+1 Query In Loop | medium | Django | [x] heuristic/review-only |
 | BP-PY-29 | FastAPI Depends On Mutable Global | medium | FastAPI | [~] deferred |
 | BP-PY-31 | FastAPI response_model Disabled Unsafely | medium | FastAPI | [~] deferred |
 | BP-PY-34 | Jinja2 Markup Or safe Filter On Variables | high | Templates | [~] deferred |
@@ -434,9 +434,9 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-45 | sys.path Mutation At Runtime | low | Dependency Hygiene | [~] deferred |
 | BP-PY-46 | print Debugging In Library Code | info | Observability | [~] deferred |
 | BP-PY-47 | logging With String Format Before Logger | info | Observability | [~] deferred |
-| BP-PY-48 | CORS Allow Origins Star With Credentials | high | Production Hardening | [~] deferred |
-| BP-PY-49 | TLS Verification Disabled | high | Production Hardening | [~] deferred |
-| BP-PY-50 | Django/Flask CSRF Or Session Cookie Insecure Flags | medium | Production Hardening | [~] deferred |
+| BP-PY-48 | CORS Allow Origins Star With Credentials | high | Production Hardening | [x] batch-08 `rules_prod.go` |
+| BP-PY-49 | TLS Verification Disabled | high | Production Hardening | [x] batch-08 `rules_prod.go` |
+| BP-PY-50 | Django/Flask CSRF Or Session Cookie Insecure Flags | medium | Production Hardening | [x] batch-08 `rules_prod.go` |
 
 ---
 

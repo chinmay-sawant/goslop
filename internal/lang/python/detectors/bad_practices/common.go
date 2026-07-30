@@ -152,6 +152,20 @@ func isIdentByte(b byte) bool {
 	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '_'
 }
 
+// isSimpleIdent reports whether s is a non-empty Python identifier (no dots).
+func isSimpleIdent(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		if !isIdentByte(s[i]) {
+			return false
+		}
+	}
+	c := s[0]
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
 // indexOfIdent finds needle as a whole identifier/attribute fragment (not mid-ident).
 func indexOfIdent(source, needle string) int {
 	start := 0

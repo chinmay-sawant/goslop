@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/bp-plans/README.md` — batch index  
 > **Canonical #53 ledger:** `plans/v0.0.2/heuristics/python-heuristics-bp.md`  
 > **Issue:** [#53](https://github.com/chinmay-sawant/goslop/issues/53) expansion under epic [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
-> **Status:** not started — implementation checklist  
+> **Status:** implemented — `rules_async.go` (BP-PY-38..40)  
 > **Estimated effort:** 1 PR (small–medium)  
 > **PR policy:** single batchwise PR; title e.g. `python(bp): batch-06 async rules (BP-PY-38..40)`
 
