@@ -14,7 +14,10 @@
     "BP-PY-13",
     "BP-PY-16",
     "BP-PY-17",
-    "BP-PY-21"
+    "BP-PY-21",
+    "BP-PY-48",
+    "BP-PY-49",
+    "BP-PY-50"
   ],
   "missing": [
     "BP-PY-3",
@@ -49,21 +52,20 @@
     "BP-PY-44",
     "BP-PY-45",
     "BP-PY-46",
-    "BP-PY-47",
-    "BP-PY-48",
-    "BP-PY-49",
-    "BP-PY-50"
+    "BP-PY-47"
   ],
   "files": {
     "internal/lang/python/detectors/bad_practices/common.go": 446,
-    "internal/lang/python/detectors/bad_practices/facts.go": 61,
+    "internal/lang/python/detectors/bad_practices/facts.go": 69,
     "internal/lang/python/detectors/bad_practices/metadata.go": 225,
     "internal/lang/python/detectors/bad_practices/register.go": 56,
     "internal/lang/python/detectors/bad_practices/rules_core.go": 307,
     "internal/lang/python/detectors/bad_practices/rules_framework.go": 200,
+    "internal/lang/python/detectors/bad_practices/rules_prod.go": 286,
+    "internal/lang/python/detectors/bad_practices/rules_prod_test.go": 179,
     "internal/lang/python/detectors/bad_practices/rules_security.go": 283,
     "internal/lang/python/detectors/bad_practices/scan.go": 94,
-    "internal/lang/python/detectors/bad_practices/scan_test.go": 296
+    "internal/lang/python/detectors/bad_practices/scan_test.go": 297
   },
   "rules": {
     "BP-PY-1": {

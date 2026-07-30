@@ -15,9 +15,9 @@
 | Item | Current evidence |
 |------|------------------|
 | Catalogue | `ruleset/python/bad-practices.json` — **50** map keys `BP-PY-1` … `BP-PY-50` |
-| Implemented (`RegisterRule`) | **14:** 1,2,4,6,7,8–13,16,17,21 — see `bp-plans/batch-00-shipped.md` |
-| Missing (planned) | **36:** 3,5,14,15,18–20,22–50 — see `bp-plans/batch-01` … `batch-08` |
-| Package | `internal/lang/python/detectors/bad_practices/` — scan + rules_core/security/framework |
+| Implemented (`RegisterRule`) | **17:** 1,2,4,6,7,8–13,16,17,21,48–50 — see `bp-plans/batch-00-shipped.md` + batch-08 |
+| Missing (planned) | **33:** 3,5,14,15,18–20,22–47 — see `bp-plans/batch-01` … `batch-07` |
+| Package | `internal/lang/python/detectors/bad_practices/` — scan + rules_core/security/framework/prod |
 | Parse quality | source-only (`ParseQualitySourceOnly`); pure-Go source patterns |
 | File size policy | ≤1500 preferred / **2000 hard max** per Go file (split domain files) |
 | Inventory | `bp-plans/_inventory.json` |
@@ -275,10 +275,10 @@ Ship only after A–D stable. Prefer one rules file per domain (async, testing, 
 ### 5.1 Production hardening
 
 - [ ] `BP-PY-14` requests without timeout
-- [ ] `BP-PY-48` CORS `*` with credentials
-- [ ] `BP-PY-49` TLS verify disabled (`verify=False`, etc.)
-- [ ] `BP-PY-50` insecure cookie flags
-- [ ] Each: register + hit/miss fixtures + proof
+- [x] `BP-PY-48` CORS `*` with credentials — `rules_prod.go` `detectBPPY48`; hit/miss in `rules_prod_test.go`
+- [x] `BP-PY-49` TLS verify disabled (`verify=False`, etc.) — `rules_prod.go` `detectBPPY49`; hit/miss in `rules_prod_test.go`
+- [x] `BP-PY-50` insecure cookie flags — `rules_prod.go` `detectBPPY50`; hit/miss in `rules_prod_test.go`
+- [x] Each: register + hit/miss fixtures + proof (batch-08: 48–50 only; 14 still batch-01)
 
 ### 5.2 Resource / HTTP client
 
@@ -434,9 +434,9 @@ Use as batch tracker. Status starts `[ ]`; move to `[x]` only with detector + fi
 | BP-PY-45 | sys.path Mutation At Runtime | low | Dependency Hygiene | [~] deferred |
 | BP-PY-46 | print Debugging In Library Code | info | Observability | [~] deferred |
 | BP-PY-47 | logging With String Format Before Logger | info | Observability | [~] deferred |
-| BP-PY-48 | CORS Allow Origins Star With Credentials | high | Production Hardening | [~] deferred |
-| BP-PY-49 | TLS Verification Disabled | high | Production Hardening | [~] deferred |
-| BP-PY-50 | Django/Flask CSRF Or Session Cookie Insecure Flags | medium | Production Hardening | [~] deferred |
+| BP-PY-48 | CORS Allow Origins Star With Credentials | high | Production Hardening | [x] batch-08 `rules_prod.go` |
+| BP-PY-49 | TLS Verification Disabled | high | Production Hardening | [x] batch-08 `rules_prod.go` |
+| BP-PY-50 | Django/Flask CSRF Or Session Cookie Insecure Flags | medium | Production Hardening | [x] batch-08 `rules_prod.go` |
 
 ---
 
