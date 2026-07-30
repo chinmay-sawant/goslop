@@ -1,8 +1,9 @@
 # v0.0.2 / #52 — Python CWE heuristic detectors
 
-> **Parent:** `plans/v0.0.2/python-heuristics.md` — epic #51 rollup; issue body `plans/PR/v0.0.2/issue-python-cwe-heuristics-body.md`
-> **Status:** `[x]` priority batch implemented on `feat/python-cwe-heuristics` (2026-07-31)
-> **Estimated effort:** medium (1 PR for framework + priority batch; expand later)
+> **Parent:** `plans/v0.0.2/heuristics/python-heuristics.md` — epic #51 rollup; issue body `plans/PR/v0.0.2/issues/issue-python-cwe-heuristics-body.md`
+> **Status:** priority batch **shipped** on `main`; remaining catalogue expansion planned in [cwe-plans/](./cwe-plans/) (2026-07-31)
+> **Estimated effort:** multi-PR expansion (see cwe-plans waves P0–P3); priority 5 already done
+> **Batch index:** [cwe-plans/README.md](./cwe-plans/README.md) · inventory [cwe-plans/_inventory.json](./cwe-plans/_inventory.json)
 
 ---
 
@@ -224,9 +225,15 @@ Phase 1 framework  →  Phase 2 detectors  →  Phase 3 plugin wire
 ### 5.2 Expansion framework (not full 344)
 
 - [x] Document how to add CWE-N: catalogue row exists → meta + `RegisterRule` + needles + tests (README in detectors/cwe).
-- [~] Implement remaining high-`python_relevance` IDs beyond the five — **deferred** to follow-up PRs; owner #52 backlog / epic #51; next gate: pick next batch from `python_relevance` + `detection_notes` (e.g. CWE-798, CWE-327/328 class crypto, CWE-611) with fixtures.
-- [~] Full 344-rule registration — **deferred** (issue scope); do not block ship of priority batch.
-- [~] Inter-procedural taint for Python 22/78/79/89 — **deferred** (Go has separate taint package; not required for #52).
+- [x] **Batch expansion plans** written under [cwe-plans/](./cwe-plans/) (mirror of `bp-plans/`) after 5-agent scan of `ruleset/python/chunks/` (2026-07-31 on `main` post-PR #67).  
+  **Partition:** 5 shipped · **154** implement-owned (batches 01–14, 16) · **185** deferred (tier-C / no pure-Go sink).  
+  **Tiers:** A≈59 · B≈94 · C≈186 — success ≠ full 344 `RegisterRule`.
+- [ ] Execute **wave P0** implement batches: [batch-01](./cwe-plans/batch-01-injection-expand.md) … [batch-04](./cwe-plans/batch-04-secrets-credentials.md) (one PR each).
+- [ ] Execute **wave P1** (crypto / SSRF / XXE / path-fs): batches 05–08.
+- [ ] Execute **wave P2** (web config / authz / info / validation): batches 09–12.
+- [ ] Execute **wave P3** (platform quality / resources / tier-B expansion): batches 13–14, 16 (split 16 if large).
+- [~] Full 344-rule registration — **not a goal**; remainder lives in [batch-deferred.md](./cwe-plans/batch-deferred.md).
+- [~] Inter-procedural taint for Python 22/78/79/89 — **deferred** (Go has separate taint package; not required for expansion waves).
 
 ### 5.3 Docs touchpoints (minimal)
 

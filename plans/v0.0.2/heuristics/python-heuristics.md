@@ -1,8 +1,8 @@
 # v0.0.2 — Python heuristic detectors (CWE, BP, PERF)
 
 > **Parent:** GitHub epic [#51](https://github.com/chinmay-sawant/goslop/issues/51) — Epic: Python heuristic detectors (CWE, BP, PERF)  
-> **Status:** CWE #52 implemented on branch; BP #53 pending; PERF #54 deferred  
-> **Estimated effort:** multi-PR (CWE + BP active; PERF deferred)  
+> **Status:** CWE #52 priority batch shipped; CWE expansion planned in `cwe-plans/`; BP #53 **complete** 50/50; PERF #54 deferred  
+> **Estimated effort:** multi-PR (CWE expansion waves P0–P3; PERF deferred)  
 > **Ledger rule:** this file is the **canonical execution ledger** for heuristic implementation. Detail lives in sibling checklists. Update checkboxes only with evidence (`make lint` / `make test` for code).
 
 ---
@@ -11,7 +11,7 @@
 
 | Stream | Issue | Detail plan | Status |
 |--------|------:|-------------|--------|
-| CWE heuristics | #52 | [python-heuristics-cwe.md](./python-heuristics-cwe.md) | active plan |
+| CWE heuristics | #52 | [python-heuristics-cwe.md](./python-heuristics-cwe.md) + **[cwe-plans/](./cwe-plans/)** | priority 5 shipped; **154** implement-owned + **185** deferred |
 | Bad-practice heuristics | #53 | [python-heuristics-bp.md](./python-heuristics-bp.md) + [bp-plans/](./bp-plans/) | **complete** 50/50 on main (PR #65) |
 | PERF catalogue + heuristics | #54 | [python-heuristics-perf.md](./python-heuristics-perf.md) | **deferred** (`[~]`) |
 
@@ -65,6 +65,9 @@
   **Evidence:** `go test ./internal/lang/python/detectors/cwe/` hit/miss for CWE-22/78/79/89/502; fixtures under `tests/fixtures/python/cwe/` (2026-07-31, `feat/python-cwe-heuristics`).
 - [x] Validation: `make lint` + `make test` recorded on implement branch  
   **Evidence:** `make lint` / `make test` green; `CGO_ENABLED=0 go build` OK (2026-07-31, `feat/python-cwe-heuristics`).
+- [x] **Remaining CWE batch plans** under [cwe-plans/](./cwe-plans/) after chunk scan (2026-07-31, post-PR #67 on `main`)  
+  **Evidence:** `cwe-plans/README.md` + `_inventory.json` — 344 partition (5 shipped / 154 implement / 185 deferred); waves P0–P3.
+- [ ] Execute cwe-plans implement waves (start **P0** batches 01–04)
 
 ### BP — #53
 
