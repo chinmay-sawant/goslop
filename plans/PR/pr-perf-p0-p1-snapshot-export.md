@@ -78,9 +78,9 @@ Speed up product `make run` on the **gopdfsuit reference corpus** by ~**40%** (s
 
 | Benchmark | Before | After | Δ time | Δ B/op | Δ allocs |
 |-----------|--------|-------|--------|--------|----------|
-| **ScanProfileAll** | 164.2 ms · 199 MB · 1.19M | **113.7 ms** · 61 MB · 435k | **−31%** | **−69%** | **−64%** |
-| **ScanAndExport** | 366.7 ms · 345 MB · 2.64M | **181.7 ms** · 145 MB · 1.08M | **−50%** | **−58%** | **−59%** |
-| **ExportOnly** | 200.6 ms · 149 MB · 1.47M | **65.7 ms** · 85 MB · 647k | **−67%** | **−43%** | **−56%** |
+| **ScanProfileAll** | 164.2 ms · 199 MB · 1.19M | **112.7 ms** · 62 MB · 444k | **−31%** | **−69%** | **−63%** |
+| **ScanAndExport** | 366.7 ms · 345 MB · 2.64M | **186.8 ms** · 146 MB · 1.09M | **−49%** | **−58%** | **−59%** |
+| **ExportOnly** | 200.6 ms · 149 MB · 1.47M | **71.7 ms** · 85 MB · 647k | **−64%** | **−43%** | **−56%** |
 
 ### Hotspot status (pprof cum)
 
@@ -108,9 +108,11 @@ Speed up product `make run` on the **gopdfsuit reference corpus** by ~**40%** (s
 - [x] `go test ./internal/export/ ./internal/lang/go/detectors/... ./internal/engine/ ./internal/lang/go/goparse/ ./tests/integration/ -count=1`
 - [x] `make run` on gopdfsuit — 915 findings / 915+37 exports
 - [x] 20× `make run` timing — mean ~112 ms scan
-- [x] `make bench` / `go test -bench=. -benchtime=20x ./internal/bench/` — before/after in measurement doc
-- [x] pprof re-profile — hotspots documented in `perf-p0p3-measurement.md`
+- [x] Duration benches `benchtime=5s` — Scan 112.7 / ScanAndExport 186.8 / Export 71.7 ms
+- [x] Fixed-iter 20x confirmation earlier same day
+- [x] pprof re-profile — hotspots in `perf-p0p3-measurement.md`
 - [x] GOGC decision: leave product default unchanged
+- [x] Docs: `documents/make-run.md` performance section
 
 ### Commands
 
@@ -118,7 +120,7 @@ Speed up product `make run` on the **gopdfsuit reference corpus** by ~**40%** (s
 make run
 # optional timing:
 # for i in {1..20}; do make run || break; done > 1.txt 2>&1
-make bench BENCHTIME=20x
+make bench BENCHTIME=5s
 make reference-metrics
 ```
 

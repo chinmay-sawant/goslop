@@ -4,32 +4,34 @@
 > **Branch:** `perf/p0-p1-snapshot-export` (P0 + P1 + P2 + P3.1 code landed)  
 > **Corpus:** gopdfsuit (`GOSLOP_BENCH_SCAN_PATH=/home/chinmay/ChinmayPersonalProjects/gopdfsuit`)  
 > **Toolchain:** Go 1.25.0 · `CGO_ENABLED=0`  
-> **Harness:** `./internal/bench/` · formal `benchtime=20x` + CPU `benchtime=5s`  
-> **Artifacts:** `/tmp/goslop-pprof/bench-after-p0p3-20x.txt`, `scan-cpu-after.prof`, `export-cpu-after.prof`, `*-top*.txt`
+> **Harness:** `./internal/bench/` · formal `benchtime=20x` + duration `benchtime=5s`  
+> **Artifacts:** `/tmp/goslop-pprof/bench-after-p0p3-20x.txt`, `bench-after-5s.txt`, `scan-cpu-after.prof`, `export-cpu-after.prof`
 
 ---
 
 ## Bench table (before → after)
 
-Pre-change medians from `/tmp/goslop-pprof/Benchmark*-bench.txt` (short runs, same machine/corpus).  
-After: `go test -run='^$' -bench=. -benchmem -benchtime=20x ./internal/bench/`.
+Pre-change medians from `/tmp/goslop-pprof/Benchmark*-bench.txt` (same machine/corpus).  
+**Primary after (duration-based):** `go test -run='^$' -bench=. -benchmem -benchtime=5s ./internal/bench/`  
+(Confirming fixed-iter 20x in parentheses where useful.)
 
-| Benchmark | ns/op (ms) | B/op | allocs/op | Δ time | Δ B/op | Δ allocs |
-|-----------|------------|------|-----------|--------|--------|----------|
-| **ScanProfileAll** before | 164 177 113 (**164.2 ms**) | 199 386 155 | 1 190 864 | | | |
-| **ScanProfileAll** after | 113 655 862 (**113.7 ms**) | 61 296 874 | 434 657 | **−30.8%** | **−69.3%** | **−63.5%** |
-| **ScanAndExport** before | 366 688 659 (**366.7 ms**) | 345 187 011 | 2 644 075 | | | |
-| **ScanAndExport** after | 181 693 366 (**181.7 ms**) | 145 374 862 | 1 080 914 | **−50.5%** | **−57.9%** | **−59.1%** |
-| **ExportOnly** before | 200 627 296 (**200.6 ms**) | 148 525 689 | 1 467 566 | | | |
-| **ExportOnly** after | 65 689 184 (**65.7 ms**) | 84 764 598 | 646 516 | **−67.3%** | **−42.9%** | **−55.9%** |
+| Benchmark | Before | After **5s** | Δ time | Δ B/op | Δ allocs |
+|-----------|--------|--------------|--------|--------|----------|
+| **ScanProfileAll** | **164.2 ms** · 199 MB · 1.19M | **112.7 ms** · 62.0 MB · 444k | **−31%** | **−69%** | **−63%** |
+| **ScanAndExport** | **366.7 ms** · 345 MB · 2.64M | **186.8 ms** · 145.9 MB · 1.09M | **−49%** | **−58%** | **−59%** |
+| **ExportOnly** | **200.6 ms** · 149 MB · 1.47M | **71.7 ms** · 84.8 MB · 647k | **−64%** | **−43%** | **−56%** |
 
-5s profile re-runs (confirming stability, not formal 20x):
+20x fixed-iter (earlier same day) for comparison: Scan **113.7 ms** · ScanAndExport **181.7 ms** · Export **65.7 ms** — agrees with 5s within noise.
 
-- ScanProfileAll: **109.0 ms**/op · 60.6 MB · 434k allocs  
-- ExportOnly: **64.5 ms**/op · 84.8 MB · 647k allocs  
+**Product `make run` scan wall** (gopdfsuit, profile all + exports, no-cache):
 
-**Product `make run` wall** (from checklist / PR notes): pre ~**190 ms** → post ~**112–122 ms** scan (915 findings / 915+37 exports unchanged).
+| | Scan wall | Findings / exports |
+|--|----------:|--------------------|
+| Pre-opt | ~**190 ms** | 915 / 915+37 |
+| Post-opt (20-run means) | ~**112–117 ms** | 915 / 915+37 |
+| Best observed | **99.0 ms** | 915 / 915+37 |
 
+Parity unchanged: severity 10/197/312/396; top BP-1×181, PERF-6×94, PERF-32×59, BP-5×50, PERF-230×44.
 ---
 
 ## Hotspot status (target residual items)

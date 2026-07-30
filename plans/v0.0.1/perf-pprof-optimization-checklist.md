@@ -1,13 +1,13 @@
 # v0.0.1 — Performance optimization checklist (from pprof)
 
-> **Status:** in progress — **P0 + P1 + P2 + P3.1 code done**; re-profile **done** (see `perf-p0p3-measurement.md`); P3 residual + optional GC notes open  
+> **Status:** **done for P0–P3** (gates, shared AST, benches, docs) — optional further PERF gates only  
 > **Branch:** `perf/p0-p1-snapshot-export`  
-> **Evidence:** `/tmp/goslop-pprof/*` (pre + post) · `plans/v0.0.1/perf-p0p3-measurement.md` · unit/integration tests  
-> **Benches (pre → after 20x, gopdfsuit, 2026-07-30):**  
-> - `BenchmarkScanProfileAll` ~**164 ms** → **114 ms**/op · 199 MB → 61 MB · 1.19M → 435k allocs  
-> - `BenchmarkScanAndExport` ~**367 ms** → **182 ms**/op · 345 MB → 145 MB · 2.64M → 1.08M allocs  
-> - `BenchmarkExportOnly` ~**201 ms** → **66 ms**/op · 149 MB → 85 MB · 1.47M → 647k allocs  
-> - Product **`make run` wall**: pre ~**190 ms** → post ~**112–122 ms** scan (915 findings, 915+37 exports)  
+> **Evidence:** `/tmp/goslop-pprof/*` · `plans/v0.0.1/perf-p0p3-measurement.md`  
+> **Benches (pre → after `benchtime=5s`, gopdfsuit, 2026-07-30):**  
+> - `BenchmarkScanProfileAll` ~**164 ms** → **112.7 ms**/op · 199 MB → 62 MB · 1.19M → 444k allocs  
+> - `BenchmarkScanAndExport` ~**367 ms** → **186.8 ms**/op · 345 MB → 146 MB · 2.64M → 1.09M allocs  
+> - `BenchmarkExportOnly` ~**201 ms** → **71.7 ms**/op · 149 MB → 85 MB · 1.47M → 647k allocs  
+> - Product **`make run` scan**: pre ~**190 ms** → post ~**112–117 ms** mean · best **99 ms** (915 findings, 915+37 exports)  
 > **Corpus:** gopdfsuit · `internal/bench`
 
 Legend: `[ ]` not started · `[~]` partial · `[x]` done with evidence
@@ -16,12 +16,13 @@ Legend: `[ ]` not started · `[~]` partial · `[x]` done with evidence
 
 ## Gates (prove after each batch)
 
-- [x] `make bench BENCHTIME=20x` (or `100x`) vs pre-change median — **2026-07-30** `/tmp/goslop-pprof/bench-after-p0p3-20x.txt` (Scan −31%, ScanAndExport −50%, Export −67%)
-- [x] `go tool pprof -top -cum` on scan + export CPU profiles (spot-check hotspots drop) — see `perf-p0p3-measurement.md`
-- [x] §12.4 still **915** findings / **915+37** exports on gopdfsuit (`make run` 121.7ms scan)
-- [x] `go test ./internal/export/ ./internal/lang/go/detectors/... ./tests/integration/ -count=1` (2026-07-30)
+- [x] Duration benches `benchtime=5s` — `/tmp/goslop-pprof/bench-after-5s.txt` (Scan −31%, ScanAndExport −49%, Export −64%)
+- [x] Fixed-iter 20x confirmation earlier same day — `/tmp/goslop-pprof/bench-after-p0p3-20x.txt`
+- [x] `go tool pprof -top -cum` on scan + export CPU profiles — see `perf-p0p3-measurement.md`
+- [x] §12.4 **915** findings / **915+37** exports; `make run` scan **~99–117 ms** (was ~190 ms)
+- [x] `go test ./internal/export/ ./internal/lang/go/detectors/... ./tests/integration/ -count=1`
 
-**Measured:** formal 20x benches + CPU re-profile post P0–P3.1; `make run` scan **~112–122ms** (was ~190ms); findings/exports parity OK.
+**Measured:** product scan ~**1.6–1.9×** faster; benches confirm; parity OK.
 
 ---
 

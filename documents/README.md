@@ -10,7 +10,7 @@ goslop scans Go source for **PERF** hot-path issues, structural **CWE** heuristi
 |----------|----------------|
 | [**overview.md**](./overview.md) | Product features, detector families, profiles, suppressions, cache, baseline; **why self-scan of this repo is noisy** (SAT self-host) |
 | [**cli-reference.md**](./cli-reference.md) | Every CLI flag, subcommands, exit codes, config merge |
-| [**make-run.md**](./make-run.md) | Product `make run` / `make reference-metrics` workflow; reference corpus path vs self-scan |
+| [**make-run.md**](./make-run.md) | Product `make run` / `make reference-metrics` / `make bench`; reference corpus vs self-scan; perf numbers |
 | [**reporting-formats.md**](./reporting-formats.md) | Text, JSON, and **SARIF** with full examples |
 | [**export-context-and-chunks.md**](./export-context-and-chunks.md) | Function refs vs chunks; whole-function Context (default); AI delegation |
 
