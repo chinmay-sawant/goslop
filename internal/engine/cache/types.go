@@ -7,7 +7,7 @@ import (
 )
 
 // CACHE_VERSION is the on-disk schema version. Bump on breaking JSON shape changes.
-const CACHE_VERSION uint32 = 2
+const CACHE_VERSION uint32 = 3
 
 // DEFAULT_CACHE_DIR is the conventional cache directory name.
 const DEFAULT_CACHE_DIR = ".goslop-cache"
@@ -40,6 +40,7 @@ type Entry struct {
 	RuleConfigHash  string          `json:"rule_config_hash"`
 	Findings        []rules.Finding `json:"findings"`
 	SuppressedCount int             `json:"suppressed_count"`
+	ParseDiagnostic string          `json:"parse_diagnostic,omitempty"`
 	CachedAt        string          `json:"cached_at"`
 }
 

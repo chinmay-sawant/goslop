@@ -20,9 +20,13 @@ type snapEntry struct {
 // bpProjectCaches memoizes project-level facts per scan root.
 type bpProjectCaches struct {
 	mu           sync.Mutex
-	snapshots    map[string]*snapEntry          // key: absolute project root
-	packageDocs  map[string]*PackageDocSnapshot // key: directory path
-	packageTypes map[string]*packageTypeEntry   // key: absolute package directory
+	snapshots    map[string]*snapEntry        // key: absolute project root
+	packageDocs  map[string]*packageDocEntry  // key: absolute package directory
+	packageTypes map[string]*packageTypeEntry // key: absolute package directory
+	// packageDocBuilder defaults to buildPackageDocSnapshot. Keeping it on the
+	// scan-owned cache makes the single-flight contract directly testable
+	// without process-global state.
+	packageDocBuilder func(string) *PackageDocSnapshot
 }
 
 type packageTypeEntry struct {
@@ -30,11 +34,17 @@ type packageTypeEntry struct {
 	facts *packageTypeFacts
 }
 
+type packageDocEntry struct {
+	once sync.Once
+	snap *PackageDocSnapshot
+}
+
 func newProjectCaches() *bpProjectCaches {
 	return &bpProjectCaches{
-		snapshots:    map[string]*snapEntry{},
-		packageDocs:  map[string]*PackageDocSnapshot{},
-		packageTypes: map[string]*packageTypeEntry{},
+		snapshots:         map[string]*snapEntry{},
+		packageDocs:       map[string]*packageDocEntry{},
+		packageTypes:      map[string]*packageTypeEntry{},
+		packageDocBuilder: buildPackageDocSnapshot,
 	}
 }
 
@@ -44,7 +54,7 @@ func (c *bpProjectCaches) clear() {
 	}
 	c.mu.Lock()
 	c.snapshots = map[string]*snapEntry{}
-	c.packageDocs = map[string]*PackageDocSnapshot{}
+	c.packageDocs = map[string]*packageDocEntry{}
 	c.packageTypes = map[string]*packageTypeEntry{}
 	c.mu.Unlock()
 }
@@ -75,19 +85,23 @@ func packageDocSnapshotForDir(dir string, caches *bpProjectCaches) *PackageDocSn
 	}
 	if caches != nil {
 		caches.mu.Lock()
-		if snap, ok := caches.packageDocs[abs]; ok {
-			caches.mu.Unlock()
-			return snap
+		entry := caches.packageDocs[abs]
+		if entry == nil {
+			entry = &packageDocEntry{}
+			caches.packageDocs[abs] = entry
 		}
+		builder := caches.packageDocBuilder
 		caches.mu.Unlock()
+		if builder == nil {
+			builder = buildPackageDocSnapshot
+		}
+		entry.once.Do(func() { entry.snap = builder(abs) })
+		if entry.snap == nil {
+			return &PackageDocSnapshot{}
+		}
+		return entry.snap
 	}
-	snap := buildPackageDocSnapshot(abs)
-	if caches != nil {
-		caches.mu.Lock()
-		caches.packageDocs[abs] = snap
-		caches.mu.Unlock()
-	}
-	return snap
+	return buildPackageDocSnapshot(abs)
 }
 
 func buildPackageDocSnapshot(dir string) *PackageDocSnapshot {

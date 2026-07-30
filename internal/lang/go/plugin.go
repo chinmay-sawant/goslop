@@ -59,16 +59,29 @@ func (p *Plugin) Detectors() []core.Detector { return detectors.All() }
 func (p *Plugin) NewDetectors() []core.Detector { return detectors.All() }
 
 // ParseSource parses Go source with go/parser and attaches *goparse.Tree.
-// On parse failure, falls back to a source-only unit so text-level detectors still run.
-func (p *Plugin) ParseSource(path, source string) (*core.ParsedUnit, error) {
+// Syntax recovery keeps text-level analysis available and returns a diagnostic
+// so callers can distinguish complete and partial parse quality.
+func (p *Plugin) ParseSource(path, source string) (*core.ParseResult, error) {
 	tree, parseErr := goparse.Parse([]byte(source))
-	// Intentionally ignore parseErr for the fallback path: text-level detectors
-	// still need a unit when the AST is missing. Partial ASTs are still attached.
 	if tree == nil || tree.File == nil {
-		return core.NewParsedUnit(core.LangGo, path, source), nil
+		result := &core.ParseResult{
+			Unit:    core.NewParsedUnit(core.LangGo, path, source),
+			Quality: core.ParseQualitySourceOnly,
+		}
+		if parseErr != nil {
+			result.Diagnostic = parseErr.Error()
+		}
+		return result, nil
 	}
-	_ = parseErr
-	return core.NewParsedUnitWithTree(core.LangGo, path, source, tree), nil
+	result := &core.ParseResult{
+		Unit:    core.NewParsedUnitWithTree(core.LangGo, path, source, tree),
+		Quality: core.ParseQualityComplete,
+	}
+	if parseErr != nil {
+		result.Quality = core.ParseQualityPartial
+		result.Diagnostic = parseErr.Error()
+	}
+	return result, nil
 }
 
 // FunctionNodeKinds documents function-like constructs (for tooling; go/ast uses FuncDecl).

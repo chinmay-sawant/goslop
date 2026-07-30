@@ -130,6 +130,39 @@ func handler(r *http.Request) {
 	assertFindingFingerprintParity(t, cold.Findings, mixed.Findings)
 }
 
+func TestAnalyzerCachePreservesParseDiagnostic(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "broken.go", "package sample\nfunc broken( {\n")
+
+	reg, err := engine.NewRegistry([]core.LanguagePlugin{golang.NewPlugin()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	a := engine.NewAnalyzerBuilder().
+		Registry(reg).
+		ScanContext(core.DefaultScanContext()).
+		Cache(cache.InMemory("test-parse-diagnostic-cache")).
+		ProjectRoot(dir).
+		Build()
+
+	cold, err := a.AnalyzePaths([]string{dir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cold.Diagnostics) != 1 || cold.Diagnostics[0].Kind != engine.ScanErrorParse {
+		t.Fatalf("cold diagnostics=%+v", cold.Diagnostics)
+	}
+
+	warm, err := a.AnalyzePaths([]string{dir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if warm.Stats.CacheHits != 1 || len(warm.Diagnostics) != 1 ||
+		warm.Diagnostics[0].Message != cold.Diagnostics[0].Message {
+		t.Fatalf("warm cache/diagnostics=%+v %+v", warm.Stats, warm.Diagnostics)
+	}
+}
+
 var statefulCacheMeta = &rules.RuleMetadata{
 	ID:       "TEST-CACHE-STATE",
 	Title:    "stateful cache detector",

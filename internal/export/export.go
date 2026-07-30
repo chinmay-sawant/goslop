@@ -171,13 +171,17 @@ func cleanOwnedFiles(dir string, owns func(name string) bool) error {
 		}
 		name := e.Name()
 		if owns(name) {
-			if err := os.Remove(filepath.Join(dir, name)); err != nil {
+			if err := removeOwnedFile(filepath.Join(dir, name)); err != nil {
 				return fmt.Errorf("remove %s: %w", filepath.Join(dir, name), err)
 			}
 		}
 	}
 	return nil
 }
+
+// removeOwnedFile is kept as a narrow filesystem seam so cleanup failures can
+// be tested deterministically. Production behavior is os.Remove.
+var removeOwnedFile = os.Remove
 
 func isContextOutputFile(name string) bool {
 	if !strings.HasSuffix(name, ".txt") {

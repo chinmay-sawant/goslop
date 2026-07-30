@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -27,6 +28,57 @@ func TestPackageTypeFactsAreScopedAndMemoizedPerScan(t *testing.T) {
 	secondScan := newProjectCaches()
 	if next := packageTypeFactsForUnit(unit, secondScan); next == first {
 		t.Fatal("package facts must not cross scan sessions")
+	}
+}
+
+func TestPackageDocSnapshotBuildsOnceForConcurrentScanWorkers(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "doc.go")
+	source := "// Package sample documents the package.\npackage sample\n"
+	if err := os.WriteFile(path, []byte(source), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	caches := newProjectCaches()
+	started := make(chan struct{}, 16)
+	release := make(chan struct{})
+	var builds atomic.Int32
+	caches.packageDocBuilder = func(root string) *PackageDocSnapshot {
+		builds.Add(1)
+		started <- struct{}{}
+		<-release
+		return buildPackageDocSnapshot(root)
+	}
+
+	results := make(chan *PackageDocSnapshot, 16)
+	var workers sync.WaitGroup
+	for range 16 {
+		workers.Add(1)
+		go func() {
+			defer workers.Done()
+			results <- packageDocSnapshotForDir(dir, caches)
+		}()
+	}
+	<-started
+	close(release)
+	workers.Wait()
+	close(results)
+
+	if got := builds.Load(); got != 1 {
+		t.Fatalf("package doc builds=%d want 1", got)
+	}
+	var first *PackageDocSnapshot
+	for snapshot := range results {
+		if first == nil {
+			first = snapshot
+			continue
+		}
+		if snapshot != first {
+			t.Fatal("concurrent workers received distinct package doc snapshots")
+		}
+	}
+	if _, documented := first.DocumentedPackages["sample"]; !documented {
+		t.Fatalf("snapshot did not retain package documentation: %#v", first)
 	}
 }
 

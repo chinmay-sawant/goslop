@@ -29,10 +29,10 @@
 
 ### A-1: parser-quality outcome
 
-- [ ] **Strong — return parser quality as an explicit module outcome.** The Go plugin deliberately keeps source-only analysis when parsing fails (`internal/lang/go/plugin.go:63`), but `ParseSource` does not express that quality to the engine or CLI.
-- [ ] Preserve the current default behaviour: text detectors continue to run on malformed Go.
-- [ ] Deepen the parser interface around a small parse-result module containing the unit plus quality/diagnostic information; let engine policy choose continue-with-diagnostic, text-only, or fail.
-- [ ] Add one end-to-end malformed-Go test that proves text findings still work and exactly one deterministic parse-quality diagnostic is produced.
+- [x] **Strong — return parser quality as an explicit module outcome.** `ParseSource` now returns a `ParseResult` with unit, quality, and non-fatal diagnostic information: `internal/core/plugin.go`, `internal/lang/go/plugin.go`.
+- [x] Preserve the current default behaviour: text detectors continue to run on malformed Go.
+- [x] Let the engine retain source-only analysis while exposing a `ScanDiagnostic` to stderr; cache entries preserve that diagnostic on warm hits: `internal/engine/analyzer.go`, `internal/engine/cache/types.go`, `internal/app/run.go`.
+- [x] Add an end-to-end malformed-Go JSON-output test that proves the warning is deterministic and non-fatal: `internal/app/run_test.go`.
 - [x] **Deletion test:** without this module, parse-policy knowledge spreads into each language adapter and output path; it therefore increases leverage and locality.
 
 ## Phase 2 — conditionally deepen detector and registry interfaces
@@ -40,7 +40,7 @@
 ### A-2: optional detector capabilities
 
 - [~] **Worth exploring — narrow the broad detector interface.** Stateless detectors currently cross lifecycle, cache-state, finalization, reset, metadata, and run behaviour, while base implementations provide no-ops: `internal/core/detector.go`.
-- [ ] First add the Ponytail registry catalogue/factory parity regression; do not alter both contracts at once.
+- [x] Add the Ponytail registry catalogue/factory parity regression before considering detector-interface changes: `internal/engine/registry_session_test.go`.
 - [~] When a second concrete detector shape proves the variation, keep a narrow detector module and move lifecycle/cache/finalization into optional capability interfaces at the engine seam.
 - [x] **Deletion test:** optional capabilities could increase test leverage because simple detector fakes would implement only needed behavior; there is not enough present variation to justify the change now.
 
@@ -74,8 +74,8 @@
 
 ### Recommended delivery order
 
-1. [ ] A-1 parser-quality outcome and malformed-Go diagnostic test.
-2. [ ] Registry catalogue/factory parity validation from the Ponytail review.
+1. [x] A-1 parser-quality outcome and malformed-Go diagnostic test.
+2. [x] Registry catalogue/factory parity validation from the Ponytail review.
 3. [~] Revisit A-2 only with a second detector shape or language adapter.
 4. [~] Revisit A-3 only with observed multi-root cache reuse friction.
 5. [~] Revisit A-4 only with a second output/exit-policy variation.
@@ -83,4 +83,5 @@
 ## Review conclusion
 
 - [x] The remediation created deeper modules at the configuration, scan-lifetime, path-identity, output, and project-facts seams.
+- [x] The parser-quality and catalogue/factory seams are now explicit and validation-backed.
 - [x] The remaining architecture ledger is phased, evidence-backed, and intentionally avoids a generic clean/hexagonal rewrite.

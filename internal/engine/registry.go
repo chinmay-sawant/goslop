@@ -143,7 +143,14 @@ func (r *Registry) newScanSession() (*scanSession, error) {
 	session := &scanSession{byLanguage: make(map[core.LanguageID][]int, len(r.plugins))}
 	for _, plugin := range r.plugins {
 		id := plugin.ID()
-		for _, det := range plugin.NewDetectors() {
+		catalogue := r.DetectorsForLanguage(id)
+		sessionDetectors := plugin.NewDetectors()
+		if !sameDetectorCatalogue(catalogue, sessionDetectors) {
+			return nil, &RegistryError{
+				Msg: fmt.Sprintf("scan detector catalogue does not match registered catalogue for language %s", id),
+			}
+		}
+		for _, det := range sessionDetectors {
 			if det == nil {
 				return nil, &RegistryError{Msg: "nil scan detector"}
 			}
@@ -158,6 +165,38 @@ func (r *Registry) newScanSession() (*scanSession, error) {
 		}
 	}
 	return session, nil
+}
+
+// sameDetectorCatalogue compares detector-set shape without requiring session
+// instances to share identity with the immutable registry catalogue.
+func sameDetectorCatalogue(catalogue, session []core.Detector) bool {
+	if len(catalogue) != len(session) {
+		return false
+	}
+	catalogueRules := ruleIDMultiplicity(catalogue)
+	sessionRules := ruleIDMultiplicity(session)
+	if len(catalogueRules) != len(sessionRules) {
+		return false
+	}
+	for ruleID, count := range catalogueRules {
+		if sessionRules[ruleID] != count {
+			return false
+		}
+	}
+	return true
+}
+
+func ruleIDMultiplicity(detectors []core.Detector) map[string]int {
+	counts := make(map[string]int)
+	for _, detector := range detectors {
+		if detector == nil {
+			return nil
+		}
+		for _, ruleID := range detector.RuleIDs() {
+			counts[ruleID]++
+		}
+	}
+	return counts
 }
 
 // DetectorCount returns the number of registered detectors.

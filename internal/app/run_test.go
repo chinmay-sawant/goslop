@@ -119,6 +119,24 @@ func TestReportScanErrorsWritesParseFailuresToStderr(t *testing.T) {
 	}
 }
 
+func TestRunParseFallbackWritesWarningAndKeepsMachineOutput(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "broken.go")
+	if err := os.WriteFile(path, []byte("package sample\nfunc broken( {\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out, errBuf bytes.Buffer
+	if err := run([]string{"--format", "json", "--no-cache", dir}, &out, &errBuf); err != nil {
+		t.Fatalf("parse fallback should remain non-fatal: %v", err)
+	}
+	if !strings.Contains(out.String(), `"findings"`) {
+		t.Fatalf("expected JSON output, got %q", out.String())
+	}
+	if got := strings.Count(errBuf.String(), "analysis warning [parse]"); got != 1 {
+		t.Fatalf("parse diagnostic count=%d stderr=%q", got, errBuf.String())
+	}
+}
+
 func TestRunConfigFailPolicyHasObservableEffect(t *testing.T) {
 	makeProject := func(t *testing.T, configBody string) string {
 		t.Helper()
@@ -155,6 +173,50 @@ func slow() {
 	errBuf.Reset()
 	if err := run([]string{"--profile", "all", "--no-cache", withConfig}, &out, &errBuf); err != nil {
 		t.Fatalf("config fail_on=none should be observable as a clean exit: %v\nstderr=%s", err, errBuf.String())
+	}
+}
+
+func TestRunConfigExportWholeFunctionAffectsContext(t *testing.T) {
+	dir := t.TempDir()
+	contextDir := filepath.Join(dir, "context")
+	if err := os.WriteFile(filepath.Join(dir, "goslop.toml"), []byte("[goslop.export]\nwhole_function = false\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	source := `package sample
+
+import "fmt"
+
+func slow() {
+	first := 1
+	second := first + 1
+	third := second + 1
+	fourth := third + 1
+	for i := 0; i < fourth; i++ {
+		rendered := fmt.Sprintf("%d", i)
+		_ = rendered
+	}
+}
+`
+	if err := os.WriteFile(filepath.Join(dir, "slow.go"), []byte(source), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	var out, errBuf bytes.Buffer
+	if err := run([]string{
+		"--profile", "all", "--only", "PERF-6", "--no-cache", "--no-fail",
+		"--export-context", "--context-dir", contextDir, dir,
+	}, &out, &errBuf); err != nil {
+		t.Fatalf("run: %v\nstderr=%s", err, errBuf.String())
+	}
+	body, err := os.ReadFile(filepath.Join(contextDir, "1.txt"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(body), "func slow()") {
+		t.Fatalf("whole_function=false should use a nearby window:\n%s", body)
+	}
+	if !strings.Contains(string(body), "fmt.Sprintf") {
+		t.Fatalf("export did not include the finding context:\n%s", body)
 	}
 }
 

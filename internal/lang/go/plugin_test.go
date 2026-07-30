@@ -36,6 +36,23 @@ func TestGoPluginRegistration(t *testing.T) {
 	}
 }
 
+func TestGoPluginParseSourceReportsPartialQuality(t *testing.T) {
+	p := golang.NewPlugin()
+	result, err := p.ParseSource("broken.go", "package sample\nfunc broken( {\n")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result == nil || result.Unit == nil {
+		t.Fatal("expected a usable fallback unit")
+	}
+	if result.Quality != core.ParseQualityPartial && result.Quality != core.ParseQualitySourceOnly {
+		t.Fatalf("quality=%v, want partial or source-only", result.Quality)
+	}
+	if result.Diagnostic == "" {
+		t.Fatal("expected parse diagnostic")
+	}
+}
+
 func TestSeedDetectorsEndToEnd(t *testing.T) {
 	cases := []struct {
 		rule string

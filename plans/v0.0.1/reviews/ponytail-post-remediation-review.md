@@ -29,7 +29,8 @@
 - [x] Keep ordinary detector execution off cache hits while accumulating required finalization state: `internal/engine/cache_state_integration_test.go:15`.
 - [x] Return `ExitInternal` and write diagnostics to stderr before JSON/SARIF output for invalid encoding and unreadable inputs: `internal/app/run.go:173`, `internal/app/run_test.go:71`.
 - [~] Keep Go parse fallback as the current product policy: source-only analysis continues for text detectors when no AST is available (`internal/lang/go/plugin.go:61`). Do not change this merely to satisfy a generic error-handling preference.
-- [ ] If CI later requires parse completeness, add an explicit parser-quality diagnostic or strict mode and prove malformed-Go behavior end-to-end.
+- [x] Expose parser quality as a non-fatal `ScanDiagnostic`, retain source-only analysis, preserve the diagnostic through cache hits, and prove malformed-Go JSON output remains usable: `internal/core/plugin.go`, `internal/engine/analyzer.go`, `internal/app/run_test.go`.
+- [~] If CI later requires parse completeness, consider a strict mode; the current documented default remains warning-only fallback.
 
 ## Phase 1 — preserve output and configuration contracts
 
@@ -37,14 +38,14 @@
 
 - [x] Delete only exporter-owned numeric context files and `Chunk_*.txt` files; preserve caller files and return cleanup/write errors: `internal/export/export.go:107`, `internal/export/export.go:157`.
 - [x] Cover unowned-file preservation, output-directory collision, and context-write failure: `internal/export/export_test.go:79`.
-- [ ] Add a deterministic owned-file removal failure test to close the final export-cleanup evidence gap.
+- [x] Add deterministic owned-file removal failure coverage through the narrow `removeOwnedFile` filesystem seam: `internal/export/export_cleanup_test.go`.
 
 ### Resolved configuration
 
 - [x] Concentrate CLI/TOML precedence, walk options, cache options, baseline policy, and scan context in `scanPlan`: `internal/app/scan_plan.go:12`.
 - [x] Remove the unsupported `languages` and `typed.enabled` configuration promises rather than leaving inert settings.
 - [x] Prove that configured `fail_on` has an observable CLI effect: `internal/app/run_test.go:122`.
-- [ ] Add observable-effect coverage for every other supported resolved configuration field.
+- [x] Add resolved runtime-field coverage plus an end-to-end `export.whole_function=false` observable-effect test: `internal/app/scan_plan_test.go`, `internal/app/run_test.go`.
 
 ### Reporting
 
@@ -56,20 +57,20 @@
 ### Registry/session contract
 
 - [x] Retain a catalogue for rule listing/discovery while creating session-local detectors for scanning.
-- [ ] **P-1 — validate catalogue/factory parity.** `Detectors()` can list rules while `NewDetectors()` returns a different or empty set; `BasePlugin.NewDetectors()` returns nil and `Registry.newScanSession` currently trusts the factory (`internal/core/plugin.go:30`, `internal/core/plugin.go:57`, `internal/engine/registry.go:136`).
-- [ ] Add registry validation for language, rule-ID set, and duplicate count, plus a deliberately divergent test plugin. This protects a future language plugin without creating another abstraction.
+- [x] **P-1 — validate catalogue/factory parity.** The registry now rejects a session whose detector count or rule-ID multiplicity differs from its registered catalogue: `internal/engine/registry.go`.
+- [x] Add divergent-multiplicity rejection and fresh-instance acceptance coverage: `internal/engine/registry_session_test.go`.
 
 ### Project facts
 
 - [x] Keep BP project/package facts scan-local, synchronized, and isolated across roots: `internal/lang/go/detectors/bad_practices/project.go:20`.
 - [x] Keep package type facts single-flight per directory using a per-entry `sync.Once`: `internal/lang/go/detectors/bad_practices/package_facts.go:38`.
-- [ ] **P-2 — make package-doc snapshots single-flight.** Concurrent workers can each build the same package-doc snapshot because the map lock is released before I/O: `internal/lang/go/detectors/bad_practices/project.go:76`.
-- [ ] Reuse the package-type entry-plus-`sync.Once` pattern for package docs and add a cold parallel regression proving one build.
+- [x] **P-2 — make package-doc snapshots single-flight.** Package-doc entries now use per-directory `sync.Once` rather than allowing duplicate cold parallel reads: `internal/lang/go/detectors/bad_practices/project.go`.
+- [x] Add a 16-worker regression proving one build and one shared documented snapshot: `internal/lang/go/detectors/bad_practices/project_cache_test.go`.
 
 ### Temporary fixtures
 
 - [x] Cover cleanup after materialization failure in the fixture matrix.
-- [ ] Add the analyzer-failure cleanup variant to complete the temporary-fixture lifecycle proof.
+- [x] Add an injected analyzer-failure cleanup regression for the temporary matrix directory: `tests/integration/matrix_cleanup_test.go`.
 
 ## Phase 3 — scoped maintainability work
 
@@ -87,13 +88,14 @@
 
 ### Next batch, in order
 
-1. [ ] Implement registry catalogue/factory parity validation and its regression.
-2. [ ] Make package-doc snapshots single-flight and test cold parallel behavior.
-3. [ ] Close deterministic export-removal and analyzer-failure fixture-cleanup tests.
-4. [ ] Broaden observable configuration-effect coverage.
+1. [x] Implement registry catalogue/factory parity validation and its regression.
+2. [x] Make package-doc snapshots single-flight and test cold parallel behavior.
+3. [x] Close deterministic export-removal and analyzer-failure fixture-cleanup tests.
+4. [x] Broaden observable configuration-effect coverage.
 5. [~] Revisit CLI staging only when the second output/exit variation is real.
 
 ## Review conclusion
 
 - [x] The earlier scan-trust, destructive-output, configuration-honesty, cache-parity, and shared-state risks are addressed with source and test evidence.
+- [x] The completed follow-up batch passed `make lint`, `make test`, and `go test -race ./...`.
 - [x] The remaining backlog is phase-scoped and checklist-trackable; it does not justify a broad rewrite.

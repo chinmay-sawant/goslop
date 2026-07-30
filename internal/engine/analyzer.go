@@ -225,9 +225,10 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 	_ = g.Wait()
 
 	var (
-		findings    []rules.Finding
-		scanErrors  []ScanError
-		sourceCache map[string]string
+		findings        []rules.Finding
+		scanErrors      []ScanError
+		scanDiagnostics []ScanDiagnostic
+		sourceCache     map[string]string
 	)
 	if ctx.RetainSources {
 		sourceCache = make(map[string]string)
@@ -247,6 +248,9 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 			}
 			stats.FilesErrored++
 			continue
+		}
+		if fr.diagnostic != nil {
+			scanDiagnostics = append(scanDiagnostics, *fr.diagnostic)
 		}
 		stats.FilesScanned++
 		stats.BytesScanned += fr.bytes
@@ -317,6 +321,7 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 	return &AnalysisResult{
 		Findings:        findings,
 		Errors:          scanErrors,
+		Diagnostics:     scanDiagnostics,
 		Stats:           stats,
 		SourceCache:     sourceCache,
 		SuppressedCount: suppressed,
@@ -325,11 +330,12 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 }
 
 type fileResult struct {
-	findings []rules.Finding
-	err      error
-	bytes    int64
-	source   string
-	path     string
+	findings   []rules.Finding
+	err        error
+	diagnostic *ScanDiagnostic
+	bytes      int64
+	source     string
+	path       string
 }
 
 func (a *Analyzer) scanOne(
@@ -358,7 +364,7 @@ func (a *Analyzer) scanOne(
 			hits.Add(1)
 			findings := append([]rules.Finding(nil), entryData.Findings...)
 			if session.requiresCacheState(ctx, entry.Language) {
-				unit, perr := a.buildUnit(entry, display, source)
+				unit, _, perr := a.buildUnit(entry, display, source)
 				if perr != nil {
 					return fileResult{err: perr, path: display, bytes: int64(len(source))}
 				}
@@ -366,16 +372,17 @@ func (a *Analyzer) scanOne(
 				session.accumulateCacheState(ctx, entry.Language, unit)
 			}
 			return fileResult{
-				findings: findings,
-				bytes:    int64(len(source)),
-				source:   source,
-				path:     display,
+				findings:   findings,
+				diagnostic: cacheParseDiagnostic(display, entryData.ParseDiagnostic),
+				bytes:      int64(len(source)),
+				source:     source,
+				path:       display,
 			}
 		}
 		misses.Add(1)
 	}
 
-	unit, perr := a.buildUnit(entry, display, source)
+	unit, diagnostic, perr := a.buildUnit(entry, display, source)
 	if perr != nil {
 		return fileResult{err: perr, path: display, bytes: int64(len(source))}
 	}
@@ -402,14 +409,15 @@ func (a *Analyzer) scanOne(
 	}
 
 	if store != nil && store.ShouldCacheBytes(int64(len(source))) {
-		_ = store.Put(cacheRel, contentHash, out, suppressed)
+		_ = store.PutWithParseDiagnostic(cacheRel, contentHash, out, suppressed, diagnosticMessage(diagnostic))
 	}
 
 	return fileResult{
-		findings: out,
-		bytes:    int64(len(source)),
-		source:   source,
-		path:     display,
+		findings:   out,
+		diagnostic: diagnostic,
+		bytes:      int64(len(source)),
+		source:     source,
+		path:       display,
 	}
 }
 
@@ -458,30 +466,48 @@ func closeUnitTree(unit *core.ParsedUnit) {
 // ParseSource (Go: goparse), this is the single parse for the file: the AST is
 // attached as unit.Tree before any detector Run. PERF / BP / taint must reuse
 // unit.Tree (via goparse.TreeForUnit) and must not re-parse when Tree is set.
-func (a *Analyzer) buildUnit(entry ScanEntry, display, source string) (*core.ParsedUnit, error) {
+func (a *Analyzer) buildUnit(
+	entry ScanEntry,
+	display, source string,
+) (*core.ParsedUnit, *ScanDiagnostic, error) {
 	plugin := a.registry.PluginForID(entry.Language)
 	if plugin != nil {
-		unit, err := plugin.ParseSource(entry.Path, source)
+		result, err := plugin.ParseSource(entry.Path, source)
 		if err != nil {
-			return nil, &ScanError{
+			return nil, nil, &ScanError{
 				Path:    entry.Path,
 				Kind:    ScanErrorParse,
 				Message: err.Error(),
 			}
 		}
-		if unit != nil {
+		if result != nil && result.Unit != nil {
+			unit := result.Unit
 			if unit.DisplayPath == "" {
 				unit.DisplayPath = display
 			}
 			if unit.Path == "" {
 				unit.Path = entry.Path
 			}
-			return unit, nil
+			return unit, cacheParseDiagnostic(display, result.Diagnostic), nil
 		}
 	}
 	unit := core.NewParsedUnit(entry.Language, entry.Path, source)
 	unit.DisplayPath = display
-	return unit, nil
+	return unit, nil, nil
+}
+
+func cacheParseDiagnostic(path, message string) *ScanDiagnostic {
+	if message == "" {
+		return nil
+	}
+	return &ScanDiagnostic{Path: path, Kind: ScanErrorParse, Message: message}
+}
+
+func diagnosticMessage(diagnostic *ScanDiagnostic) string {
+	if diagnostic == nil {
+		return ""
+	}
+	return diagnostic.Message
 }
 
 func anyRuleAllowed(ctx *core.ScanContext, ruleIDs []string) bool {

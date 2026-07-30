@@ -205,6 +205,16 @@ func (s *Store) Lookup(file, contentHash string) (Lookup, *Entry) {
 
 // Put stores findings for a file (overwrites existing).
 func (s *Store) Put(file, contentHash string, findings []rules.Finding, suppressed int) error {
+	return s.PutWithParseDiagnostic(file, contentHash, findings, suppressed, "")
+}
+
+// PutWithParseDiagnostic stores findings and a non-fatal parser diagnostic.
+func (s *Store) PutWithParseDiagnostic(
+	file, contentHash string,
+	findings []rules.Finding,
+	suppressed int,
+	parseDiagnostic string,
+) error {
 	if s == nil {
 		return nil
 	}
@@ -220,6 +230,7 @@ func (s *Store) Put(file, contentHash string, findings []rules.Finding, suppress
 		RuleConfigHash:  s.manifest.RuleConfigHash,
 		Findings:        cloneFindings(findings),
 		SuppressedCount: suppressed,
+		ParseDiagnostic: parseDiagnostic,
 		CachedAt:        now,
 	}
 	if entry.Findings == nil {

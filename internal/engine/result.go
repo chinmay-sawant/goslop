@@ -45,6 +45,22 @@ type ScanError struct {
 	Message string
 }
 
+// ScanDiagnostic is a non-fatal per-file analysis diagnostic. Diagnostics do
+// not suppress findings or turn an otherwise complete scan into an error.
+type ScanDiagnostic struct {
+	Path    string
+	Kind    ScanErrorKind
+	Message string
+}
+
+// Error returns a human-readable diagnostic message.
+func (d ScanDiagnostic) Error() string {
+	if d.Path == "" {
+		return d.Message
+	}
+	return fmt.Sprintf("%s: %s", d.Path, d.Message)
+}
+
 // Error implements the error interface.
 func (e ScanError) Error() string {
 	if e.Path == "" {
@@ -73,6 +89,8 @@ type AnalysisResult struct {
 	Findings []rules.Finding
 	// Errors are non-fatal per-file errors (scan continues).
 	Errors []ScanError
+	// Diagnostics are non-fatal parse-quality or analysis warnings.
+	Diagnostics []ScanDiagnostic
 	// Stats is populated with basic counts for every scan.
 	Stats *ScanStats
 	// SourceCache maps display path → source when ScanContext.RetainSources is set.

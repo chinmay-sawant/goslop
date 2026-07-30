@@ -170,6 +170,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	// Product-style scan summary (Rust make run / --no-terminal).
 	// Always on stderr so JSON/SARIF stdout stays pure for tooling.
 	printScanSummary(stderr, res, findings, wall)
+	reportScanDiagnostics(stderr, res.Diagnostics)
 	if len(res.Errors) > 0 {
 		reportScanErrors(stderr, res.Errors)
 		return &ExitCodeError{
@@ -373,6 +374,12 @@ func printScanSummary(w io.Writer, res *engine.AnalysisResult, findings []rules.
 func reportScanErrors(w io.Writer, scanErrors []engine.ScanError) {
 	for _, scanErr := range scanErrors {
 		_, _ = fmt.Fprintf(w, "analysis error [%s]: %s\n", scanErr.Kind, scanErr.Error())
+	}
+}
+
+func reportScanDiagnostics(w io.Writer, diagnostics []engine.ScanDiagnostic) {
+	for _, diagnostic := range diagnostics {
+		_, _ = fmt.Fprintf(w, "analysis warning [%s]: %s\n", diagnostic.Kind, diagnostic.Error())
 	}
 }
 
