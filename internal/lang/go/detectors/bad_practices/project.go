@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/core"
 )
 
 // snapEntry builds a ProjectSnapshot at most once per root (shared by workers).

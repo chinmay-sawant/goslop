@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/core"
 )
 
 // packageTypeFacts holds same-package method sets and exported interfaces

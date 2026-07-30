@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Store is an on-disk incremental analysis cache.

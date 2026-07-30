@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/fixture"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/fixture"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // ScanOptions configures a fixture matrix scan (Rust Analyzer::builder defaults).

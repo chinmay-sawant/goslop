@@ -6,10 +6,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/goslop/internal/ast"
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/lang/go/astfacts"
-	"github.com/chinmay/goslop/internal/lang/go/goparse"
+	"github.com/chinmay-sawant/goslop/internal/ast"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/astfacts"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/goparse"
 )
 
 // CallFact is one call site extracted for PERF rules.

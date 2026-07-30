@@ -18,7 +18,7 @@ import (
 	"go/token"
 	"unsafe"
 
-	"github.com/chinmay/goslop/internal/ast"
+	"github.com/chinmay-sawant/goslop/internal/ast"
 )
 
 // Tree holds a parsed *ast.File, file set, source, and line-start table.

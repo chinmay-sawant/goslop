@@ -1,6 +1,6 @@
 package perf
 
-import "github.com/chinmay/goslop/internal/rules"
+import "github.com/chinmay-sawant/goslop/internal/rules"
 
 // Catalogue metadata for PERF batch 3 (PERF-112..163 excluding PERF-116).
 

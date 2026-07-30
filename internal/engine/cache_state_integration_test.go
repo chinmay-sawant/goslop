@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/engine/cache"
-	golang "github.com/chinmay/goslop/internal/lang/go"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/engine/cache"
+	golang "github.com/chinmay-sawant/goslop/internal/lang/go"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestAnalyzerCacheHitAccumulatesStateWithoutRerunningDetection(t *testing.T) {

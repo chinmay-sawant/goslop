@@ -3,9 +3,9 @@ package cwe
 import (
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/lang/go/detectors/sourceutil"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/detectors/sourceutil"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // CWE78Detector is a single-rule adapter retained for seed unit tests.

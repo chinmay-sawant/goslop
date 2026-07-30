@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/core"
 )
 
 // ScanEntry is a source file queued for analysis.

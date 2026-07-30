@@ -3,7 +3,7 @@ package cache
 import (
 	"fmt"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // CACHE_VERSION is the on-disk schema version. Bump on breaking JSON shape changes.

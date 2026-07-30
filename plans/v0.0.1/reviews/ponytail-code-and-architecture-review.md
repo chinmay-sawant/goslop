@@ -74,7 +74,7 @@
 
 - [x] Define the product policy: eligible per-file analysis failures fail by default with `ExitInternal`.
 - [x] Emit every `AnalysisResult.Errors` entry to stderr without contaminating JSON/SARIF stdout.
-- [~] Test unreadable files, invalid UTF-8, and parse failures at the CLI boundary. Invalid UTF-8 is covered; add the remaining two variants.
+- [~] Test unreadable files, invalid UTF-8, and parse failures at the CLI boundary. Invalid UTF-8 and unreadable inputs are covered. Go parser errors intentionally fall back to a source-only unit for text detectors, so they are not `ScanErrorParse` inputs without changing that product policy.
 - [x] Acceptance: no failed input file can produce an unqualified clean scan or exit code 0.
 
 ## Phase 1 — make destructive and configuration contracts honest
@@ -84,7 +84,7 @@
 - [x] Replace broad context-directory cleanup with explicit owned-file tracking: only numeric context files and `Chunk_*.txt` chunk files are owned.
 - [x] Preserve unrelated files in a caller-selected output directory; return cleanup and write errors.
 - [x] Remove the redundant cleanup pass.
-- [~] Test unrelated text preservation, empty-result reconciliation, partial-write behavior, cleanup failure, and context/chunk collision. Unrelated-file and empty-result reconciliation are covered; add the failure/collision cases.
+- [~] Test unrelated text preservation, empty-result reconciliation, partial-write behavior, cleanup failure, and context/chunk collision. Unrelated-file reconciliation, context write failure propagation, and collision are covered; add a deterministic cleanup-removal failure case.
 
 ### P1.2 Resolved `ScanPlan`
 
@@ -92,12 +92,12 @@
 - [x] Wire and validate `evict_target_ratio`; add configuration coverage for the value.
 - [x] Reject/remove inert `languages` and `typed.enabled` keys and every template/schema/document promise that they work.
 - [x] Remove stale `warnings`, `--warnings-as-errors`, and `--strict` promises rather than advertise unsupported controls.
-- [~] Acceptance: precedence coverage exists for the changed configuration controls; broaden observable-effect coverage across every supported field.
+- [~] Acceptance: precedence coverage plus observable `fail_on` behavior exist for the changed controls; broaden observable-effect coverage across every supported field.
 
 ### P1.3 Reporting contract
 
 - [x] Normalize/copy findings before any format-specific work so machine reporters are read-only from the caller’s perspective.
-- [~] Test fingerprint/location parity across text, JSON, and SARIF, input immutability, and concurrent reporter use. Input immutability is covered; add parity/concurrency cases.
+- [x] Test fingerprint/location parity across JSON and SARIF, input immutability, and concurrent reporter use.
 
 ## Phase 2 — concentrate scan lifetime and project facts
 
@@ -106,26 +106,26 @@
 - [x] Keep the registry catalogue immutable and construct detector/session state per `AnalyzePaths` invocation.
 - [x] Move detector lifecycle, run/finalization, and required cache-state accumulation behind the session interface.
 - [x] Remove mutable process-global detector/project state from the scan path.
-- [~] Acceptance: the concurrent-scanner and cache hit/miss regressions pass under `make test`; run the same concurrency coverage with `-race`.
+- [x] Acceptance: the concurrent-scanner and cache hit/miss regressions pass under `make test` and `go test -race ./...`.
 
 ### P2.2 BP `ProjectFacts`
 
 - [x] Make root/project/package/package-doc facts owned by the BP scan, not a package-global pointer.
 - [x] Cache package type facts once per directory with scan-local synchronization.
 - [x] Update BP-30/BP-31 to consume the shared package snapshot.
-- [~] Add a benchmark over a multi-file package and a concurrent distinct-root regression.
-- [~] Acceptance: scan-local cache identity is tested; add the benchmark and race-enabled distinct-root proof.
+- [x] Add a 12-file package benchmark and a concurrent distinct-root regression.
+- [x] Acceptance: scan-local cache identity and distinct-root isolation are tested under `-race`; the 100x benchmark measures cold `63,499 ns/op`, `20,189 B/op`, `178 allocs/op` versus cached `1,992 ns/op`, `0 B/op`, `0 allocs/op`.
 
 ### P2.3 Temporary fixture lifecycle
 
 - [x] Ensure every temporary materialization directory is removed on success and all failure paths.
-- [~] Add a test seam that proves cleanup after materialize and analyze errors.
+- [~] Add a test seam that proves cleanup after materialize and analyze errors. Materialization failure cleanup is covered; add the analyzer-failure variant.
 
 ## Phase 3 — deepen catalogue, scope, and CLI orchestration
 
 - [ ] Introduce an immutable compiled language catalogue with descriptors for ID, metadata, gate, and execution; retain one concrete implementation until a second adapter is real.
 - [ ] Add ruleset-to-catalogue-to-execution parity tests and make late registration behavior explicit.
-- [~] Introduce `ScanScope` to own root interpretation, display paths, and cache-relative keys. Directory/file cache roots are covered; display paths plus relative/multi-root matrices remain in the engine.
+- [x] Introduce engine-owned `ScanScope` for root interpretation, display paths, and cache-relative keys; directory/file and multi-root key matrices are covered.
 - [~] Split `app.run` around resolved-plan creation, scan execution, output, and exit policy while preserving one CLI interface. Resolution and scope are extracted; scan/output staging remains a follow-up.
 - [x] Route `init` through the supplied writer and make cache flush/prune failure visible according to an explicit policy.
 
@@ -133,7 +133,7 @@
 
 - [x] Add direct table and fuzz tests for `sourceutil` token/argument helpers.
 - [x] Keep one interface as the test surface for each new deep module; no hypothetical adapter was introduced.
-- [~] Run `go test -race ./...`, the complete fixture matrices, formatting/vet/lint gates used by CI, and a representative cold/warm cache performance comparison. `gofmt` and `make test` pass; the remaining gates are outstanding.
+- [x] Run `go test -race ./...`, the complete fixture matrices, and CI lint gates. `make lint`, `make test`, and `go test -race ./...` pass. On the GopdfSuit corpus, the supplied no-cache `make run` baseline is 97.5 ms; a fresh temporary cache measured 170.6 ms cold and 21.5 ms warm (78 hits), all with 915 findings.
 - [~] Re-rate only after Phases 0–2 are complete and the final diff passes the expanded validation set.
 
 ## Recommended delivery order

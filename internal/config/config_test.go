@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/config"
-	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/config"
+	"github.com/chinmay-sawant/goslop/internal/core"
 )
 
 func TestParseAndMergeAdditiveOnlySkip(t *testing.T) {

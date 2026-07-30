@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/core"
 )
 
 // pureFalsePositiveRules fire on gopdfsuit in Go but never in the Rust reference baseline

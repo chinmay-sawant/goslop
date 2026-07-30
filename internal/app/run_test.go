@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/chinmay-sawant/goslop/internal/engine"
 )
 
 func TestRunVersion(t *testing.T) {
@@ -83,6 +85,76 @@ func TestRunPartialScanWritesErrorsToStderrAndFails(t *testing.T) {
 	if !strings.Contains(errBuf.String(), "analysis error [encoding]") ||
 		!strings.Contains(errBuf.String(), "incomplete: 1 file(s)") {
 		t.Fatalf("stderr=%q", errBuf.String())
+	}
+}
+
+func TestRunUnreadableFileWritesErrorsToStderrAndFails(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "unreadable.go")
+	if err := os.Symlink(filepath.Join(dir, "missing.go"), path); err != nil {
+		t.Skipf("cannot create dangling symlink: %v", err)
+	}
+	var out, errBuf bytes.Buffer
+	err := run([]string{"--format", "sarif", "--no-cache", dir}, &out, &errBuf)
+	if ExitCode(err) != ExitInternal {
+		t.Fatalf("exit code=%d err=%v", ExitCode(err), err)
+	}
+	if out.Len() != 0 {
+		t.Fatalf("partial scan must not emit a SARIF payload: %q", out.String())
+	}
+	if !strings.Contains(errBuf.String(), "analysis error [") ||
+		!strings.Contains(errBuf.String(), "unreadable.go") ||
+		!strings.Contains(errBuf.String(), "incomplete: 1 file(s)") {
+		t.Fatalf("stderr=%q", errBuf.String())
+	}
+}
+
+func TestReportScanErrorsWritesParseFailuresToStderr(t *testing.T) {
+	var stderr bytes.Buffer
+	reportScanErrors(&stderr, []engine.ScanError{{
+		Path: "broken.go", Kind: engine.ScanErrorParse, Message: "expected declaration",
+	}})
+	if got := stderr.String(); !strings.Contains(got, "analysis error [parse]: broken.go: expected declaration") {
+		t.Fatalf("stderr=%q", got)
+	}
+}
+
+func TestRunConfigFailPolicyHasObservableEffect(t *testing.T) {
+	makeProject := func(t *testing.T, configBody string) string {
+		t.Helper()
+		dir := t.TempDir()
+		if configBody != "" {
+			if err := os.WriteFile(filepath.Join(dir, "goslop.toml"), []byte(configBody), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		source := `package sample
+
+import "regexp"
+
+func slow() {
+	for i := 0; i < 2; i++ {
+		_ = regexp.MustCompile("x")
+	}
+}
+`
+		if err := os.WriteFile(filepath.Join(dir, "slow.go"), []byte(source), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		return dir
+	}
+
+	withoutConfig := makeProject(t, "")
+	var out, errBuf bytes.Buffer
+	if err := run([]string{"--profile", "all", "--no-cache", withoutConfig}, &out, &errBuf); ExitCode(err) != ExitFailing {
+		t.Fatalf("default policy exit=%d err=%v stderr=%q", ExitCode(err), err, errBuf.String())
+	}
+
+	withConfig := makeProject(t, "[goslop]\nfail_on = \"none\"\n")
+	out.Reset()
+	errBuf.Reset()
+	if err := run([]string{"--profile", "all", "--no-cache", withConfig}, &out, &errBuf); err != nil {
+		t.Fatalf("config fail_on=none should be observable as a clean exit: %v\nstderr=%s", err, errBuf.String())
 	}
 }
 

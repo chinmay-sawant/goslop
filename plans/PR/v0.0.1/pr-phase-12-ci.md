@@ -141,7 +141,7 @@ make ci
 
 ```
 $ CGO_ENABLED=1 go test ./...
-ok  github.com/chinmay/goslop/tests/integration   0.008s
+ok  github.com/chinmay-sawant/goslop/tests/integration   0.008s
 # ... all packages PASS
 ```
 

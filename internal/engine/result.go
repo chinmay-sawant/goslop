@@ -4,8 +4,8 @@ package engine
 import (
 	"fmt"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // ScanErrorKind is a coarse per-file error category.

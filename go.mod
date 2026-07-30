@@ -1,4 +1,4 @@
-module github.com/chinmay/goslop
+module github.com/chinmay-sawant/goslop
 
 go 1.26.4
 

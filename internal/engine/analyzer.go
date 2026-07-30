@@ -10,11 +10,11 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine/baseline"
-	"github.com/chinmay/goslop/internal/engine/cache"
-	"github.com/chinmay/goslop/internal/engine/ignore"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine/baseline"
+	"github.com/chinmay-sawant/goslop/internal/engine/cache"
+	"github.com/chinmay-sawant/goslop/internal/engine/ignore"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Analyzer is the language-agnostic static analysis orchestrator.
@@ -184,13 +184,10 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 
 	// Project root for relative cache keys: first directory root or cwd.
 	projectRoot := a.projectRoot
-	if projectRoot == "" {
-		if len(roots) > 0 {
-			projectRoot = roots[0]
-		} else {
-			projectRoot = "."
-		}
+	if projectRoot == "" && len(roots) > 0 {
+		projectRoot = roots[0]
 	}
+	scope := NewScanScope(projectRoot)
 
 	store := a.cache
 	if ctx.NoCache {
@@ -214,14 +211,13 @@ func (a *Analyzer) AnalyzePaths(paths []string) (*AnalysisResult, error) {
 
 	scannedFiles := make(map[string]struct{}, len(entries))
 	for _, e := range entries {
-		rel := relPath(projectRoot, e.Path)
-		scannedFiles[cache.NormalizePath(rel)] = struct{}{}
+		scannedFiles[scope.CacheKey(e.Path)] = struct{}{}
 	}
 
 	for i, entry := range entries {
 		i, entry := i, entry
 		g.Go(func() error {
-			fr := a.scanOne(ctx, session, entry, projectRoot, store, &cacheHits, &cacheMisses, &suppressedTotal)
+			fr := a.scanOne(ctx, session, entry, scope, store, &cacheHits, &cacheMisses, &suppressedTotal)
 			results[i] = fr
 			return nil
 		})
@@ -340,7 +336,7 @@ func (a *Analyzer) scanOne(
 	ctx *core.ScanContext,
 	session *scanSession,
 	entry ScanEntry,
-	projectRoot string,
+	scope ScanScope,
 	store *cache.Store,
 	hits, misses *atomic.Int64,
 	suppressedTotal *atomic.Int64,
@@ -350,11 +346,8 @@ func (a *Analyzer) scanOne(
 		return fileResult{err: err, path: entry.Path}
 	}
 
-	display := entry.Path
-	if rel, rerr := filepath.Rel(".", entry.Path); rerr == nil && !filepath.IsAbs(rel) {
-		display = rel
-	}
-	cacheRel := cache.NormalizePath(relPath(projectRoot, entry.Path))
+	display := scope.DisplayPath(entry.Path)
+	cacheRel := scope.CacheKey(entry.Path)
 	contentHash := cache.ContentHash(source)
 
 	// Warm cache hit: skip ordinary detection. Detectors that retain per-scan

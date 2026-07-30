@@ -1,3 +1,3 @@
-module github.com/chinmay/goslop/tests/fixtures/go/stdlib
+module github.com/chinmay-sawant/goslop/tests/fixtures/go/stdlib
 
 go 1.22

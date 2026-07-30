@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/export"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/export"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestExportContextAndChunks(t *testing.T) {
@@ -103,6 +103,38 @@ func TestExportContextPreservesUnownedTextFiles(t *testing.T) {
 	}
 	if _, err := os.Stat(stalePath); !os.IsNotExist(err) {
 		t.Fatalf("owned stale output remains, stat error=%v", err)
+	}
+}
+
+func TestExportRejectsContextAndChunkDirectoryCollision(t *testing.T) {
+	dir := t.TempDir()
+	outputDir := filepath.Join(dir, "output")
+	_, err := export.ExportFindings(nil, export.Options{
+		ExportContext:    true,
+		ExportChunks:     true,
+		ContextOutputDir: outputDir,
+		ChunksOutputDir:  outputDir,
+	}, nil)
+	if err == nil || !strings.Contains(err.Error(), "must use different output directories") {
+		t.Fatalf("expected directory collision error, got %v", err)
+	}
+}
+
+func TestExportReturnsContextWriteFailureAfterCleanup(t *testing.T) {
+	dir := t.TempDir()
+	ctxDir := filepath.Join(dir, "ctx")
+	if err := os.MkdirAll(filepath.Join(ctxDir, "1.txt"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	_, err := export.ExportFindings([]rules.Finding{{
+		RuleID: "PERF-1", File: "missing.go", Line: 1, Column: 1,
+		Message: "test", Severity: rules.SeverityLow,
+	}}, export.Options{
+		ExportContext:    true,
+		ContextOutputDir: ctxDir,
+	}, nil)
+	if err == nil || !strings.Contains(err.Error(), "write context") {
+		t.Fatalf("expected context write failure, got %v", err)
 	}
 }
 

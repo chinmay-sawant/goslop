@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // ScanContext holds per-run filters and flags passed to detectors.

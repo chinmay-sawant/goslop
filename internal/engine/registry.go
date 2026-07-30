@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/chinmay/goslop/internal/core"
-	golang "github.com/chinmay/goslop/internal/lang/go"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	golang "github.com/chinmay-sawant/goslop/internal/lang/go"
 )
 
 // RegistryError is a plugin composition error.

@@ -211,7 +211,7 @@ Implementation: `internal/reporting/sarif.go` - **minimal valid** SARIF 2.1.0 su
 | `$schema` | `https://json.schemastore.org/sarif-2.1.0.json` |
 | `version` | `2.1.0` |
 | `runs[0].tool.driver.name` | `goslop` |
-| `informationUri` | `https://github.com/chinmay/goslop` |
+| `informationUri` | `https://github.com/chinmay-sawant/goslop` |
 | `version` (driver) | tool version, e.g. `0.1.0-dev` |
 
 ### Severity → SARIF `level`
@@ -258,7 +258,7 @@ For richest fields, use **`--format json`** in parallel.
       "tool": {
         "driver": {
           "name": "goslop",
-          "informationUri": "https://github.com/chinmay/goslop",
+          "informationUri": "https://github.com/chinmay-sawant/goslop",
           "version": "0.1.0-dev",
           "rules": [
             {

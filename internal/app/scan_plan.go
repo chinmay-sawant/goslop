@@ -1,12 +1,12 @@
 package app
 
 import (
-	"github.com/chinmay/goslop/internal/cli"
-	"github.com/chinmay/goslop/internal/config"
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/engine/cache"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/cli"
+	"github.com/chinmay-sawant/goslop/internal/config"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/engine/cache"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // scanPlan is the resolved, application-facing scan configuration. It keeps

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Batch 5: PERF-215..242 excluding PERF-230 (seeded in seed_register.go).

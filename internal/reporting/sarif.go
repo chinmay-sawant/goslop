@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // SARIFReporter emits a minimal valid SARIF 2.1.0 log.
@@ -89,7 +89,7 @@ func (r SARIFReporter) Write(findings []rules.Finding, w io.Writer) error {
 			Tool: sarifTool{
 				Driver: sarifDriver{
 					Name:           "goslop",
-					InformationURI: "https://github.com/chinmay/goslop",
+					InformationURI: "https://github.com/chinmay-sawant/goslop",
 					Version:        version,
 					Rules:          rulesArr,
 				},

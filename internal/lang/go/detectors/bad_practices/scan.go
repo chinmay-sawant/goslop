@@ -4,8 +4,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // GoBadPracticeScan is the unified Go bad-practice detector (one Detector, many rules).

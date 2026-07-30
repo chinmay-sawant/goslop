@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/lang/go/detectors/perf"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/detectors/perf"
 )
 
 func TestBatch4RuleIDsRegistered(t *testing.T) {

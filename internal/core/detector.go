@@ -1,6 +1,6 @@
 package core
 
-import "github.com/chinmay/goslop/internal/rules"
+import "github.com/chinmay-sawant/goslop/internal/rules"
 
 // Detector walks parsed units and appends findings.
 type Detector interface {

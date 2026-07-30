@@ -1,6 +1,6 @@
 package perf
 
-import "github.com/chinmay/goslop/internal/rules"
+import "github.com/chinmay-sawant/goslop/internal/rules"
 
 // Batch 1 metadata (PERF-9..PERF-60 excluding 32 and 50 which are seed rules).
 // Titles/descriptions align with Rust go_perf_metadata; fixes from metadata_overrides.

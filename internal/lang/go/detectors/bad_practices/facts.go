@@ -3,10 +3,10 @@ package badpractices
 import (
 	"strings"
 
-	"github.com/chinmay/goslop/internal/ast"
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/lang/go/astfacts"
-	"github.com/chinmay/goslop/internal/lang/go/goparse"
+	"github.com/chinmay-sawant/goslop/internal/ast"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/astfacts"
+	"github.com/chinmay-sawant/goslop/internal/lang/go/goparse"
 )
 
 // Shared needle table for BP fast-paths (Rust parity intent).

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
 )
 
 // TestDogfoodDetectorSourcesNoHang scans the Go detector implementation tree.

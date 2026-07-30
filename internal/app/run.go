@@ -12,15 +12,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chinmay/goslop/internal/cli"
-	"github.com/chinmay/goslop/internal/config"
-	"github.com/chinmay/goslop/internal/core"
-	"github.com/chinmay/goslop/internal/engine"
-	"github.com/chinmay/goslop/internal/engine/baseline"
-	"github.com/chinmay/goslop/internal/engine/cache"
-	"github.com/chinmay/goslop/internal/export"
-	"github.com/chinmay/goslop/internal/reporting"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/cli"
+	"github.com/chinmay-sawant/goslop/internal/config"
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/engine"
+	"github.com/chinmay-sawant/goslop/internal/engine/baseline"
+	"github.com/chinmay-sawant/goslop/internal/engine/cache"
+	"github.com/chinmay-sawant/goslop/internal/export"
+	"github.com/chinmay-sawant/goslop/internal/reporting"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // Run is the CLI entry used by cmd/goslop.
@@ -87,7 +87,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	}
 
 	plan := resolveScanPlan(profile, opts, merged)
-	scope := resolveScanScope(opts.Paths)
+	scope := engine.ResolveScanScope(opts.Paths)
 	ctx := plan.context
 	reg := engine.DefaultRegistry()
 
@@ -143,7 +143,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		WalkOptions(plan.walkOptions).
 		Cache(store).
 		Baseline(bl).
-		ProjectRoot(scope.projectRoot).
+		ProjectRoot(scope.ProjectRoot()).
 		Build()
 
 	t0 := time.Now()
@@ -236,7 +236,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 	return nil
 }
 
-func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, scope scanScope, stdout, stderr io.Writer) error {
+func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, scope engine.ScanScope, stdout, stderr io.Writer) error {
 	if store == nil {
 		_, _ = fmt.Fprintln(stdout, "cache disabled; nothing to prune")
 		return nil
@@ -251,7 +251,7 @@ func runPruneCache(opts *cli.Options, reg *engine.Registry, store *cache.Store, 
 	}
 	scanned := make(map[string]struct{}, len(entries))
 	for _, e := range entries {
-		scanned[scope.cacheKey(e.Path)] = struct{}{}
+		scanned[scope.CacheKey(e.Path)] = struct{}{}
 	}
 	pruned, err := store.Prune(scanned)
 	if err != nil {

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chinmay/goslop/internal/engine/ignore"
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/engine/ignore"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestParseInlineNextLine(t *testing.T) {

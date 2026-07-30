@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/chinmay/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 // TextReporter emits one finding per line:

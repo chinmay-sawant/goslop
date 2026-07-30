@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chinmay/goslop/internal/app"
+	"github.com/chinmay-sawant/goslop/internal/app"
 )
 
 func main() {
