@@ -526,6 +526,9 @@ func detectBP36(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 		}
 	}
+	if end <= open || open+1 > end {
+		return
+	}
 	inner := body[open+1 : end]
 	// Side effect: any call/conversion (contains '(' not in string — crude) or go/defer.
 	if strings.Contains(inner, "go ") || strings.Contains(inner, "defer ") ||

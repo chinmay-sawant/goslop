@@ -1,11 +1,11 @@
 package badpractices
 
 import (
-	goast "go/ast"
 	"strings"
 
 	"github.com/chinmay/goslop/internal/ast"
 	"github.com/chinmay/goslop/internal/core"
+	"github.com/chinmay/goslop/internal/lang/go/astfacts"
 	"github.com/chinmay/goslop/internal/lang/go/goparse"
 )
 
@@ -75,61 +75,36 @@ func buildFacts(unit *core.ParsedUnit) *bpFacts {
 	f.lines = buildCodeLines(unit.Source)
 	f.Index = ast.Build(unit.Source, bpNeedles)
 
-	// Reuse unit.Tree when set; else parse once and pin for cross-pack reuse.
-	// Tree lifetime is owned by the unit / analyzer closeUnitTree (not BP).
+	// Shared AST walk with PERF (one Inspect pair per file via unit.FactCache).
 	tree := goparse.TreeForUnit(unit)
-	if tree == nil {
+	if tree != nil {
+		f.tree = tree
+	}
+	shared := astfacts.Ensure(unit)
+	if shared == nil {
 		return f
 	}
-	f.tree = tree
-
-	goast.Inspect(tree.File, func(n goast.Node) bool {
-		if n == nil {
-			return true
-		}
-		start := tree.Offset(n.Pos())
-		end := tree.Offset(n.End())
-		text := tree.NodeText(n)
-		switch x := n.(type) {
-		case *goast.AssignStmt:
-			f.assignNodes = append(f.assignNodes, nodeSpan{start: start, end: end, text: text})
-		case *goast.CallExpr:
-			callee := strings.TrimSpace(tree.NodeText(x.Fun))
-			f.callNodes = append(f.callNodes, callSpan{
-				start: start, end: end, callee: callee, text: text,
-			})
-		case *goast.DeferStmt:
-			f.deferNodes = append(f.deferNodes, nodeSpan{start: start, end: end, text: text})
-		case *goast.GoStmt:
-			f.goNodes = append(f.goNodes, nodeSpan{start: start, end: end, text: text})
-		case *goast.ForStmt, *goast.RangeStmt:
-			f.forRanges = append(f.forRanges, [2]int{start, end})
-		case *goast.FuncDecl:
-			name := ""
-			if x.Name != nil {
-				name = x.Name.Name
-			}
-			bodyS, bodyE := start, end
-			if x.Body != nil {
-				bodyS = tree.Offset(x.Body.Pos())
-				bodyE = tree.Offset(x.Body.End())
-			}
-			params := ""
-			if x.Type != nil && x.Type.Params != nil {
-				params = tree.NodeText(x.Type.Params)
-			}
-			f.funcDecls = append(f.funcDecls, funcSpan{
-				name:   name,
-				start:  start,
-				end:    end,
-				bodyS:  bodyS,
-				bodyE:  bodyE,
-				isMain: name == "main",
-				params: params,
-			})
-		}
-		return true
-	})
+	f.forRanges = shared.ForRanges
+	for _, a := range shared.Assigns {
+		f.assignNodes = append(f.assignNodes, nodeSpan{start: a.Start, end: a.End, text: a.Text})
+	}
+	for _, c := range shared.Calls {
+		f.callNodes = append(f.callNodes, callSpan{
+			start: c.Start, end: c.End, callee: c.Callee, text: c.Text,
+		})
+	}
+	for _, r := range shared.DeferSpans {
+		f.deferNodes = append(f.deferNodes, nodeSpan{start: r.Start, end: r.End, text: r.Text})
+	}
+	for _, r := range shared.GoSpans {
+		f.goNodes = append(f.goNodes, nodeSpan{start: r.Start, end: r.End, text: r.Text})
+	}
+	for _, fd := range shared.FuncDecls {
+		f.funcDecls = append(f.funcDecls, funcSpan{
+			name: fd.Name, start: fd.Start, end: fd.End,
+			bodyS: fd.BodyS, bodyE: fd.BodyE, isMain: fd.IsMain, params: fd.Params,
+		})
+	}
 	return f
 }
 

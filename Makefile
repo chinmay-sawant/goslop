@@ -1,4 +1,4 @@
-.PHONY: build test vet fmt lint lint-all ci integration version help reference-metrics run
+.PHONY: build test vet fmt lint lint-all ci integration version help reference-metrics run bench
 # Pure Go by default (go/ast parse path — no tree-sitter / CGO).
 export CGO_ENABLED ?= 0
 
@@ -7,6 +7,14 @@ SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
 # Rust: make run RUN_ARGS="--export-context --export-chunks --no-cache"
 # Defaults match product reference-export surface; override with RUN_ARGS=... as needed.
 RUN_ARGS ?= --export-context --export-chunks --no-cache
+
+# Product benches (ns/op, B/op, allocs/op). Override path/time as needed.
+#   make bench
+#   make bench BENCHTIME=20x
+BENCHTIME ?= 100x
+BENCHPKG ?= ./internal/bench/
+GOSLOP_BENCH_SCAN_PATH ?= $(SCAN_PATH)
+export GOSLOP_BENCH_SCAN_PATH
 
 build:
 	go build -o bin/goslop ./cmd/goslop
@@ -34,13 +42,14 @@ version: build
 	./bin/goslop --version
 
 help:
-	@echo "Targets: build test integration vet fmt lint lint-all ci version run reference-metrics"
+	@echo "Targets: build test integration vet fmt lint lint-all ci version run reference-metrics bench"
 	@echo "CGO_ENABLED=$(CGO_ENABLED) (0 = pure Go / go/ast; default)"
 	@echo "run: product summary scan (profile all, --no-fail --no-terminal + RUN_ARGS)"
 	@echo "  SCAN_PATH=$(SCAN_PATH)"
 	@echo "  RUN_ARGS=$(RUN_ARGS)"
 	@echo "reference-metrics: §12.4 parity baseline on REFERENCE_PATH (testing expected metrics; not a product name)"
 	@echo "  REFERENCE_PATH=$(REFERENCE_PATH)  REFERENCE_PROFILE=$(REFERENCE_PROFILE)"
+	@echo "bench: go test -bench (ns/op B/op allocs/op); BENCHTIME=$(BENCHTIME) GOSLOP_BENCH_SCAN_PATH=$(GOSLOP_BENCH_SCAN_PATH)"
 
 
 # Comprehensive lint with all practical linters enabled. Keep in sync with the
@@ -76,3 +85,9 @@ reference-metrics: build
 	@echo -n "context files: "; ls scripts/findings/functions 2>/dev/null | wc -l
 	@echo -n "chunk files: "; ls scripts/chunks 2>/dev/null | wc -l
 	@echo "Reference hard targets: findings=915 sev=10h/197i/312l/396m top=BP-1×181,PERF-6×94,PERF-32×59,BP-5×50,PERF-230×44 exports=915+37"
+
+# Product benchmarks via stdlib testing.B (no external harness).
+#   make bench
+#   make bench BENCHTIME=20x
+bench:
+	go test -run='^$$' -bench=. -benchmem -benchtime=$(BENCHTIME) $(BENCHPKG)

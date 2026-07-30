@@ -12,6 +12,10 @@ type ParsedUnit struct {
 	// language plugin parses successfully; detectors must reuse it (not re-parse)
 	// so PERF / BP / CWE-taint share one AST for the same unit.
 	Tree any
+	// FactCache is an opaque per-unit memo for cross-detector shared walks
+	// (e.g. *astfacts.Shared). Units are per-file scan locals (not shared across
+	// concurrent analyzers).
+	FactCache any
 }
 
 // NewParsedUnit builds a source unit. Optional tree is an opaque AST handle.
