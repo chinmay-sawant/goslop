@@ -1,0 +1,8 @@
+# Fixture for BP-PY-39 (safe)
+lang: python
+file: BP-PY-39-safe.py
+---
+import asyncio
+
+async def slow():
+    await asyncio.sleep(1)

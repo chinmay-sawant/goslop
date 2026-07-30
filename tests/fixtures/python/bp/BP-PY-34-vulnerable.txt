@@ -1,0 +1,8 @@
+# Fixture for BP-PY-34 (vulnerable)
+lang: python
+file: BP-PY-34-vulnerable.py
+---
+from markupsafe import Markup
+
+def render(user):
+    return Markup(user)

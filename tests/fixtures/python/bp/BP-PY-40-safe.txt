@@ -1,0 +1,10 @@
+# Fixture for BP-PY-40 (safe)
+lang: python
+file: BP-PY-40-safe.py
+---
+import threading
+
+def start_worker():
+    t = threading.Thread(target=work)
+    t.start()
+    t.join()

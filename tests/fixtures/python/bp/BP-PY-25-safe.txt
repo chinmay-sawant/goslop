@@ -1,0 +1,8 @@
+# Fixture for BP-PY-25 (safe)
+lang: python
+file: BP-PY-25-safe.py
+---
+from django.utils.html import escape
+
+def render(user_html):
+    return escape(user_html)

@@ -1,0 +1,6 @@
+# Fixture for BP-PY-44 (safe)
+lang: python
+file: BP-PY-44-safe.py
+---
+import importlib
+from urllib.parse import parse_qs

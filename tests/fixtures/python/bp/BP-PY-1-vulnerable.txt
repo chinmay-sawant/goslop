@@ -1,0 +1,9 @@
+# Fixture for BP-PY-1 (vulnerable)
+lang: python
+file: BP-PY-1-vulnerable.py
+---
+def f():
+    try:
+        x()
+    except Exception:
+        pass

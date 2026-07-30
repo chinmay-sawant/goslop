@@ -1,0 +1,6 @@
+# Fixture for BP-PY-10 (safe)
+lang: python
+file: BP-PY-10-safe.py
+---
+import json
+data = json.loads(body)

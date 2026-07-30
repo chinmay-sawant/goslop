@@ -1,0 +1,6 @@
+# Fixture for BP-PY-27 (safe)
+lang: python
+file: BP-PY-27-safe.py
+---
+def create(request):
+    return Model.objects.create(name=request.POST["name"])

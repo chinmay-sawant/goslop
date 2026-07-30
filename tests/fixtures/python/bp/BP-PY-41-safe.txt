@@ -1,0 +1,7 @@
+# Fixture for BP-PY-41 (safe)
+lang: python
+file: test_login_safe.py
+---
+def test_login():
+    r = client.post("/login", json={"u": "a"})
+    assert r.status_code == 200

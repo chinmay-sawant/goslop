@@ -1,0 +1,11 @@
+# Fixture for BP-PY-18 (safe)
+lang: python
+file: BP-PY-18-safe.py
+---
+from flask import Flask, request
+app = Flask(__name__)
+
+@app.route("/login", methods=["POST"])
+def login():
+    user = request.form["user"]
+    return user

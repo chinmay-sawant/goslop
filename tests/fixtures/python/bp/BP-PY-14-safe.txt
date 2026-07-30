@@ -1,0 +1,6 @@
+# Fixture for BP-PY-14 (safe)
+lang: python
+file: BP-PY-14-safe.py
+---
+import requests
+requests.get("https://example.com", timeout=5)

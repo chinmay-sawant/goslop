@@ -1,0 +1,8 @@
+# Fixture for BP-PY-15 (safe)
+lang: python
+file: BP-PY-15-safe.py
+---
+import httpx
+async def f(url):
+    async with httpx.AsyncClient() as client:
+        await client.get(url)

@@ -1,0 +1,11 @@
+# Fixture for BP-PY-32 (safe)
+lang: python
+file: BP-PY-32-safe.py
+---
+from fastapi import FastAPI
+from starlette.responses import FileResponse
+app = FastAPI()
+
+@app.get("/files")
+def files():
+    return FileResponse("/var/data/readme.txt")

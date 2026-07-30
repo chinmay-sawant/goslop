@@ -1,0 +1,9 @@
+# Fixture for BP-PY-47 (safe)
+lang: python
+file: BP-PY-47-safe.py
+---
+import logging
+logger = logging.getLogger(__name__)
+
+def f(name):
+    logger.info("hello %s", name)

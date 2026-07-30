@@ -1,0 +1,6 @@
+# Fixture for BP-PY-49 (vulnerable)
+lang: python
+file: BP-PY-49-vulnerable.py
+---
+import requests
+requests.get(url, verify=False)

@@ -1,0 +1,8 @@
+# Fixture for BP-PY-39 (vulnerable)
+lang: python
+file: BP-PY-39-vulnerable.py
+---
+import time
+
+async def slow():
+    time.sleep(1)

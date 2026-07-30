@@ -1,0 +1,6 @@
+# Fixture for BP-PY-21 (safe)
+lang: python
+file: settings.py
+---
+DEBUG = False
+INSTALLED_APPS = ["django.contrib.admin"]

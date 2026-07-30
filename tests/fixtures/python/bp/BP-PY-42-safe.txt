@@ -1,0 +1,9 @@
+# Fixture for BP-PY-42 (safe)
+lang: python
+file: test_raises_safe.py
+---
+import pytest
+
+def test_raises():
+    with pytest.raises(ValueError):
+        boom()

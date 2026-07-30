@@ -28,8 +28,16 @@ Integration tests call `goslop::fixture::materialize_fixture` automatically.
 
 | Language | Text fixture | Generated (gitignored) |
 |----------|--------------|-------------------------|
-| Go (stdlib) | `go/stdlib/*.txt` | `target/goslop-fixtures/go/*.pure.go` |
-| Python | `python/sample.txt` | `target/goslop-fixtures/python/sample.py` |
-| Rust | `rust/sample.txt` | `target/goslop-fixtures/rust/sample.rs` (plugin TBD) |
+| Go (stdlib / BP / CWE / PERF) | `go/**/*.txt` | temp dirs via integration harness |
+| Python BP-PY | `python/bp/BP-PY-N-{vulnerable,safe}.txt` | temp dirs via `tests/integration/python` |
+| Python CWE | `python/cwe/CWE-N-{vulnerable,safe}.txt` | temp dirs via `tests/integration/python` |
+| Python samples | `python/sample.txt`, `python/safe.txt` | temp dirs |
 
-Do **not** add `.go`, `.py`, or `.rs` files here - only `.txt`.
+### Integration test packages
+
+| Package | Command | Coverage |
+|---------|---------|----------|
+| `tests/integration` | `make integration-go` / `go test ./tests/integration/` | **Go** fixtures only (`DefaultRegistry`) |
+| `tests/integration/python` | `make integration-python` / `go test ./tests/integration/python/` | **Python** fixtures (`NewRegistryWithLanguages(LanguagePython)`) |
+
+Do **not** add `.go`, `.py`, or `.rs` sources here — only `.txt` fixtures (header + `---` + body).

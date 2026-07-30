@@ -1,0 +1,6 @@
+# Fixture for BP-PY-41 (vulnerable)
+lang: python
+file: test_login_vuln.py
+---
+def test_login():
+    client.post("/login", json={"u": "a"})

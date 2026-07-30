@@ -1,0 +1,10 @@
+# Fixture for BP-PY-19 (safe)
+lang: python
+file: BP-PY-19-safe.py
+---
+from flask import Flask, jsonify
+app = Flask(__name__)
+
+@app.errorhandler(Exception)
+def on_error(e):
+    return jsonify(error="internal error"), 500

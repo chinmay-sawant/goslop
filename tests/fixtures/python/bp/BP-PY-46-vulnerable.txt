@@ -1,0 +1,7 @@
+# Fixture for BP-PY-46 (vulnerable)
+lang: python
+file: BP-PY-46-vulnerable.py
+---
+def compute(x):
+    print("debug", x)
+    return x * 2

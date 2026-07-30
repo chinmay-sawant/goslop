@@ -1,0 +1,9 @@
+# Fixture for BP-PY-40 (vulnerable)
+lang: python
+file: BP-PY-40-vulnerable.py
+---
+import threading
+
+def start_worker():
+    t = threading.Thread(target=work)
+    t.start()

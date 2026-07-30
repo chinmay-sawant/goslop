@@ -1,0 +1,11 @@
+# Fixture for BP-PY-32 (vulnerable)
+lang: python
+file: BP-PY-32-vulnerable.py
+---
+from fastapi import FastAPI
+from starlette.responses import FileResponse
+app = FastAPI()
+
+@app.get("/files/{name}")
+def files(name: str):
+    return FileResponse(name)

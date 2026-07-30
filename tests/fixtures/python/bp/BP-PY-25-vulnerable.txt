@@ -1,0 +1,8 @@
+# Fixture for BP-PY-25 (vulnerable)
+lang: python
+file: BP-PY-25-vulnerable.py
+---
+from django.utils.safestring import mark_safe
+
+def render(user_html):
+    return mark_safe(user_html)

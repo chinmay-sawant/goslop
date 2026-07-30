@@ -1,0 +1,6 @@
+# Fixture for BP-PY-44 (vulnerable)
+lang: python
+file: BP-PY-44-vulnerable.py
+---
+import imp
+import cgi

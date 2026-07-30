@@ -1,4 +1,4 @@
-.PHONY: build test vet fmt lint lint-all ci integration version help reference-metrics run run-python bench
+.PHONY: build test vet fmt lint lint-all ci integration integration-go integration-python version help reference-metrics run run-python bench
 # Pure Go by default (go/ast parse path — no tree-sitter / CGO).
 export CGO_ENABLED ?= 0
 
@@ -28,8 +28,17 @@ test:
 	go test ./...
 
 # Focused integration harness (materialized fixture seed expectations).
-integration:
-	go test ./tests/integration/...
+# Go and Python matrices live in separate packages so DefaultRegistry (Go-only)
+# and LanguagePython scans do not share one suite surface.
+integration: integration-go integration-python
+
+# Go fixture matrices (BP/CWE/PERF under tests/fixtures/go).
+integration-go:
+	go test ./tests/integration/
+
+# Python fixture matrices (BP-PY + CWE under tests/fixtures/python).
+integration-python:
+	go test ./tests/integration/python/
 
 vet:
 	go vet ./...
@@ -47,7 +56,7 @@ version: build
 	./bin/goslop --version
 
 help:
-	@echo "Targets: build test integration vet fmt lint lint-all ci version run run-python reference-metrics bench"
+	@echo "Targets: build test integration integration-go integration-python vet fmt lint lint-all ci version run run-python reference-metrics bench"
 	@echo "CGO_ENABLED=$(CGO_ENABLED) (0 = pure Go / go/ast; default)"
 	@echo "run: product summary scan (profile all, --no-fail --no-terminal + RUN_ARGS)"
 	@echo "  SCAN_PATH=$(SCAN_PATH)"

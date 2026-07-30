@@ -1,0 +1,7 @@
+# Fixture for BP-PY-43 (safe)
+lang: python
+file: requirements-safe.py
+---
+django==4.2.0
+requests~=2.31
+flask>=3.0

@@ -1,0 +1,6 @@
+# Fixture for BP-PY-33 (safe)
+lang: python
+file: BP-PY-33-safe.py
+---
+from jinja2 import Environment, select_autoescape
+env = Environment(autoescape=select_autoescape(["html", "xml"]))

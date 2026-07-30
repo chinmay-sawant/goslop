@@ -1,0 +1,6 @@
+# Fixture for BP-PY-14 (vulnerable)
+lang: python
+file: BP-PY-14-vulnerable.py
+---
+import requests
+requests.get("https://example.com")

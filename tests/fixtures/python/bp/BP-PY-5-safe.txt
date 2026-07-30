@@ -1,0 +1,5 @@
+# Fixture for BP-PY-5 (safe)
+lang: python
+file: BP-PY-5-safe.py
+---
+from os.path import join, exists

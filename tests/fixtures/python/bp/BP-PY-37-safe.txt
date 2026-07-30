@@ -1,0 +1,6 @@
+# Fixture for BP-PY-37 (safe)
+lang: python
+file: BP-PY-37-safe.py
+---
+def q(cur, name):
+    cur.execute("SELECT * FROM t WHERE name = ?", (name,))

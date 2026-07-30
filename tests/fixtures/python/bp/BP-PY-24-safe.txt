@@ -1,0 +1,6 @@
+# Fixture for BP-PY-24 (safe)
+lang: python
+file: BP-PY-24-safe.py
+---
+def good(qs, user_id):
+    return Model.objects.raw("SELECT * FROM t WHERE id = %s", [user_id])

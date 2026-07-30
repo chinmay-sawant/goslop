@@ -1,0 +1,6 @@
+# Fixture for BP-PY-45 (safe)
+lang: python
+file: BP-PY-45-safe.py
+---
+# packaged install; no sys.path mutation
+from mypkg import api

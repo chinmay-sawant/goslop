@@ -1,0 +1,6 @@
+# Fixture for BP-PY-11 (safe)
+lang: python
+file: BP-PY-11-safe.py
+---
+import yaml
+cfg = yaml.safe_load(stream)

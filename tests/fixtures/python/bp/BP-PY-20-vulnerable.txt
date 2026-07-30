@@ -1,0 +1,11 @@
+# Fixture for BP-PY-20 (vulnerable)
+lang: python
+file: BP-PY-20-vulnerable.py
+---
+from flask import Flask, request, send_file
+app = Flask(__name__)
+
+@app.route("/dl")
+def dl():
+    path = request.args["path"]
+    return send_file(path)

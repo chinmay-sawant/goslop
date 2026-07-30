@@ -1,0 +1,6 @@
+# Fixture for BP-PY-10 (vulnerable)
+lang: python
+file: BP-PY-10-vulnerable.py
+---
+import pickle
+data = pickle.loads(body)

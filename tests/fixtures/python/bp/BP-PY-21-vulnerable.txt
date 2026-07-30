@@ -1,0 +1,6 @@
+# Fixture for BP-PY-21 (vulnerable)
+lang: python
+file: settings.py
+---
+DEBUG = True
+INSTALLED_APPS = ["django.contrib.admin"]
