@@ -1,0 +1,86 @@
+{
+  "CWE-1204": {
+    "id": 1204,
+    "name": "Generation of Weak Initialization Vector (IV)",
+    "original_description": "The product uses a cryptographic primitive that uses an Initialization Vector (IV), but the product does not generate IVs that are sufficiently unpredictable or unique according to the expected cryptographic requirements for that primitive.",
+    "description": "The product uses a cryptographic primitive that uses an Initialization Vector (IV), but the product does not generate IVs that are sufficiently unpredictable or unique according to the expected cryptographic requirements for that primitive. By design, some cryptographic primitives (such as block ciphers) require that IVs must have certain properties for the uniqueness and/or unpredictability of an IV. Primitives may vary in how important these properties are. If these properties are not maintained, e.g. by a bug in the code, then the cryptography may be weakened or broken by attacking the IVs themselves. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Cryptography",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-1220": {
+    "id": 1220,
+    "name": "Insufficient Granularity of Access Control",
+    "original_description": "The product implements access controls via a policy or other feature with the intention to disable or restrict accesses (reads and/or writes) to assets in a system from untrusted agents. However, implemented access controls lack required granularity, which renders the control policy too broad because it allows accesses from unauthorized agents to the security-sensitive assets.",
+    "description": "The product implements access controls via a policy or other feature with the intention to disable or restrict accesses (reads and/or writes) to assets in a system from untrusted agents. However, implemented access controls lack required granularity, which renders the control policy too broad because it allows accesses from unauthorized agents to the security-sensitive assets. Integrated circuits and hardware engines can expose accesses to assets (device configuration, keys, etc.) to trusted firmware or a software module (commonly set by BIOS/bootloader). This access is typically access-controlled. Upon a power reset, the hardware or system usually starts with default values in registers, a… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-1230": {
+    "id": 1230,
+    "name": "Exposure of Sensitive Information Through Metadata",
+    "original_description": "The product prevents direct access to a resource containing sensitive information, but it does not sufficiently limit access to metadata that is derived from the original, sensitive information.",
+    "description": "The product prevents direct access to a resource containing sensitive information, but it does not sufficiently limit access to metadata that is derived from the original, sensitive information. Developers might correctly prevent unauthorized access to a database or other resource containing sensitive information, but they might not consider that portions of the original information might also be recorded in metadata, search indices, statistical reports, or other resources. If these resources are not also restricted, then attackers might be able to extract some or all of the original information, or otherwise infer some details. For example, an attacker could specify search terms that are k… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Information Disclosure",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-1236": {
+    "id": 1236,
+    "name": "Improper Neutralization of Formula Elements in a CSV File",
+    "original_description": "The product saves user-provided information into a Comma-Separated Value (CSV) file, but it does not neutralize or incorrectly neutralizes special elements that could be interpreted as a command when the file is opened by a spreadsheet product.",
+    "description": "The product saves user-provided information into a Comma-Separated Value (CSV) file, but it does not neutralize or incorrectly neutralizes special elements that could be interpreted as a command when the file is opened by a spreadsheet product. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-1240": {
+    "id": 1240,
+    "name": "Use of a Cryptographic Primitive with a Risky Implementation",
+    "original_description": "To fulfill the need for a cryptographic primitive, the product implements a cryptographic algorithm using a non-standard, unproven, or disallowed/non-compliant cryptographic implementation.",
+    "description": "To fulfill the need for a cryptographic primitive, the product implements a cryptographic algorithm using a non-standard, unproven, or disallowed/non-compliant cryptographic implementation. Cryptographic protocols and systems depend on cryptographic primitives (and associated algorithms) as their basic building blocks. Some common examples of primitives are digital signatures, one-way hash functions, ciphers, and public key cryptography; however, the notion of primitive can vary depending on point of view. See Terminology Notes for further explanation of some concepts. Cryptographic primitives are defined to accomplish one very specific task in a precisely defined and mathematically reliabl… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Architecture or Design Review, Manual Analysis, Dynamic Analysis with Manual Results Interpretation. Review requirements, documentation, and product design to ensure that primitives are consistent with the strongest-available recommendations from trusted parties. If the product appears to be using custom or proprietary implementations that have not had sufficient public review… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-1241": {
+    "id": 1241,
+    "name": "Use of Predictable Algorithm in Random Number Generator",
+    "original_description": "The device uses an algorithm that is predictable and generates a pseudo-random number.",
+    "description": "The device uses an algorithm that is predictable and generates a pseudo-random number. Pseudo-random number generator algorithms are predictable because their registers have a finite number of possible states, which eventually lead to repeating patterns. As a result, pseudo-random number generators (PRNGs) can compromise their randomness or expose their internal state to various attacks, such as reverse engineering or tampering. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  }
+}

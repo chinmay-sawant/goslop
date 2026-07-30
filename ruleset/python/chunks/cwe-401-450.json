@@ -1,0 +1,338 @@
+{
+  "CWE-403": {
+    "id": 403,
+    "name": "Exposure of File Descriptor to Unintended Control Sphere ('File Descriptor Leak')",
+    "original_description": "A process does not close sensitive file descriptors before invoking a child process, which allows the child to perform unauthorized I/O operations using those descriptors.",
+    "description": "A process does not close sensitive file descriptors before invoking a child process, which allows the child to perform unauthorized I/O operations using those descriptors. When a new process is forked or executed, the child process inherits any open file descriptors. When the child process has fewer privileges than the parent process, this might introduce a vulnerability if the child process can access the file descriptor but does not have the privileges to access the associated file. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Program Invocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-408": {
+    "id": 408,
+    "name": "Incorrect Behavior Order: Early Amplification",
+    "original_description": "The product allows an entity to perform a legitimate but expensive operation before authentication or authorization has taken place.",
+    "description": "The product allows an entity to perform a legitimate but expensive operation before authentication or authorization has taken place. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-409": {
+    "id": 409,
+    "name": "Improper Handling of Highly Compressed Data (Data Amplification)",
+    "original_description": "The product does not handle or incorrectly handles a compressed input with a very high compression ratio that produces a large output.",
+    "description": "The product does not handle or incorrectly handles a compressed input with a very high compression ratio that produces a large output. An example of data amplification is a decompression bomb, a small ZIP file that can produce a large amount of data when it is decompressed. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-410": {
+    "id": 410,
+    "name": "Insufficient Resource Pool",
+    "original_description": "The product's resource pool is not large enough to handle peak demand, which allows an attacker to prevent others from accessing the resource by using a (relatively) large number of requests for resources.",
+    "description": "The product's resource pool is not large enough to handle peak demand, which allows an attacker to prevent others from accessing the resource by using a (relatively) large number of requests for resources. Frequently the consequence is a flood of connection or sessions. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Resource Management",
+    "status": "Incomplete",
+    "weakness_abstraction": "Class",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-412": {
+    "id": 412,
+    "name": "Unrestricted Externally Accessible Lock",
+    "original_description": "The product properly checks for the existence of a lock, but the lock can be externally controlled or influenced by an actor that is outside of the intended sphere of control.",
+    "description": "The product properly checks for the existence of a lock, but the lock can be externally controlled or influenced by an actor that is outside of the intended sphere of control. This prevents the product from acting on associated resources or performing other behaviors that are controlled by the presence of the lock. Relevant locks might include an exclusive lock or mutex, or modifying a shared resource that is treated as a lock. If the lock can be held for an indefinite period of time, then the denial of service could be permanent. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: White Box. Automated code analysis techniques might not be able to reliably detect this weakness, since the application's behavior and general security model dictate which resource locks are critical. Interpretation of the weakness might require knowledge of the environment, e.g. if the ex… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Resource Management",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-413": {
+    "id": 413,
+    "name": "Improper Resource Locking",
+    "original_description": "The product does not lock or does not correctly lock a resource when the product must have exclusive access to the resource.",
+    "description": "The product does not lock or does not correctly lock a resource when the product must have exclusive access to the resource. When a resource is not properly locked, an attacker could modify the resource while it is being operated on by the product. This might violate the product's assumption that the resource will not change, potentially leading to unexpected behaviors. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Resource Management",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-414": {
+    "id": 414,
+    "name": "Missing Lock Check",
+    "original_description": "A product does not check to see if a lock is present before performing sensitive operations on a resource.",
+    "description": "A product does not check to see if a lock is present before performing sensitive operations on a resource. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Resource Management",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-419": {
+    "id": 419,
+    "name": "Unprotected Primary Channel",
+    "original_description": "The product uses a primary channel for administration or restricted functionality, but it does not properly protect the channel.",
+    "description": "The product uses a primary channel for administration or restricted functionality, but it does not properly protect the channel. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-420": {
+    "id": 420,
+    "name": "Unprotected Alternate Channel",
+    "original_description": "The product protects a primary channel, but it does not use the same level of protection for an alternate channel.",
+    "description": "The product protects a primary channel, but it does not use the same level of protection for an alternate channel. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-421": {
+    "id": 421,
+    "name": "Race Condition During Access to Alternate Channel",
+    "original_description": "The product opens an alternate channel to communicate with an authorized user, but the channel is accessible to other actors.",
+    "description": "The product opens an alternate channel to communicate with an authorized user, but the channel is accessible to other actors. This creates a race condition that allows an attacker to access the channel before the authorized user does. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Program Invocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-425": {
+    "id": 425,
+    "name": "Direct Request ('Forced Browsing')",
+    "original_description": "The web application does not adequately enforce appropriate authorization on all restricted URLs, scripts, or files.",
+    "description": "The web application does not adequately enforce appropriate authorization on all restricted URLs, scripts, or files. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-426": {
+    "id": 426,
+    "name": "Untrusted Search Path",
+    "original_description": "The product searches for critical resources using an externally-supplied search path that can point to resources that are not under the product's direct control.",
+    "description": "The product searches for critical resources using an externally-supplied search path that can point to resources that are not under the product's direct control. This might allow attackers to execute their own programs, access unauthorized data files, or modify configuration in unexpected ways. If the product uses a search path to locate critical resources such as programs, then an attacker could modify that search path to point to a malicious program, which the targeted product would then execute. The problem extends to any type of critical resource that the product trusts. Some of the most common variants of untrusted search path are: In various UNIX and Linux-based systems, the PATH envi… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Black Box, Automated Static Analysis, Manual Analysis. Use monitoring tools that examine the software's process as it interacts with the operating system and the network. This technique is useful in cases when source code is unavailable, if the software was not developed by you, or if you want to verify that the build phase did not… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Program Invocation",
+    "status": "Stable",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-427": {
+    "id": 427,
+    "name": "Uncontrolled Search Path Element",
+    "original_description": "The product uses a fixed or controlled search path to find resources, but one or more locations in that path can be under the control of unintended actors.",
+    "description": "The product uses a fixed or controlled search path to find resources, but one or more locations in that path can be under the control of unintended actors. Although this weakness can occur with any type of resource, it is frequently introduced when a product uses a directory search path to find executables or code libraries, but the path contains a directory that can be modified by an attacker, such as /tmp or the current working directory. In Windows-based systems, when the LoadLibrary or LoadLibraryEx function is called with a DLL name that does not contain a fully qualified path, the function follows a search order that includes two path elements that might be uncontrolled: the directory… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Program Invocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-428": {
+    "id": 428,
+    "name": "Unquoted Search Path or Element",
+    "original_description": "The product uses a search path that contains an unquoted element, in which the element contains whitespace or other separators. This can cause the product to access resources in a parent path.",
+    "description": "The product uses a search path that contains an unquoted element, in which the element contains whitespace or other separators. This can cause the product to access resources in a parent path. If a malicious individual has access to the file system, it is possible to elevate privileges by inserting such a file as C:Program.exe to be run by a privileged program making use of WinExec. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Program Invocation",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-430": {
+    "id": 430,
+    "name": "Deployment of Wrong Handler",
+    "original_description": "The wrong handler is assigned to process an object.",
+    "description": "The wrong handler is assigned to process an object. An example of deploying the wrong handler would be calling a servlet to reveal source code of a .JSP file, or automatically determining type of the object even if it is contradictory to an explicitly specified type. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-431": {
+    "id": 431,
+    "name": "Missing Handler",
+    "original_description": "A handler is not available or implemented.",
+    "description": "A handler is not available or implemented. When an exception is thrown and not caught, the process has given up an opportunity to decide if a given failure or event is worth a change in execution. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-434": {
+    "id": 434,
+    "name": "Unrestricted Upload of File with Dangerous Type",
+    "original_description": "The product allows the upload or transfer of dangerous file types that are automatically processed within its environment.",
+    "description": "The product allows the upload or transfer of dangerous file types that are automatically processed within its environment. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Dynamic Analysis with Automated Results Interpretation, Dynamic Analysis with Manual Results Interpretation, Manual Static Analysis - Source Code, Automated Static Analysis - Source Code, Architecture or Design Review. According to SOAR [REF-1479], the following detection techniques may be useful: Cost effective for partial coverage: Web Application Scanner Web Services Scanner Database Scanners:EFFECTIVENESS:SOAR Partial Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "File Processing",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-437": {
+    "id": 437,
+    "name": "Incomplete Model of Endpoint Features",
+    "original_description": "A product acts as an intermediary or monitor between two or more endpoints, but it does not have a complete model of an endpoint's features, behaviors, or state, potentially causing the product to perform incorrect actions based on this incomplete model.",
+    "description": "A product acts as an intermediary or monitor between two or more endpoints, but it does not have a complete model of an endpoint's features, behaviors, or state, potentially causing the product to perform incorrect actions based on this incomplete model. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-439": {
+    "id": 439,
+    "name": "Behavioral Change in New Version or Environment",
+    "original_description": "A's behavior or functionality changes with a new version of A, or a new environment, which is not known (or manageable) by B.",
+    "description": "A's behavior or functionality changes with a new version of A, or a new environment, which is not known (or manageable) by B. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-440": {
+    "id": 440,
+    "name": "Expected Behavior Violation",
+    "original_description": "A feature, API, or function does not perform according to its specification.",
+    "description": "A feature, API, or function does not perform according to its specification. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-444": {
+    "id": 444,
+    "name": "Inconsistent Interpretation of HTTP Requests ('HTTP Request/Response Smuggling')",
+    "original_description": "The product acts as an intermediary HTTP agent (such as a proxy or firewall) in the data flow between two entities such as a client and server, but it does not interpret malformed HTTP requests or responses in ways that are consistent with how the messages will be processed by those entities that are at the ultimate destination.",
+    "description": "The product acts as an intermediary HTTP agent (such as a proxy or firewall) in the data flow between two entities such as a client and server, but it does not interpret malformed HTTP requests or responses in ways that are consistent with how the messages will be processed by those entities that are at the ultimate destination. HTTP requests or responses (messages) can be malformed or unexpected in ways that cause web servers or clients to interpret the messages in different ways than intermediary HTTP agents such as load balancers, reverse proxies, web caching proxies, application firewalls, etc. For example, an adversary may be able to add duplicate or different header fields that a clie… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-447": {
+    "id": 447,
+    "name": "Unimplemented or Unsupported Feature in UI",
+    "original_description": "A UI function for a security feature appears to be supported and gives feedback to the user that suggests that it is supported, but the underlying functionality is not implemented.",
+    "description": "A UI function for a security feature appears to be supported and gives feedback to the user that suggests that it is supported, but the underlying functionality is not implemented. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-448": {
+    "id": 448,
+    "name": "Obsolete Feature in UI",
+    "original_description": "A UI function is obsolete and the product does not warn the user.",
+    "description": "A UI function is obsolete and the product does not warn the user. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-449": {
+    "id": 449,
+    "name": "The UI Performs the Wrong Action",
+    "original_description": "The UI performs the wrong action with respect to the user's request.",
+    "description": "The UI performs the wrong action with respect to the user's request. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Manual Analysis. Perform extensive functionality testing of the UI. The UI should behave as specified. Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  }
+}

@@ -82,7 +82,7 @@ go build -o bin/goslop ./cmd/goslop
 - [x] Unit tests for fingerprint stability - `go test ./internal/rules/...` PASS
 
 ### 1.2 `internal/core`
-- [x] `LanguageID` (Go; Python reserved/deferred) - `language.go` (`LanguageGo` / `LanguagePython`)
+- [x] `LanguageID` (Go; Python reserved) - `language.go` (`LanguageGo` / `LanguagePython`); foundation under v0.0.2 / epic [#39](https://github.com/chinmay-sawant/goslop/issues/39)
 - [x] `ScanContext` (only/skip, fail policy, taint/typed flags, BP flags, retain_sources, …) - `context.go`
 - [x] `ScanContext.Allows(ruleID string) bool` - only/skip/BP semantics (exact + `*` prefix) - Rust parity
 - [x] `FailPolicy` / fail-on severity - `FailNone`/`FailHigh`/`FailMedium` (`FailNever` alias)
@@ -103,7 +103,7 @@ go build -o bin/goslop ./cmd/goslop
 ### 2.1 Fixture format (parity)
 - [x] Parser for `#` headers + `key: value` + `---` body (Rust `fixture` module behavior) - `internal/fixture/format.go`
 - [x] Materialize to temp dir preserving `file:` names - `MaterializeFixture` / `MaterializeTree`
-- [x] Respect `lang: go` (python still materialized under `python/` tag; detectors may skip)
+- [x] Respect `lang: go` (python still materialized under `python/` tag; detectors may skip; Python foundation under v0.0.2 / epic [#39](https://github.com/chinmay-sawant/goslop/issues/39))
 - [ ] Manifest support (`tests/fixtures/manifest.toml`) if required by integration tests
 - [x] Unit tests: round-trip sample fixtures (`CWE-22-vulnerable.txt`, PERF samples)
 
@@ -448,3 +448,4 @@ make reference-metrics
 5. **Shared needle tables / ruleset JSON metadata** - still partial (`[~]`); wire full tables when needed.
 6. **Perf budget** - promote wall-time soft target to CI budget only if agreed (Go already sub-400ms pure-Go).
 7. **Release** - version tagging beyond `0.1.0-dev`; GoReleaser multi-arch.
+8. **Python foundation (v0.0.2 / epic #39)** - multi-language docs, models, config languages, ruleset layout; not full detector parity. Canonical ledger: [`plans/v0.0.2/python-support.md`](./v0.0.2/python-support.md).

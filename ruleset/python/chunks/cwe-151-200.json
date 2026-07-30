@@ -1,0 +1,156 @@
+{
+  "CWE-166": {
+    "id": 166,
+    "name": "Improper Handling of Missing Special Element",
+    "original_description": "The product receives input from an upstream component, but it does not handle or incorrectly handles when an expected special element is missing.",
+    "description": "The product receives input from an upstream component, but it does not handle or incorrectly handles when an expected special element is missing. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-167": {
+    "id": 167,
+    "name": "Improper Handling of Additional Special Element",
+    "original_description": "The product receives input from an upstream component, but it does not handle or incorrectly handles when an additional unexpected special element is provided.",
+    "description": "The product receives input from an upstream component, but it does not handle or incorrectly handles when an additional unexpected special element is provided. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-168": {
+    "id": 168,
+    "name": "Improper Handling of Inconsistent Special Elements",
+    "original_description": "The product does not properly handle input in which an inconsistency exists between two or more special characters or reserved words.",
+    "description": "The product does not properly handle input in which an inconsistency exists between two or more special characters or reserved words. An example of this problem would be if paired characters appear in the wrong order, or if the special characters are not properly nested. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-178": {
+    "id": 178,
+    "name": "Improper Handling of Case Sensitivity",
+    "original_description": "The product does not properly account for differences in case sensitivity when accessing or determining the properties of a resource, leading to inconsistent results.",
+    "description": "The product does not properly account for differences in case sensitivity when accessing or determining the properties of a resource, leading to inconsistent results. Improperly handled case sensitive data can lead to several possible consequences, including: case-insensitive passwords reducing the size of the key space, making brute force attacks easier bypassing filters or access controls using alternate names multiple interpretation errors using alternate names. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "File Processing",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-179": {
+    "id": 179,
+    "name": "Incorrect Behavior Order: Early Validation",
+    "original_description": "The product validates input before applying protection mechanisms that modify the input, which could allow an attacker to bypass the validation via dangerous inputs that only arise after the modification.",
+    "description": "The product validates input before applying protection mechanisms that modify the input, which could allow an attacker to bypass the validation via dangerous inputs that only arise after the modification. Product needs to validate data at the proper time, after data has been canonicalized and cleansed. Early validation is susceptible to various manipulations that result in dangerous inputs that are produced by canonicalization and cleansing. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-182": {
+    "id": 182,
+    "name": "Collapse of Data into Unsafe Value",
+    "original_description": "The product filters data in a way that causes it to be reduced or collapsed into an unsafe value that violates an expected security property.",
+    "description": "The product filters data in a way that causes it to be reduced or collapsed into an unsafe value that violates an expected security property. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-183": {
+    "id": 183,
+    "name": "Permissive List of Allowed Inputs",
+    "original_description": "The product implements a protection mechanism that relies on a list of inputs (or properties of inputs) that are explicitly allowed by policy because the inputs are assumed to be safe, but the list is too permissive - that is, it allows an input that is unsafe, leading to resultant weaknesses.",
+    "description": "The product implements a protection mechanism that relies on a list of inputs (or properties of inputs) that are explicitly allowed by policy because the inputs are assumed to be safe, but the list is too permissive - that is, it allows an input that is unsafe, leading to resultant weaknesses. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-184": {
+    "id": 184,
+    "name": "Incomplete List of Disallowed Inputs",
+    "original_description": "The product implements a protection mechanism that relies on a list of inputs (or properties of inputs) that are not allowed by policy or otherwise require other action to neutralize before additional processing takes place, but the list is incomplete.",
+    "description": "The product implements a protection mechanism that relies on a list of inputs (or properties of inputs) that are not allowed by policy or otherwise require other action to neutralize before additional processing takes place, but the list is incomplete. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Black Box. Exploitation of a vulnerability with commonly-used manipulations might fail, but minor variations might succeed. Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-186": {
+    "id": 186,
+    "name": "Overly Restrictive Regular Expression",
+    "original_description": "A regular expression is overly restrictive, which prevents dangerous values from being detected.",
+    "description": "A regular expression is overly restrictive, which prevents dangerous values from being detected. This weakness is not about regular expression complexity. Rather, it is about a regular expression that does not match all values that are intended. Consider the use of a regexp to identify acceptable values or to spot unwanted terms. An overly restrictive regexp misses some potentially security-relevant values leading to either false positives *or* false negatives, depending on how the regexp is being used within the code. Consider the expression /[0-8]/ where the intention was /[0-9]/. This expression is not complex but the value 9 is not matched when maybe the programmer planned to check for… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-190": {
+    "id": 190,
+    "name": "Integer Overflow or Wraparound",
+    "original_description": "The product performs a calculation that can produce an integer overflow or wraparound when the logic assumes that the resulting value will always be larger than the original value. This occurs when an integer value is incremented to a value that is too large to store in the associated representation. When this occurs, the value may become a very small or negative number.",
+    "description": "The product performs a calculation that can produce an integer overflow or wraparound when the logic assumes that the resulting value will always be larger than the original value. This occurs when an integer value is incremented to a value that is too large to store in the associated representation. When this occurs, the value may become a very small or negative number. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis, Black Box, Manual Analysis, Automated Static Analysis - Binary or Bytecode, Dynamic Analysis with Manual Results Interpretation, Manual Static Analysis - Source Code. This weakness can often be detected using automated static analysis tools. Many modern tools use data flow analysis or constraint-based techniques to minimize the number of false positives.:EFFECTIVENESS:High Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Number Processing",
+    "status": "Stable",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-193": {
+    "id": 193,
+    "name": "Off-by-one Error",
+    "original_description": "A product calculates or uses an incorrect maximum or minimum value that is 1 more, or 1 less, than the correct value.",
+    "description": "A product calculates or uses an incorrect maximum or minimum value that is 1 more, or 1 less, than the correct value. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Error Handling",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  }
+}

@@ -1,0 +1,366 @@
+{
+  "CWE-301": {
+    "id": 301,
+    "name": "Reflection Attack in an Authentication Protocol",
+    "original_description": "Simple authentication protocols are subject to reflection attacks if a malicious user can use the target machine to impersonate a trusted user.",
+    "description": "Simple authentication protocols are subject to reflection attacks if a malicious user can use the target machine to impersonate a trusted user. A mutual authentication protocol requires each party to respond to a random challenge by the other party by encrypting it with a pre-shared key. Often, however, such protocols employ the same pre-shared key for communication with a number of different entities. A malicious user or an attacker can easily compromise this protocol without possessing the correct key by employing a reflection attack on the protocol. Reflection attacks capitalize on mutual authentication schemes in order to trick the target into revealing the secret shared between it and… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-303": {
+    "id": 303,
+    "name": "Incorrect Implementation of Authentication Algorithm",
+    "original_description": "The requirements for the product dictate the use of an established authentication algorithm, but the implementation of the algorithm is incorrect.",
+    "description": "The requirements for the product dictate the use of an established authentication algorithm, but the implementation of the algorithm is incorrect. This incorrect implementation may allow authentication to be bypassed. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-305": {
+    "id": 305,
+    "name": "Authentication Bypass by Primary Weakness",
+    "original_description": "The authentication algorithm is sound, but the implemented mechanism can be bypassed as the result of a separate weakness that is primary to the authentication error.",
+    "description": "The authentication algorithm is sound, but the implemented mechanism can be bypassed as the result of a separate weakness that is primary to the authentication error. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-306": {
+    "id": 306,
+    "name": "Missing Authentication for Critical Function",
+    "original_description": "The product does not perform any authentication for functionality that requires a provable user identity or consumes a significant amount of resources.",
+    "description": "The product does not perform any authentication for functionality that requires a provable user identity or consumes a significant amount of resources. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Manual Analysis, Automated Static Analysis, Manual Static Analysis - Binary or Bytecode, Dynamic Analysis with Automated Results Interpretation, Dynamic Analysis with Manual Results Interpretation, Manual Static Analysis - Source Code. This weakness can be detected using tools and techniques that require manual (human) analysis, such as penetration testing, threat modeling, and interactive tools that allow the tester to record and modify an active session. Specifically, manual static analysis is useful for eva… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-307": {
+    "id": 307,
+    "name": "Improper Restriction of Excessive Authentication Attempts",
+    "original_description": "The product does not implement sufficient measures to prevent multiple failed authentication attempts within a short time frame.",
+    "description": "The product does not implement sufficient measures to prevent multiple failed authentication attempts within a short time frame. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Dynamic Analysis with Automated Results Interpretation, Dynamic Analysis with Manual Results Interpretation, Manual Static Analysis - Source Code, Automated Static Analysis - Source Code, Automated Static Analysis, Architecture or Design Review. According to SOAR [REF-1479], the following detection techniques may be useful: Highly cost effective: Web Application Scanner Web Services Scanner Database Scanners Cost effective for partial coverage: Host-based Vulnerability Scanners - Examine configuration for flaws, verifyi… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-308": {
+    "id": 308,
+    "name": "Use of Single-factor Authentication",
+    "original_description": "The product uses an authentication algorithm that uses a single factor (e.g., a password) in a security context that should require more than one factor.",
+    "description": "The product uses an authentication algorithm that uses a single factor (e.g., a password) in a security context that should require more than one factor. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-309": {
+    "id": 309,
+    "name": "Use of Password System for Primary Authentication",
+    "original_description": "The use of password systems as the primary means of authentication may be subject to several flaws or shortcomings, each reducing the effectiveness of the mechanism.",
+    "description": "The use of password systems as the primary means of authentication may be subject to several flaws or shortcomings, each reducing the effectiveness of the mechanism. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-312": {
+    "id": 312,
+    "name": "Cleartext Storage of Sensitive Information",
+    "original_description": "The product stores sensitive information in cleartext within a resource that might be accessible to another control sphere.",
+    "description": "The product stores sensitive information in cleartext within a resource that might be accessible to another control sphere. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Information Disclosure",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-319": {
+    "id": 319,
+    "name": "Cleartext Transmission of Sensitive Information",
+    "original_description": "The product transmits sensitive or security-critical data in cleartext in a communication channel that can be sniffed by unauthorized actors.",
+    "description": "The product transmits sensitive or security-critical data in cleartext in a communication channel that can be sniffed by unauthorized actors. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Black Box, Automated Static Analysis. Use monitoring tools that examine the software's process as it interacts with the operating system and the network. This technique is useful in cases when source code is unavailable, if the software was not developed by you, or if you want to verify that the build phase did not… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Information Disclosure",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-322": {
+    "id": 322,
+    "name": "Key Exchange without Entity Authentication",
+    "original_description": "The product performs a key exchange with an actor without verifying the identity of that actor.",
+    "description": "The product performs a key exchange with an actor without verifying the identity of that actor. Performing a key exchange will preserve the integrity of the information sent between two entities, but this will not guarantee that the entities are who they claim they are. This may enable an attacker to impersonate an actor by modifying traffic between the two entities. Typically, this involves a victim client that contacts a malicious server that is impersonating a trusted server. If the client skips authentication or ignores an authentication failure, the malicious server may request authentication information from the user. The malicious server can then use this authentication information t… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-323": {
+    "id": 323,
+    "name": "Reusing a Nonce, Key Pair in Encryption",
+    "original_description": "Nonces should be used for the present occasion and only once.",
+    "description": "Nonces should be used for the present occasion and only once. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Incomplete",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-324": {
+    "id": 324,
+    "name": "Use of a Key Past its Expiration Date",
+    "original_description": "The product uses a cryptographic key or password past its expiration date, which diminishes its safety significantly by increasing the timing window for cracking attacks against that key.",
+    "description": "The product uses a cryptographic key or password past its expiration date, which diminishes its safety significantly by increasing the timing window for cracking attacks against that key. While the expiration of keys does not necessarily ensure that they are compromised, it is a significant concern that keys which remain in use for prolonged periods of time have a decreasing probability of integrity. For this reason, it is important to replace keys within a period of time proportional to their strength. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-325": {
+    "id": 325,
+    "name": "Missing Cryptographic Step",
+    "original_description": "The product does not implement a required step in a cryptographic algorithm, resulting in weaker encryption than advertised by the algorithm.",
+    "description": "The product does not implement a required step in a cryptographic algorithm, resulting in weaker encryption than advertised by the algorithm. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Cryptography",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-328": {
+    "id": 328,
+    "name": "Use of Weak Hash",
+    "original_description": "The product uses an algorithm that produces a digest (output value) that does not meet security expectations for a hash function that allows an adversary to reasonably determine the original input (preimage attack), find another input that can produce the same hash (2nd preimage attack), or find multiple inputs that evaluate to the same hash (birthday attack).",
+    "description": "The product uses an algorithm that produces a digest (output value) that does not meet security expectations for a hash function that allows an adversary to reasonably determine the original input (preimage attack), find another input that can produce the same hash (2nd preimage attack), or find multiple inputs that evaluate to the same hash (birthday attack). A hash function is defined as an algorithm that maps arbitrarily sized data into a fixed-sized digest (output) such that the following properties hold: The algorithm is not invertible (also called one-way or not reversible) The algorithm is deterministic; the same input produces the same digest every time Building on this definition,… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-331": {
+    "id": 331,
+    "name": "Insufficient Entropy",
+    "original_description": "The product uses an algorithm or scheme that produces insufficient entropy, leaving patterns or clusters of values that are more likely to occur than others.",
+    "description": "The product uses an algorithm or scheme that produces insufficient entropy, leaving patterns or clusters of values that are more likely to occur than others. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-334": {
+    "id": 334,
+    "name": "Small Space of Random Values",
+    "original_description": "The number of possible random values is smaller than needed by the product, making it more susceptible to brute force attacks.",
+    "description": "The number of possible random values is smaller than needed by the product, making it more susceptible to brute force attacks. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-335": {
+    "id": 335,
+    "name": "Incorrect Usage of Seeds in Pseudo-Random Number Generator (PRNG)",
+    "original_description": "The product uses a Pseudo-Random Number Generator (PRNG) but does not correctly manage seeds.",
+    "description": "The product uses a Pseudo-Random Number Generator (PRNG) but does not correctly manage seeds. PRNGs are deterministic and, while their output appears random, they cannot actually create entropy. They rely on cryptographically secure and unique seeds for entropy so proper seeding is critical to the secure operation of the PRNG. Management of seeds could be broken down into two main areas: (1) protecting seeds as cryptographic material (such as a cryptographic key); (2) whenever possible, using a uniquely generated seed from a cryptographically secure source PRNGs require a seed as input to generate a stream of numbers that are functionally indistinguishable from random numbers. While the out… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-338": {
+    "id": 338,
+    "name": "Use of Cryptographically Weak Pseudo-Random Number Generator (PRNG)",
+    "original_description": "The product uses a Pseudo-Random Number Generator (PRNG) in a security context, but the PRNG's algorithm is not cryptographically strong.",
+    "description": "The product uses a Pseudo-Random Number Generator (PRNG) in a security context, but the PRNG's algorithm is not cryptographically strong. When a non-cryptographic PRNG is used in a cryptographic context, it can expose the cryptography to certain types of attacks. Often a pseudo-random number generator (PRNG) is not designed for cryptography. Sometimes a mediocre source of randomness is sufficient or preferable for algorithms that use random numbers. Weak generators generally take less processing power and/or do not use the precious, finite, entropy sources on a system. While such PRNGs might have very useful features, these same features could be used to break the cryptography. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-341": {
+    "id": 341,
+    "name": "Predictable from Observable State",
+    "original_description": "A number or object is predictable based on observations that the attacker can make about the state of the system or network, such as time, process ID, etc.",
+    "description": "A number or object is predictable based on observations that the attacker can make about the state of the system or network, such as time, process ID, etc. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-342": {
+    "id": 342,
+    "name": "Predictable Exact Value from Previous Values",
+    "original_description": "An exact value or random number can be precisely predicted by observing previous values.",
+    "description": "An exact value or random number can be precisely predicted by observing previous values. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-343": {
+    "id": 343,
+    "name": "Predictable Value Range from Previous Values",
+    "original_description": "The product's random number generator produces a series of values which, when observed, can be used to infer a relatively small range of possibilities for the next value that could be generated.",
+    "description": "The product's random number generator produces a series of values which, when observed, can be used to infer a relatively small range of possibilities for the next value that could be generated. The output of a random number generator should not be predictable based on observations of previous values. In some cases, an attacker cannot predict the exact value that will be produced next, but can narrow down the possibilities significantly. This reduces the amount of effort to perform a brute force attack. For example, suppose the product generates random numbers between 1 and 100, but it always produces a larger value until it reaches 100. If the generator produces an 80, then the attacker kn… In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-344": {
+    "id": 344,
+    "name": "Use of Invariant Value in Dynamically Changing Context",
+    "original_description": "The product uses a constant value, name, or reference, but this value can (or should) vary across different environments.",
+    "description": "The product uses a constant value, name, or reference, but this value can (or should) vary across different environments. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-346": {
+    "id": 346,
+    "name": "Origin Validation Error",
+    "original_description": "The product does not properly verify that the source of data or communication is valid.",
+    "description": "The product does not properly verify that the source of data or communication is valid. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Error Handling",
+    "status": "Draft",
+    "weakness_abstraction": "Class",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-347": {
+    "id": 347,
+    "name": "Improper Verification of Cryptographic Signature",
+    "original_description": "The product does not verify, or incorrectly verifies, the cryptographic signature for data.",
+    "description": "The product does not verify, or incorrectly verifies, the cryptographic signature for data. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or binary/compiled code) without having to execute it. Typically, this is done by building a model of data flow and c… Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "Security",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-348": {
+    "id": 348,
+    "name": "Use of Less Trusted Source",
+    "original_description": "The product has two different sources of the same data or information, but it uses the source that has less support for verification, is less trusted, or is less resistant to attack.",
+    "description": "The product has two different sources of the same data or information, but it uses the source that has less support for verification, is less trusted, or is less resistant to attack. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  },
+  "CWE-349": {
+    "id": 349,
+    "name": "Acceptance of Extraneous Untrusted Data With Trusted Data",
+    "original_description": "The product, when processing trusted data, accepts any untrusted data that is also included with the trusted data, treating the untrusted data as if it were trusted.",
+    "description": "The product, when processing trusted data, accepts any untrusted data that is also included with the trusted data, treating the untrusted data as if it were trusted. In Python codebases this weakness typically appears via high-level APIs (web frameworks, DB-API/ORM, subprocess, pathlib, serialization) rather than raw memory ops.",
+    "detection_notes": "Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates & ORMs, pickle/yaml, hashlib/secrets, urllib) over C memory APIs; rewrite detectors per language plugin.",
+    "category": "General",
+    "status": "Draft",
+    "weakness_abstraction": "Base",
+    "applicable_to": [
+      "python"
+    ],
+    "python_relevance": "Medium"
+  }
+}

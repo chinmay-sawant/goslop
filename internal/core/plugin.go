@@ -44,10 +44,15 @@ type LanguagePlugin interface {
 // BasePlugin provides default implementations for optional LanguagePlugin methods.
 // Its empty NewDetectors result is valid only for plugins with an empty
 // catalogue; the engine rejects a session that does not match Detectors.
+//
+// ParseSource sets ParsedUnit.Language to LanguageGo. Non-Go plugins MUST
+// override ParseSource (and ID) so units carry the correct LanguageID; detectors
+// and walk/cache paths trust unit.Language once the plugin returns a unit.
 type BasePlugin struct{}
 
-// ParseSource returns a source-only ParsedUnit (no AST). Language defaults to Go;
-// plugins should override ParseSource when language is not Go.
+// ParseSource returns a source-only ParsedUnit (no AST) with LanguageGo.
+// Non-Go plugins must override this method; embedding BasePlugin alone is not
+// enough for correct multi-language ParsedUnit.Language.
 func (BasePlugin) ParseSource(path, source string) (*ParseResult, error) {
 	return &ParseResult{
 		Unit:    NewParsedUnit(LanguageGo, path, source),

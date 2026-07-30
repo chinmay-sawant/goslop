@@ -15,7 +15,7 @@
 
 ## Non-goals (v0 of port)
 
-- Python plugin / `SLOP101` (Rust opt-in only) - defer until Go core is green.
+- Full Python detector parity / `SLOP101` (Rust opt-in only) - **Go core is green**; Python foundation is under v0.0.2 / epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) ([`plans/v0.0.2/python-support.md`](./v0.0.2/python-support.md)). Docs and models first; no claim of full Python detector support yet.
 - Perfect binary-identical JSON field ordering vs Rust (semantic wire parity is enough).
 - Criterion-class microbenches day one - wall-time smoke budgets first.
 

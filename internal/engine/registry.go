@@ -8,6 +8,7 @@ import (
 
 	"github.com/chinmay-sawant/goslop/internal/core"
 	golang "github.com/chinmay-sawant/goslop/internal/lang/go"
+	"github.com/chinmay-sawant/goslop/internal/lang/python"
 )
 
 // RegistryError is a plugin composition error.
@@ -17,7 +18,15 @@ type RegistryError struct {
 
 func (e *RegistryError) Error() string { return e.Msg }
 
-// Registry holds language plugins and detectors indexed by language.
+// Registry holds language plugins and detectors indexed by LanguageID.
+//
+// Indexing:
+//   - byID / plugins: one LanguagePlugin per LanguageID
+//   - byExtension: file extension → plugin index (walk / collect files)
+//   - byLanguage: LanguageID → detector indices for that language's catalogue
+//
+// Detectors are never mixed across languages; AnalyzePaths selects detectors
+// via DetectorIndices(unit.Language) / scanSession.DetectorIndices.
 type Registry struct {
 	plugins     []core.LanguagePlugin
 	byExtension map[string]int
@@ -81,6 +90,39 @@ func NewRegistry(plugins []core.LanguagePlugin) (*Registry, error) {
 		}
 	}
 	return r, nil
+}
+
+// builtInPlugin returns a fresh instance of a built-in language plugin.
+// Used by NewRegistryWithLanguages so Phase 3 config filtering can compose
+// registries without mutating DefaultRegistry. Unknown IDs return false.
+func builtInPlugin(id core.LanguageID) (core.LanguagePlugin, bool) {
+	switch id {
+	case core.LanguageGo:
+		return golang.NewPlugin(), true
+	case core.LanguagePython:
+		return python.NewPlugin(), true
+	default:
+		return nil, false
+	}
+}
+
+// NewRegistryWithLanguages builds a registry containing built-in plugins for
+// the given language IDs (order preserved). Unknown language IDs error.
+//
+// Production DefaultRegistry remains Go-only. Tests and future config-driven
+// enable/disable should prefer this helper over mutating the process default:
+//
+//	reg, err := engine.NewRegistryWithLanguages(core.LanguageGo, core.LanguagePython)
+func NewRegistryWithLanguages(langs ...core.LanguageID) (*Registry, error) {
+	plugins := make([]core.LanguagePlugin, 0, len(langs))
+	for _, id := range langs {
+		p, ok := builtInPlugin(id)
+		if !ok {
+			return nil, &RegistryError{Msg: fmt.Sprintf("no built-in plugin for language %s", id)}
+		}
+		plugins = append(plugins, p)
+	}
+	return NewRegistry(plugins)
 }
 
 // RegisterPlugin appends a plugin (and its detectors) to an existing registry.
@@ -333,9 +375,43 @@ func SetDefaultRegistry(r *Registry) {
 	defaultReg = r
 }
 
+// RegistryForLanguages returns a new registry containing only plugins whose
+// language ID is in enabled. Languages that are enabled but have no registered
+// plugin are skipped (no error) so opting into python before a plugin exists
+// does not crash. When enabled is empty, the product default (Go) is used.
+//
+// The returned registry is independent of base: detectors are re-registered
+// from the filtered plugins. base itself is never mutated.
+func RegistryForLanguages(base *Registry, enabled []core.LanguageID) (*Registry, error) {
+	if base == nil {
+		return NewRegistry(nil)
+	}
+	if len(enabled) == 0 {
+		enabled = core.DefaultEnabledLanguages()
+	}
+	allow := make(map[core.LanguageID]struct{}, len(enabled))
+	for _, id := range enabled {
+		allow[id] = struct{}{}
+	}
+	// Preserve base plugin registration order among the filtered set.
+	var plugins []core.LanguagePlugin
+	for _, p := range base.Plugins() {
+		if p == nil {
+			continue
+		}
+		if _, ok := allow[p.ID()]; ok {
+			plugins = append(plugins, p)
+		}
+	}
+	return NewRegistry(plugins)
+}
+
 // DefaultRegistry returns the process-wide registry with the Go language plugin
-// and seed detectors registered. Language plugins must not import this package
-// (avoids an import cycle); the engine owns default composition.
+// and seed detectors registered. Production default is Go-only: LanguagePython
+// is not registered here (see core.DefaultEnabledLanguages). Opt into Python via
+// NewRegistryWithLanguages, RegistryForLanguages, or RegisterDefaultPlugin.
+// Language plugins must not import this package (avoids an import cycle); the
+// engine owns default composition.
 func DefaultRegistry() *Registry {
 	defaultRegMu.RLock()
 	r := defaultReg
@@ -346,6 +422,8 @@ func DefaultRegistry() *Registry {
 	defaultRegMu.Lock()
 	defer defaultRegMu.Unlock()
 	if defaultReg == nil {
+		// Go-only production default; keep construction explicit (not via
+		// NewRegistryWithLanguages) so config filtering can wrap this registry.
 		reg, err := NewRegistry([]core.LanguagePlugin{golang.NewPlugin()})
 		if err != nil {
 			reg, _ = NewRegistry(nil)

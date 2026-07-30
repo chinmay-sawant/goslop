@@ -51,22 +51,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		_, _ = fmt.Fprintln(stdout, Version)
 		return nil
 	}
-	if opts.ListRules {
-		return listRules(stdout)
-	}
-	if opts.ExplainRule != "" {
-		return explainRule(stdout, opts.ExplainRule)
-	}
-
-	profile, ok := core.ParseProfile(opts.Profile)
-	if !ok {
-		return &ExitCodeError{
-			Code: ExitConfig,
-			Err:  fmt.Errorf("unknown profile %q", opts.Profile),
-		}
-	}
-
-	// Load goslop.toml (discover or --config) and merge with CLI.
+	// Load goslop.toml early so --list-rules / --explain can honor languages.
 	merged, merr := config.LoadAndMerge(config.MergeInput{
 		Only:           opts.Only,
 		Skip:           opts.Skip,
@@ -86,10 +71,32 @@ func run(args []string, stdout, stderr io.Writer) error {
 		return &ExitCodeError{Code: ExitConfig, Err: merr}
 	}
 
+	// Compose a registry from built-in plugins for the enabled languages.
+	// Default (unset languages) is Go-only via config.DefaultEnabledLanguages.
+	// Unknown language tokens are rejected at config load; missing built-ins error here.
+	reg, rerr := engine.NewRegistryWithLanguages(merged.Languages...)
+	if rerr != nil {
+		return &ExitCodeError{Code: ExitConfig, Err: rerr}
+	}
+
+	if opts.ListRules {
+		return listRules(stdout, reg)
+	}
+	if opts.ExplainRule != "" {
+		return explainRule(stdout, reg, opts.ExplainRule)
+	}
+
+	profile, ok := core.ParseProfile(opts.Profile)
+	if !ok {
+		return &ExitCodeError{
+			Code: ExitConfig,
+			Err:  fmt.Errorf("unknown profile %q", opts.Profile),
+		}
+	}
+
 	plan := resolveScanPlan(profile, opts, merged)
 	scope := engine.ResolveScanScope(opts.Paths)
 	ctx := plan.context
-	reg := engine.DefaultRegistry()
 
 	// Cache open / rebuild / prune.
 	var store *cache.Store
@@ -410,8 +417,10 @@ func isExampleDemoFinding(f rules.Finding) bool {
 	return false
 }
 
-func listRules(w io.Writer) error {
-	reg := engine.DefaultRegistry()
+func listRules(w io.Writer, reg *engine.Registry) error {
+	if reg == nil {
+		reg = engine.DefaultRegistry()
+	}
 	ids := reg.AllRuleIDs()
 	if len(ids) == 0 {
 		_, _ = fmt.Fprintln(w, "no rules registered")
@@ -441,8 +450,10 @@ func listRules(w io.Writer) error {
 	return nil
 }
 
-func explainRule(w io.Writer, ruleID string) error {
-	reg := engine.DefaultRegistry()
+func explainRule(w io.Writer, reg *engine.Registry, ruleID string) error {
+	if reg == nil {
+		reg = engine.DefaultRegistry()
+	}
 	for _, d := range reg.Detectors() {
 		meta := d.MetadataFor(ruleID)
 		if meta == nil {

@@ -1,9 +1,9 @@
 # goslop
 
-**goslop** is a **static analysis tool (SAT)** for **Go**. It inspects source with pure Go parsing (`go/parser` + `go/ast`, no CGO) and reports issues across three main families:
+**goslop** is a **static analysis tool (SAT)** with a **multi-language engine** (`LanguagePlugin`). **Go** is the production default today: it inspects Go source with pure Go parsing (`go/parser` + `go/ast`, no CGO) and reports issues across three main families. **Python** is reserved / WIP (fixtures + `LanguagePython`; no full detector catalogue yet)—see epic [#39](https://github.com/chinmay-sawant/goslop/issues/39) and [`plans/v0.0.2/python-support.md`](./plans/v0.0.2/python-support.md).
 
-| Family | What it finds | Examples |
-|--------|----------------|----------|
+| Family | What it finds (Go catalogues) | Examples |
+|--------|-------------------------------|----------|
 | **Performance (`PERF-*`)** | Hot-path and runtime footguns | Allocations in loops, missing HTTP timeouts, N+1 patterns, framework misuse |
 | **Bad practices (`BP-*`)** | Style, hygiene, and project-level issues | Error handling, server shutdown, go.mod hygiene, noisy API patterns |
 | **CWE (`CWE-*`)** | Security heuristics (structural + optional taint) | Path traversal, command injection, XSS, SQL injection (CWE-22/78/79/89 and more) |
@@ -14,14 +14,15 @@ Use it as a local linter, a CI gate, or a triage pipeline that exports findings 
 
 ## Highlights
 
-- **Three detector catalogues** - **239** PERF, **175** CWE, plus a full bad-practice catalogue (`BP-*`)
+- **Three Go detector catalogues** - **239** Go PERF, **175** Go CWE, plus a full Go bad-practice catalogue (`BP-*`)
+- **Multi-language engine** - language-agnostic `LanguagePlugin` seam; Go shipped; Python WIP (#39)
 - **Product profiles** - `recommended`, `perf`, `security`, `style`, `all` (curated packs + fail policies)
 - **Reporters** - human **text**, machine **JSON**, and **SARIF 2.1.0** (GitHub Code Scanning-ready)
 - **Optional taint** - experimental inter-procedural graph for high-signal injection CWEs
 - **Incremental cache** - `.goslop-cache/` for fast re-scans
 - **Baseline & ignore** - ship with known debt; suppress with `// goslop-ignore`
 - **Export for agents** - per-finding refs under `scripts/findings/functions/`, batched **chunks** under `scripts/chunks/` (Context defaults to the **whole enclosing function**; `[goslop.export] whole_function`)
-- **Pure Go** - `CGO_ENABLED=0` by default; easy cross-compile
+- **Pure Go binary** - `CGO_ENABLED=0` by default; easy cross-compile
 
 ---
 
@@ -119,9 +120,11 @@ make run SCAN_PATH=./your/go/project
 
 ## What goslop analyzes
 
+Shipped detectors today target **Go**. Catalogue counts below are the **Go** surface (not multi-language totals).
+
 ### Performance (`PERF-*`)
 
-Heuristic detectors for expensive patterns on request paths and loops: regex compile-in-loop, `defer` in loops, HTTP server timeouts, body close issues, framework-specific hot paths, and more. **239** rules registered.
+Heuristic detectors for expensive patterns on request paths and loops: regex compile-in-loop, `defer` in loops, HTTP server timeouts, body close issues, framework-specific hot paths, and more. **239** Go rules registered.
 
 Human notes (partial): [`documents/perf-rules.md`](./documents/perf-rules.md).
 
@@ -131,7 +134,7 @@ Style and engineering hygiene: missing package docs, error handling habits, test
 
 ### CWE / security (`CWE-*`)
 
-**175** structural CWE heuristics. For injection-class issues, enable experimental **taint** tracking:
+**175** Go structural CWE heuristics. For injection-class issues, enable experimental **taint** tracking:
 
 ```sh
 ./bin/goslop --taint --taint-depth 3 --taint-show-paths .

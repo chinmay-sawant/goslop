@@ -9,6 +9,16 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "languages": {
+          "description": "Enabled analysis languages. Default when unset: [\"go\"]. Unknown tokens and an explicit empty list are rejected at load time. Production default remains Go-only; python is opt-in when a plugin is registered.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["go", "python", "py"]
+          },
+          "minItems": 1,
+          "uniqueItems": false
+        },
         "fail_on": {
           "description": "Exit policy. Allowed: none, never, medium, high, strict. Unknown values are rejected. CLI --no-fail overrides this setting.",
           "type": "string",
