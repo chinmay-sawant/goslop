@@ -30,6 +30,9 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonTestFile(unit) {
 		return
 	}
+	if isPythonBenchmarkFile(unit) {
+		return
+	}
 	if isRequirementsPath(unit) {
 		return
 	}

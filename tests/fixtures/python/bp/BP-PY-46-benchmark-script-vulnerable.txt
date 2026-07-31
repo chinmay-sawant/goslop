@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: app/service.py
+---
+def emit_debug_state(state):
+    print(state)

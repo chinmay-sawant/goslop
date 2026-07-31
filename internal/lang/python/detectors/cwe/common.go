@@ -73,6 +73,24 @@ func isPythonTestModule(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isPythonBenchmarkFile identifies harness code whose literals and console
+// output are synthetic benchmark data rather than deployed application code.
+// Match path components only so a project name containing "bench" is not
+// enough to suppress a finding.
+func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.DisplayPath, unit.Path} {
+		for _, component := range strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/") {
+			if component == "bench" || component == "benchmarks" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // callSite is a lightweight function/method call match in source text.
 type callSite struct {
 	Name     string // callee text matched (e.g. "pickle.loads")

@@ -18,6 +18,7 @@ func TestBPFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "BP-PY-38", caseName: "BP-PY-38-task-list"},
 		{rule: "BP-PY-42", caseName: "BP-PY-42-thread-collection"},
 		{rule: "BP-PY-46", caseName: "BP-PY-46-cli-output"},
+		{rule: "BP-PY-46", caseName: "BP-PY-46-benchmark-script"},
 	} {
 		tc := tc
 		t.Run(tc.caseName, func(t *testing.T) {

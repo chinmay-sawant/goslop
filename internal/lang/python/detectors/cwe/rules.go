@@ -175,6 +175,9 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if len(args) == 0 {
 			continue
 		}
+		if isExecuteCallbackPassthrough(src, call.Start, args) {
+			continue
+		}
 		sqlArg := args[0]
 		if isBoundQueryBuilderExpression(src, call.Start, sqlArg) {
 			continue
@@ -212,6 +215,9 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // SQL strings merely because their variable name is non-literal.
 func isBoundQueryBuilderExpression(source string, callStart int, arg string) bool {
 	name := strings.TrimSpace(arg)
+	if isQueryBuilderConstructor(name) {
+		return true
+	}
 	if !isIdentOnly(name) || callStart < 0 || callStart > len(source) {
 		return false
 	}
@@ -247,6 +253,42 @@ func isBoundQueryBuilderExpression(source string, callStart int, arg string) boo
 func isQueryBuilderConstructor(expression string) bool {
 	return strings.HasPrefix(expression, "select(") || strings.HasPrefix(expression, "delete(") ||
 		strings.HasPrefix(expression, "update(") || strings.HasPrefix(expression, "insert(")
+}
+
+// isExecuteCallbackPassthrough recognizes the DB-API execute-wrapper shape
+// used by Django's execute_wrapper hook. The callback receives SQL and its
+// bound arguments, then forwards them unchanged; this is not SQL construction.
+// Keep the guard exact so a wrapper that rewrites sql before forwarding still
+// reaches the dynamic-SQL check.
+func isExecuteCallbackPassthrough(source string, callStart int, args []string) bool {
+	if len(args) != 4 || strings.TrimSpace(args[0]) != "sql" ||
+		strings.TrimSpace(args[1]) != "params" || strings.TrimSpace(args[2]) != "many" ||
+		strings.TrimSpace(args[3]) != "context" || callStart <= 0 || callStart > len(source) {
+		return false
+	}
+
+	lines := strings.Split(pythonCodeMask(source[:callStart]), "\n")
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i])
+		if !strings.HasPrefix(line, "def __call__(") && !strings.HasPrefix(line, "async def __call__(") {
+			continue
+		}
+		for _, parameter := range []string{"execute", "sql", "params", "many", "context"} {
+			if !strings.Contains(line, parameter) {
+				return false
+			}
+		}
+		for _, bodyLine := range lines[i+1:] {
+			trimmed := strings.TrimSpace(bodyLine)
+			if strings.HasPrefix(trimmed, "sql =") || strings.HasPrefix(trimmed, "sql=") ||
+				strings.HasPrefix(trimmed, "sql +=") || strings.HasPrefix(trimmed, "sql-=") ||
+				strings.HasPrefix(trimmed, "sql.format(") {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }
 
 func findExecuteCalls(src string) []callSite {

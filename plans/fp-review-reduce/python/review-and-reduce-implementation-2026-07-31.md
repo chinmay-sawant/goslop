@@ -32,3 +32,27 @@ Each guardrail has a safe and vulnerable text fixture under `./tests/fixtures/py
 - Full no-cache corpus scan — 20 findings, exactly `49 - 29` confirmed false positives.
 
 All 29 confirmed false positives are now suppressed; the remaining 20 findings satisfy their respective rule conditions.
+
+## Follow-up reduction: benchmark and SQL false positives (2026-08-01)
+
+- Audit source: `./plans/fp-review-reduce/python/false-positive-audit-2026-07-31.md`
+- Baseline: 56 findings from the no-cache `make run-python` scan, including 16 confirmed false positives and no uncertain findings.
+- Validation timestamp: `2026-08-01T00:10:39+05:30`.
+
+### Completion record
+
+| Findings | Rule(s) | Detector condition and evidence | Safe fixture | Vulnerable fixture | Regression coverage |
+| --- | --- | --- | --- | --- | --- |
+| 1, 45 | CWE-89 | Suppress the exact four-argument `__call__` DB-API execute passthrough unless the wrapper rewrites `sql`; recognize direct SQLAlchemy Core query-builder expressions as bound ORM/query-builder use. | `tests/fixtures/python/cwe/CWE-89-execute-wrapper-safe.txt`; `tests/fixtures/python/cwe/CWE-89-orm-direct-safe.txt` | Matching `...-vulnerable.txt` fixtures | `internal/lang/python/detectors/cwe/audit_variants_test.go`; `tests/integration/python` |
+| 2, 3, 41–44, 46, 50–53, 56 | BP-PY-46 | Suppress intentional output in files whose path contains the exact `bench` or `benchmarks` component; ordinary application/library output remains reportable. | `tests/fixtures/python/bp/BP-PY-46-benchmark-script-safe.txt` | `tests/fixtures/python/bp/BP-PY-46-benchmark-script-vulnerable.txt` | `internal/lang/python/detectors/bad_practices/audit_variants_test.go`; `tests/integration/python/bp_matrix_test.go` |
+| 54, 55 | CWE-312, CWE-798 | Suppress synthetic benchmark secrets only when the file is under a benchmark path; deployed application configuration remains reportable. | `tests/fixtures/python/cwe/CWE-312-benchmark-secret-safe.txt`; `tests/fixtures/python/cwe/CWE-798-benchmark-secret-safe.txt` | Matching `...-vulnerable.txt` fixtures | `internal/lang/python/detectors/cwe/audit_variants_test.go`; `tests/integration/python` |
+
+### Validation
+
+- Focused detector and Python integration tests: `go test ./internal/lang/python/detectors/cwe/... ./internal/lang/python/detectors/bad_practices/... ./tests/integration/python -count=1` — passed.
+- Full lint: `make lint-all` — passed.
+- Full tests: `make test` — passed.
+- Diff hygiene: `git diff --check` — passed.
+- Exact no-cache rescan: `make run-python` — 40 findings from 58 files and 2,716 lines; 7 high, 0 info, 0 low, 33 medium; 40 context files and 2 chunk files exported. This removes exactly the 16 audited false-positive findings from the 56-finding baseline.
+- Retained `CWE-312` and `CWE-798` findings are outside benchmark paths in Django settings and remain true positives. No audited false-positive `CWE-89` or `BP-PY-46` context remains in the current chunks.
+- Remaining uncertainty: none.

@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: app/queries.py
+---
+async def find(session, owner_id):
+    query = f"SELECT * FROM items WHERE owner_id = {owner_id}"
+    return await session.execute(query)

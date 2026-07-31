@@ -46,6 +46,22 @@ func isPythonTestFile(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isPythonBenchmarkFile identifies benchmark harnesses whose print calls are
+// intentional result output rather than application-library debugging.
+func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{fileDisplayPath(unit), unit.Path} {
+		for _, component := range strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/") {
+			if component == "bench" || component == "benchmarks" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func pushAt(unit *core.ParsedUnit, meta *rules.RuleMetadata, byteOffset int, message string, out *[]rules.Finding) {
 	if unit == nil || meta == nil || out == nil {
 		return
