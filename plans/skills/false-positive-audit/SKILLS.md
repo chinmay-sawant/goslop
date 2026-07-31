@@ -76,12 +76,6 @@ Source excerpt:
 
 Why it is uncertain: `<one or two lines describing the missing context, deployment assumption, or threat-model dependency.>`
 
-## True positives
-
-| Finding ID | Rule | Source | Short evidence |
-| ---: | --- | --- | --- |
-| `<id>` | `<rule-id>` | `<path:line>` | `<one-line reason the rule condition is present>` |
-
 ## Final evidence
 
 - Delegated reviewers: `<names/tasks>`
