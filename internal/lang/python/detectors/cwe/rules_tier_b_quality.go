@@ -41,20 +41,20 @@ var (
 
 func detectCWE1104(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, regexp.MustCompile(`(?im)^\s*(?:import|from)\s+imp\b`)); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1104, start, "unmaintained imp component is imported", 0.74, out)
+		emitTierBFinding(unit, &MetaCWE1104, start, "unmaintained imp component is imported", confidence74, out)
 	}
 }
 
 func detectCWE1106(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBMagicCookieRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1106, start, "security-sensitive cookie lifetime uses an unexplained magic number", 0.68, out)
+		emitTierBFinding(unit, &MetaCWE1106, start, "security-sensitive cookie lifetime uses an unexplained magic number", confidence68, out)
 	}
 }
 
 func detectCWE1108(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, fn := range pythonFunctions(unit.Source) {
 		if strings.Count(pythonCodeMask(fn.body), "global ") >= 3 {
-			emitTierBFinding(unit, &MetaCWE1108, fn.bodyStart, "function relies on multiple global variables", 0.7, out)
+			emitTierBFinding(unit, &MetaCWE1108, fn.bodyStart, "function relies on multiple global variables", confidence70, out)
 			return
 		}
 	}
@@ -64,8 +64,8 @@ func detectCWE1121(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, fn := range pythonFunctions(unit.Source) {
 		code := pythonCodeMask(fn.body)
 		branches := strings.Count(code, "if ") + strings.Count(code, "elif ") + strings.Count(code, "for ") + strings.Count(code, "while ") + strings.Count(code, "except ")
-		if branches >= 12 {
-			emitTierBFinding(unit, &MetaCWE1121, fn.bodyStart, "function has at least twelve visible control-flow branches", 0.7, out)
+		if branches >= minimumRouteBranches {
+			emitTierBFinding(unit, &MetaCWE1121, fn.bodyStart, "function has at least twelve visible control-flow branches", confidence70, out)
 			return
 		}
 	}
@@ -73,7 +73,7 @@ func detectCWE1121(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func detectCWE1123(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "types.FunctionType") {
-		emitTierBFinding(unit, &MetaCWE1123, call.Start, "function object is constructed dynamically from code", 0.8, out)
+		emitTierBFinding(unit, &MetaCWE1123, call.Start, "function object is constructed dynamically from code", confidence80, out)
 		return
 	}
 }
@@ -87,7 +87,7 @@ func detectCWE1124(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		}
 		text := pythonCodeMask(unit.Source[offset:end])
 		if strings.TrimSpace(text) != "" && len(text)-len(strings.TrimLeft(text, " ")) >= 24 {
-			emitTierBFinding(unit, &MetaCWE1124, offset, "executable statement is nested at least six indentation levels", 0.7, out)
+			emitTierBFinding(unit, &MetaCWE1124, offset, "executable statement is nested at least six indentation levels", confidence70, out)
 			return
 		}
 		if end == len(unit.Source) {
@@ -98,56 +98,56 @@ func detectCWE1124(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 }
 
 func detectCWE1220(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBUserLookupRE); start >= 0 && !strings.Contains(unit.Source[start:start+minInt(400, len(unit.Source)-start)], "request.user") {
-		emitTierBFinding(unit, &MetaCWE1220, start, "object is fetched by request identifier without an owner constraint", 0.76, out)
+	if start := firstCodeMatchStart(unit.Source, pyTierBUserLookupRE); start >= 0 && !strings.Contains(unit.Source[start:start+minInt(userLookupContextWindow, len(unit.Source)-start)], "request.user") {
+		emitTierBFinding(unit, &MetaCWE1220, start, "object is fetched by request identifier without an owner constraint", confidence76, out)
 	}
 }
 
 func detectCWE1265(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBReentrantRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1265, start, "non-reentrant lock is acquired again in a nested scope", 0.8, out)
+		emitTierBFinding(unit, &MetaCWE1265, start, "non-reentrant lock is acquired again in a nested scope", confidence80, out)
 	}
 }
 
 func detectCWE1284(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBLimitRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1284, start, "request quantity controls a data-access limit without a visible bound", 0.76, out)
+		emitTierBFinding(unit, &MetaCWE1284, start, "request quantity controls a data-access limit without a visible bound", confidence76, out)
 	}
 }
 
 func detectCWE1285(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBIndexRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1285, start, "request value is converted directly into a collection index", 0.78, out)
+		emitTierBFinding(unit, &MetaCWE1285, start, "request value is converted directly into a collection index", confidence78, out)
 	}
 }
 
 func detectCWE1287(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBTypeRE); start >= 0 && !strings.Contains(unit.Source, "isinstance(") {
-		emitTierBFinding(unit, &MetaCWE1287, start, "JSON request object is used for execution without a visible type check", 0.7, out)
+		emitTierBFinding(unit, &MetaCWE1287, start, "JSON request object is used for execution without a visible type check", confidence70, out)
 	}
 }
 
 func detectCWE1288(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBConsistencyRE); start >= 0 && !strings.Contains(unit.Source, "len(items)") {
-		emitTierBFinding(unit, &MetaCWE1288, start, "request count and item collection are used without a consistency check", 0.7, out)
+		emitTierBFinding(unit, &MetaCWE1288, start, "request count and item collection are used without a consistency check", confidence70, out)
 	}
 }
 
 func detectCWE1322(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBAsyncSleepRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1322, start, "blocking sleep runs inside an async function", 0.84, out)
+		emitTierBFinding(unit, &MetaCWE1322, start, "blocking sleep runs inside an async function", confidence84, out)
 	}
 }
 
 func detectCWE1339(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBFloatMoneyRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1339, start, "request monetary value is parsed as a binary floating-point number", 0.8, out)
+		emitTierBFinding(unit, &MetaCWE1339, start, "request monetary value is parsed as a binary floating-point number", confidence80, out)
 	}
 }
 
 func detectCWE1341(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBDoubleCloseRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1341, start, "same resource handle is released twice", 0.82, out)
+		emitTierBFinding(unit, &MetaCWE1341, start, "same resource handle is released twice", confidence82, out)
 	}
 }
 

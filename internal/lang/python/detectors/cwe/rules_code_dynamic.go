@@ -37,7 +37,7 @@ func detectCWE749(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 					continue
 				}
 				emitCodeDynamic(unit, &MetaCWE749, handler.start+call.Start,
-					"route handler exposes dynamic code execution to external callers", 0.84, out)
+					"route handler exposes dynamic code execution to external callers", confidence84, out)
 				return
 			}
 		}
@@ -45,7 +45,7 @@ func detectCWE749(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && isDynamicExpr(args[0]) {
 				emitCodeDynamic(unit, &MetaCWE749, handler.start+call.Start,
-					"route handler exposes a dynamically selected module import", 0.8, out)
+					"route handler exposes a dynamically selected module import", confidence80, out)
 				return
 			}
 		}
@@ -63,7 +63,7 @@ func detectCWE829(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && isDynamicExpr(args[0]) {
 				emitCodeDynamic(unit, &MetaCWE829, call.Start,
-					"dynamically selected module or code path is loaded for execution", 0.82, out)
+					"dynamically selected module or code path is loaded for execution", confidence82, out)
 				return
 			}
 		}
@@ -72,7 +72,7 @@ func detectCWE829(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && isDynamicExpr(args[1]) {
 			emitCodeDynamic(unit, &MetaCWE829, call.Start,
-				"dynamically selected file path is prepared for module execution", 0.8, out)
+				"dynamically selected file path is prepared for module execution", confidence80, out)
 			return
 		}
 	}
@@ -87,7 +87,7 @@ func detectCWE695(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"ctypes.CDLL", "ctypes.PyDLL", "ctypes.cast", "cffi.FFI", "mmap.mmap"} {
 		if calls := findCalls(unit.Source, name); len(calls) > 0 {
 			emitCodeDynamic(unit, &MetaCWE695, calls[0].Start,
-				"low-level native or memory interface bypasses higher-level safety controls", 0.76, out)
+				"low-level native or memory interface bypasses higher-level safety controls", confidence76, out)
 			return
 		}
 	}
@@ -107,7 +107,7 @@ func detectCWE214(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			}
 			if sensitiveValueRE.MatchString(visibleArgs) && isDynamicExpr(visibleArgs) {
 				emitCodeDynamic(unit, &MetaCWE214, call.Start,
-					"subprocess receives a sensitive value through visible arguments or environment", 0.82, out)
+					"subprocess receives a sensitive value through visible arguments or environment", confidence82, out)
 				return
 			}
 		}
@@ -124,7 +124,7 @@ func detectCWE215(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			if sensitiveValueRE.MatchString(call.ArgsText) && !isPureStringLiteral(call.ArgsText) {
 				emitCodeDynamic(unit, &MetaCWE215, call.Start,
-					"debug output includes a sensitive value; redact it before logging", 0.86, out)
+					"debug output includes a sensitive value; redact it before logging", confidence86, out)
 				return
 			}
 		}

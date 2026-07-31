@@ -35,7 +35,7 @@ var (
 // exception handlers intentionally remain outside this narrow heuristic.
 func detectCWE396(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyGenericExceptRE); start >= 0 {
-		emitPlatformFinding(unit, &MetaCWE396, start, "generic Exception or BaseException handler can hide distinct failure conditions", 0.84, out)
+		emitPlatformFinding(unit, &MetaCWE396, start, "generic Exception or BaseException handler can hide distinct failure conditions", confidence84, out)
 	}
 }
 
@@ -43,7 +43,7 @@ func detectCWE396(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // root exception classes. Raising an application-specific exception is safe.
 func detectCWE397(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyGenericRaiseRE); start >= 0 {
-		emitPlatformFinding(unit, &MetaCWE397, start, "generic Exception or BaseException is raised directly", 0.82, out)
+		emitPlatformFinding(unit, &MetaCWE397, start, "generic Exception or BaseException is raised directly", confidence82, out)
 	}
 }
 
@@ -55,7 +55,7 @@ func detectCWE478(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if start := matchWithoutDefaultStart(unit.Source); start >= 0 {
-		emitPlatformFinding(unit, &MetaCWE478, start, "multiple-case match expression has no wildcard default branch", 0.76, out)
+		emitPlatformFinding(unit, &MetaCWE478, start, "multiple-case match expression has no wildcard default branch", confidence76, out)
 	}
 }
 
@@ -71,7 +71,7 @@ func detectCWE252(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			if !standaloneCall(unit.Source, call) || (name == "subprocess.run" && hasKwargTrue(call.ArgsText, "check")) {
 				continue
 			}
-			emitPlatformFinding(unit, &MetaCWE252, call.Start, "process call return status is discarded without checking success", 0.82, out)
+			emitPlatformFinding(unit, &MetaCWE252, call.Start, "process call return status is discarded without checking success", confidence82, out)
 			return
 		}
 	}
@@ -85,7 +85,7 @@ func detectCWE390(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if start := exceptPassStart(unit.Source); start >= 0 {
-		emitPlatformFinding(unit, &MetaCWE390, start, "exception is detected but the handler takes no action", 0.82, out)
+		emitPlatformFinding(unit, &MetaCWE390, start, "exception is detected but the handler takes no action", confidence82, out)
 	}
 }
 
@@ -97,7 +97,7 @@ func detectCWE584(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if start := finallyReturnStart(unit.Source); start >= 0 {
-		emitPlatformFinding(unit, &MetaCWE584, start, "return inside finally can suppress an exception from the protected block", 0.9, out)
+		emitPlatformFinding(unit, &MetaCWE584, start, "return inside finally can suppress an exception from the protected block", confidence90, out)
 	}
 }
 

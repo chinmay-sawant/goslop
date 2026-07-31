@@ -43,8 +43,8 @@ func detectCWE908(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	code := pythonCodeMask(unit.Source)
 	for _, match := range pyTierBNoneAssignRE.FindAllStringSubmatchIndex(code, -1) {
 		name := code[match[2]:match[3]]
-		if resourceUseStart(unit.Source, code, name, match[1], 220, "read", "write", "execute", "connect") >= 0 {
-			emitTierBFinding(unit, &MetaCWE908, match[0], "resource initialized to None is used without initialization", 0.78, out)
+		if resourceUseStart(unit.Source, code, name, match[1], uninitializedResourceWindow, "read", "write", "execute", "connect") >= 0 {
+			emitTierBFinding(unit, &MetaCWE908, match[0], "resource initialized to None is used without initialization", confidence78, out)
 			return
 		}
 	}
@@ -54,7 +54,7 @@ func detectCWE909(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, fn := range pythonFunctions(unit.Source) {
 		code := pythonCodeMask(fn.body)
 		if strings.Contains(code, "db.execute(") && !strings.Contains(code, "db =") && !strings.Contains(code, "get_db(") {
-			emitTierBFinding(unit, &MetaCWE909, fn.bodyStart, "database resource is used without local initialization evidence", 0.68, out)
+			emitTierBFinding(unit, &MetaCWE909, fn.bodyStart, "database resource is used without local initialization evidence", confidence68, out)
 			return
 		}
 	}
@@ -64,8 +64,8 @@ func detectCWE910(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	code := pythonCodeMask(unit.Source)
 	for _, match := range pyTierBCloseCallRE.FindAllStringSubmatchIndex(code, -1) {
 		name := code[match[2]:match[3]]
-		if resourceUseStart(unit.Source, code, name, match[1], 180, "read", "write", "flush") >= 0 {
-			emitTierBFinding(unit, &MetaCWE910, match[0], "closed file descriptor is used again", 0.86, out)
+		if resourceUseStart(unit.Source, code, name, match[1], closedResourceWindow, "read", "write", "flush") >= 0 {
+			emitTierBFinding(unit, &MetaCWE910, match[0], "closed file descriptor is used again", confidence86, out)
 			return
 		}
 	}
@@ -90,21 +90,21 @@ func resourceUseStart(source, code, name string, from, span int, methods ...stri
 
 func detectCWE911(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "ctypes.pythonapi.Py_IncRef", "ctypes.pythonapi.Py_DecRef") {
-		emitTierBFinding(unit, &MetaCWE911, call.Start, "manual CPython reference-count API is invoked", 0.8, out)
+		emitTierBFinding(unit, &MetaCWE911, call.Start, "manual CPython reference-count API is invoked", confidence80, out)
 		return
 	}
 }
 
 func detectCWE920(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBBusyLoopRE); start >= 0 && !strings.Contains(unit.Source[start:], "time.sleep(") {
-		emitTierBFinding(unit, &MetaCWE920, start, "unbounded busy loop repeatedly performs expensive computation", 0.76, out)
+		emitTierBFinding(unit, &MetaCWE920, start, "unbounded busy loop repeatedly performs expensive computation", confidence76, out)
 	}
 }
 
 func detectCWE939(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "webbrowser.open") {
 		if strings.Contains(call.ArgsText, "request.") {
-			emitTierBFinding(unit, &MetaCWE939, call.Start, "custom URL handler opens a request-controlled target", 0.78, out)
+			emitTierBFinding(unit, &MetaCWE939, call.Start, "custom URL handler opens a request-controlled target", confidence78, out)
 			return
 		}
 	}
@@ -112,38 +112,38 @@ func detectCWE939(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func detectCWE1007(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBHomoglyphRE); start >= 0 && !strings.Contains(unit.Source, "normalize(") {
-		emitTierBFinding(unit, &MetaCWE1007, start, "request username is rendered without Unicode normalization", 0.7, out)
+		emitTierBFinding(unit, &MetaCWE1007, start, "request username is rendered without Unicode normalization", confidence70, out)
 	}
 }
 
 func detectCWE1021(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBFrameRE); start >= 0 && !strings.Contains(unit.Source, "X-Frame-Options") && !strings.Contains(unit.Source, "frame-ancestors") {
-		emitTierBFinding(unit, &MetaCWE1021, start, "HTML response is returned without an observable frame-embedding restriction", 0.68, out)
+		emitTierBFinding(unit, &MetaCWE1021, start, "HTML response is returned without an observable frame-embedding restriction", confidence68, out)
 	}
 }
 
 func detectCWE1046(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBConcatLoopRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1046, start, "immutable text is repeatedly concatenated inside a loop", 0.76, out)
+		emitTierBFinding(unit, &MetaCWE1046, start, "immutable text is repeatedly concatenated inside a loop", confidence76, out)
 	}
 }
 
 func detectCWE1050(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBOpenLoopRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1050, start, "platform resource is opened for every loop iteration", 0.76, out)
+		emitTierBFinding(unit, &MetaCWE1050, start, "platform resource is opened for every loop iteration", confidence76, out)
 	}
 }
 
 func detectCWE1060(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBNPlusOneRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1060, start, "ORM relation is loaded once per query result", 0.76, out)
+		emitTierBFinding(unit, &MetaCWE1060, start, "ORM relation is loaded once per query result", confidence76, out)
 	}
 }
 
 func detectCWE1067(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, ".filter") {
 		if strings.Contains(call.ArgsText, "__contains=") || strings.Contains(call.ArgsText, "__icontains=") {
-			emitTierBFinding(unit, &MetaCWE1067, call.Start, "data-resource search uses an unanchored contains lookup", 0.72, out)
+			emitTierBFinding(unit, &MetaCWE1067, call.Start, "data-resource search uses an unanchored contains lookup", confidence72, out)
 			return
 		}
 	}
@@ -151,20 +151,20 @@ func detectCWE1067(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func detectCWE1071(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBEmptyExceptRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1071, start, "exception handler silently contains only pass", 0.78, out)
+		emitTierBFinding(unit, &MetaCWE1071, start, "exception handler silently contains only pass", confidence78, out)
 	}
 }
 
 func detectCWE1072(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBPoolRouteRE); start >= 0 && !strings.Contains(unit.Source, "ThreadedConnectionPool") {
-		emitTierBFinding(unit, &MetaCWE1072, start, "route opens a direct database connection without pool evidence", 0.72, out)
+		emitTierBFinding(unit, &MetaCWE1072, start, "route opens a direct database connection without pool evidence", confidence72, out)
 	}
 }
 
 func detectCWE1084(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, fn := range pythonFunctions(unit.Source) {
 		if len(findCalls(fn.body, "open", ".execute")) >= 3 {
-			emitTierBFinding(unit, &MetaCWE1084, fn.bodyStart, "single function performs many file or data-access operations", 0.7, out)
+			emitTierBFinding(unit, &MetaCWE1084, fn.bodyStart, "single function performs many file or data-access operations", confidence70, out)
 			return
 		}
 	}

@@ -37,7 +37,7 @@ var (
 // proved from a single file, so only explicit debug enablement is reported.
 func detectCWE756(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := debugEnabledStart(unit); start >= 0 {
-		emitWebConfigFinding(unit, &MetaCWE756, start, "debug error output is enabled instead of a custom error page", 0.76, out)
+		emitWebConfigFinding(unit, &MetaCWE756, start, "debug error output is enabled instead of a custom error page", confidence76, out)
 	}
 }
 
@@ -45,12 +45,12 @@ func detectCWE756(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // breakpoints. findCalls masks comments and docstrings before matching calls.
 func detectCWE489(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := debugEnabledStart(unit); start >= 0 {
-		emitWebConfigFinding(unit, &MetaCWE489, start, "debug mode is enabled in application source", 0.84, out)
+		emitWebConfigFinding(unit, &MetaCWE489, start, "debug mode is enabled in application source", confidence84, out)
 		return
 	}
 	for _, name := range []string{"pdb.set_trace", "breakpoint"} {
 		if calls := findCalls(unit.Source, name); len(calls) > 0 {
-			emitWebConfigFinding(unit, &MetaCWE489, calls[0].Start, "executable debugger breakpoint remains in application source", 0.84, out)
+			emitWebConfigFinding(unit, &MetaCWE489, calls[0].Start, "executable debugger breakpoint remains in application source", confidence84, out)
 			return
 		}
 	}
@@ -60,13 +60,13 @@ func detectCWE489(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // process setting. Reading an environment variable is intentionally excluded.
 func detectCWE15(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyExternalConfigRE); start >= 0 {
-		emitWebConfigFinding(unit, &MetaCWE15, start, "request-controlled data directly changes an application or process configuration setting", 0.82, out)
+		emitWebConfigFinding(unit, &MetaCWE15, start, "request-controlled data directly changes an application or process configuration setting", confidence82, out)
 		return
 	}
 	for _, call := range findCalls(unit.Source, "os.putenv") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && isDirectRequestExpr(args[1]) {
-			emitWebConfigFinding(unit, &MetaCWE15, call.Start, "request-controlled data is passed to os.putenv", 0.82, out)
+			emitWebConfigFinding(unit, &MetaCWE15, call.Start, "request-controlled data is passed to os.putenv", confidence82, out)
 			return
 		}
 	}
@@ -82,7 +82,7 @@ func detectCWE1051(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.patch", "requests.delete", "requests.request", "httpx.get", "httpx.post", "httpx.put", "httpx.request", "urllib.request.urlopen"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if pyNetworkResourceRE.MatchString(strings.TrimSpace(httpCallURLArgument(call.Name, call.ArgsText))) {
-				emitWebConfigFinding(unit, &MetaCWE1051, call.Start, "outbound client is initialized with a hard-coded private network resource URL", 0.78, out)
+				emitWebConfigFinding(unit, &MetaCWE1051, call.Start, "outbound client is initialized with a hard-coded private network resource URL", confidence78, out)
 				return
 			}
 		}
@@ -94,13 +94,13 @@ func detectCWE1051(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // treated as excessive hard-coded initialization.
 func detectCWE1052(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyHardcodedInitRE); start >= 0 {
-		emitWebConfigFinding(unit, &MetaCWE1052, start, "security or database initialization uses a hard-coded literal", 0.78, out)
+		emitWebConfigFinding(unit, &MetaCWE1052, start, "security or database initialization uses a hard-coded literal", confidence78, out)
 		return
 	}
 	for _, name := range []string{"create_engine", "sqlalchemy.create_engine", "psycopg2.connect"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if credentialBearingDSN(call.ArgsText) {
-				emitWebConfigFinding(unit, &MetaCWE1052, call.Start, "database initialization uses a credential-bearing hard-coded DSN", 0.8, out)
+				emitWebConfigFinding(unit, &MetaCWE1052, call.Start, "database initialization uses a credential-bearing hard-coded DSN", confidence80, out)
 				return
 			}
 		}
@@ -116,7 +116,7 @@ func detectCWE1125(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{".route", "add_url_rule"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if isDebugRoute(callURLArgument(call.ArgsText)) {
-				emitWebConfigFinding(unit, &MetaCWE1125, call.Start, "debug-only HTTP route is exposed by the application", 0.76, out)
+				emitWebConfigFinding(unit, &MetaCWE1125, call.Start, "debug-only HTTP route is exposed by the application", confidence76, out)
 				return
 			}
 		}
@@ -127,13 +127,13 @@ func detectCWE1125(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // verification bypass, both of which select an insecure resource default.
 func detectCWE1188(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyWildcardHostsRE); start >= 0 {
-		emitWebConfigFinding(unit, &MetaCWE1188, start, "host validation is initialized with a wildcard default", 0.8, out)
+		emitWebConfigFinding(unit, &MetaCWE1188, start, "host validation is initialized with a wildcard default", confidence80, out)
 		return
 	}
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.request", "httpx.get", "httpx.post", "httpx.request"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if hasKwargFalse(call.ArgsText, "verify") {
-				emitWebConfigFinding(unit, &MetaCWE1188, call.Start, "network resource is initialized with TLS verification disabled", 0.82, out)
+				emitWebConfigFinding(unit, &MetaCWE1188, call.Start, "network resource is initialized with TLS verification disabled", confidence82, out)
 				return
 			}
 		}
@@ -149,7 +149,7 @@ func detectCWE921(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, call := range findCalls(unit.Source, "open") {
 		if insecureSensitiveTempWrite(call.ArgsText) {
-			emitWebConfigFinding(unit, &MetaCWE921, call.Start, "sensitive data file is opened for writing in a shared temporary location", 0.82, out)
+			emitWebConfigFinding(unit, &MetaCWE921, call.Start, "sensitive data file is opened for writing in a shared temporary location", confidence82, out)
 			return
 		}
 	}

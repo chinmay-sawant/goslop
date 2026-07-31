@@ -33,7 +33,7 @@ func detectCWE73(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			if len(args) == 0 || !isDirectFilePathSource(args[0]) {
 				continue
 			}
-			emitPathFSFinding(unit, &MetaCWE73, call.Start, "directly request-controlled path reaches a filesystem API", 0.82, out)
+			emitPathFSFinding(unit, &MetaCWE73, call.Start, "directly request-controlled path reaches a filesystem API", confidence82, out)
 			return
 		}
 	}
@@ -49,13 +49,13 @@ func detectCWE59(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	functions := pythonFunctions(unit.Source)
 	if len(functions) == 0 {
 		if start := linkCheckThenUse(unit.Source); start >= 0 {
-			emitPathFSFinding(unit, &MetaCWE59, start, "symbolic-link check is followed by access to the same path name (check-then-use race)", 0.8, out)
+			emitPathFSFinding(unit, &MetaCWE59, start, "symbolic-link check is followed by access to the same path name (check-then-use race)", confidence80, out)
 		}
 		return
 	}
 	for _, fn := range functions {
 		if start := linkCheckThenUse(fn.body); start >= 0 {
-			emitPathFSFinding(unit, &MetaCWE59, fn.bodyStart+start, "symbolic-link check is followed by access to the same path name (check-then-use race)", 0.8, out)
+			emitPathFSFinding(unit, &MetaCWE59, fn.bodyStart+start, "symbolic-link check is followed by access to the same path name (check-then-use race)", confidence80, out)
 			return
 		}
 	}
@@ -95,7 +95,7 @@ func detectCWE41(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		path := args[0]
 		if strings.Contains(path, "os.path.normpath(") && isDirectFilePathSource(path) &&
 			!strings.Contains(path, "os.path.realpath(") && !strings.Contains(path, ".resolve(") {
-			emitPathFSFinding(unit, &MetaCWE41, call.Start, "request-controlled path is normalized with normpath before file access without canonical resolution", 0.78, out)
+			emitPathFSFinding(unit, &MetaCWE41, call.Start, "request-controlled path is normalized with normpath before file access without canonical resolution", confidence78, out)
 			return
 		}
 	}
@@ -107,14 +107,14 @@ func detectCWE276(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, call := range findCalls(unit.Source, "os.umask") {
 		if strings.TrimSpace(call.ArgsText) == "0" {
-			emitPathFSFinding(unit, &MetaCWE276, call.Start, "process umask is disabled, allowing insecure default file permissions", 0.84, out)
+			emitPathFSFinding(unit, &MetaCWE276, call.Start, "process umask is disabled, allowing insecure default file permissions", confidence84, out)
 			return
 		}
 	}
 	for _, name := range []string{"os.chmod", ".chmod", "os.makedirs"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if hasWorldWritableMode(call.ArgsText) {
-				emitPathFSFinding(unit, &MetaCWE276, call.Start, "filesystem permissions are explicitly world-writable", 0.86, out)
+				emitPathFSFinding(unit, &MetaCWE276, call.Start, "filesystem permissions are explicitly world-writable", confidence86, out)
 				return
 			}
 		}
@@ -126,7 +126,7 @@ func detectCWE378(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if calls := findCalls(unit.Source, "tempfile.mktemp"); len(calls) > 0 {
-		emitPathFSFinding(unit, &MetaCWE378, calls[0].Start, "tempfile.mktemp creates an unreserved temporary pathname", 0.9, out)
+		emitPathFSFinding(unit, &MetaCWE378, calls[0].Start, "tempfile.mktemp creates an unreserved temporary pathname", confidence90, out)
 	}
 }
 
@@ -137,7 +137,7 @@ func detectCWE426(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "sys.path.insert", "sys.path.append") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if isUntrustedSearchPath(call.Name, args) {
-			emitPathFSFinding(unit, &MetaCWE426, call.Start, "untrusted path is added to Python's import search path", 0.84, out)
+			emitPathFSFinding(unit, &MetaCWE426, call.Start, "untrusted path is added to Python's import search path", confidence84, out)
 			return
 		}
 	}
@@ -150,7 +150,7 @@ func detectCWE250(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"os.setuid", "os.seteuid", "os.setgid", "os.setegid"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if strings.TrimSpace(call.ArgsText) == "0" {
-				emitPathFSFinding(unit, &MetaCWE250, call.Start, "process explicitly switches to the root user or group", 0.88, out)
+				emitPathFSFinding(unit, &MetaCWE250, call.Start, "process explicitly switches to the root user or group", confidence88, out)
 				return
 			}
 		}
@@ -166,7 +166,7 @@ func detectCWE494(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"exec", "eval"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if isDownloadedCode(call.ArgsText) {
-				emitPathFSFinding(unit, &MetaCWE494, call.Start, "downloaded HTTP response is executed without an integrity verification step", 0.92, out)
+				emitPathFSFinding(unit, &MetaCWE494, call.Start, "downloaded HTTP response is executed without an integrity verification step", confidence92, out)
 				return
 			}
 		}

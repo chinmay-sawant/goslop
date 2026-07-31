@@ -54,7 +54,7 @@ func detectCWE915(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func pushCWE915(unit *core.ParsedUnit, start int, message string, out *[]rules.Finding) {
 	line, col := unit.LineCol(start)
-	rules.PushFindingWithConfidence(&MetaCWE915, unitFile(unit), line, col, message, 0.8, out)
+	rules.PushFindingWithConfidence(&MetaCWE915, unitFile(unit), line, col, message, confidence80, out)
 }
 
 func requestSetattrLoopStart(src string) int {
@@ -99,7 +99,7 @@ func detectCWE914(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				unitFile(unit),
 				line, col,
 				"request-controlled value selects a variable or object attribute (use a fixed allowlist)",
-				0.8,
+				confidence80,
 				out,
 			)
 			return
@@ -134,5 +134,5 @@ func detectCWE916(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func pushCWE916(unit *core.ParsedUnit, start int, message string, out *[]rules.Finding) {
 	line, col := unit.LineCol(start)
-	rules.PushFindingWithConfidence(&MetaCWE916, unitFile(unit), line, col, message, 0.8, out)
+	rules.PushFindingWithConfidence(&MetaCWE916, unitFile(unit), line, col, message, confidence80, out)
 }

@@ -41,7 +41,7 @@ func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			unitFile(unit),
 			line, col,
 			"unsafe pickle deserialization sink (untrusted data must not be unpickled)",
-			0.8,
+			confidence80,
 			out,
 		)
 		return
@@ -74,7 +74,7 @@ func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			unitFile(unit),
 			line, col,
 			"yaml.load without SafeLoader (use yaml.safe_load or Loader=yaml.SafeLoader)",
-			0.8,
+			confidence80,
 			out,
 		)
 		return
@@ -118,7 +118,7 @@ func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				unitFile(unit),
 				line, col,
 				"dynamic input reaches an OS command sink (os.system/os.popen)",
-				0.8,
+				confidence80,
 				out,
 			)
 			return
@@ -152,7 +152,7 @@ func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				unitFile(unit),
 				line, col,
 				"dynamic command with subprocess shell=True (prefer list argv and shell=False)",
-				0.8,
+				confidence80,
 				out,
 			)
 			return
@@ -202,7 +202,7 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				unitFile(unit),
 				line, col,
 				"dynamic SQL string reaches execute/executemany (use bound parameters)",
-				0.75,
+				confidence75,
 				out,
 			)
 			return
@@ -283,7 +283,7 @@ func detectCWE22(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 					unitFile(unit),
 					line, col,
 					"user-influenced path segment reaches open() without confinement (basename/resolve+prefix)",
-					0.7,
+					confidence70,
 					out,
 				)
 				return
@@ -392,7 +392,7 @@ func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			unitFile(unit),
 			line, col,
 			"mark_safe on dynamic content disables autoescaping (XSS risk)",
-			0.8,
+			confidence80,
 			out,
 		)
 		return
@@ -413,7 +413,7 @@ func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			unitFile(unit),
 			line, col,
 			"Markup() wraps dynamic HTML without escaping (XSS risk)",
-			0.8,
+			confidence80,
 			out,
 		)
 		return
@@ -437,7 +437,7 @@ func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				unitFile(unit),
 				line, col,
 				"render_template_string with dynamic template/HTML (prefer render_template + autoescape)",
-				0.75,
+				confidence75,
 				out,
 			)
 			return

@@ -32,7 +32,7 @@ var (
 // focused on credentials that are actually committed to Python source.
 func detectCWE798(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyHardcodedCredentialRE); start >= 0 {
-		pushSecretFinding(unit, &MetaCWE798, start, "credential is hard-coded in Python source", 0.82, out)
+		pushSecretFinding(unit, &MetaCWE798, start, "credential is hard-coded in Python source", confidence82, out)
 	}
 }
 
@@ -40,7 +40,7 @@ func detectCWE798(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // password assignments, not tokens and API keys covered by the other rules.
 func detectCWE256(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyPlaintextPasswordRE); start >= 0 {
-		pushSecretFinding(unit, &MetaCWE256, start, "password is stored as a plaintext source literal", 0.8, out)
+		pushSecretFinding(unit, &MetaCWE256, start, "password is stored as a plaintext source literal", confidence80, out)
 	}
 }
 
@@ -48,7 +48,7 @@ func detectCWE256(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // maps. It intentionally excludes os.environ and secret-provider lookups.
 func detectCWE260(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyConfigPasswordRE); start >= 0 {
-		pushSecretFinding(unit, &MetaCWE260, start, "configuration contains a literal password", 0.8, out)
+		pushSecretFinding(unit, &MetaCWE260, start, "configuration contains a literal password", confidence80, out)
 	}
 }
 
@@ -59,7 +59,7 @@ func detectCWE261(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"base64.b64encode", "binascii.hexlify", "codecs.encode"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if passwordArgument(call.ArgsText) {
-				pushSecretFinding(unit, &MetaCWE261, call.Start, "password is protected only with a reversible encoding", 0.8, out)
+				pushSecretFinding(unit, &MetaCWE261, call.Start, "password is protected only with a reversible encoding", confidence80, out)
 				return
 			}
 		}
@@ -68,7 +68,7 @@ func detectCWE261(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func detectCWE312(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyCleartextSecretRE); start >= 0 {
-		pushSecretFinding(unit, &MetaCWE312, start, "sensitive key or token is stored as a cleartext source literal", 0.8, out)
+		pushSecretFinding(unit, &MetaCWE312, start, "sensitive key or token is stored as a cleartext source literal", confidence80, out)
 	}
 }
 
@@ -83,25 +83,25 @@ func detectCWE319(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			args := strings.ToLower(call.ArgsText)
 			if strings.Contains(args, "http://") && hasSensitiveTransportValue(args) {
-				pushSecretFinding(unit, &MetaCWE319, call.Start, "credentials are sent through a cleartext HTTP request", 0.82, out)
+				pushSecretFinding(unit, &MetaCWE319, call.Start, "credentials are sent through a cleartext HTTP request", confidence82, out)
 				return
 			}
 		}
 	}
 	if calls := findCalls(unit.Source, "ftplib.FTP"); len(calls) > 0 {
-		pushSecretFinding(unit, &MetaCWE319, calls[0].Start, "FTP transports credentials without TLS protection", 0.76, out)
+		pushSecretFinding(unit, &MetaCWE319, calls[0].Start, "FTP transports credentials without TLS protection", confidence76, out)
 		return
 	}
 	if !strings.Contains(pythonCodeMask(unit.Source), ".starttls(") {
 		if calls := findCalls(unit.Source, "smtplib.SMTP"); len(calls) > 0 {
-			pushSecretFinding(unit, &MetaCWE319, calls[0].Start, "SMTP transport is used without a same-file STARTTLS upgrade", 0.72, out)
+			pushSecretFinding(unit, &MetaCWE319, calls[0].Start, "SMTP transport is used without a same-file STARTTLS upgrade", confidence72, out)
 		}
 	}
 }
 
 func detectCWE547(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyWeakSecuritySettingRE); start >= 0 {
-		pushSecretFinding(unit, &MetaCWE547, start, "security-relevant setting is hard-coded to an insecure value", 0.8, out)
+		pushSecretFinding(unit, &MetaCWE547, start, "security-relevant setting is hard-coded to an insecure value", confidence80, out)
 	}
 }
 
@@ -112,7 +112,7 @@ func detectCWE523(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.request"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if hasKwargFalse(call.ArgsText, "verify") {
-				pushSecretFinding(unit, &MetaCWE523, call.Start, "TLS certificate verification is disabled for a network request", 0.84, out)
+				pushSecretFinding(unit, &MetaCWE523, call.Start, "TLS certificate verification is disabled for a network request", confidence84, out)
 				return
 			}
 		}
@@ -120,12 +120,12 @@ func detectCWE523(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	masked := pythonCodeMask(unit.Source)
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
-			pushSecretFinding(unit, &MetaCWE523, start, "TLS certificate verification is explicitly disabled", 0.82, out)
+			pushSecretFinding(unit, &MetaCWE523, start, "TLS certificate verification is explicitly disabled", confidence82, out)
 			return
 		}
 	}
 	if start := regexp.MustCompile(`(?m)check_hostname\s*=\s*False\b`).FindStringIndex(masked); start != nil {
-		pushSecretFinding(unit, &MetaCWE523, start[0], "TLS hostname verification is explicitly disabled", 0.82, out)
+		pushSecretFinding(unit, &MetaCWE523, start[0], "TLS hostname verification is explicitly disabled", confidence82, out)
 	}
 }
 

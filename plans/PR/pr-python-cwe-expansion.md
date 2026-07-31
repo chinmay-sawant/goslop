@@ -100,6 +100,7 @@ exports: 915 context files and 37 chunk files
 ## Follow-ups (out of scope)
 
 - The remaining 185 Tier-C catalogue IDs stay deferred because they do not have a trustworthy pure-Go source-pattern heuristic in v0.
+- `make lint-all` remains red on the repository baseline: `origin/main` has 74 strict-linter diagnostics. This branch introduces zero diagnostics under `golangci-lint run --new-from-rev=origin/main ./...` and reduces the full-run count to 60; baseline cleanup is intentionally separate from this CWE implementation PR.
 
 ---
 

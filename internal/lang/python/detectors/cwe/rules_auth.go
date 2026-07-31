@@ -46,7 +46,7 @@ func detectCWE306(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if !ok || protectedRouteDecorators(unit.Source[match[0]:fn.start]) {
 			continue
 		}
-		emitAuthFinding(unit, &MetaCWE306, match[0], "critical route lacks a same-route authentication or authorization decorator", 0.76, out)
+		emitAuthFinding(unit, &MetaCWE306, match[0], "critical route lacks a same-route authentication or authorization decorator", confidence76, out)
 		return
 	}
 }
@@ -70,7 +70,7 @@ func detectCWE307(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if rateLimitedDecorators(decorators) || !strings.Contains(body, "check_password_hash(") && !strings.Contains(body, "authenticate(") {
 			continue
 		}
-		emitAuthFinding(unit, &MetaCWE307, match[0], "password-authentication route lacks a same-route rate-limit or throttle decorator", 0.74, out)
+		emitAuthFinding(unit, &MetaCWE307, match[0], "password-authentication route lacks a same-route rate-limit or throttle decorator", confidence74, out)
 		return
 	}
 }
@@ -83,7 +83,7 @@ func detectCWE346(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			args := strings.ToLower(compactWhitespace(call.ArgsText))
 			if allowsWildcardOrigin(args) && (strings.Contains(args, "supports_credentials=true") || strings.Contains(args, "allow_credentials=true")) {
-				emitAuthFinding(unit, &MetaCWE346, call.Start, "CORS allows every origin while credentialed requests are enabled", 0.86, out)
+				emitAuthFinding(unit, &MetaCWE346, call.Start, "CORS allows every origin while credentialed requests are enabled", confidence86, out)
 				return
 			}
 		}
@@ -97,7 +97,7 @@ func detectCWE359(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"print", "logging.debug", "logging.info", "logging.warning", "logging.error", "logger.debug", "logger.info", "logger.warning", "logger.error"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if pyPersonalFieldRE.MatchString(call.ArgsText) {
-				emitAuthFinding(unit, &MetaCWE359, call.Start, "personal data field is written directly to a log or console sink", 0.8, out)
+				emitAuthFinding(unit, &MetaCWE359, call.Start, "personal data field is written directly to a log or console sink", confidence80, out)
 				return
 			}
 		}
@@ -106,7 +106,7 @@ func detectCWE359(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func detectCWE613(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pySessionNeverExpiresRE); start >= 0 {
-		emitAuthFinding(unit, &MetaCWE613, start, "session lifetime is explicitly configured to never expire", 0.8, out)
+		emitAuthFinding(unit, &MetaCWE613, start, "session lifetime is explicitly configured to never expire", confidence80, out)
 	}
 }
 
@@ -126,7 +126,7 @@ func detectCWE565(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			if !strings.Contains(code, "load_user(") && !strings.Contains(code, "get_user(") && !strings.Contains(code, "authorize(") {
 				continue
 			}
-			emitAuthFinding(unit, &MetaCWE565, fn.bodyStart+call.Start, "security-sensitive cookie value is used without same-function validation evidence", 0.76, out)
+			emitAuthFinding(unit, &MetaCWE565, fn.bodyStart+call.Start, "security-sensitive cookie value is used without same-function validation evidence", confidence76, out)
 			return
 		}
 	}
@@ -144,7 +144,7 @@ func detectCWE807(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if ok && hasCookieValidation(strings.ToLower(pythonCodeMask(fn.body))) {
 			continue
 		}
-		emitAuthFinding(unit, &MetaCWE807, match[0], "client-controlled request value directly controls an authorization decision", 0.82, out)
+		emitAuthFinding(unit, &MetaCWE807, match[0], "client-controlled request value directly controls an authorization decision", confidence82, out)
 		return
 	}
 }
@@ -159,7 +159,7 @@ func detectCWE698(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				continue
 			}
 			if next := nextExecutableLine(pythonCodeMask(fn.body), match[1]); next >= 0 {
-				emitAuthFinding(unit, &MetaCWE698, fn.bodyStart+match[0], "redirect response is not returned before later code executes", 0.82, out)
+				emitAuthFinding(unit, &MetaCWE698, fn.bodyStart+match[0], "redirect response is not returned before later code executes", confidence82, out)
 				return
 			}
 		}

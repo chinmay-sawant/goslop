@@ -39,7 +39,7 @@ func detectCWE295(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.request", "httpx.get", "httpx.post", "httpx.request"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if hasKwargFalse(call.ArgsText, "verify") {
-				emitCryptoFinding(unit, &MetaCWE295, call.Start, "TLS certificate verification is disabled for a network request", 0.86, out)
+				emitCryptoFinding(unit, &MetaCWE295, call.Start, "TLS certificate verification is disabled for a network request", confidence86, out)
 				return
 			}
 		}
@@ -47,12 +47,12 @@ func detectCWE295(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	masked := pythonCodeMask(unit.Source)
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
-			emitCryptoFinding(unit, &MetaCWE295, start, "TLS certificate validation is explicitly disabled", 0.84, out)
+			emitCryptoFinding(unit, &MetaCWE295, start, "TLS certificate validation is explicitly disabled", confidence84, out)
 			return
 		}
 	}
 	if match := regexp.MustCompile(`(?m)check_hostname\s*=\s*False\b`).FindStringIndex(masked); match != nil {
-		emitCryptoFinding(unit, &MetaCWE295, match[0], "TLS hostname verification is explicitly disabled", 0.84, out)
+		emitCryptoFinding(unit, &MetaCWE295, match[0], "TLS hostname verification is explicitly disabled", confidence84, out)
 	}
 }
 
@@ -64,14 +64,14 @@ func detectCWE328(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, name := range []string{"hashlib.md5", "hashlib.sha1", "Crypto.Hash.MD5.new", "Crypto.Hash.SHA1.new"} {
 		if calls := findCalls(unit.Source, name); len(calls) > 0 {
-			emitCryptoFinding(unit, &MetaCWE328, calls[0].Start, "weak MD5 or SHA-1 hash algorithm is used", 0.84, out)
+			emitCryptoFinding(unit, &MetaCWE328, calls[0].Start, "weak MD5 or SHA-1 hash algorithm is used", confidence84, out)
 			return
 		}
 	}
 	for _, call := range findCalls(unit.Source, "hashlib.new") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) > 0 && weakHashName(args[0]) {
-			emitCryptoFinding(unit, &MetaCWE328, call.Start, "weak MD5 or SHA-1 hash algorithm is selected dynamically", 0.84, out)
+			emitCryptoFinding(unit, &MetaCWE328, call.Start, "weak MD5 or SHA-1 hash algorithm is selected dynamically", confidence84, out)
 			return
 		}
 	}
@@ -92,7 +92,7 @@ func detectCWE335(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && pyFixedSeedRE.MatchString(args[0]) {
-				emitCryptoFinding(unit, &MetaCWE335, call.Start, "pseudo-random generator is seeded with a fixed value", 0.78, out)
+				emitCryptoFinding(unit, &MetaCWE335, call.Start, "pseudo-random generator is seeded with a fixed value", confidence78, out)
 				return
 			}
 		}
@@ -103,11 +103,11 @@ func detectCWE335(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // executable line as a non-cryptographic random API. This avoids flagging
 // ordinary sampling, games, and simulations.
 func detectCWE338(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	detectWeakSecurityRandom(unit, &MetaCWE338, "cryptographically weak random API produces a security-sensitive value", 0.82, out)
+	detectWeakSecurityRandom(unit, &MetaCWE338, "cryptographically weak random API produces a security-sensitive value", confidence82, out)
 }
 
 func detectCWE1241(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	detectWeakSecurityRandom(unit, &MetaCWE1241, "predictable random algorithm produces a security-sensitive value", 0.8, out)
+	detectWeakSecurityRandom(unit, &MetaCWE1241, "predictable random algorithm produces a security-sensitive value", confidence80, out)
 }
 
 func detectWeakSecurityRandom(unit *core.ParsedUnit, meta *rules.RuleMetadata, message string, confidence float32, out *[]rules.Finding) {
@@ -153,7 +153,7 @@ func detectCWE347(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			compact := strings.ToLower(compactWhitespace(call.ArgsText))
 			if strings.Contains(compact, "verify=false") || strings.Contains(compact, "'verify_signature':false") || strings.Contains(compact, `"verify_signature":false`) {
-				emitCryptoFinding(unit, &MetaCWE347, call.Start, "JWT signature verification is explicitly disabled", 0.86, out)
+				emitCryptoFinding(unit, &MetaCWE347, call.Start, "JWT signature verification is explicitly disabled", confidence86, out)
 				return
 			}
 		}
@@ -169,7 +169,7 @@ func detectCWE1204(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "AES.new") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if fixedIVArguments(args) {
-			emitCryptoFinding(unit, &MetaCWE1204, call.Start, "cipher uses a fixed literal initialization vector", 0.82, out)
+			emitCryptoFinding(unit, &MetaCWE1204, call.Start, "cipher uses a fixed literal initialization vector", confidence82, out)
 			return
 		}
 	}
@@ -196,7 +196,7 @@ func detectCWE1240(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, fn := range pythonFunctions(unit.Source) {
 		if pyRiskyCryptoNameRE.MatchString(fn.name) && strings.Contains(pythonCodeMask(fn.body), "^") {
-			emitCryptoFinding(unit, &MetaCWE1240, fn.start, "hand-written XOR cipher is a risky cryptographic primitive implementation", 0.76, out)
+			emitCryptoFinding(unit, &MetaCWE1240, fn.start, "hand-written XOR cipher is a risky cryptographic primitive implementation", confidence76, out)
 			return
 		}
 	}
@@ -207,7 +207,7 @@ func detectCWE1240(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // remediation and are already covered by that storage rule.
 func detectCWE1392(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstMatchStart(unit, pyDefaultCredentialRE); start >= 0 {
-		emitCryptoFinding(unit, &MetaCWE1392, start, "common default password is assigned in Python source", 0.82, out)
+		emitCryptoFinding(unit, &MetaCWE1392, start, "common default password is assigned in Python source", confidence82, out)
 	}
 }
 

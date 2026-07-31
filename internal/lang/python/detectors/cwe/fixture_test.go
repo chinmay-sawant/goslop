@@ -22,8 +22,8 @@ func assertCWEFixturePair(t *testing.T, rule string) {
 	if err != nil {
 		t.Fatalf("scan vulnerable fixture %s: %v", vulnerable, err)
 	}
-	if err := integration.AssertVulnerable(vulnResult.Findings, rule, vulnerable); err != nil {
-		t.Fatal(err)
+	if assertErr := integration.AssertVulnerable(vulnResult.Findings, rule, vulnerable); assertErr != nil {
+		t.Fatal(assertErr)
 	}
 
 	safe := integration.PythonCWEFixtureRel(rule, false)

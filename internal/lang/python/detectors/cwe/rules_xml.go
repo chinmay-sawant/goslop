@@ -28,7 +28,7 @@ func detectCWE611(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushXMLFinding(unit, &MetaCWE611, call.Start,
-			"lxml XMLParser explicitly enables external entity resolution", 0.86, out)
+			"lxml XMLParser explicitly enables external entity resolution", confidence86, out)
 		return
 	}
 }
@@ -46,7 +46,7 @@ func detectCWE776(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushXMLFinding(unit, &MetaCWE776, call.Start,
-			"lxml XMLParser enables entity expansion with DTD or huge-tree processing", 0.84, out)
+			"lxml XMLParser enables entity expansion with DTD or huge-tree processing", confidence84, out)
 		return
 	}
 }
@@ -70,7 +70,7 @@ func detectCWE112(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushXMLFinding(unit, &MetaCWE112, call.Start,
-			"request-controlled XML reaches a parser without a schema-aware validation configuration", 0.74, out)
+			"request-controlled XML reaches a parser without a schema-aware validation configuration", confidence74, out)
 		return
 	}
 }

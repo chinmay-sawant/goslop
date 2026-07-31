@@ -9,6 +9,30 @@ import (
 	"github.com/chinmay-sawant/goslop/internal/core"
 )
 
+const (
+	confidence68 = 0.68
+	confidence70 = 0.70
+	confidence72 = 0.72
+	confidence74 = 0.74
+	confidence75 = 0.75
+	confidence76 = 0.76
+	confidence78 = 0.78
+	confidence80 = 0.80
+	confidence82 = 0.82
+	confidence84 = 0.84
+	confidence86 = 0.86
+	confidence88 = 0.88
+	confidence90 = 0.90
+	confidence92 = 0.92
+
+	maxInsecureTokenBytes       = 15
+	maxSmallRandomTokenValue    = 9999
+	userLookupContextWindow     = 400
+	uninitializedResourceWindow = 220
+	closedResourceWindow        = 180
+	minimumRouteBranches        = 12
+)
+
 // unitFile returns the display path for findings.
 func unitFile(unit *core.ParsedUnit) string {
 	if unit == nil {
@@ -87,27 +111,7 @@ func pythonCodeMask(source string) string {
 			continue
 		}
 		if inString != 0 {
-			masked[i] = ' '
-			if triple {
-				if c == inString && i+2 < len(masked) && masked[i+1] == inString && masked[i+2] == inString {
-					masked[i+1], masked[i+2] = ' ', ' '
-					i += 2
-					inString = 0
-					triple = false
-				}
-				continue
-			}
-			if escaped {
-				escaped = false
-				continue
-			}
-			if c == '\\' {
-				escaped = true
-				continue
-			}
-			if c == inString {
-				inString = 0
-			}
+			i, inString, triple, escaped = maskPythonString(masked, i, inString, triple, escaped)
 			continue
 		}
 		switch c {
@@ -126,6 +130,28 @@ func pythonCodeMask(source string) string {
 		}
 	}
 	return string(masked)
+}
+
+func maskPythonString(masked []byte, index int, quote byte, triple, escaped bool) (int, byte, bool, bool) {
+	current := masked[index]
+	masked[index] = ' '
+	if triple {
+		if current == quote && index+2 < len(masked) && masked[index+1] == quote && masked[index+2] == quote {
+			masked[index+1], masked[index+2] = ' ', ' '
+			return index + 2, 0, false, false
+		}
+		return index, quote, true, false
+	}
+	if escaped {
+		return index, quote, false, false
+	}
+	if current == '\\' {
+		return index, quote, false, true
+	}
+	if current == quote {
+		return index, 0, false, false
+	}
+	return index, quote, false, false
 }
 
 func firstCodeMatchStart(source string, pattern *regexp.Regexp) int {

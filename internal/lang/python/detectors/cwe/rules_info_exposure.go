@@ -35,7 +35,7 @@ func detectCWE201(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, call := range responseCalls(unit.Source) {
 		if pySensitiveDataAccessRE.MatchString(call.ArgsText) {
-			emitInfoExposure(unit, &MetaCWE201, call.Start, "HTTP response directly includes a sensitive data field", 0.82, out)
+			emitInfoExposure(unit, &MetaCWE201, call.Start, "HTTP response directly includes a sensitive data field", confidence82, out)
 			return
 		}
 	}
@@ -52,14 +52,16 @@ func detectCWE204(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		missingAccount, wrongPassword, start := authResponseDiscrepancy(handler.body)
 		if missingAccount && wrongPassword {
 			emitInfoExposure(unit, &MetaCWE204, handler.start+start,
-				"route reveals whether an account exists through distinct authentication errors", 0.78, out)
+				"route reveals whether an account exists through distinct authentication errors", confidence78, out)
 			return
 		}
 	}
 }
 
-func authResponseDiscrepancy(source string) (missingAccount, wrongPassword bool, start int) {
-	start = -1
+func authResponseDiscrepancy(source string) (bool, bool, int) {
+	missingAccount := false
+	wrongPassword := false
+	start := -1
 	for _, call := range responseCalls(source) {
 		args := strings.ToLower(call.ArgsText)
 		if strings.Contains(args, "user not found") || strings.Contains(args, "unknown user") || strings.Contains(args, "account not found") {
@@ -86,7 +88,7 @@ func detectCWE208(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if start := firstCodeMatchStart(unit.Source, pyTimingCompareRE); start >= 0 {
-		emitInfoExposure(unit, &MetaCWE208, start, "security-sensitive values are compared with == instead of a constant-time comparison", 0.82, out)
+		emitInfoExposure(unit, &MetaCWE208, start, "security-sensitive values are compared with == instead of a constant-time comparison", confidence82, out)
 	}
 }
 
@@ -96,7 +98,7 @@ func detectCWE209(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, call := range responseCalls(unit.Source) {
 		if pyExceptionStringRE.MatchString(call.ArgsText) || strings.Contains(call.ArgsText, "traceback.format_exc") {
-			emitInfoExposure(unit, &MetaCWE209, call.Start, "HTTP response includes exception or traceback details", 0.84, out)
+			emitInfoExposure(unit, &MetaCWE209, call.Start, "HTTP response includes exception or traceback details", confidence84, out)
 			return
 		}
 	}
@@ -109,7 +111,7 @@ func detectCWE212(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, name := range []string{"json.dump", "yaml.dump", "csv.DictWriter.writerow"} {
 		for _, call := range findCalls(unit.Source, name) {
 			if pySensitiveDataAccessRE.MatchString(call.ArgsText) {
-				emitInfoExposure(unit, &MetaCWE212, call.Start, "serialization stores a sensitive data field without a redacted export", 0.8, out)
+				emitInfoExposure(unit, &MetaCWE212, call.Start, "serialization stores a sensitive data field without a redacted export", confidence80, out)
 				return
 			}
 		}
@@ -124,7 +126,7 @@ func detectCWE213(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			args := strings.ToLower(call.ArgsText)
 			if (strings.Contains(args, "/guest") || strings.Contains(args, "/public") || strings.Contains(args, "/anonymous")) && pySensitiveDataAccessRE.MatchString(call.ArgsText) {
-				emitInfoExposure(unit, &MetaCWE213, call.Start, "guest or public request includes a sensitive data field", 0.78, out)
+				emitInfoExposure(unit, &MetaCWE213, call.Start, "guest or public request includes a sensitive data field", confidence78, out)
 				return
 			}
 		}
@@ -143,7 +145,7 @@ func detectCWE488(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		global := pyGlobalSessionStateRE.FindStringIndex(code)
 		assign := pySessionStateAssignRE.FindStringIndex(code)
 		if global != nil && assign != nil {
-			emitInfoExposure(unit, &MetaCWE488, handler.start+assign[0], "route stores request identity in module-global session state", 0.84, out)
+			emitInfoExposure(unit, &MetaCWE488, handler.start+assign[0], "route stores request identity in module-global session state", confidence84, out)
 			return
 		}
 	}
@@ -156,7 +158,7 @@ func detectCWE497(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range responseCalls(unit.Source) {
 		args := call.ArgsText
 		if strings.Contains(args, "os.environ") || strings.Contains(args, "sys.path") || strings.Contains(args, "platform.uname") || strings.Contains(args, "socket.gethostname") || strings.Contains(args, "traceback.format_exc") {
-			emitInfoExposure(unit, &MetaCWE497, call.Start, "HTTP response exposes sensitive system diagnostic information", 0.84, out)
+			emitInfoExposure(unit, &MetaCWE497, call.Start, "HTTP response exposes sensitive system diagnostic information", confidence84, out)
 			return
 		}
 	}

@@ -127,12 +127,15 @@ tests/fixtures/python/bp/BP-PY-1-{vulnerable,safe}.txt
 
 ### 4. Definition of done (per CWE ID in an implement batch)
 
-- [ ] Detector + `RegisterRule` + meta + gates
-- [ ] Unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go`
-- [ ] Fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt`
-- [ ] Integration matrix picks up the new pair (no hard-coded allowlist required if discovery is glob-based — verify count increases)
-- [ ] `make lint` + `make test` green (includes unit + usually integration via `./...` if configured; always run `make integration-python` before merge)
-- [ ] Inventory / ledger checkboxes updated
+All six conditions are complete for the 159 approved implementation IDs in
+batches 00–14 and 16. The 185 deferred IDs are governed by §5 instead.
+
+- [x] Detector + `RegisterRule` + meta + gates — 159 source-only registered rules; gates are omitted unless false-negative-safe.
+- [x] Unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go` — every rule uses the paired text-fixture corpus.
+- [x] Fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` — 159 canonical safe/vulnerable pairs.
+- [x] Integration matrix picks up the new pair — `TestPythonCWEFixturesMatrix` auto-discovers all 159 paired stems.
+- [x] `make lint` + `make test` green — `make integration-python` also passed before PR publication.
+- [x] Inventory / ledger checkboxes updated — `_inventory.json` reports 159 implemented / 0 missing, and all implement-batch ledgers are complete.
 
 ### 5. What deferred IDs skip
 

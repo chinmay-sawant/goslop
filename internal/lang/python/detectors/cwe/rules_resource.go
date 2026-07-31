@@ -47,7 +47,7 @@ func detectCWE434(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		}
 		for _, call := range findCalls(fn.body, ".save") {
 			if _, ok := uploads[methodReceiverBefore(masked, call.Start)]; ok {
-				emitResourceFinding(unit, &MetaCWE434, fn.bodyStart+call.Start, "uploaded file is saved without a same-function dangerous-type allowlist", 0.8, out)
+				emitResourceFinding(unit, &MetaCWE434, fn.bodyStart+call.Start, "uploaded file is saved without a same-function dangerous-type allowlist", confidence80, out)
 				return
 			}
 		}
@@ -83,7 +83,7 @@ func detectCWE427(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "os.putenv") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && searchPathName(args[0]) && isDynamicExpr(args[1]) {
-			emitResourceFinding(unit, &MetaCWE427, call.Start, "externally controlled value is assigned to a process search-path environment variable", 0.84, out)
+			emitResourceFinding(unit, &MetaCWE427, call.Start, "externally controlled value is assigned to a process search-path environment variable", confidence84, out)
 			return
 		}
 	}
@@ -94,7 +94,7 @@ func detectCWE427(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		}
 		if (strings.Contains(line, "LD_LIBRARY_PATH") || strings.Contains(line, "PYTHONPATH")) && !assignmentHasLiteralValue(line) {
 			offset := strings.Index(unit.Source, line)
-			emitResourceFinding(unit, &MetaCWE427, offset, "externally controlled value is assigned to a process search-path environment variable", 0.84, out)
+			emitResourceFinding(unit, &MetaCWE427, offset, "externally controlled value is assigned to a process search-path environment variable", confidence84, out)
 			return
 		}
 	}
@@ -120,7 +120,7 @@ func detectCWE379(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && temporaryLiteralPath(args[0]) {
-				emitResourceFinding(unit, &MetaCWE379, call.Start, "temporary file is created at a predictable pathname in a shared temporary directory", 0.82, out)
+				emitResourceFinding(unit, &MetaCWE379, call.Start, "temporary file is created at a predictable pathname in a shared temporary directory", confidence82, out)
 				return
 			}
 		}
@@ -147,7 +147,7 @@ func detectCWE459(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			if call.Name == "tempfile.NamedTemporaryFile" && !hasBooleanKwarg(call.ArgsText, "delete", "False") {
 				continue
 			}
-			emitResourceFinding(unit, &MetaCWE459, fn.bodyStart+call.Start, "persistent temporary file has no same-function unlink cleanup", 0.78, out)
+			emitResourceFinding(unit, &MetaCWE459, fn.bodyStart+call.Start, "persistent temporary file has no same-function unlink cleanup", confidence78, out)
 			return
 		}
 	}
@@ -171,7 +171,7 @@ func detectCWE772(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			if strings.Contains(code[match[1]:], name+".close(") {
 				continue
 			}
-			emitResourceFinding(unit, &MetaCWE772, fn.bodyStart+match[0], "resource is assigned without a same-function close or context-manager release", 0.76, out)
+			emitResourceFinding(unit, &MetaCWE772, fn.bodyStart+match[0], "resource is assigned without a same-function close or context-manager release", confidence76, out)
 			return
 		}
 	}
@@ -184,7 +184,7 @@ func detectCWE770(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if calls := findCalls(unit.Source, "request.get_data"); len(calls) > 0 {
-		emitResourceFinding(unit, &MetaCWE770, calls[0].Start, "request body is read without a module-level maximum content-length limit", 0.78, out)
+		emitResourceFinding(unit, &MetaCWE770, calls[0].Start, "request body is read without a module-level maximum content-length limit", confidence78, out)
 	}
 }
 
@@ -197,7 +197,7 @@ func detectCWE708(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "os.chown") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 3 && (strings.TrimSpace(args[1]) == "0" || strings.TrimSpace(args[2]) == "0") {
-			emitResourceFinding(unit, &MetaCWE708, call.Start, "resource ownership is explicitly assigned to the root user or group", 0.82, out)
+			emitResourceFinding(unit, &MetaCWE708, call.Start, "resource ownership is explicitly assigned to the root user or group", confidence82, out)
 			return
 		}
 	}
@@ -211,7 +211,7 @@ func detectCWE477(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, name := range []string{"tempfile.mktemp", "cgi.escape", "asyncore.loop", "imp.load_module", "imp.load_source"} {
 		if calls := findCalls(unit.Source, name); len(calls) > 0 {
-			emitResourceFinding(unit, &MetaCWE477, calls[0].Start, "deprecated or obsolete Python standard-library function is called", 0.82, out)
+			emitResourceFinding(unit, &MetaCWE477, calls[0].Start, "deprecated or obsolete Python standard-library function is called", confidence82, out)
 			return
 		}
 	}

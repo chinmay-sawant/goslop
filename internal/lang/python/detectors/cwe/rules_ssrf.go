@@ -34,7 +34,7 @@ func detectCWE918(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if !callHasDirectRequestURL(call.ArgsText) {
 			continue
 		}
-		pushSSRFfinding(unit, call.Start, &MetaCWE918, "request-controlled URL reaches an outbound HTTP client without destination validation", 0.84, out)
+		pushSSRFfinding(unit, call.Start, &MetaCWE918, "request-controlled URL reaches an outbound HTTP client without destination validation", confidence84, out)
 		return
 	}
 }
@@ -63,7 +63,7 @@ func detectCWE601(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if len(args) == 0 || !isDirectRequestExpr(args[0]) {
 			continue
 		}
-		pushSSRFfinding(unit, call.Start, &MetaCWE601, "request-controlled URL is passed directly to a redirect response", 0.82, out)
+		pushSSRFfinding(unit, call.Start, &MetaCWE601, "request-controlled URL is passed directly to a redirect response", confidence82, out)
 		return
 	}
 }
@@ -76,7 +76,7 @@ func detectCWE605(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, fn := range pythonFunctions(unit.Source) {
 		if start := reuseThenWildcardBind(fn.body); start >= 0 {
-			pushSSRFfinding(unit, fn.bodyStart+start, &MetaCWE605, "socket reuse is enabled before binding the same socket to a wildcard interface", 0.76, out)
+			pushSSRFfinding(unit, fn.bodyStart+start, &MetaCWE605, "socket reuse is enabled before binding the same socket to a wildcard interface", confidence76, out)
 			return
 		}
 	}
@@ -130,7 +130,7 @@ func detectCWE924(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if !hasRequestBodyRead(code) || hasMessageIntegrityVerification(code) {
 			continue
 		}
-		pushSSRFfinding(unit, fn.start, &MetaCWE924, "webhook handler consumes a request body without same-handler signature verification", 0.76, out)
+		pushSSRFfinding(unit, fn.start, &MetaCWE924, "webhook handler consumes a request body without same-handler signature verification", confidence76, out)
 		return
 	}
 }
@@ -157,7 +157,7 @@ func detectCWE940(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if hasCallbackSourceVerification(code) {
 			continue
 		}
-		pushSSRFfinding(unit, fn.start, &MetaCWE940, "authentication callback trusts a request-controlled identity without source or state verification", 0.78, out)
+		pushSSRFfinding(unit, fn.start, &MetaCWE940, "authentication callback trusts a request-controlled identity without source or state verification", confidence78, out)
 		return
 	}
 }
@@ -171,7 +171,7 @@ func detectCWE941(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "send_mail", ".sendmail", "sendmail") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if directRequestMailDestination(call.Name, args) {
-			pushSSRFfinding(unit, call.Start, &MetaCWE941, "request-controlled recipient is used as an outbound mail destination", 0.8, out)
+			pushSSRFfinding(unit, call.Start, &MetaCWE941, "request-controlled recipient is used as an outbound mail destination", confidence80, out)
 			return
 		}
 	}

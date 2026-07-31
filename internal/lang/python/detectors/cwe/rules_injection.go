@@ -28,7 +28,7 @@ func detectCWE90(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE90,
-			"dynamic value reaches an LDAP search filter without LDAP filter escaping", 0.78, out)
+			"dynamic value reaches an LDAP search filter without LDAP filter escaping", confidence78, out)
 		return
 	}
 }
@@ -49,7 +49,7 @@ func detectCWE91(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE91,
-			"dynamic value is formatted into an XML or XPath expression", 0.75, out)
+			"dynamic value is formatted into an XML or XPath expression", confidence75, out)
 		return
 	}
 }
@@ -66,7 +66,7 @@ func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE93,
-			"dynamic value is written to an HTTP response header without CRLF neutralization", 0.72, out)
+			"dynamic value is written to an HTTP response header without CRLF neutralization", confidence72, out)
 		return
 	}
 	masked := pythonCodeMask(unit.Source)
@@ -82,7 +82,7 @@ func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		}
 		start := lineOffset + strings.Index(line, ".headers[")
 		pushInjectionFinding(unit, start, &MetaCWE93,
-			"dynamic value is written to an HTTP response header without CRLF neutralization", 0.72, out)
+			"dynamic value is written to an HTTP response header without CRLF neutralization", confidence72, out)
 		return
 	}
 }
@@ -106,7 +106,7 @@ func detectCWE94(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE94,
-			"dynamic value reaches a Python code-generation or dynamic-import sink", 0.82, out)
+			"dynamic value reaches a Python code-generation or dynamic-import sink", confidence82, out)
 		return
 	}
 }
@@ -128,7 +128,7 @@ func detectCWE88(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE88,
-			"dynamic value is embedded in a subprocess argument vector and can become an unintended option", 0.7, out)
+			"dynamic value is embedded in a subprocess argument vector and can become an unintended option", confidence70, out)
 		return
 	}
 }
@@ -138,11 +138,11 @@ func looksDynamicArgv(expr string) bool {
 	if len(t) < 2 || (t[0] != '[' && t[0] != '(') {
 		return false
 	}
-	close := byte(']')
+	closeDelimiter := byte(']')
 	if t[0] == '(' {
-		close = ')'
+		closeDelimiter = ')'
 	}
-	if t[len(t)-1] != close {
+	if t[len(t)-1] != closeDelimiter {
 		return false
 	}
 	for _, arg := range splitTopLevelArgs(t[1 : len(t)-1]) {
@@ -169,7 +169,7 @@ func detectCWE117(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE117,
-			"dynamic value is formatted directly into a log message without CRLF neutralization", 0.68, out)
+			"dynamic value is formatted directly into a log message without CRLF neutralization", confidence68, out)
 		return
 	}
 }

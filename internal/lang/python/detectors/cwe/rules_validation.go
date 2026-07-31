@@ -41,11 +41,11 @@ func detectCWE1173(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		if start := strings.Index(code, "request.get_json("); start >= 0 {
-			emitValidationFinding(unit, &MetaCWE1173, handler.start+start, "route persists JSON request data without an observable schema or serializer validation step", 0.76, out)
+			emitValidationFinding(unit, &MetaCWE1173, handler.start+start, "route persists JSON request data without an observable schema or serializer validation step", confidence76, out)
 			return
 		}
 		if start := strings.Index(code, "request.json"); start >= 0 {
-			emitValidationFinding(unit, &MetaCWE1173, handler.start+start, "route persists JSON request data without an observable schema or serializer validation step", 0.76, out)
+			emitValidationFinding(unit, &MetaCWE1173, handler.start+start, "route persists JSON request data without an observable schema or serializer validation step", confidence76, out)
 			return
 		}
 	}
@@ -67,7 +67,7 @@ func detectCWE1230(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		return
 	}
 	if start := firstCodeMatchStart(unit.Source, pyContentDispositionRequestRE); start >= 0 {
-		emitValidationFinding(unit, &MetaCWE1230, start, "response exposes a request-controlled filename through Content-Disposition metadata", 0.8, out)
+		emitValidationFinding(unit, &MetaCWE1230, start, "response exposes a request-controlled filename through Content-Disposition metadata", confidence80, out)
 	}
 }
 
@@ -79,7 +79,7 @@ func detectCWE1236(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, call := range findCalls(unit.Source, ".writerow") {
 		if isDirectRequestExpr(call.ArgsText) && !strings.Contains(call.ArgsText, "lstrip") && !strings.Contains(call.ArgsText, "safe_csv") {
-			emitValidationFinding(unit, &MetaCWE1236, call.Start, "CSV row writes a request-controlled field without formula neutralization", 0.82, out)
+			emitValidationFinding(unit, &MetaCWE1236, call.Start, "CSV row writes a request-controlled field without formula neutralization", confidence82, out)
 			return
 		}
 	}
@@ -95,7 +95,7 @@ func detectCWE1286(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		for _, call := range findCalls(unit.Source, name) {
 			compact := compactWhitespace(call.ArgsText)
 			if strings.Contains(compact, "json.loads(request.") && !strings.Contains(compact, "urlparse(") {
-				emitValidationFinding(unit, &MetaCWE1286, call.Start, "request JSON is used as an outbound URL without syntactic validation", 0.8, out)
+				emitValidationFinding(unit, &MetaCWE1286, call.Start, "request JSON is used as an outbound URL without syntactic validation", confidence80, out)
 				return
 			}
 		}
@@ -124,7 +124,7 @@ func detectCWE1289(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		if !strings.Contains(code, pathName+" = request.") || !hasFilesystemUse(code, pathName) {
 			continue
 		}
-		emitValidationFinding(unit, &MetaCWE1289, fn.start+match[0], "request path is protected by exact deny-list equality before filesystem use", 0.8, out)
+		emitValidationFinding(unit, &MetaCWE1289, fn.start+match[0], "request path is protected by exact deny-list equality before filesystem use", confidence80, out)
 		return
 	}
 }
@@ -147,7 +147,7 @@ func detectCWE1333(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "re.compile", "regex.compile") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) > 0 && pyNestedRegexQuantifierRE.MatchString(args[0]) {
-			emitValidationFinding(unit, &MetaCWE1333, call.Start, "compiled regular expression contains nested unbounded quantifiers", 0.84, out)
+			emitValidationFinding(unit, &MetaCWE1333, call.Start, "compiled regular expression contains nested unbounded quantifiers", confidence84, out)
 			return
 		}
 	}
@@ -162,7 +162,7 @@ func detectCWE1389(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "int") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && strings.TrimSpace(args[1]) == "0" && isDirectRequestExpr(args[0]) {
-			emitValidationFinding(unit, &MetaCWE1389, call.Start, "request-controlled numeric input is parsed with base 0", 0.82, out)
+			emitValidationFinding(unit, &MetaCWE1389, call.Start, "request-controlled numeric input is parsed with base 0", confidence82, out)
 			return
 		}
 	}
@@ -176,7 +176,7 @@ func detectCWE140(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, call := range findCalls(unit.Source, ".join") {
 		if isDirectRequestExpr(call.ArgsText) && strings.Contains(call.ArgsText, "request.") {
-			emitValidationFinding(unit, &MetaCWE140, call.Start, "response manually joins request-controlled fields with a delimiter", 0.76, out)
+			emitValidationFinding(unit, &MetaCWE140, call.Start, "response manually joins request-controlled fields with a delimiter", confidence76, out)
 			return
 		}
 	}
