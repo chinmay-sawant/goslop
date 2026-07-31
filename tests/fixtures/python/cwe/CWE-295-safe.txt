@@ -5,3 +5,4 @@ file: CWE-295-safe.py
 import requests
 
 requests.get("https://service.example")
+requests.get("https://service.example/?verify=False")

@@ -5,3 +5,6 @@ file: CWE-59-safe.py
 import os
 
 fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+
+if not os.path.islink(checked_path):
+    open(other_path)

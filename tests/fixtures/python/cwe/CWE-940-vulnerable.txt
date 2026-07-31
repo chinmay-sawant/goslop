@@ -5,3 +5,6 @@ file: CWE-940-vulnerable.py
 def oauth_callback(request):
     user = lookup_user(request.args["user_id"])
     login_user(user)
+
+
+verify_state("unrelated")

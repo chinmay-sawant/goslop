@@ -1,7 +1,6 @@
 package cwe
 
 import (
-	"regexp"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -20,8 +19,6 @@ func init() {
 	RegisterRule("CWE-250", detectCWE250, &MetaCWE250)
 	RegisterRule("CWE-494", detectCWE494, &MetaCWE494)
 }
-
-var pyLinkCheckThenUseRE = regexp.MustCompile(`(?s)os\.path\.(?:islink|lexists)\s*\([^\n]*\).*?(?:open|os\.(?:remove|unlink|rename)|shutil\.(?:move|copy))\s*\(`)
 
 // CWE-73 reports only direct framework request input at a filesystem sink.
 // A variable that might have been validated elsewhere is deliberately outside
@@ -49,9 +46,38 @@ func detectCWE59(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if match := pyLinkCheckThenUseRE.FindStringIndex(pythonCodeMask(unit.Source)); match != nil {
-		emitPathFSFinding(unit, &MetaCWE59, match[0], "symbolic-link check is followed by name-based file access (check-then-use race)", 0.8, out)
+	functions := pythonFunctions(unit.Source)
+	if len(functions) == 0 {
+		if start := linkCheckThenUse(unit.Source); start >= 0 {
+			emitPathFSFinding(unit, &MetaCWE59, start, "symbolic-link check is followed by access to the same path name (check-then-use race)", 0.8, out)
+		}
+		return
 	}
+	for _, fn := range functions {
+		if start := linkCheckThenUse(fn.body); start >= 0 {
+			emitPathFSFinding(unit, &MetaCWE59, fn.bodyStart+start, "symbolic-link check is followed by access to the same path name (check-then-use race)", 0.8, out)
+			return
+		}
+	}
+}
+
+func linkCheckThenUse(source string) int {
+	for _, check := range findCalls(source, "os.path.islink", "os.path.lexists") {
+		checked := strings.TrimSpace(check.ArgsText)
+		if checked == "" {
+			continue
+		}
+		for _, use := range findCalls(source, "open", "os.remove", "os.unlink", "os.rename", "shutil.move", "shutil.copy") {
+			if use.Start <= check.Start {
+				continue
+			}
+			args := splitTopLevelArgs(use.ArgsText)
+			if len(args) > 0 && strings.TrimSpace(args[0]) == checked {
+				return check.Start
+			}
+		}
+	}
+	return -1
 }
 
 // CWE-41 is intentionally narrower than CWE-22: it needs both a direct

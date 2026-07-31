@@ -27,7 +27,7 @@ var (
 	pyFixedSeedRE         = regexp.MustCompile(`(?s)^\s*(?:[-+]?\d+(?:\.\d+)?|True|False|None|[brufBRUF]*['"][^'"]*['"])\s*$`)
 	pyFixedIVRE           = regexp.MustCompile(`(?s)^[brBR]*['"][^'"]*['"]\s*(?:\*\s*\d+)?\s*$`)
 	pyDefaultCredentialRE = regexp.MustCompile(`(?im)^\s*(?:[a-z_]*password|[a-z_]*passwd|[a-z_]*pwd)\s*=\s*[bruf]*['"](?:admin|password|changeme|default|guest|root|toor)['"]\s*$`)
-	pyRiskyCryptoDefRE    = regexp.MustCompile(`(?m)^\s*def\s+(?:xor(?:_cipher|_encrypt|_decrypt)|(?:custom|homegrown)_(?:encrypt|decrypt|cipher))\s*\(`)
+	pyRiskyCryptoNameRE   = regexp.MustCompile(`^(?:xor(?:_cipher|_encrypt|_decrypt)|(?:custom|homegrown)_(?:encrypt|decrypt|cipher))$`)
 )
 
 // CWE-295 covers explicit certificate or hostname validation bypasses. Calls
@@ -194,9 +194,11 @@ func detectCWE1240(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	masked := pythonCodeMask(unit.Source)
-	if match := pyRiskyCryptoDefRE.FindStringIndex(masked); match != nil && strings.Contains(masked[match[1]:], "^") {
-		emitCryptoFinding(unit, &MetaCWE1240, match[0], "hand-written XOR cipher is a risky cryptographic primitive implementation", 0.76, out)
+	for _, fn := range pythonFunctions(unit.Source) {
+		if pyRiskyCryptoNameRE.MatchString(fn.name) && strings.Contains(pythonCodeMask(fn.body), "^") {
+			emitCryptoFinding(unit, &MetaCWE1240, fn.start, "hand-written XOR cipher is a risky cryptographic primitive implementation", 0.76, out)
+			return
+		}
 	}
 }
 

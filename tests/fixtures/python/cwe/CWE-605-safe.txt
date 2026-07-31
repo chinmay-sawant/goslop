@@ -9,3 +9,8 @@ def serve():
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     sock.bind(("127.0.0.1", 8080))
+
+
+def unrelated_sockets(first, second):
+    first.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    second.bind(("0.0.0.0", 8081))

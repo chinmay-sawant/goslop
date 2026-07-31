@@ -74,22 +74,45 @@ func detectCWE605(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	masked := pythonCodeMask(unit.Source)
-	if !strings.Contains(masked, "SO_REUSEADDR") && !strings.Contains(masked, "SO_REUSEPORT") {
-		return
-	}
-	for _, call := range findCalls(unit.Source, ".setsockopt", "setsockopt") {
-		if !strings.Contains(call.ArgsText, "SO_REUSEADDR") && !strings.Contains(call.ArgsText, "SO_REUSEPORT") {
-			continue
-		}
-		for _, bind := range findCalls(unit.Source, ".bind", "bind") {
-			if !strings.Contains(bind.ArgsText, "0.0.0.0") && !strings.Contains(bind.ArgsText, "::") {
-				continue
-			}
-			pushSSRFfinding(unit, call.Start, &MetaCWE605, "socket reuse is enabled before binding a wildcard interface", 0.76, out)
+	for _, fn := range pythonFunctions(unit.Source) {
+		if start := reuseThenWildcardBind(fn.body); start >= 0 {
+			pushSSRFfinding(unit, fn.bodyStart+start, &MetaCWE605, "socket reuse is enabled before binding the same socket to a wildcard interface", 0.76, out)
 			return
 		}
 	}
+}
+
+func reuseThenWildcardBind(source string) int {
+	for _, call := range findCalls(source, ".setsockopt") {
+		if !strings.Contains(call.ArgsText, "SO_REUSEADDR") && !strings.Contains(call.ArgsText, "SO_REUSEPORT") {
+			continue
+		}
+		receiver := callReceiver(source, call.Start)
+		if receiver == "" {
+			continue
+		}
+		for _, bind := range findCalls(source, ".bind") {
+			if bind.Start <= call.Start || receiver != callReceiver(source, bind.Start) ||
+				(!strings.Contains(bind.ArgsText, "0.0.0.0") && !strings.Contains(bind.ArgsText, "::")) {
+				continue
+			}
+			return call.Start
+		}
+	}
+	return -1
+}
+
+func callReceiver(source string, callStart int) string {
+	if callStart <= 0 || callStart > len(source) {
+		return ""
+	}
+	prefix := source[:callStart]
+	lineStart := strings.LastIndex(prefix, "\n") + 1
+	receiver := strings.TrimSpace(prefix[lineStart:])
+	if receiver == "" || strings.ContainsAny(receiver, " =()[]{}.:+") {
+		return ""
+	}
+	return receiver
 }
 
 // CWE-924 keeps webhook integrity checking local to a clearly named handler.
@@ -166,22 +189,48 @@ func isDirectRequestExpr(expr string) bool {
 }
 
 type pythonFunction struct {
-	name  string
-	start int
-	body  string
+	name      string
+	start     int
+	bodyStart int
+	body      string
 }
 
 func pythonFunctions(source string) []pythonFunction {
-	matches := pyFunctionDefRE.FindAllStringSubmatchIndex(pythonCodeMask(source), -1)
+	code := pythonCodeMask(source)
+	matches := pyFunctionDefRE.FindAllStringSubmatchIndex(code, -1)
 	out := make([]pythonFunction, 0, len(matches))
-	for i, match := range matches {
-		bodyEnd := len(source)
-		if i+1 < len(matches) {
-			bodyEnd = matches[i+1][0]
-		}
-		out = append(out, pythonFunction{name: source[match[4]:match[5]], start: match[0], body: source[match[1]:bodyEnd]})
+	for _, match := range matches {
+		indent := len(code[match[2]:match[3]])
+		bodyStart := match[1]
+		bodyEnd := pythonFunctionBodyEnd(code, bodyStart, indent)
+		out = append(out, pythonFunction{name: source[match[4]:match[5]], start: match[0], bodyStart: bodyStart, body: source[bodyStart:bodyEnd]})
 	}
 	return out
+}
+
+func pythonFunctionBodyEnd(code string, bodyStart, indent int) int {
+	for lineStart := bodyStart; lineStart < len(code); {
+		if code[lineStart] == '\n' {
+			lineStart++
+		}
+		lineEnd := len(code)
+		if next := strings.IndexByte(code[lineStart:], '\n'); next >= 0 {
+			lineEnd = lineStart + next
+		}
+		line := code[lineStart:lineEnd]
+		trimmed := strings.TrimSpace(line)
+		if trimmed != "" {
+			lineIndent := len(line) - len(strings.TrimLeft(line, " \t"))
+			if lineIndent <= indent {
+				return lineStart
+			}
+		}
+		if lineEnd == len(code) {
+			break
+		}
+		lineStart = lineEnd + 1
+	}
+	return len(code)
 }
 
 func hasRequestBodyRead(code string) bool {

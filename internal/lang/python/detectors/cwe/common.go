@@ -406,18 +406,25 @@ func looksStaticStringList(expr string) bool {
 	return true
 }
 
-// hasKwargTrue reports whether argsText contains name=True (rough keyword scan).
+// hasKwargTrue reports whether argsText contains an exact name=True keyword.
 func hasKwargTrue(argsText, name string) bool {
-	// Accept shell=True with optional spaces.
-	compact := compactWhitespace(argsText)
-	needle := name + "=True"
-	return strings.Contains(compact, needle)
+	return hasBooleanKwarg(argsText, name, "True")
 }
 
-// hasKwargFalse reports name=False.
+// hasKwargFalse reports an exact name=False keyword.
 func hasKwargFalse(argsText, name string) bool {
-	compact := compactWhitespace(argsText)
-	return strings.Contains(compact, name+"=False")
+	return hasBooleanKwarg(argsText, name, "False")
+}
+
+func hasBooleanKwarg(argsText, name, value string) bool {
+	for _, arg := range splitTopLevelArgs(argsText) {
+		key, candidate, ok := strings.Cut(arg, "=")
+		if !ok || strings.TrimSpace(key) != name {
+			continue
+		}
+		return strings.TrimSpace(candidate) == value
+	}
+	return false
 }
 
 func compactWhitespace(s string) string {

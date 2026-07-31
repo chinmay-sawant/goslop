@@ -5,3 +5,6 @@ file: CWE-924-vulnerable.py
 def billing_webhook(request):
     event = request.get_json()
     process_event(event)
+
+
+hmac.compare_digest("expected", "actual")

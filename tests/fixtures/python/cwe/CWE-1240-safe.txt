@@ -6,3 +6,11 @@ from cryptography.fernet import Fernet
 
 def encrypt(data):
     return Fernet(key).encrypt(data)
+
+
+def xor_cipher(data):
+    return data
+
+
+def unrelated_bit_operation(left, right):
+    return left ^ right
