@@ -1,0 +1,98 @@
+{
+  "PERF-PY-15": {
+    "id": "PERF-PY-15",
+    "name": "ORM Composite Filter Without Supporting Index",
+    "original_description": "Detect recurring multi-column ORM filters without a visible supporting composite index.",
+    "description": "A hot ORM read filters on a tenant or owner key together with a time-range column, but the model declaration has no visible composite index. The database may scan and sort a large table for every request; add the index through the model or migration after validating the query plan.",
+    "detection_notes": "Match SQLAlchemy select/query where clauses or Django QuerySet filters combining an identity column and timestamp/range column when the parsed model declaration has no matching Index, db_index, Meta.indexes, or equivalent. This is review-level: suppress when indexes are defined in external migrations or configuration that is outside the parsed unit.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python", "sqlalchemy", "django", "fastapi"]
+  },
+  "PERF-PY-16": {
+    "id": "PERF-PY-16",
+    "name": "Retention Timestamp Predicate Without Index",
+    "original_description": "Detect time-based cleanup or purge predicates on unindexed timestamp fields.",
+    "description": "A TTL, retention, or purge path filters by a timestamp such as created_at, received_at, attempted_at, or expires_at without a visible index. Each maintenance run can scan the entire table and compete with foreground work; index the predicate or use partition lifecycle operations at larger scale.",
+    "detection_notes": "Match delete/filter queries comparing a model DateTime field to cutoff, retention, or now-like values in cleanup, purge, expire, or maintenance functions. Require no visible db_index, Index, Meta.indexes, __table_args__, or partition declaration; suppress external migration/index definitions.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python", "django", "sqlalchemy", "flask", "fastapi"]
+  },
+  "PERF-PY-17": {
+    "id": "PERF-PY-17",
+    "name": "Database Connection Reuse Or Timeout Controls Missing",
+    "original_description": "Detect database engine configurations without connection recycling, pooling, or statement timeouts.",
+    "description": "A production database path does not bound connection lifetime or query duration. A runaway request can pin pooled connections and stale connections can fail under load; configure framework-appropriate recycling, health checks, pool limits, and statement timeouts.",
+    "detection_notes": "Match SQLAlchemy create_engine/create_async_engine lacking pool_recycle, pool_pre_ping, pool_timeout, or a driver statement_timeout; match Django DATABASES without CONN_MAX_AGE/CONN_HEALTH_CHECKS; match Flask SQLALCHEMY_ENGINE_OPTIONS without pool controls. Suppress tests, local SQLite settings, and controls imported from an external settings module.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "Medium",
+    "applicable_to": ["python", "django", "sqlalchemy", "flask", "fastapi"]
+  },
+  "PERF-PY-18": {
+    "id": "PERF-PY-18",
+    "name": "Repeated Regex Rewrites On The Same Input",
+    "original_description": "Detect multiple sequential regular-expression substitutions on one hot-path value.",
+    "description": "The same per-item input passes through two or more sequential regex substitutions. On a batch hot path this repeats scanning and callback overhead; combine compatible transformations or use one compiled pass when output semantics remain identical.",
+    "detection_notes": "Match a variable assigned from a value and passed through two or more re.sub or compiled-pattern.sub calls in sequence in one function. Suppress intentionally staged transforms whose patterns overlap, transformations outside request/batch code, and a helper that already combines the passes.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "Low",
+    "applicable_to": ["python", "fastapi"]
+  },
+  "PERF-PY-19": {
+    "id": "PERF-PY-19",
+    "name": "Unbounded ORM Locking Sweep",
+    "original_description": "Detect a select-for-update expiry sweep that holds one transaction for all matching rows.",
+    "description": "A Django or SQLAlchemy maintenance job locks and processes an unbounded set of expired rows in one transaction. Lock duration and transaction memory grow with backlog and can starve foreground writes; process bounded batches with a commit between batches.",
+    "detection_notes": "Match transaction.atomic or an explicit transaction containing select_for_update/with_for_update followed by iteration without a slice, limit, keyset loop, batch helper, or per-batch commit. Suppress a statically bounded query and code whose transaction wrapper is intentionally supplied by a caller.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "Medium",
+    "applicable_to": ["python", "django", "sqlalchemy"]
+  },
+  "PERF-PY-20": {
+    "id": "PERF-PY-20",
+    "name": "ORM Sort Without Supporting Composite Index",
+    "original_description": "Detect an ORM equality filter followed by ordering on another column without a visible composite index.",
+    "description": "A multi-warehouse or tenant-scoped ORM query filters by one key and orders by a second column, but the model has no matching composite index. The database must sort the candidate set for every request; add the index after confirming the query plan.",
+    "detection_notes": "Match Django filter(sku=...).order_by('-quantity') or equivalent SQLAlchemy where/order_by chains when the parsed model lacks an index covering the equality and ordering columns. Suppress external migration indexes, small bounded datasets, and queries already constrained to one primary-key row.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "Low",
+    "applicable_to": ["python", "django", "sqlalchemy"]
+  },
+  "PERF-PY-21": {
+    "id": "PERF-PY-21",
+    "name": "Unbounded Bulk Delete In Maintenance Path",
+    "original_description": "Detect broad ORM deletes of retention or status sets without bounded batches.",
+    "description": "A maintenance command deletes a potentially large retention or status set in one ORM operation and one transaction. This can hold locks, create a large write-ahead log, and block foreground work; delete by bounded primary-key batches with intermediate commits.",
+    "detection_notes": "Match Django QuerySet.delete or SQLAlchemy Query.delete in purge, cleanup, retention, or CLI functions when no limit, key-range predicate, chunk loop, or per-batch commit is visible. Suppress explicit one-row deletes, partition drops, and maintenance paths that document a bounded table size.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "Medium",
+    "applicable_to": ["python", "django", "sqlalchemy", "flask"]
+  },
+  "PERF-PY-22": {
+    "id": "PERF-PY-22",
+    "name": "SQLite Backend For Concurrent Service Writes",
+    "original_description": "Detect a production-like Django or Flask configuration that falls back to SQLite while workers perform concurrent writes.",
+    "description": "A web or worker service defaults to SQLite despite a concurrent reservation or delivery path. SQLite serializes writers and can turn normal contention into database-locked failures; use the intended server database for concurrent service execution and keep SQLite scoped to tests or local-only tools.",
+    "detection_notes": "Match Django DATABASES default ENGINE sqlite3 or Flask SQLALCHEMY_DATABASE_URI with a sqlite fallback in settings/config that also contains worker, queue, thread, or process execution. Suppress tests, fixtures, explicitly local-only development configs, and deployments that override the setting before startup.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "Low",
+    "applicable_to": ["python", "django", "flask"]
+  }
+}

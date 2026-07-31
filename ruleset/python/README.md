@@ -1,7 +1,7 @@
 # Python ruleset catalogues (WIP)
 
-> **Status:** catalogues + priority **CWE** and **BP-PY** detectors (PERF deferred)  
-> **Issues:** #52 CWE · #53 BP · #54 PERF deferred · epic #51 · foundation #39  
+> **Status:** catalogues + priority **CWE** and **BP-PY** detectors; Python PERF catalogue seeded (detectors pending)  
+> **Issues:** #52 CWE · #53 BP · #54 PERF catalogue seeded (detectors pending) · epic #51 · foundation #39  
 > **Plans:** `plans/v0.0.2/heuristics/python-heuristics-*.md`  
 > **CWE mapping:** `plans/v0.0.2/init-python/python-cwe-from-699-mapping.md` (from `699.csv`)  
 > **BP audit:** `plans/v0.0.2/init-python/ruleset-reuse-audit.md`
@@ -10,7 +10,7 @@
 - CWE-22, CWE-78, CWE-79, CWE-89, CWE-502 — `internal/lang/python/detectors/cwe`
 - BP-PY priority subset (core + security + sample Flask/Django) — `internal/lang/python/detectors/bad_practices`
 
-Pure-Go source patterns; catalogue JSON remains source of truth. Full CWE-344 / all 50 BP / PERF not claimed.
+Pure-Go source patterns; catalogue JSON remains source of truth. Full CWE-344 / all 50 BP / full PERF detector parity not claimed.
 
 ## Layout
 
@@ -23,6 +23,8 @@ ruleset/python/
     cwe-051-100.json
     …
     cwe-1351-1400.json
+    perf-py-001-014.json       # initial Python PERF seed
+    perf-py-015-022.json       # remaining static evaluation gaps
 ```
 
 Sibling Go catalogues remain the default product source of truth:
@@ -102,10 +104,25 @@ They run only when the Python plugin is enabled (`languages = ["python"]` / mult
 Remaining catalogue IDs (`BP-PY-3`, `5`, rest of C/D/E) are deferred — see the BP ledger.
 This tree still has **no** Python CWE/PERF detectors.
 
+## Performance
+
+`chunks/perf-py-001-014.json` and `chunks/perf-py-015-022.json` contain the Python-only PERF catalogue:
+twenty-two source-verifiable cost signals extracted from the FastAPI, Django, and Flask performance
+evaluation corpus. IDs use the
+`PERF-PY-*` namespace, matching `BP-PY-*`, so Python never consumes or collides with Go's numeric PERF
+sequence. The seed deliberately leaves async blocking and HTTP timeouts with `BP-PY-30` and
+`BP-PY-14` respectively, avoiding duplicate findings.
+
+Every PERF entry is marked `Seeded`, has `applicable_to` including `python`, and uses
+Python-specific `detection_notes`. Catalogue presence does **not** mean the rule is emitted yet:
+the Python PERF detector package, fixtures, plugin registration, and maturity decisions remain future work.
+FA-8 remains a correctness/operability issue, while XC-1/XC-3/XC-4/XC-5 are benchmark, deployment,
+observability, or security work rather than source PERF rules; XC-2 is represented by `PERF-PY-17`.
+
 ## Reuse policy
 
 1. **Same JSON shape** as golang CWE/PERF chunks and BP maps.
-2. **Do not bulk-copy** Go PERF or Go BP into Python.
+2. **Do not bulk-copy** Go PERF or Go BP into Python. Python PERF uses the distinct `PERF-PY-*` namespace.
 3. **Do not** point Go generators (`metadata_gen.go`) at this directory.
 4. Prefer rewriting detection notes for Python sinks rather than cloning gin/gorm text.
 

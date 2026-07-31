@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -212,6 +213,111 @@ func TestPythonCWEChunksFrom699(t *testing.T) {
 		}
 	}
 	t.Logf("python CWE catalogue: %d rules across %d files", total, cweFiles)
+}
+
+// PERF seeds are intentionally Python-only and do not imply detector support.
+// They establish the stable catalogue contract that the future detector batch
+// must implement against.
+func TestPythonPERFSeedChunks(t *testing.T) {
+	t.Parallel()
+	dir := catalogueDir(t)
+	chunkDir := filepath.Join(dir, "chunks")
+	entries, err := os.ReadDir(chunkDir)
+	if err != nil {
+		t.Fatalf("read chunks: %v", err)
+	}
+
+	required := []string{
+		"id", "name", "description", "original_description", "detection_notes",
+		"category", "status", "weakness_abstraction", "python_relevance", "applicable_to",
+	}
+	namePattern := regexp.MustCompile(`^perf-py-[0-9]{3}-[0-9]{3}\.json$`)
+	seen := map[string]string{}
+	var files, total int
+
+	for _, ent := range entries {
+		name := ent.Name()
+		if ent.IsDir() || !strings.HasPrefix(name, "perf-") || !strings.HasSuffix(name, ".json") {
+			continue
+		}
+		files++
+		if !namePattern.MatchString(name) {
+			t.Errorf("%s: want Python PERF range filename perf-py-NNN-NNN.json", name)
+		}
+		raw, err := os.ReadFile(filepath.Join(chunkDir, name))
+		if err != nil {
+			t.Fatalf("read %s: %v", name, err)
+		}
+		var doc map[string]map[string]any
+		if err := json.Unmarshal(raw, &doc); err != nil {
+			t.Fatalf("%s: %v", name, err)
+		}
+		if len(doc) == 0 {
+			t.Errorf("%s: empty object", name)
+			continue
+		}
+		if len(doc) > maxRulesPerChunk {
+			t.Errorf("%s: %d rules exceeds max %d", name, len(doc), maxRulesPerChunk)
+		}
+		total += len(doc)
+
+		for key, entry := range doc {
+			if !strings.HasPrefix(key, "PERF-PY-") {
+				t.Errorf("%s: key %q want PERF-PY-*", name, key)
+				continue
+			}
+			for _, field := range required {
+				if _, ok := entry[field]; !ok {
+					t.Errorf("%s %s: missing field %q", name, key, field)
+				}
+			}
+			id, ok := entry["id"].(string)
+			if !ok || id == "" {
+				t.Errorf("%s %s: id must be non-empty string", name, key)
+				continue
+			}
+			if key != id {
+				t.Errorf("%s: key %s does not match id %s", name, key, id)
+			}
+			if previous, duplicate := seen[id]; duplicate {
+				t.Errorf("duplicate %s in %s and %s", id, previous, name)
+			}
+			seen[id] = name
+			if _, hasGoRelevance := entry["go_relevance"]; hasGoRelevance {
+				t.Errorf("%s %s: use python_relevance, not go_relevance", name, key)
+			}
+			if relevance, _ := entry["python_relevance"].(string); relevance != "High" && relevance != "Medium" && relevance != "Low" {
+				t.Errorf("%s %s: invalid python_relevance %q", name, key, relevance)
+			}
+			apps, ok := entry["applicable_to"].([]any)
+			if !ok || len(apps) == 0 {
+				t.Errorf("%s %s: applicable_to must be non-empty array", name, key)
+				continue
+			}
+			python := false
+			for _, app := range apps {
+				if value, ok := app.(string); ok && value == "python" {
+					python = true
+				}
+			}
+			if !python {
+				t.Errorf("%s %s: applicable_to must include python", name, key)
+			}
+		}
+	}
+
+	if files == 0 {
+		t.Fatal("no perf-*.json chunk files found")
+	}
+	if total != 22 {
+		t.Fatalf("Python PERF seed size = %d, want 22", total)
+	}
+	for id := 1; id <= 22; id++ {
+		key := "PERF-PY-" + itoa(id)
+		if _, ok := seen[key]; !ok {
+			t.Errorf("missing seeded %s", key)
+		}
+	}
 }
 
 func itoa(n int) string {
