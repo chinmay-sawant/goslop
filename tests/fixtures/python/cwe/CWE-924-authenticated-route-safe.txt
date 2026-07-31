@@ -1,0 +1,18 @@
+# goslop text fixture
+lang: python
+file: CWE-924-authenticated-route-safe.py
+---
+from flask import Blueprint, current_app, request
+
+bp = Blueprint("api", __name__)
+
+@bp.before_request
+def verify_auth():
+    api_key = request.headers.get("X-Api-Key")
+    if api_key != current_app.config["INGEST_API_KEY"]:
+        return "unauthorized", 401
+
+@bp.route("/webhooks", methods=["POST"])
+def ingest_webhook():
+    data = request.get_json(silent=True)
+    return process_event(data)

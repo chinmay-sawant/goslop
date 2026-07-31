@@ -37,7 +37,7 @@ var (
 	pyTierBAsyncSleepRE  = regexp.MustCompile(`(?is)async\s+def\s+\w+\s*\([^)]*\)\s*:[\s\S]{0,260}time\.sleep\s*\(`)
 	pyTierBFloatMoneyRE  = regexp.MustCompile(`(?is)float\s*\(\s*request\.(?:args|form)\.get\s*\([^\n]*(?:price|amount|balance)`)
 	pyTierBDoubleCloseRE = regexp.MustCompile(`(?is)\w+\.close\s*\(\s*\)[\s\S]{0,180}\w+\.close\s*\(\s*\)`)
-	pyControlHeaderRE    = regexp.MustCompile(`^(?:(?:async\s+)?(?:def|if|elif|else|for|while|try|except|finally|with|match|case)|class)\b.*:\s*$`)
+	pyControlHeaderRE    = regexp.MustCompile(`^(?:async\s+)?(?:if|elif|else|for|while|try|except|finally|with|match|case)\b.*:\s*$`)
 )
 
 func detectCWE1104(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
@@ -83,8 +83,8 @@ func detectCWE1124(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	type structuralFrame struct{ indent int }
-	var frames []structuralFrame
+	type controlFrame struct{ indent int }
+	var frames []controlFrame
 	offset := 0
 	for _, line := range strings.Split(pythonCodeMask(unit.Source), "\n") {
 		trimmed := strings.TrimSpace(line)
@@ -101,13 +101,13 @@ func detectCWE1124(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			// counting them as an additional nesting level overstates ordinary
 			// recovery and retry paths.
 			if !strings.HasPrefix(trimmed, "except") && !strings.HasPrefix(trimmed, "finally") {
-				frames = append(frames, structuralFrame{indent: indent})
+				frames = append(frames, controlFrame{indent: indent})
 			}
 			offset += len(line) + 1
 			continue
 		}
 		if len(frames) >= 6 && isExecutableNestedStatement(trimmed) {
-			emitTierBFinding(unit, &MetaCWE1124, offset, "executable statement is nested at least six structural levels", confidence70, out)
+			emitTierBFinding(unit, &MetaCWE1124, offset, "executable statement is nested at least six control-flow levels", confidence70, out)
 			return
 		}
 		offset += len(line) + 1
