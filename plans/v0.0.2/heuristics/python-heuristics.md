@@ -1,7 +1,7 @@
 # v0.0.2 — Python heuristic detectors (CWE, BP, PERF)
 
 > **Parent:** GitHub epic [#51](https://github.com/chinmay-sawant/goslop/issues/51) — Epic: Python heuristic detectors (CWE, BP, PERF)  
-> **Status:** CWE #52 priority batch shipped; CWE expansion planned in `cwe-plans/`; BP #53 **complete** 50/50; PERF #54 catalogue seeded, detectors pending  
+> **Status:** CWE #52 priority batch shipped; CWE expansion planned in `cwe-plans/`; BP #53 **complete** 50/50; PERF #54 22/22 detectors + fixtures implemented, corpus canary pending
 > **Estimated effort:** multi-PR (CWE expansion waves P0–P3; PERF detector follow-up pending)  
 > **Ledger rule:** this file is the **canonical execution ledger** for heuristic implementation. Detail lives in sibling checklists. Update checkboxes only with evidence (`make lint` / `make test` for code).
 
@@ -13,7 +13,7 @@
 |--------|------:|-------------|--------|
 | CWE heuristics | #52 | [python-heuristics-cwe.md](./python-heuristics-cwe.md) + **[cwe-plans/](./cwe-plans/)** | priority 5 shipped; **154** implement-owned + **185** deferred |
 | Bad-practice heuristics | #53 | [python-heuristics-bp.md](./python-heuristics-bp.md) + [bp-plans/](./bp-plans/) | **complete** 50/50 on main (PR #65) |
-| PERF catalogue + heuristics | #54 | [python-heuristics-perf.md](./python-heuristics-perf.md) | **catalogue seeded**; detector implementation pending (`[~]`) |
+| PERF catalogue + heuristics | #54 | [python-heuristics-perf.md](./python-heuristics-perf.md) | **22/22 fixture-backed experimental detectors**; corpus canary pending (`[~]`) |
 
 **Foundation already shipped** (do not re-plan): epic #39 / PR #50 — `languages` config, Python plugin stub, `ruleset/python/` CWE + BP catalogues. See [python-support.md](./python-support.md).
 
@@ -30,14 +30,14 @@
 | Python plugin source-only + **BP-PY detectors** (A+B+C subset) | `internal/lang/python/` + `detectors/bad_practices/` |
 | CWE catalogue ~344 rules | `ruleset/python/chunks/cwe-*.json` (`python_relevance`) |
 | BP catalogue 50 `BP-PY-*` | `ruleset/python/bad-practices.json` |
-| Python PERF catalogue seeded | `ruleset/python/chunks/perf-py-001-014.json` + `perf-py-015-022.json` (22 rules; detectors pending) |
+| Python PERF catalogue + detectors | `ruleset/python/chunks/perf-py-001-014.json` + `perf-py-015-022.json`; `internal/lang/python/detectors/perf/` (22/22 fixture-backed) |
 | Go detector families | `internal/lang/go/detectors/{cwe,bad_practices,perf}/` |
 
 ### Strategy
 
 1. **CWE first** (security correctness) — priority batch CWE-22 / 78 / 79 / 89 / 502, then expand.  
 2. **BP second** — core + security hygiene + high-signal Flask/Django/FastAPI.  
-3. **PERF catalogue seeded** — issue #54 stays open for detector implementation and fixtures; catalogue evidence alone does not claim emitted findings.
+3. **PERF experimental batch** — issue #54 has 22 fixture-backed emitted rules; it remains open for reference-corpus canary and maturity evidence.
 
 ### Non-goals
 
@@ -51,7 +51,7 @@
 #39 foundation (done)
     ├─ #52 CWE heuristics  ──► fixtures + plugin Detectors()
     ├─ #53 BP heuristics   ──► same plugin registration surface
-    └─ #54 PERF            ──► [~] catalogue gate met; detector batch pending
+    └─ #54 PERF            ──► [~] 22/22 experimental detector batch; corpus canary pending
 ```
 
 ---
@@ -76,19 +76,19 @@
 - [x] Priority `BP-PY-*` batch green (A+B + C high-signal; inline unit tests; D/E deferred)
 - [x] Validation: `make lint` + `make test` green on `feat/python-bp-heuristics` (2026-07-31)
 
-### PERF — #54 (catalogue seeded; detectors pending)
+### PERF — #54 (22/22 experimental detectors; corpus canary pending)
 
 - [x] PERF ledger updated in [python-heuristics-perf.md](./python-heuristics-perf.md) (catalogue phase, 2026-07-31)
 - [x] Python PERF catalogue seed expanded (`PERF-PY-1` … `PERF-PY-22`)  
   **Evidence:** `ruleset/python/chunks/perf-py-001-014.json` + `perf-py-015-022.json`; `go test ./ruleset/python/` passes (2026-07-31).  
-  **Next gate:** implement and fixture-test the Python PERF detector batch.
+  **Evidence:** `internal/lang/python/detectors/perf/`; paired fixtures under `tests/fixtures/python/perf/`; `make lint` + `make test` green (2026-07-31).
 
 ### Epic closure
 
 - [x] #52 and #53 have shipped initial heuristic batches on `chore/epic-51-integration`  
   **Evidence:** CWE-22/78/79/89/502 + BP-PY A/B + C high-signal; remaining BP/CWE/PERF still deferred (`[~]`).  
   **Validation (integration):** `make lint` + `make test` green 2026-07-31.
-- [~] #54 catalogue gate is complete; detector implementation remains pending
+- [~] #54 detector batch is implemented; reference-corpus canary and maturity decision remain pending
 - [ ] Epic #51 closed when integration PR lands (or left open for remaining expansion)
 
 ---
@@ -115,7 +115,7 @@ Docs-only plan edits: no lint/test required.
 | #51 | Epic: Python heuristic detectors (CWE, BP, PERF) | this file |
 | #52 | python(cwe): implement CWE heuristic detectors | [python-heuristics-cwe.md](./python-heuristics-cwe.md) |
 | #53 | python(bp): implement BP-PY heuristics | [python-heuristics-bp.md](./python-heuristics-bp.md) |
-| #54 | python(perf): seed PERF + heuristics | [python-heuristics-perf.md](./python-heuristics-perf.md) (catalogue seeded; detectors pending) |
+| #54 | python(perf): seed PERF + heuristics | [python-heuristics-perf.md](./python-heuristics-perf.md) (22/22 experimental detectors; corpus canary pending) |
 
 ---
 

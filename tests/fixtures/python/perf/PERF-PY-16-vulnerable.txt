@@ -1,0 +1,8 @@
+lang: python
+file: models.py
+---
+class AuditEvent(models.Model):
+    created_at = models.DateTimeField()
+
+def purge(cutoff):
+    AuditEvent.objects.filter(created_at__lt=cutoff).delete()

@@ -1,7 +1,7 @@
 # Python ruleset catalogues (WIP)
 
-> **Status:** catalogues + priority **CWE** and **BP-PY** detectors; Python PERF catalogue seeded (detectors pending)  
-> **Issues:** #52 CWE · #53 BP · #54 PERF catalogue seeded (detectors pending) · epic #51 · foundation #39  
+> **Status:** catalogues + priority **CWE**, **BP-PY**, and experimental **PERF-PY** detectors
+> **Issues:** #52 CWE · #53 BP · #54 PERF 22/22 fixture-backed detectors · epic #51 · foundation #39
 > **Plans:** `plans/v0.0.2/heuristics/python-heuristics-*.md`  
 > **CWE mapping:** `plans/v0.0.2/init-python/python-cwe-from-699-mapping.md` (from `699.csv`)  
 > **BP audit:** `plans/v0.0.2/init-python/ruleset-reuse-audit.md`
@@ -9,6 +9,7 @@
 **Runnable detectors (priority batches):**
 - CWE-22, CWE-78, CWE-79, CWE-89, CWE-502 — `internal/lang/python/detectors/cwe`
 - BP-PY priority subset (core + security + sample Flask/Django) — `internal/lang/python/detectors/bad_practices`
+- PERF-PY-1 through PERF-PY-22 — `internal/lang/python/detectors/perf` (experimental)
 
 Pure-Go source patterns; catalogue JSON remains source of truth. Full CWE-344 / all 50 BP / full PERF detector parity not claimed.
 
@@ -102,7 +103,7 @@ They run only when the Python plugin is enabled (`languages = ["python"]` / mult
 | C — Framework (high-signal) | `BP-PY-16`, `17`, `21` |
 
 Remaining catalogue IDs (`BP-PY-3`, `5`, rest of C/D/E) are deferred — see the BP ledger.
-This tree still has **no** Python CWE/PERF detectors.
+The Python plugin contains the priority CWE/BP batches and all 22 seeded PERF-PY rules.
 
 ## Performance
 
@@ -114,8 +115,9 @@ sequence. The seed deliberately leaves async blocking and HTTP timeouts with `BP
 `BP-PY-14` respectively, avoiding duplicate findings.
 
 Every PERF entry is marked `Seeded`, has `applicable_to` including `python`, and uses
-Python-specific `detection_notes`. Catalogue presence does **not** mean the rule is emitted yet:
-the Python PERF detector package, fixtures, plugin registration, and maturity decisions remain future work.
+Python-specific `detection_notes`. All 22 are emitted by the opt-in Python plugin and have paired
+vulnerable/safe fixtures under `tests/fixtures/python/perf/`. They remain experimental until a
+reference-corpus canary supports a maturity decision.
 FA-8 remains a correctness/operability issue, while XC-1/XC-3/XC-4/XC-5 are benchmark, deployment,
 observability, or security work rather than source PERF rules; XC-2 is represented by `PERF-PY-17`.
 
@@ -128,8 +130,8 @@ observability, or security work rather than source PERF rules; XC-2 is represent
 
 ## What this is not
 
-- Not a claim of detector implementation or full CLI Python scanning  
-- Not consumed by `goslop --list-rules` until a Python plugin embeds/loads these files  
+- Not a claim that experimental PERF-PY findings belong in the recommended/perf profile
+- Not a substitute for reference-corpus canary and false-positive review
 
 ## Validation
 

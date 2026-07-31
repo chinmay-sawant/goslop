@@ -1,0 +1,6 @@
+lang: python
+file: percentile.py
+---
+async def percentile(session, stmt):
+    rows = (await session.execute(stmt)).scalars().all()
+    return sorted(rows)[int(len(rows) * 0.95)]

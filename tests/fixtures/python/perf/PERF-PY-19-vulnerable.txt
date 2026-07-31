@@ -1,0 +1,7 @@
+lang: python
+file: sweeper.py
+---
+@transaction.atomic
+def release_expired(cutoff):
+    for row in Reservation.objects.filter(expires_at__lt=cutoff).select_for_update(skip_locked=True):
+        row.release()

@@ -1,0 +1,10 @@
+# Fixture for PERF-PY-18 (vulnerable)
+lang: python
+file: app/normalization.py
+---
+import re
+
+def normalize_payload(payload):
+    payload = re.sub(r"\s+", " ", payload)
+    payload = re.sub(r"[^a-z ]", "", payload)
+    return payload

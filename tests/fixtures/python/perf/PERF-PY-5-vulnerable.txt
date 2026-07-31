@@ -1,0 +1,8 @@
+# Fixture for PERF-PY-5 (vulnerable)
+lang: python
+file: workers/delivery.py
+---
+def worker():
+    batch = claim_pending_batch()
+    for job in batch:
+        deliver_webhook(job)

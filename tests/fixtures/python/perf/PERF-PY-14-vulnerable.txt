@@ -1,0 +1,8 @@
+lang: python
+file: events.py
+---
+def create_event(idempotency_key):
+    existing = Event.objects.filter(idempotency_key=idempotency_key).first()
+    if existing:
+        return existing
+    return Event.objects.create(idempotency_key=idempotency_key)

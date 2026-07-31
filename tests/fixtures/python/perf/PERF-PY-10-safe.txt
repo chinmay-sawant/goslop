@@ -1,0 +1,9 @@
+lang: python
+file: worker.py
+---
+def worker():
+    while True:
+        processed = process_batch()
+        if processed:
+            continue
+        time.sleep(5)

@@ -1,0 +1,7 @@
+# Fixture for PERF-PY-22 (safe)
+lang: python
+file: config/database.py
+---
+ENVIRONMENT = "production"
+DATABASES = {"default": {"ENGINE": "django.db.backends.postgresql", "NAME": "service"}}
+CELERY_WORKER_CONCURRENCY = 4

@@ -1,0 +1,5 @@
+lang: python
+file: events.py
+---
+def create_event(idempotency_key):
+    return Event.objects.get_or_create(idempotency_key=idempotency_key)

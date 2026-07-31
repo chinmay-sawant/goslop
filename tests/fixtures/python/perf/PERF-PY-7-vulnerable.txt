@@ -1,0 +1,11 @@
+# Fixture for PERF-PY-7 (vulnerable)
+lang: python
+file: app/middleware.py
+---
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class AuditMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        return await call_next(request)
+
+app.add_middleware(AuditMiddleware)

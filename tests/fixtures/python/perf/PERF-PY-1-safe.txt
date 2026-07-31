@@ -1,0 +1,5 @@
+lang: python
+file: percentile.py
+---
+async def percentile(session, stmt):
+    return await session.scalar(select(func.percentile_cont(0.95)))

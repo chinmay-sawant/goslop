@@ -1,0 +1,6 @@
+lang: python
+file: reports.py
+---
+def emails():
+    for user in User.objects.filter(active=True):
+        emit(user.email)

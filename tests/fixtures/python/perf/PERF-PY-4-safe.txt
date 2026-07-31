@@ -1,0 +1,7 @@
+lang: python
+file: inventory.py
+---
+def reserve(stock, amount):
+    WarehouseStock.objects.filter(pk=stock.pk).update(
+        reserved_quantity=models.F("reserved_quantity") + amount,
+    )

@@ -1,0 +1,7 @@
+lang: python
+file: reservation.py
+---
+def reserve(items):
+    skus = Sku.objects.in_bulk([item["sku_code"] for item in items], field_name="sku_code")
+    for item in items:
+        reserve_sku(skus[item["sku_code"]])

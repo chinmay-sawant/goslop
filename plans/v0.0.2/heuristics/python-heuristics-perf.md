@@ -1,10 +1,10 @@
-# v0.0.2 — Python PERF heuristics (catalogue seeded; detectors pending)
+# v0.0.2 — Python PERF heuristics (22/22 experimental detectors implemented)
 
 > **Parent:** `plans/v0.0.2/python-heuristics.md` — epic [#51](https://github.com/chinmay-sawant/goslop/issues/51); issue body `plans/PR/v0.0.2/issue-python-perf-heuristics-body.md`  
 > **Issue:** [#54](https://github.com/chinmay-sawant/goslop/issues/54) — python(perf): seed PERF catalogue and implement performance heuristics  
-> **Status:** catalogue seeded (2026-07-31); detector implementation pending  
-> **Estimated effort:** medium–large once unblocked (catalogue seed + initial detector batch; not full Go PERF parity)  
-> **Ledger rule:** this file is the **canonical execution ledger for #54**. Every implementation row is `[~]` until the catalogue gate is met. Do not flip rows to `[ ]` / `[x]` without evidence.
+> **Status:** 22/22 experimental detectors and paired fixtures implemented (2026-07-31); reference-corpus canary and maturity decision pending
+> **Estimated effort:** initial detector batch complete; remaining work is canary evidence, false-positive triage, and maturity review
+> **Ledger rule:** the canonical atomic evidence is `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md`; do not promote maturity without fresh canary evidence.
 
 ---
 
@@ -25,20 +25,20 @@ Python today:
 | CWE catalogue | `ruleset/python/chunks/cwe-*.json` | present (~344) |
 | BP catalogue | `ruleset/python/bad-practices.json` | present (50 `BP-PY-*`) |
 | **PERF catalogue** | `ruleset/python/chunks/perf-py-001-014.json` + `perf-py-015-022.json` | **seeded** (22 Python-only rules) |
-| PERF detectors | under `internal/lang/python` | **none** (plugin returns empty `Detectors()`) |
+| PERF detectors | `internal/lang/python/detectors/perf/` | **22** experimental `PERF-PY-*` rules; Python remains opt-in |
 
-**#54 is catalogue-seeded.** Seeding catalogue JSON was the first gate; detector implementation remains a separate pending phase.
+**#54 has an implemented experimental detector batch.** Every seeded ID has source-only detection, a paired fixture, and repository validation; corpus canary remains a separate closure phase.
 
 ---
 
 ## Executive Summary
 
-### Why detector work remains pending
+### Implemented detector boundary
 
-1. **Python PERF catalogue was missing** — the initial `PERF-PY-1` … `PERF-PY-22` seed now covers the defensible static subset of the evaluation. Reuse audit (`plans/v0.0.2/ruleset-reuse-audit.md`) classifies Go PERF as **Class C — Go-only mechanics**; bulk-copy remains out of policy.  
-2. **Issue body order** — #54 explicitly sequences: (1) seed JSON, (2) implement heuristics from `detection_notes`; only step (1) is complete.  
-3. **Epic priority** — parent ledger prioritizes CWE (#52) then BP (#53); PERF detector work remains a follow-up.  
-4. **Avoid double-firing** — several candidate PERF themes (N+1, HTTP timeouts) may overlap BP; ownership must be decided in catalogue notes before detectors.
+1. **Python PERF remains source-only** — the 22 rules cover the defensible static subset; no Go AST/CGO port was introduced.
+2. **Experimental maturity is intentional** — fixture parity proves detector behavior, not production signal.
+3. **Review-level inference is bounded** — rules 15, 16, and 20 require visible local declarations; rules 17 and 22 require explicit production evidence.
+4. **BP ownership remains separate** — timeout and blocking-async patterns stay with BP-PY; the PERF rules use cost-specific conditions.
 
 ### What “unblocked” means
 
@@ -132,29 +132,29 @@ go test ./ruleset/python/
 
 ---
 
-## Phase 2: Detectors (pending)
+## Phase 2: Detectors (implemented; canary pending)
 
-> **Blocked on Phase 1.** Reference architecture only: `internal/lang/go/detectors/perf/` (`scan.go`, `facts.go`, `register.go`, batch rules, fixtures).
+> **Implemented:** `internal/lang/python/detectors/perf/`; `make lint`, `make test`, and `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` passed on 2026-07-31.
 
 > **Canonical implementation checklist:** `plans/v0.0.2/heuristics/pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md`. Keep all 22 detector, fixture, canary, and quality-gate status there; this parent remains the #54 rollup.
 
 ### 2.1 Package / registration skeleton
 
-- [~] Python PERF package, `RegisterRule` contract, metadata, plugin wire-up, and `PERF-PY-*` pack/discovery identity — **moved to canonical atomic rows:** `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md` §1.1–§1.2; **owner:** epic #51 / issue #54.  
+- [x] Python PERF package, `RegisterRule` contract, metadata, plugin wire-up, and `PERF-PY-*` pack/discovery identity — **evidence:** canonical checklist §§1.1–1.2 (2026-07-31).
 
 ### 2.2 Heuristic implementation (seeded IDs only)
 
 Driven by catalogue `detection_notes`; prefer pure-Go source-pattern / light-parse heuristics consistent with sibling CWE/BP approach.
 
-- [~] Detector implementation, rule-specific suppressions, and BP/PERF single-owner checks for all 22 seeded IDs — **moved to canonical atomic rows:** `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md` §§2–4; **owner:** epic #51 / issue #54.  
+- [x] Detector implementation and rule-specific suppressions for all 22 seeded IDs — **evidence:** canonical checklist §§2–4 and Python PERF matrix (2026-07-31).
 
 ### 2.3 Fixtures
 
-- [~] Per-rule vulnerable/safe fixtures and the Python PERF fixture matrix — **moved to canonical atomic rows:** `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md` §§1.2, 2–5; **owner:** epic #51 / issue #54.  
+- [x] Per-rule vulnerable/safe fixtures and the Python PERF fixture matrix — **evidence:** 22 paired files and `go test ./tests/integration/python -run TestPythonPERF -count=1` (2026-07-31).
 
 ### 2.4 Integration smoke
 
-- [~] Python-enabled CLI emission and unchanged default Go-only behavior — **moved to canonical atomic rows:** `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md` §§1.1–1.3, 5.2; **owner:** epic #51 / issue #54.  
+- [x] Python-enabled detector emission and unchanged default Go-only behavior — **evidence:** Python integration matrix plus `internal/lang/python/plugin_test.go` (2026-07-31); standalone binary smoke remains pending.
 
 ### 2.5 Phase 2 validation (when active)
 
@@ -166,7 +166,7 @@ CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop
 # smoke with languages including python against PERF fixtures
 ```
 
-- [~] Record implementation-branch `make lint` and `make test` outcomes — **moved to canonical gate:** `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md` §5.4; **owner:** epic #51 / issue #54.  
+- [x] Record implementation-branch `make lint` and `make test` outcomes — **evidence:** both passed 2026-07-31; canonical checklist §5.3.
 
 ---
 

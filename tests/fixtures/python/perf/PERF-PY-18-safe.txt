@@ -1,0 +1,9 @@
+# Fixture for PERF-PY-18 (safe)
+lang: python
+file: app/normalization.py
+---
+import re
+
+def normalize_payload(payload):
+    compact = re.sub(r"\s+", " ", payload)
+    return re.sub(r"[^a-z ]", "", compact)
