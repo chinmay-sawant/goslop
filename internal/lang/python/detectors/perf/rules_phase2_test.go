@@ -34,6 +34,7 @@ func TestPhase2Rules(t *testing.T) {
 		{"lookup then create", "PERF-PY-14", "def create(key):\n    existing = Event.objects.filter(idempotency_key=key).first()\n    if existing:\n        return existing\n    return Event.objects.create(idempotency_key=key)\n", true},
 		{"helper lookup then insert", "PERF-PY-14", "async def create(request, session):\n    existing = await self._find_batch_by_key(request.idempotency_key)\n    if existing:\n        return existing\n    session.add(Event(idempotency_key=request.idempotency_key))\n", true},
 		{"upsert", "PERF-PY-14", "def create(key):\n    return Event.objects.get_or_create(idempotency_key=key)\n", false},
+		{"top-level lookup after function", "PERF-PY-14", "def unrelated():\n    return 1\n\nexisting = Event.objects.filter(idempotency_key=key).first()\nEvent.objects.create(idempotency_key=key)\n", false},
 	}
 	for _, tc := range cases {
 		tc := tc

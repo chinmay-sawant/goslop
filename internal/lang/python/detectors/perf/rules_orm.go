@@ -193,12 +193,7 @@ func perfUsesOnlyScalar(body, variable string) bool {
 }
 
 func linesText(lines []codeLine, start, end int) string {
-	if start < 0 {
-		start = 0
-	}
-	if end > len(lines) {
-		end = len(lines)
-	}
+	start, end = safeLineRange(lines, start, end)
 	if start >= end {
 		return ""
 	}

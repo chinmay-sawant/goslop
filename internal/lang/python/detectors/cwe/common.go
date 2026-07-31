@@ -181,7 +181,11 @@ func pythonCodeMask(source string) string {
 
 func maskPythonString(masked []byte, index int, quote byte, triple, escaped bool) (int, byte, bool, bool) {
 	current := masked[index]
-	masked[index] = ' '
+	// Keep line separators intact so source-mask consumers can safely correlate
+	// masked and original lines, including multiline string literals.
+	if current != '\n' && current != '\r' {
+		masked[index] = ' '
+	}
 	if triple {
 		if current == quote && index+2 < len(masked) && masked[index+1] == quote && masked[index+2] == quote {
 			masked[index+1], masked[index+2] = ' ', ' '

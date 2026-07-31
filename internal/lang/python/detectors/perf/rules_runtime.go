@@ -107,6 +107,7 @@ func runtimeDeliveryCall(line string) bool {
 }
 
 func runtimeHasBatchClaim(lines []codeLine, start, end int) bool {
+	start, end = safeLineRange(lines, start, end)
 	for _, line := range lines[start:end] {
 		lower := strings.ToLower(line.text)
 		if strings.Contains(lower, "claim_") || strings.Contains(lower, ".claim(") ||
@@ -119,6 +120,7 @@ func runtimeHasBatchClaim(lines []codeLine, start, end int) bool {
 }
 
 func runtimeHasBoundedFanout(lines []codeLine, start, end int) bool {
+	start, end = safeLineRange(lines, start, end)
 	for _, line := range lines[start:end] {
 		lower := strings.ToLower(line.text)
 		if strings.Contains(lower, "asyncio.gather") || strings.Contains(lower, "semaphore") ||

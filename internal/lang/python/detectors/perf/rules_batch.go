@@ -87,7 +87,8 @@ func detectPYPERF4(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 		if windowHas(facts.lines, start, end, "models.F(", ".update(") || windowHasRaw(facts.lines, start, end, "save hook", "save-hook") {
 			continue
 		}
-		for _, later := range facts.lines[i+1 : end] {
+		laterStart, laterEnd := safeLineRange(facts.lines, i+1, end)
+		for _, later := range facts.lines[laterStart:laterEnd] {
 			if strings.Contains(later.text, m[1]+".save(") {
 				pushLine(unit, "PERF-PY-4", line, m[1]+".", "numeric model field is mutated then saved; use QuerySet.update with an F expression when hooks are unnecessary", out)
 				break
@@ -204,12 +205,7 @@ func enclosingLoopHeader(lines []codeLine, at int) (codeLine, bool) {
 }
 
 func windowHasRaw(lines []codeLine, start, end int, needles ...string) bool {
-	if start < 0 {
-		start = 0
-	}
-	if end > len(lines) {
-		end = len(lines)
-	}
+	start, end = safeLineRange(lines, start, end)
 	for _, line := range lines[start:end] {
 		lower := strings.ToLower(line.raw)
 		for _, needle := range needles {

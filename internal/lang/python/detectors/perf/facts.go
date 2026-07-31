@@ -110,12 +110,7 @@ func functionWindow(lines []codeLine, at int) (int, int) {
 }
 
 func windowHas(lines []codeLine, start, end int, needles ...string) bool {
-	if start < 0 {
-		start = 0
-	}
-	if end > len(lines) {
-		end = len(lines)
-	}
+	start, end = safeLineRange(lines, start, end)
 	for _, line := range lines[start:end] {
 		for _, needle := range needles {
 			if strings.Contains(line.text, needle) {
@@ -124,4 +119,26 @@ func windowHas(lines []codeLine, start, end int, needles ...string) bool {
 		}
 	}
 	return false
+}
+
+// safeLineRange keeps heuristic window calculations total. A detector may
+// infer an end before the current line when a top-level loop follows a
+// function; that should mean an empty window, never a process panic.
+func safeLineRange(lines []codeLine, start, end int) (int, int) {
+	if start < 0 {
+		start = 0
+	}
+	if start > len(lines) {
+		start = len(lines)
+	}
+	if end < 0 {
+		end = 0
+	}
+	if end > len(lines) {
+		end = len(lines)
+	}
+	if end < start {
+		start = end
+	}
+	return start, end
 }

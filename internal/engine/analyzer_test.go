@@ -25,6 +25,18 @@ type execCommandDetector struct {
 	core.BaseDetector
 }
 
+type panicDetector struct {
+	core.BaseDetector
+}
+
+func (d *panicDetector) Language() core.LanguageID { return core.LangGo }
+
+func (d *panicDetector) RuleIDs() []string { return []string{"TEST-PANIC"} }
+
+func (d *panicDetector) Run(_ *core.ScanContext, _ *core.ParsedUnit, _ *[]rules.Finding) {
+	panic("synthetic detector failure")
+}
+
 func (d *execCommandDetector) Language() core.LanguageID { return core.LangGo }
 
 func (d *execCommandDetector) RuleIDs() []string { return []string{"TEST-EXEC-COMMAND"} }
@@ -91,6 +103,7 @@ import "os/exec"
 func run(cmd string) {
 	exec.Command("sh", "-c", cmd)
 }
+
 `)
 	writeFile(t, dir, "safe.go", `package main
 
@@ -143,6 +156,32 @@ func F() { exec.Command("true") }
 	}
 	if res.Stats == nil || res.Stats.FilesScanned < 2 {
 		t.Errorf("stats = %+v, want at least 2 files scanned", res.Stats)
+	}
+}
+
+func TestAnalyzePathsConvertsDetectorPanicToFileError(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "panic.go", "package main\n")
+
+	reg, err := engine.NewRegistry([]core.LanguagePlugin{
+		&goTestPlugin{dets: []core.Detector{&panicDetector{}}},
+	})
+	if err != nil {
+		t.Fatalf("registry: %v", err)
+	}
+
+	res, err := engine.NewAnalyzer(core.DefaultScanContext(), reg).AnalyzePaths([]string{dir})
+	if err != nil {
+		t.Fatalf("AnalyzePaths: %v", err)
+	}
+	if res == nil || len(res.Errors) != 1 {
+		t.Fatalf("result errors = %+v, want one file error", res)
+	}
+	if res.Errors[0].Kind != engine.ScanErrorEngine {
+		t.Fatalf("error kind = %s, want engine", res.Errors[0].Kind)
+	}
+	if !strings.Contains(res.Errors[0].Message, "detector panic: synthetic detector failure") {
+		t.Fatalf("error message = %q", res.Errors[0].Message)
 	}
 }
 

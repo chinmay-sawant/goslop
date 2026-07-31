@@ -74,7 +74,11 @@ func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	maskedLines := strings.Split(masked, "\n")
 	lineOffset := 0
 	for i, line := range originalLines {
-		lhs, _, ok := strings.Cut(maskedLines[i], "=")
+		maskedLine := ""
+		if i < len(maskedLines) {
+			maskedLine = maskedLines[i]
+		}
+		lhs, _, ok := strings.Cut(maskedLine, "=")
 		_, rhs, _ := strings.Cut(line, "=")
 		if !ok || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) {
 			lineOffset += len(line) + 1

@@ -37,7 +37,8 @@ func detectPYPERF1(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 		}
 		name := regexp.QuoteMeta(m[1])
 		sortRE := regexp.MustCompile(`\bsorted\s*\(\s*` + name + `\b|\b` + name + `\s*\.sort\s*\(`)
-		for _, later := range facts.lines[i+1 : end] {
+		laterStart, laterEnd := safeLineRange(facts.lines, i+1, end)
+		for _, later := range facts.lines[laterStart:laterEnd] {
 			if sortRE.MatchString(later.text) {
 				pushLine(unit, "PERF-PY-1", line, ".all", "ORM result is fully materialized then sorted in Python; prefer a database aggregate or ordered query", out)
 				break
@@ -63,7 +64,8 @@ func detectPYPERF9(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 		}
 		dumpRE := regexp.MustCompile(`\bjson\.dumps\s*\(\s*` + regexp.QuoteMeta(m[1]) + `\b`)
 		dumped := false
-		for _, later := range facts.lines[i+1 : end] {
+		laterStart, laterEnd := safeLineRange(facts.lines, i+1, end)
+		for _, later := range facts.lines[laterStart:laterEnd] {
 			if dumpRE.MatchString(later.text) {
 				dumped = true
 			}
@@ -109,7 +111,8 @@ func detectPYPERF14(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if windowHas(facts.lines, start, end, "get_or_create", "update_or_create", "on_conflict", "ON CONFLICT", "IntegrityError", "insert_or_ignore") {
 			continue
 		}
-		for _, later := range facts.lines[i+1 : end] {
+		laterStart, laterEnd := safeLineRange(facts.lines, i+1, end)
+		for _, later := range facts.lines[laterStart:laterEnd] {
 			if strings.Contains(later.text, ".objects.create(") || strings.Contains(later.text, ".add(") || strings.Contains(later.text, "insert(") {
 				pushLine(unit, "PERF-PY-14", line, "idempotency", "idempotency lookup is followed by an insert; use a database upsert or conflict-safe create", out)
 				break
