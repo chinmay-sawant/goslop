@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-215-safe.py
+---
+import logging
+
+
+def trace():
+    logging.debug("request completed")

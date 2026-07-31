@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-90-safe.py
+---
+from ldap3 import Connection
+from ldap3.utils.conv import escape_filter_chars
+
+
+def find_user(conn: Connection, username: str):
+    return conn.search(f"(uid={escape_filter_chars(username)})")

@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-319-vulnerable.py
+---
+import requests
+
+
+def login(password):
+    return requests.post("http://service.example/login", auth=("user", password))

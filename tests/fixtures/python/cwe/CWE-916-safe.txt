@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-916-safe.py
+---
+"""CWE-916 safe: bcrypt provides a deliberately expensive password hash."""
+
+import bcrypt
+
+
+def password_digest(password):
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())

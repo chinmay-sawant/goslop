@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-214-safe.py
+---
+import subprocess
+
+
+def connect():
+    subprocess.run(["client", "--password-file", "/run/credentials/client"])

@@ -1,0 +1,5 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-312-vulnerable.py
+---
+SECRET_KEY = "django-secret-value-1234"

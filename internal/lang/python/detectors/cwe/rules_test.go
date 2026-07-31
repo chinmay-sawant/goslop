@@ -300,8 +300,8 @@ func TestBatchIntegrityNoDoubleIDs(t *testing.T) {
 		}
 		seen[id] = true
 	}
-	if len(ids) != 5 {
-		t.Fatalf("ids = %v", ids)
+	if len(ids) != 27 {
+		t.Fatalf("ids = %v (len %d), want 27", ids, len(ids))
 	}
 }
 

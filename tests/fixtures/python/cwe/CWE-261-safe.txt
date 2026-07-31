@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-261-safe.py
+---
+import bcrypt
+
+
+def store(password):
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())

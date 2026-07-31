@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-915-vulnerable.py
+---
+"""CWE-915 vulnerable: request data is mass-assigned to model attributes."""
+
+
+def create_user(request):
+    return User.objects.create(**request.data)

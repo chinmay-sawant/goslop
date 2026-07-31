@@ -1,0 +1,6 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-93-safe.py
+---
+def redirect(response):
+    response.headers["Location"] = "/home"

@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-914-vulnerable.py
+---
+"""CWE-914 vulnerable: a request value selects a global variable."""
+
+
+def resolve_value(request):
+    return globals()[request.args["name"]]

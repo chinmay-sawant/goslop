@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-261-vulnerable.py
+---
+import base64
+
+
+def store(password):
+    return base64.b64encode(password.encode())

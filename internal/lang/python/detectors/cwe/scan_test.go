@@ -16,10 +16,36 @@ func TestPyCweScanLanguageAndCatalogue(t *testing.T) {
 	}
 	ids := d.RuleIDs()
 	want := map[string]bool{
-		"CWE-22": true, "CWE-78": true, "CWE-79": true, "CWE-89": true, "CWE-502": true,
+		"CWE-22":  true,
+		"CWE-78":  true,
+		"CWE-79":  true,
+		"CWE-88":  true,
+		"CWE-89":  true,
+		"CWE-90":  true,
+		"CWE-91":  true,
+		"CWE-93":  true,
+		"CWE-94":  true,
+		"CWE-117": true,
+		"CWE-214": true,
+		"CWE-215": true,
+		"CWE-256": true,
+		"CWE-260": true,
+		"CWE-261": true,
+		"CWE-312": true,
+		"CWE-319": true,
+		"CWE-502": true,
+		"CWE-523": true,
+		"CWE-547": true,
+		"CWE-695": true,
+		"CWE-749": true,
+		"CWE-798": true,
+		"CWE-829": true,
+		"CWE-914": true,
+		"CWE-915": true,
+		"CWE-916": true,
 	}
 	if len(ids) != len(want) {
-		t.Fatalf("RuleIDs() = %v (len %d), want 5 priority IDs", ids, len(ids))
+		t.Fatalf("RuleIDs() = %v (len %d), want %d supported IDs", ids, len(ids), len(want))
 	}
 	for _, id := range ids {
 		if !want[id] {
@@ -32,15 +58,15 @@ func TestPyCweScanLanguageAndCatalogue(t *testing.T) {
 		if meta.ID != id {
 			t.Fatalf("meta.ID = %q, want %q", meta.ID, id)
 		}
-		if meta.Severity != rules.SeverityHigh {
-			t.Fatalf("%s severity = %v, want High", id, meta.Severity)
+		if meta.Severity != rules.SeverityHigh && meta.Severity != rules.SeverityMedium {
+			t.Fatalf("%s severity = %v, want High or Medium", id, meta.Severity)
 		}
 		if meta.Pack != rules.PackSecurity {
 			t.Fatalf("%s pack = %v, want PackSecurity", id, meta.Pack)
 		}
 	}
-	if cwe.RegisteredRuleCount() != 5 {
-		t.Fatalf("RegisteredRuleCount = %d, want 5", cwe.RegisteredRuleCount())
+	if cwe.RegisteredRuleCount() != len(want) {
+		t.Fatalf("RegisteredRuleCount = %d, want %d", cwe.RegisteredRuleCount(), len(want))
 	}
 }
 

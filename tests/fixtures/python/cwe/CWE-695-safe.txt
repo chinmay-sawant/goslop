@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-695-safe.py
+---
+import ctypes
+
+
+def integer_value():
+    return ctypes.c_int(1)
