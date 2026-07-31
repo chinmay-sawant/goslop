@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1287-vulnerable.py
+---
+payload = request.get_json()
+cursor.execute(payload)

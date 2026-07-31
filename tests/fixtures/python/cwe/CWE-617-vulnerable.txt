@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-617-vulnerable.py
+---
+def action(request):
+    assert request.user.is_authenticated

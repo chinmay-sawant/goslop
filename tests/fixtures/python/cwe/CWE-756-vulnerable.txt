@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-756-vulnerable.py
+---
+from flask import Flask
+
+app = Flask(__name__)
+app.config["DEBUG"] = True

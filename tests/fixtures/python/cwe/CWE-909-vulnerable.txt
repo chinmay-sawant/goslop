@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-909-vulnerable.py
+---
+def query():
+    return db.execute("select 1")

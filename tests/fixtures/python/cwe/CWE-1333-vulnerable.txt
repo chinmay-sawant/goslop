@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1333-vulnerable.py
+---
+import re
+
+
+EMAIL_FRAGMENT = re.compile(r"(a+)+$")

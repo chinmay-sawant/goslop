@@ -1,0 +1,5 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-798-vulnerable.py
+---
+API_KEY = "sk_live_example_credential_1234"

@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-201-safe.py
+---
+from flask import jsonify
+
+
+def profile(user):
+    return jsonify({"id": user.id, "email": user.email})

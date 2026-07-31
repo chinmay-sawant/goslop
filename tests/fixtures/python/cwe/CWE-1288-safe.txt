@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-1288-safe.py
+---
+expected_count = request.get_json()["count"]
+items = request.get_json()["items"]
+if expected_count == len(items):
+    store(items)

@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-920-vulnerable.py
+---
+while True:
+    hashlib.sha256(data).digest()

@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-552-vulnerable.py
+---
+def download(request):
+    return send_file(request.args.get("path"))

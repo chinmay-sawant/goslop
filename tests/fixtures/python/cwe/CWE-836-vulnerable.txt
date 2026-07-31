@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-836-vulnerable.py
+---
+user = authenticate(password_hash=request.data["password_hash"])

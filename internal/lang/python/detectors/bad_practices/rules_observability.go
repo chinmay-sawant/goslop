@@ -153,7 +153,7 @@ func detectBPPY47(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					start = abs + len(needle)
 					continue
 				}
-				arg, _, ok := firstCallArg(src, open)
+				arg, ok := firstCallArg(src, open)
 				if !ok {
 					start = abs + len(needle)
 					continue

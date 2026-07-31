@@ -1,11 +1,39 @@
 package cwe
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+)
+
+const (
+	confidence65 = 0.65
+	confidence68 = 0.68
+	confidence70 = 0.70
+	confidence72 = 0.72
+	confidence74 = 0.74
+	confidence75 = 0.75
+	confidence76 = 0.76
+	confidence78 = 0.78
+	confidence80 = 0.80
+	confidence82 = 0.82
+	confidence84 = 0.84
+	confidence85 = 0.85
+	confidence86 = 0.86
+	confidence88 = 0.88
+	confidence90 = 0.90
+	confidence92 = 0.92
+
+	maxInsecureTokenBytes       = 15
+	maxSmallRandomTokenValue    = 9999
+	userLookupContextWindow     = 400
+	uninitializedResourceWindow = 220
+	closedResourceWindow        = 180
+	minimumRouteBranches        = 12
+	pathDivisionContextWindow   = 80
 )
 
 // unitFile returns the display path for findings.
@@ -30,21 +58,22 @@ type callSite struct {
 // findCalls finds call-like sites for each name in names (exact callee strings).
 func findCalls(source string, names ...string) []callSite {
 	var out []callSite
+	code := pythonCodeMask(source)
 	for _, name := range names {
 		start := 0
 		for {
-			idx := strings.Index(source[start:], name)
+			idx := strings.Index(code[start:], name)
 			if idx < 0 {
 				break
 			}
 			abs := start + idx
-			if !identBoundaryOK(source, abs, abs+len(name)) {
+			if !identBoundaryOK(code, abs, abs+len(name)) {
 				start = abs + len(name)
 				continue
 			}
 			after := abs + len(name)
-			j := skipWS(source, after)
-			if j >= len(source) || source[j] != '(' {
+			j := skipWS(code, after)
+			if j >= len(code) || code[j] != '(' {
 				start = after
 				continue
 			}
@@ -63,6 +92,82 @@ func findCalls(source string, names ...string) []callSite {
 		}
 	}
 	return out
+}
+
+// pythonCodeMask keeps byte offsets stable while blanking comments and string
+// literals. Source-pattern rules can use it to avoid interpreting examples in
+// docstrings, comments, and quoted data as executable Python.
+func pythonCodeMask(source string) string {
+	masked := []byte(source)
+	inString := byte(0)
+	triple := false
+	escaped := false
+	inComment := false
+	for i := 0; i < len(masked); i++ {
+		c := masked[i]
+		if inComment {
+			if c == '\n' {
+				inComment = false
+			} else {
+				masked[i] = ' '
+			}
+			continue
+		}
+		if inString != 0 {
+			i, inString, triple, escaped = maskPythonString(masked, i, inString, triple, escaped)
+			continue
+		}
+		switch c {
+		case '#':
+			masked[i] = ' '
+			inComment = true
+		case '\'', '"':
+			inString = c
+			if i+2 < len(masked) && masked[i+1] == c && masked[i+2] == c {
+				masked[i], masked[i+1], masked[i+2] = ' ', ' ', ' '
+				i += 2
+				triple = true
+			} else {
+				masked[i] = ' '
+			}
+		}
+	}
+	return string(masked)
+}
+
+func maskPythonString(masked []byte, index int, quote byte, triple, escaped bool) (int, byte, bool, bool) {
+	current := masked[index]
+	masked[index] = ' '
+	if triple {
+		if current == quote && index+2 < len(masked) && masked[index+1] == quote && masked[index+2] == quote {
+			masked[index+1], masked[index+2] = ' ', ' '
+			return index + 2, 0, false, false
+		}
+		return index, quote, true, false
+	}
+	if escaped {
+		return index, quote, false, false
+	}
+	if current == '\\' {
+		return index, quote, false, true
+	}
+	if current == quote {
+		return index, 0, false, false
+	}
+	return index, quote, false, false
+}
+
+func firstCodeMatchStart(source string, pattern *regexp.Regexp) int {
+	if pattern == nil {
+		return -1
+	}
+	masked := pythonCodeMask(source)
+	for _, match := range pattern.FindAllStringIndex(source, -1) {
+		if strings.TrimSpace(masked[match[0]:match[1]]) != "" {
+			return match[0]
+		}
+	}
+	return -1
 }
 
 func identBoundaryOK(source string, start, end int) bool {
@@ -97,7 +202,7 @@ func skipWS(s string, i int) int {
 }
 
 // scanCallArgs starts at '(' and returns index of matching ')' and interior args.
-func scanCallArgs(source string, open int) (closeAt int, args string) {
+func scanCallArgs(source string, open int) (int, string) {
 	if open >= len(source) || source[open] != '(' {
 		return -1, ""
 	}
@@ -109,26 +214,7 @@ func scanCallArgs(source string, open int) (closeAt int, args string) {
 	for i := open; i < len(source); i++ {
 		c := source[i]
 		if inStr != 0 {
-			if triple > 0 {
-				// inside triple-quoted string
-				if c == inStr && i+2 < len(source) && source[i+1] == inStr && source[i+2] == inStr {
-					inStr = 0
-					triple = 0
-					i += 2
-				}
-				continue
-			}
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && (inStr == '"' || inStr == '\'') {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i, inStr, triple, escape = advancePythonQuotedString(source, i, inStr, triple, escape)
 			continue
 		}
 		// not in string
@@ -167,25 +253,7 @@ func splitTopLevelArgs(args string) []string {
 	for i := 0; i < len(args); i++ {
 		c := args[i]
 		if inStr != 0 {
-			if triple > 0 {
-				if c == inStr && i+2 < len(args) && args[i+1] == inStr && args[i+2] == inStr {
-					inStr = 0
-					triple = 0
-					i += 2
-				}
-				continue
-			}
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && (inStr == '"' || inStr == '\'') {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i, inStr, triple, escape = advancePythonQuotedString(args, i, inStr, triple, escape)
 			continue
 		}
 		if c == '"' || c == '\'' {
@@ -302,16 +370,16 @@ func looksStaticStringList(expr string) bool {
 	if len(t) < 2 {
 		return false
 	}
-	open, close := t[0], byte(0)
-	switch open {
+	var closeDelimiter byte
+	switch t[0] {
 	case '[':
-		close = ']'
+		closeDelimiter = ']'
 	case '(':
-		close = ')'
+		closeDelimiter = ')'
 	default:
 		return false
 	}
-	if t[len(t)-1] != close {
+	if t[len(t)-1] != closeDelimiter {
 		return false
 	}
 	inner := strings.TrimSpace(t[1 : len(t)-1])
@@ -330,18 +398,25 @@ func looksStaticStringList(expr string) bool {
 	return true
 }
 
-// hasKwargTrue reports whether argsText contains name=True (rough keyword scan).
+// hasKwargTrue reports whether argsText contains an exact name=True keyword.
 func hasKwargTrue(argsText, name string) bool {
-	// Accept shell=True with optional spaces.
-	compact := compactWhitespace(argsText)
-	needle := name + "=True"
-	return strings.Contains(compact, needle)
+	return hasBooleanKwarg(argsText, name, "True")
 }
 
-// hasKwargFalse reports name=False.
+// hasKwargFalse reports an exact name=False keyword.
 func hasKwargFalse(argsText, name string) bool {
-	compact := compactWhitespace(argsText)
-	return strings.Contains(compact, name+"=False")
+	return hasBooleanKwarg(argsText, name, "False")
+}
+
+func hasBooleanKwarg(argsText, name, value string) bool {
+	for _, arg := range splitTopLevelArgs(argsText) {
+		key, candidate, ok := strings.Cut(arg, "=")
+		if !ok || strings.TrimSpace(key) != name {
+			continue
+		}
+		return strings.TrimSpace(candidate) == value
+	}
+	return false
 }
 
 func compactWhitespace(s string) string {
@@ -466,25 +541,7 @@ func indexTopLevelPercent(s string) int {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if inStr != 0 {
-			if triple > 0 {
-				if c == inStr && i+2 < len(s) && s[i+1] == inStr && s[i+2] == inStr {
-					inStr = 0
-					triple = 0
-					i += 2
-				}
-				continue
-			}
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i, inStr, triple, escape = advancePythonQuotedString(s, i, inStr, triple, escape)
 			continue
 		}
 		if c == '"' || c == '\'' {
@@ -515,6 +572,26 @@ func indexTopLevelPercent(s string) int {
 		}
 	}
 	return -1
+}
+
+func advancePythonQuotedString(source string, index int, quote byte, triple int, escaped bool) (int, byte, int, bool) {
+	current := source[index]
+	if triple > 0 {
+		if current == quote && index+2 < len(source) && source[index+1] == quote && source[index+2] == quote {
+			return index + 2, 0, 0, false
+		}
+		return index, quote, triple, false
+	}
+	if escaped {
+		return index, quote, 0, false
+	}
+	if current == '\\' {
+		return index, quote, 0, true
+	}
+	if current == quote {
+		return index, 0, 0, false
+	}
+	return index, quote, 0, false
 }
 
 // hasSafePathConfinement reports file-level safe patterns for CWE-22.

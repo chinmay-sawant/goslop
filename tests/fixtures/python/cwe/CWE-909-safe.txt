@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-909-safe.py
+---
+def query():
+    db = get_db()
+    return db.execute("select 1")

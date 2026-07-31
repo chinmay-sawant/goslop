@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1084-safe.py
+---
+def report():
+    return open("report.txt").read()

@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-807-safe.py
+---
+def delete_account(request):
+    if verify_admin_header(request.headers.get("X-Admin")):
+        delete_all_accounts()

@@ -126,15 +126,15 @@ func (d *PyCweScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit, out *[]rul
 		return
 	}
 	all := pyCweCatalogueSnapshot()
-	any := false
+	hasAllowedRule := false
 	for _, e := range all {
 		if ctx != nil && !ctx.Allows(e.id) {
 			continue
 		}
-		any = true
+		hasAllowedRule = true
 		break
 	}
-	if !any {
+	if !hasAllowedRule {
 		return
 	}
 

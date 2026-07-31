@@ -1,0 +1,12 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1289-vulnerable.py
+---
+from flask import abort, request
+
+
+def read_document():
+    path = request.args["path"]
+    if path == "/private/secret.txt":
+        abort(403)
+    return open(path).read()

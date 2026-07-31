@@ -1,0 +1,5 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-547-safe.py
+---
+SESSION_COOKIE_SECURE = True

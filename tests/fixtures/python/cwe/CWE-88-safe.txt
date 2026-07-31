@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-88-safe.py
+---
+import subprocess
+
+
+def version():
+    return subprocess.run(["tool", "--version"], shell=False)

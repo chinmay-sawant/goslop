@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-916-vulnerable.py
+---
+"""CWE-916 vulnerable: MD5 is used as a password hash."""
+
+import hashlib
+
+
+def password_digest(password):
+    return hashlib.md5(password.encode()).hexdigest()

@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-112-safe.py
+---
+from lxml import etree
+
+
+def parse_upload(request, schema):
+    parser = etree.XMLParser(schema=schema, resolve_entities=False)
+    return etree.fromstring(request.data, parser=parser)

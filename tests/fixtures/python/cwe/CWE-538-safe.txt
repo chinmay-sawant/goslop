@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-538-safe.py
+---
+with open("/var/lib/app/state", "w") as output:
+    output.write(token)

@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-91-vulnerable.py
+---
+from lxml import etree
+
+
+def find_user(root, username: str):
+    return root.xpath(f"//user[@name='{username}']")

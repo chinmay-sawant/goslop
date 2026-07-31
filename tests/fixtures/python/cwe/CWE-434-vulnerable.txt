@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-434-vulnerable.py
+---
+from flask import request
+
+def upload():
+    uploaded = request.files["document"]
+    uploaded.save("/srv/uploads/" + uploaded.filename)

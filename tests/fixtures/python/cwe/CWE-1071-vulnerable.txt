@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-1071-vulnerable.py
+---
+try:
+    operation()
+except Exception:
+    pass

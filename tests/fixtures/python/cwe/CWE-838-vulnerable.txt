@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-838-vulnerable.py
+---
+body = Markup(urllib.parse.quote(request.args.get("name")))

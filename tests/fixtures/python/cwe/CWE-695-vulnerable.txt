@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-695-vulnerable.py
+---
+import ctypes
+
+
+def native_library():
+    return ctypes.CDLL("libc.so.6")

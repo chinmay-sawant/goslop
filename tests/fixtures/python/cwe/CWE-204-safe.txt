@@ -1,0 +1,15 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-204-safe.py
+---
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+
+@app.post("/login")
+def login():
+    user = lookup_user()
+    if user is None or not verify_password(user):
+        return jsonify(error="invalid credentials"), 401
+    return jsonify(ok=True)

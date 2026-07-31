@@ -1,0 +1,6 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-93-vulnerable.py
+---
+def redirect(response, next_url: str):
+    response.headers["Location"] = f"/next?to={next_url}"

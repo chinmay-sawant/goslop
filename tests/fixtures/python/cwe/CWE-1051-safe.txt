@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1051-safe.py
+---
+import os
+import requests
+
+
+def fetch_inventory():
+    return requests.get(os.environ["INVENTORY_URL"])

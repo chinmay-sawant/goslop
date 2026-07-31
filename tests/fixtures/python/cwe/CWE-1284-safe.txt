@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1284-safe.py
+---
+limit = min(int(request.args.get("limit")), 100)
+rows = Query.objects.all()[:limit]

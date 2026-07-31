@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-140-vulnerable.py
+---
+from flask import request
+
+
+def export_tags():
+    return ",".join(request.args.getlist("tag"))

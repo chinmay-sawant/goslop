@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1007-safe.py
+---
+username = unicodedata.normalize("NFKC", request.args.get("username"))
+render_template("account.html", username=username)

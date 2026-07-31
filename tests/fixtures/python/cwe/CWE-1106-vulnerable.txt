@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1106-vulnerable.py
+---
+response.set_cookie("session", max_age=3600)

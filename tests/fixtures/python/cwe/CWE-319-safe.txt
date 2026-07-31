@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-319-safe.py
+---
+import requests
+
+
+def login(password):
+    return requests.post("https://service.example/login", auth=("user", password))

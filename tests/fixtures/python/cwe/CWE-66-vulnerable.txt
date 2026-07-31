@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-66-vulnerable.py
+---
+with open("CON", "rb") as virtual_resource:
+    virtual_resource.read()

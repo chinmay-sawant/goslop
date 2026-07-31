@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-184-safe.py
+---
+def check(request):
+    return request.args.get("path").isalnum()

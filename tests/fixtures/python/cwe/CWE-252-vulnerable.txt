@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-252-vulnerable.py
+---
+import subprocess
+
+
+def refresh_index():
+    subprocess.run(["search-index", "--refresh"])

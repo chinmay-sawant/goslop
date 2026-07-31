@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-182-vulnerable.py
+---
+def role(request):
+    value = re.sub("[^a-z]", "", request.args.get("role"))
+    return is_admin(value)

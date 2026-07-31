@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-779-safe.py
+---
+logger.info("login completed")

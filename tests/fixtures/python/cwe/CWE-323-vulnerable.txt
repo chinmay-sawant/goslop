@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-323-vulnerable.py
+---
+nonce = b"fixed" * 12
+encrypted = AESGCM(key).encrypt(nonce, data, None)

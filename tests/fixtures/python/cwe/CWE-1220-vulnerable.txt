@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1220-vulnerable.py
+---
+account = Account.objects.get(id=request.args.get("id"))

@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-798-safe.py
+---
+import os
+
+API_KEY = os.environ["API_KEY"]

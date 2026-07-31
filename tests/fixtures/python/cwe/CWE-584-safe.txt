@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-584-safe.py
+---
+def publish(item):
+    try:
+        send(item)
+    finally:
+        close_connection()
+    return True

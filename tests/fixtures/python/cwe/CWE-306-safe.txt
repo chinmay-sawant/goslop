@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-306-safe.py
+---
+@app.get("/admin/users")
+@login_required
+def list_users():
+    return users.all()

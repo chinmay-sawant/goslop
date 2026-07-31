@@ -1,0 +1,14 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-209-safe.py
+---
+from flask import jsonify
+import logging
+
+
+def load_record(record_id):
+    try:
+        return fetch(record_id)
+    except ValueError:
+        logging.exception("record lookup failed")
+        return jsonify(error="request could not be completed"), 500

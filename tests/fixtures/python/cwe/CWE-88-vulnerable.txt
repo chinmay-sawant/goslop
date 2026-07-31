@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-88-vulnerable.py
+---
+import subprocess
+
+
+def inspect_file(filename: str):
+    return subprocess.run(["tool", "--file", filename], shell=False)

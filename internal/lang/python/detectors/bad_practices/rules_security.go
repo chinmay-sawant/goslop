@@ -19,6 +19,8 @@ func init() {
 
 var subprocessCallRe = regexp.MustCompile(`subprocess\.(run|Popen|call|check_output|check_call)\s*\(`)
 
+const subprocessCallFallbackBytes = 200
+
 // BP-PY-8: subprocess.*(… shell=True …)
 func detectBPPY8(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-8")
@@ -32,10 +34,10 @@ func detectBPPY8(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		openAbs := m[0] + open
-		inner, _, ok := callArgsRegion(src, openAbs)
+		inner, ok := callArgsRegion(src, openAbs)
 		if !ok {
 			// Fallback: window search for shell=True near the call.
-			windowEnd := m[1] + 200
+			windowEnd := m[1] + subprocessCallFallbackBytes
 			if windowEnd > len(src) {
 				windowEnd = len(src)
 			}
@@ -112,11 +114,11 @@ func detectBPPY11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		abs := start + idx
 		// Skip yaml.safe_load — different needle.
 		// Confirm not safe_load: "yaml.load(" is exact.
-		inner, _, ok := callArgsRegion(src, abs+len("yaml.load")-1+1) // point at '('
+		inner, ok := callArgsRegion(src, abs+len("yaml.load")-1+1) // point at '('
 		// abs is start of "yaml.load(" so open paren at abs+len("yaml.load")
 		open := abs + len("yaml.load")
 		if open < len(src) && src[open] == '(' {
-			inner, _, ok = callArgsRegion(src, open)
+			inner, ok = callArgsRegion(src, open)
 		}
 		if ok {
 			if strings.Contains(inner, "SafeLoader") || strings.Contains(inner, "CSafeLoader") ||
@@ -148,7 +150,7 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			if end >= len(src) || src[end] != '(' {
 				continue
 			}
-			arg, _, ok := firstCallArg(src, end)
+			arg, ok := firstCallArg(src, end)
 			if !ok {
 				pushAt(unit, meta, off, "eval/exec enables arbitrary code execution", out)
 				continue
@@ -167,14 +169,14 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if end >= len(src) || src[end] != '(' {
 			continue
 		}
-		inner, _, ok := callArgsRegion(src, end)
+		inner, ok := callArgsRegion(src, end)
 		if !ok {
 			continue
 		}
 		if strings.Contains(inner, "'exec'") || strings.Contains(inner, `"exec"`) ||
 			strings.Contains(inner, "'eval'") || strings.Contains(inner, `"eval"`) {
 			// First arg literal skip
-			arg, _, aok := firstCallArg(src, end)
+			arg, aok := firstCallArg(src, end)
 			if aok && isStringLiteral(arg) {
 				continue
 			}

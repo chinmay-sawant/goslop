@@ -153,10 +153,10 @@ func TestLanguagesMergedDefaultAndExplicit(t *testing.T) {
 
 	dir := t.TempDir()
 	path := filepath.Join(dir, "goslop.toml")
-	if err := os.WriteFile(path, []byte(`[goslop]
+	if writeErr := os.WriteFile(path, []byte(`[goslop]
 languages = ["python", "go"]
-`), 0o644); err != nil {
-		t.Fatal(err)
+`), 0o644); writeErr != nil {
+		t.Fatal(writeErr)
 	}
 	m, err = config.LoadAndMerge(config.MergeInput{ConfigPath: path})
 	if err != nil {
@@ -168,10 +168,10 @@ languages = ["python", "go"]
 
 	// Config without languages key still defaults to Go.
 	path2 := filepath.Join(dir, "no-lang.toml")
-	if err := os.WriteFile(path2, []byte(`[goslop]
+	if writeErr := os.WriteFile(path2, []byte(`[goslop]
 fail_on = "none"
-`), 0o644); err != nil {
-		t.Fatal(err)
+`), 0o644); writeErr != nil {
+		t.Fatal(writeErr)
 	}
 	m, err = config.LoadAndMerge(config.MergeInput{ConfigPath: path2})
 	if err != nil {

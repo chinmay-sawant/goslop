@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-1288-vulnerable.py
+---
+expected_count = request.get_json()["count"]
+items = request.get_json()["items"]
+store(items)

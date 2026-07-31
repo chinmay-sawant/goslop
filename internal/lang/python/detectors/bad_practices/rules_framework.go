@@ -73,7 +73,7 @@ func detectMultilineAppRunDebug(unit *core.ParsedUnit, src string, meta *rules.R
 			start = abs + 4
 			continue
 		}
-		inner, _, ok := callArgsRegion(src, open)
+		inner, ok := callArgsRegion(src, open)
 		if ok && strings.Contains(inner, "debug=True") {
 			// Avoid double-report if single-line regex already matched this region.
 			already := false

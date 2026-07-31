@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1067-safe.py
+---
+rows = Product.objects.filter(name__startswith=term)

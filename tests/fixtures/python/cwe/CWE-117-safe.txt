@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-117-safe.py
+---
+import logging
+
+
+def audit(username: str):
+    logging.info("login succeeded for %s", username)

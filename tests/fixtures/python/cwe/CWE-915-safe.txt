@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-915-safe.py
+---
+"""CWE-915 safe: writable attributes are explicitly allowlisted."""
+
+
+def create_user(request):
+    payload = {"display_name": request.data["display_name"]}
+    return User.objects.create(**payload)

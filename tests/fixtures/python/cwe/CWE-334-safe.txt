@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-334-safe.py
+---
+otp = secrets.token_urlsafe(32)

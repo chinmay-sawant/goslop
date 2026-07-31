@@ -1,0 +1,17 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1173-safe.py
+---
+from flask import request
+from pydantic import BaseModel
+
+
+class ProfileInput(BaseModel):
+    display_name: str
+
+
+@app.route("/profiles", methods=["POST"])
+def create_profile():
+    payload = ProfileInput.model_validate(request.get_json())
+    profile = Profile(display_name=payload.display_name)
+    profile.save()

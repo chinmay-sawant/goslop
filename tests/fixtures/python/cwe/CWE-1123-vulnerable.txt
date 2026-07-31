@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1123-vulnerable.py
+---
+dynamic = types.FunctionType(code, globals())

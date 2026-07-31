@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-426-vulnerable.py
+---
+import os
+import sys
+
+sys.path.insert(0, os.getcwd())

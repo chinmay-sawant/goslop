@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-601-vulnerable.py
+---
+from flask import redirect
+
+
+def continue_after_login(request):
+    return redirect(request.args["next"])

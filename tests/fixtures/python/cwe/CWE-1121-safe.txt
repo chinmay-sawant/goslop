@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-1121-safe.py
+---
+def simple(value):
+    if value:
+        return value
+    return None

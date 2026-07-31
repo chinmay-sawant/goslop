@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-494-vulnerable.py
+---
+from urllib.request import urlopen
+
+exec(urlopen(url).read())

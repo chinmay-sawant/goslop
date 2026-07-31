@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-289-safe.py
+---
+def host(request, trusted_host):
+    return request.headers.get("Host").lower() == trusted_host.lower()

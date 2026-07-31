@@ -1,0 +1,171 @@
+package cwe
+
+import (
+	"regexp"
+	"strings"
+
+	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/rules"
+)
+
+func init() {
+	RegisterRule("CWE-908", detectCWE908, &MetaCWE908)
+	RegisterRule("CWE-909", detectCWE909, &MetaCWE909)
+	RegisterRule("CWE-910", detectCWE910, &MetaCWE910)
+	RegisterRule("CWE-911", detectCWE911, &MetaCWE911)
+	RegisterRule("CWE-920", detectCWE920, &MetaCWE920)
+	RegisterRule("CWE-939", detectCWE939, &MetaCWE939)
+	RegisterRule("CWE-1007", detectCWE1007, &MetaCWE1007)
+	RegisterRule("CWE-1021", detectCWE1021, &MetaCWE1021)
+	RegisterRule("CWE-1046", detectCWE1046, &MetaCWE1046)
+	RegisterRule("CWE-1050", detectCWE1050, &MetaCWE1050)
+	RegisterRule("CWE-1060", detectCWE1060, &MetaCWE1060)
+	RegisterRule("CWE-1067", detectCWE1067, &MetaCWE1067)
+	RegisterRule("CWE-1071", detectCWE1071, &MetaCWE1071)
+	RegisterRule("CWE-1072", detectCWE1072, &MetaCWE1072)
+	RegisterRule("CWE-1084", detectCWE1084, &MetaCWE1084)
+}
+
+var (
+	pyTierBNoneAssignRE  = regexp.MustCompile(`(?m)\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*None\b`)
+	pyTierBCloseCallRE   = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\.close\s*\(\s*\)`)
+	pyTierBBusyLoopRE    = regexp.MustCompile(`(?is)while\s+True\s*:[\s\S]{0,260}(?:hashlib|sha256|calculate|compute)`)
+	pyTierBHomoglyphRE   = regexp.MustCompile(`(?is)render_template\s*\([^\n]*request\.(?:args|form)\.get\s*\([^\n]*username`)
+	pyTierBFrameRE       = regexp.MustCompile(`(?is)response\s*=\s*make_response\s*\([^\n]*render_template[\s\S]{0,240}return\s+response`)
+	pyTierBConcatLoopRE  = regexp.MustCompile(`(?is)(?:for|while)\s+[^\n]+:\s*\n(?:\s+[^\n]*\n){0,4}\s*\w+\s*\+=\s*`)
+	pyTierBOpenLoopRE    = regexp.MustCompile(`(?is)(?:for|while)\s+[^\n]+:\s*\n(?:\s+[^\n]*\n){0,4}\s*open\s*\(`)
+	pyTierBNPlusOneRE    = regexp.MustCompile(`(?is)for\s+\w+\s+in\s+\w+\.objects\.(?:all|filter)\s*\([^\n]*\)\s*:[\s\S]{0,180}\w+\.[a-z_]+\.(?:all|filter)\s*\(`)
+	pyTierBEmptyExceptRE = regexp.MustCompile(`(?is)except(?:\s+[A-Za-z_][A-Za-z0-9_.]*)?\s*:\s*\n\s*pass\b`)
+	pyTierBPoolRouteRE   = regexp.MustCompile(`(?is)@\w+\.route\s*\([^\n]*\)[\s\S]{0,500}psycopg2\.connect\s*\(`)
+)
+
+func detectCWE908(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	code := pythonCodeMask(unit.Source)
+	for _, match := range pyTierBNoneAssignRE.FindAllStringSubmatchIndex(code, -1) {
+		name := code[match[2]:match[3]]
+		if resourceUseStart(unit.Source, code, name, match[1], uninitializedResourceWindow, "read", "write", "execute", "connect") >= 0 {
+			emitTierBFinding(unit, &MetaCWE908, match[0], "resource initialized to None is used without initialization", confidence78, out)
+			return
+		}
+	}
+}
+
+func detectCWE909(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	for _, fn := range pythonFunctions(unit.Source) {
+		code := pythonCodeMask(fn.body)
+		if strings.Contains(code, "db.execute(") && !strings.Contains(code, "db =") && !strings.Contains(code, "get_db(") {
+			emitTierBFinding(unit, &MetaCWE909, fn.bodyStart, "database resource is used without local initialization evidence", confidence68, out)
+			return
+		}
+	}
+}
+
+func detectCWE910(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	code := pythonCodeMask(unit.Source)
+	for _, match := range pyTierBCloseCallRE.FindAllStringSubmatchIndex(code, -1) {
+		name := code[match[2]:match[3]]
+		if resourceUseStart(unit.Source, code, name, match[1], closedResourceWindow, "read", "write", "flush") >= 0 {
+			emitTierBFinding(unit, &MetaCWE910, match[0], "closed file descriptor is used again", confidence86, out)
+			return
+		}
+	}
+}
+
+func resourceUseStart(source, code, name string, from, span int, methods ...string) int {
+	end := min(from+span, len(code))
+	assignment := regexp.MustCompile(`(?m)\b` + regexp.QuoteMeta(name) + `\s*=`)
+	if next := assignment.FindStringIndex(code[from:end]); next != nil {
+		end = from + next[0]
+	}
+	qualified := make([]string, 0, len(methods))
+	for _, method := range methods {
+		qualified = append(qualified, name+"."+method)
+	}
+	calls := findCalls(source[from:end], qualified...)
+	if len(calls) == 0 {
+		return -1
+	}
+	return from + calls[0].Start
+}
+
+func detectCWE911(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(unit.Source, "ctypes.pythonapi.Py_IncRef", "ctypes.pythonapi.Py_DecRef") {
+		emitTierBFinding(unit, &MetaCWE911, call.Start, "manual CPython reference-count API is invoked", confidence80, out)
+		return
+	}
+}
+
+func detectCWE920(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBBusyLoopRE); start >= 0 && !strings.Contains(unit.Source[start:], "time.sleep(") {
+		emitTierBFinding(unit, &MetaCWE920, start, "unbounded busy loop repeatedly performs expensive computation", confidence76, out)
+	}
+}
+
+func detectCWE939(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(unit.Source, "webbrowser.open") {
+		if strings.Contains(call.ArgsText, "request.") {
+			emitTierBFinding(unit, &MetaCWE939, call.Start, "custom URL handler opens a request-controlled target", confidence78, out)
+			return
+		}
+	}
+}
+
+func detectCWE1007(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBHomoglyphRE); start >= 0 && !strings.Contains(unit.Source, "normalize(") {
+		emitTierBFinding(unit, &MetaCWE1007, start, "request username is rendered without Unicode normalization", confidence70, out)
+	}
+}
+
+func detectCWE1021(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBFrameRE); start >= 0 && !strings.Contains(unit.Source, "X-Frame-Options") && !strings.Contains(unit.Source, "frame-ancestors") {
+		emitTierBFinding(unit, &MetaCWE1021, start, "HTML response is returned without an observable frame-embedding restriction", confidence68, out)
+	}
+}
+
+func detectCWE1046(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBConcatLoopRE); start >= 0 {
+		emitTierBFinding(unit, &MetaCWE1046, start, "immutable text is repeatedly concatenated inside a loop", confidence76, out)
+	}
+}
+
+func detectCWE1050(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBOpenLoopRE); start >= 0 {
+		emitTierBFinding(unit, &MetaCWE1050, start, "platform resource is opened for every loop iteration", confidence76, out)
+	}
+}
+
+func detectCWE1060(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBNPlusOneRE); start >= 0 {
+		emitTierBFinding(unit, &MetaCWE1060, start, "ORM relation is loaded once per query result", confidence76, out)
+	}
+}
+
+func detectCWE1067(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(unit.Source, ".filter") {
+		if strings.Contains(call.ArgsText, "__contains=") || strings.Contains(call.ArgsText, "__icontains=") {
+			emitTierBFinding(unit, &MetaCWE1067, call.Start, "data-resource search uses an unanchored contains lookup", confidence72, out)
+			return
+		}
+	}
+}
+
+func detectCWE1071(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBEmptyExceptRE); start >= 0 {
+		emitTierBFinding(unit, &MetaCWE1071, start, "exception handler silently contains only pass", confidence78, out)
+	}
+}
+
+func detectCWE1072(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(unit.Source, pyTierBPoolRouteRE); start >= 0 && !strings.Contains(unit.Source, "ThreadedConnectionPool") {
+		emitTierBFinding(unit, &MetaCWE1072, start, "route opens a direct database connection without pool evidence", confidence72, out)
+	}
+}
+
+func detectCWE1084(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	for _, fn := range pythonFunctions(unit.Source) {
+		if len(findCalls(fn.body, "open", ".execute")) >= 3 {
+			emitTierBFinding(unit, &MetaCWE1084, fn.bodyStart, "single function performs many file or data-access operations", confidence70, out)
+			return
+		}
+	}
+}

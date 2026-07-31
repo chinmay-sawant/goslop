@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-776-vulnerable.py
+---
+from lxml import etree
+
+
+def parse_document_with_dtd(data: bytes):
+    parser = etree.XMLParser(load_dtd=True, resolve_entities=True, huge_tree=True)
+    return etree.fromstring(data, parser)

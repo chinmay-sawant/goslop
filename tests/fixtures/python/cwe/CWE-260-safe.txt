@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-260-safe.py
+---
+import os
+
+DATABASES = {
+    "default": {
+        "PASSWORD": os.environ["DATABASE_PASSWORD"],
+    },
+}

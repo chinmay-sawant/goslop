@@ -1,0 +1,5 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-613-vulnerable.py
+---
+SESSION_COOKIE_AGE = 0

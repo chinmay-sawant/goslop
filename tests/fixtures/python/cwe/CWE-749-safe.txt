@@ -1,0 +1,6 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-749-safe.py
+---
+def calculate_total(values):
+    return sum(values)

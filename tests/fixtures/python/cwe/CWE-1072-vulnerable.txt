@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-1072-vulnerable.py
+---
+@app.route("/report")
+def report():
+    return psycopg2.connect(dsn)

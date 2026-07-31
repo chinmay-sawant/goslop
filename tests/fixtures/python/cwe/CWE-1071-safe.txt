@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-1071-safe.py
+---
+try:
+    operation()
+except Exception:
+    logger.exception("operation failed")

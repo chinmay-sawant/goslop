@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-409-safe.py
+---
+for member in archive.infolist():
+    archive.extract(member, destination)

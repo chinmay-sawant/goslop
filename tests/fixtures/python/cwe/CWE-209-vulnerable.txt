@@ -1,0 +1,12 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-209-vulnerable.py
+---
+from flask import jsonify
+
+
+def load_record(record_id):
+    try:
+        return fetch(record_id)
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 500

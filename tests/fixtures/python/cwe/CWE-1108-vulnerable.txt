@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-1108-vulnerable.py
+---
+def update():
+    global one
+    global two
+    global three

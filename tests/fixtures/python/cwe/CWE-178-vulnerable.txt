@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-178-vulnerable.py
+---
+def login(request, username):
+    if request.args.get("username") == username:
+        return True
+    return False

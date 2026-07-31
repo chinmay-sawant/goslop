@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-260-vulnerable.py
+---
+DATABASES = {
+    "default": {
+        "PASSWORD": "database-secret-value",
+    },
+}

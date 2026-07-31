@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-770-vulnerable.py
+---
+from flask import request
+
+def receive():
+    return request.get_data(cache=True)

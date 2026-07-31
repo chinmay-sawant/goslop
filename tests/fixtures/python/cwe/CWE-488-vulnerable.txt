@@ -1,0 +1,14 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-488-vulnerable.py
+---
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+
+@app.get("/profile")
+def profile():
+    global current_user
+    current_user = lookup_authenticated_user()
+    return jsonify(id=current_user.id)

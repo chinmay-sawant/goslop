@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-186-vulnerable.py
+---
+code = re.compile(r"^[A-Z]{3}$")

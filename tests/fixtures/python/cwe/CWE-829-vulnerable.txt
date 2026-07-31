@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-829-vulnerable.py
+---
+import importlib
+
+
+def load_plugin(module_name):
+    return importlib.import_module(module_name)

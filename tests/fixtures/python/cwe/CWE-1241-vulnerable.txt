@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1241-vulnerable.py
+---
+import random
+
+session = random.choice(values)

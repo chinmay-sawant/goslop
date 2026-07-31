@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-521-vulnerable.py
+---
+PASSWORD_MIN_LENGTH = 4

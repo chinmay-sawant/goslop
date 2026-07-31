@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-521-safe.py
+---
+PASSWORD_MIN_LENGTH = 12

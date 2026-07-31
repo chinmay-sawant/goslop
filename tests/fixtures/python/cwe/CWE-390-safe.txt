@@ -1,0 +1,13 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-390-safe.py
+---
+import logging
+
+
+def read_optional(path):
+    try:
+        return open(path).read()
+    except OSError:
+        logging.warning("optional file was unavailable")
+        return ""

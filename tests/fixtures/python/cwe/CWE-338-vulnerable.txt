@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-338-vulnerable.py
+---
+import random
+
+token = random.getrandbits(128)

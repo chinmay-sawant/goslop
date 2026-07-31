@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1007-vulnerable.py
+---
+render_template("account.html", username=request.args.get("username"))

@@ -1,0 +1,16 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1286-safe.py
+---
+import json
+from urllib.parse import urlparse
+import requests
+from flask import request
+
+
+def fetch_remote_document():
+    target = json.loads(request.data)["url"]
+    parsed = urlparse(target)
+    if parsed.scheme != "https" or parsed.hostname != "api.example.test":
+        raise ValueError("unapproved URL")
+    return requests.get(target)

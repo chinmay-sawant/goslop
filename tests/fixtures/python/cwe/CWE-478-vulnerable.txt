@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-478-vulnerable.py
+---
+def display_state(state):
+    match state:
+        case "ready":
+            return "ready"
+        case "failed":
+            return "failed"

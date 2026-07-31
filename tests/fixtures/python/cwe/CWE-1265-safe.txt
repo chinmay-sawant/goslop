@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1265-safe.py
+---
+with lock:
+    action()

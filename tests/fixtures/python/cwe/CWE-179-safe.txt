@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-179-safe.py
+---
+def path(raw):
+    decoded = urllib.parse.unquote(raw)
+    validate_path(decoded)
+    return decoded

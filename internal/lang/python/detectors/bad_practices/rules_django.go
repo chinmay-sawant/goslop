@@ -214,7 +214,7 @@ func allowedHostsEmpty(rhs string) bool {
 }
 
 // BP-PY-24: objects.raw / cursor.execute with f-string / .format / % formatting.
-func detectBPPY24(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+func detectBPPY24(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-24")
 	src := unit.Source
 	if !strings.Contains(src, ".raw(") && !strings.Contains(src, "execute(") &&
@@ -237,7 +237,7 @@ func detectBPPY24(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			open = m[0] + open
 		}
-		arg, _, ok := firstCallArg(src, open)
+		arg, ok := firstCallArg(src, open)
 		if !ok {
 			continue
 		}
@@ -258,27 +258,32 @@ func detectBPPY24(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		abs := start + idx
 		// Skip non-cursor noise conservatively only when clearly django-related context nearby.
-		windowStart := abs - 80
+		windowStart := abs - djangoSQLContextBytes
 		if windowStart < 0 {
 			windowStart = 0
 		}
 		window := src[windowStart:abs]
 		if !djangoHint && !strings.Contains(window, "cursor") && !strings.Contains(window, "connection") {
-			start = abs + 9
+			start = abs + djangoExecuteSuffixBytes
 			continue
 		}
 		open := abs + len(".execute")
 		if open >= len(src) || src[open] != '(' {
-			start = abs + 9
+			start = abs + djangoExecuteSuffixBytes
 			continue
 		}
-		arg, _, ok := firstCallArg(src, open)
+		arg, ok := firstCallArg(src, open)
 		if ok && sqlArgUsesFormat(arg) {
 			pushAt(unit, meta, abs, "cursor.execute builds SQL with string formatting; use params binding", out)
 		}
-		start = abs + 9
+		start = abs + djangoExecuteSuffixBytes
 	}
 }
+
+const (
+	djangoSQLContextBytes    = 80
+	djangoExecuteSuffixBytes = 9
+)
 
 // sqlArgUsesFormat reports f-string / .format / % interpolation on a call arg.
 func sqlArgUsesFormat(arg string) bool {
@@ -326,69 +331,69 @@ func isFStringLiteral(s string) bool {
 }
 
 func sqlPercentFormat(s string) bool {
-	// Detect string-literal % non-string at top level.
-	depth := 0
-	inStr := byte(0)
-	escape := false
-	triple := false
+	var state sqlFormatScanState
 	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if inStr != 0 {
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && !triple {
-				escape = true
-				continue
-			}
-			if triple {
-				if c == inStr && i+2 < len(s) && s[i+1] == inStr && s[i+2] == inStr {
-					inStr = 0
-					triple = false
-					i += 2
-				}
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+		next, handled := state.consume(s, i)
+		if handled {
+			i = next
 			continue
 		}
-		switch c {
-		case '"', '\'':
-			if i+2 < len(s) && s[i+1] == c && s[i+2] == c {
-				inStr = c
-				triple = true
-				i += 2
-			} else {
-				inStr = c
-			}
-		case '(', '[', '{':
-			depth++
-		case ')', ']', '}':
-			if depth > 0 {
-				depth--
-			}
-		case '%':
-			if depth == 0 {
-				// RHS after % should not be another string-only join edge case.
-				rest := strings.TrimSpace(s[i+1:])
-				if rest == "" {
-					return false
-				}
-				// "%s" % x  or "..." % (
-				if rest[0] != '"' && rest[0] != '\'' {
-					return true
-				}
-			}
+		if s[i] == '%' && state.depth == 0 && percentFormatRHSIsDynamic(s[i+1:]) {
+			return true
 		}
 	}
 	return false
 }
 
+type sqlFormatScanState struct {
+	depth  int
+	quote  byte
+	escape bool
+	triple bool
+}
+
+func (s *sqlFormatScanState) consume(text string, index int) (int, bool) {
+	c := text[index]
+	if s.quote != 0 {
+		switch {
+		case s.escape:
+			s.escape = false
+		case c == '\\' && !s.triple:
+			s.escape = true
+		case s.triple && c == s.quote && index+2 < len(text) && text[index+1] == s.quote && text[index+2] == s.quote:
+			s.quote, s.triple = 0, false
+			return index + 2, true
+		case !s.triple && c == s.quote:
+			s.quote = 0
+		}
+		return index, true
+	}
+	switch c {
+	case '"', '\'':
+		s.quote = c
+		if index+2 < len(text) && text[index+1] == c && text[index+2] == c {
+			s.triple = true
+			return index + 2, true
+		}
+	case '(', '[', '{':
+		s.depth++
+	case ')', ']', '}':
+		if s.depth > 0 {
+			s.depth--
+		}
+	default:
+		return index, false
+	}
+	return index, true
+}
+
+func percentFormatRHSIsDynamic(rhs string) bool {
+	rest := strings.TrimSpace(rhs)
+	return rest != "" && rest[0] != '"' && rest[0] != '\''
+}
+
 // BP-PY-25: mark_safe / SafeString on non-literal first arg.
-func detectBPPY25(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+func detectBPPY25(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-25")
 	src := unit.Source
 	if !strings.Contains(src, "mark_safe") && !strings.Contains(src, "SafeString") {
@@ -414,7 +419,7 @@ func detectBPPY25(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			open = j
 		}
-		arg, _, ok := firstCallArg(src, open)
+		arg, ok := firstCallArg(src, open)
 		if !ok {
 			continue
 		}
@@ -443,16 +448,8 @@ func detectBPPY26(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "@csrf_exempt") {
-			// Also allow csrf_exempt(view) wrapper assignment forms lightly.
-			if strings.Contains(t, "csrf_exempt(") && !strings.HasPrefix(t, "def ") &&
-				!strings.HasPrefix(t, "from ") && !strings.HasPrefix(t, "import ") {
-				// csrf_exempt(my_view) — flag when obvious.
-				if strings.Contains(t, "csrf_exempt(") && !strings.Contains(t, "import") {
-					// Only decorator-style or assignment wrap; skip import lines.
-					if strings.Contains(t, "=") || strings.HasPrefix(t, "csrf_exempt(") {
-						pushAt(unit, meta, line.byte, "csrf_exempt wraps a view; ensure CSRF is not required for state changes without alternate auth", out)
-					}
-				}
+			if isCSRFExemptViewWrapper(t) {
+				pushAt(unit, meta, line.byte, "csrf_exempt wraps a view; ensure CSRF is not required for state changes without alternate auth", out)
 			}
 			continue
 		}
@@ -482,6 +479,16 @@ func detectBPPY26(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			pushAt(unit, meta, line.byte, "csrf_exempt disables CSRF on this view; verify it is not state-changing without alternate auth", out)
 		}
 	}
+}
+
+func isCSRFExemptViewWrapper(line string) bool {
+	if !strings.Contains(line, "csrf_exempt(") || strings.Contains(line, "import") {
+		return false
+	}
+	if strings.HasPrefix(line, "def ") || strings.HasPrefix(line, "from ") || strings.HasPrefix(line, "import ") {
+		return false
+	}
+	return strings.Contains(line, "=") || strings.HasPrefix(line, "csrf_exempt(")
 }
 
 func functionBodyText(lines []codeLine, defIdx int) string {
@@ -525,7 +532,7 @@ func viewLooksStateChanging(body string) bool {
 }
 
 // BP-PY-27: Model(**request.POST) / objects.create(**request.data).
-func detectBPPY27(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+func detectBPPY27(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-27")
 	src := unit.Source
 	if !strings.Contains(src, "request.POST") && !strings.Contains(src, "request.data") {

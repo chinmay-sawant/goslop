@@ -22,6 +22,8 @@ var (
 	ormReturnRe        = regexp.MustCompile(`(?i)\b(?:session\.query|db\.query|\.query\.(?:get|filter|all|first)|session\.get\s*\(|db\.get\s*\(|models\.\w+)`)
 )
 
+const maxFastAPISignatureLines = 40
+
 func looksFastAPIish(unit *core.ParsedUnit, src string) bool {
 	if strings.Contains(src, "fastapi") || strings.Contains(src, "FastAPI") ||
 		strings.Contains(src, "APIRouter") || strings.Contains(src, "starlette") ||
@@ -37,7 +39,7 @@ func looksFastAPIish(unit *core.ParsedUnit, src string) bool {
 
 // functionBodyRange returns inclusive line indices [start, end) for the body of a
 // def/async def that starts at defLineIdx (the line with def/async def).
-func functionBodyRange(lines []codeLine, defLineIdx int) (bodyStart, bodyEnd int) {
+func functionBodyRange(lines []codeLine, defLineIdx int) (int, int) {
 	if defLineIdx < 0 || defLineIdx >= len(lines) {
 		return defLineIdx, defLineIdx
 	}
@@ -47,13 +49,13 @@ func functionBodyRange(lines []codeLine, defLineIdx int) (bodyStart, bodyEnd int
 	for !signatureComplete(sig) && sigEnd+1 < len(lines) {
 		sigEnd++
 		sig += " " + strings.TrimSpace(lines[sigEnd].text)
-		if sigEnd-defLineIdx > 40 {
+		if sigEnd-defLineIdx > maxFastAPISignatureLines {
 			break
 		}
 	}
 	defIndent := indentWidth(lines[defLineIdx].raw)
-	bodyStart = sigEnd + 1
-	bodyEnd = len(lines)
+	bodyStart := sigEnd + 1
+	bodyEnd := len(lines)
 	for j := bodyStart; j < len(lines); j++ {
 		t := strings.TrimSpace(lines[j].text)
 		if t == "" {
@@ -127,9 +129,14 @@ func detectBPPY29(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 	}
 
+	lines := codeLinesFacts(facts, src)
+	moduleMutables := moduleMutableNames(lines)
+	findBPPY29Mutation(unit, meta, src, lines, moduleMutables, out)
+}
+
+func moduleMutableNames(lines []codeLine) map[string]struct{} {
 	// Module-level names assigned to {} or [] (simple heuristic).
 	moduleMutables := map[string]struct{}{}
-	lines := codeLinesFacts(facts, src)
 	for _, line := range lines {
 		if indentWidth(line.raw) != 0 {
 			continue
@@ -149,20 +156,16 @@ func detectBPPY29(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 		}
 	}
+	return moduleMutables
+}
 
+func findBPPY29Mutation(unit *core.ParsedUnit, meta *rules.RuleMetadata, src string, lines []codeLine, moduleMutables map[string]struct{}, out *[]rules.Finding) {
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "def ") && !strings.HasPrefix(t, "async def ") {
 			continue
 		}
 		deco := collectDecoratorsAbove(lines, i)
-		if !isFastAPIRouteOrDep(deco, t) && !looksLikeRouteDef(t, deco) {
-			// Still scan dependency-like names or any def under FastAPI module with global.
-			// Prefer route/dep; for global keyword any function under FastAPI module is signal.
-			if !strings.Contains(t, "Depends") && deco == "" {
-				// allow later body scan only for global/nonlocal if FastAPI module
-			}
-		}
 		bodyStart, bodyEnd := functionBodyRange(lines, i)
 		routeOrDep := isFastAPIRouteOrDep(deco, t) || looksLikeRouteDef(t, deco)
 		for j := bodyStart; j < bodyEnd; j++ {
@@ -170,28 +173,33 @@ func detectBPPY29(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			if bt == "" {
 				continue
 			}
-			if strings.HasPrefix(bt, "global ") || strings.HasPrefix(bt, "nonlocal ") {
-				if routeOrDep || looksFastAPIish(unit, src) {
-					pushAt(unit, meta, lines[j].byte, "FastAPI route/dependency mutates global state; prefer request-scoped deps or a proper store", out)
-					return // one finding per function is enough for v0
-				}
+			if isGlobalStateDeclaration(bt) && (routeOrDep || looksFastAPIish(unit, src)) {
+				pushAt(unit, meta, lines[j].byte, "FastAPI route/dependency mutates global state; prefer request-scoped deps or a proper store", out)
+				return // one finding per function is enough for v0
 			}
 			// Module-level mutable mutation: STORE[k] = or STORE.append(
-			if routeOrDep {
-				for name := range moduleMutables {
-					if strings.Contains(bt, name+"[") || strings.Contains(bt, name+".append") ||
-						strings.Contains(bt, name+".update") || strings.Contains(bt, name+".pop") ||
-						(strings.HasPrefix(bt, name+" ") && strings.Contains(bt, "=")) ||
-						strings.HasPrefix(bt, name+"=") {
-						// Avoid flagging local shadowing assignments of same name as pure local.
-						// Module mutation of known module mutables is the hit.
-						pushAt(unit, meta, lines[j].byte, "FastAPI route/dependency mutates module-level mutable state; prefer request-scoped deps", out)
-						return
-					}
-				}
+			if routeOrDep && mutatesModuleMutable(bt, moduleMutables) {
+				pushAt(unit, meta, lines[j].byte, "FastAPI route/dependency mutates module-level mutable state; prefer request-scoped deps", out)
+				return
 			}
 		}
 	}
+}
+
+func isGlobalStateDeclaration(line string) bool {
+	return strings.HasPrefix(line, "global ") || strings.HasPrefix(line, "nonlocal ")
+}
+
+func mutatesModuleMutable(line string, moduleMutables map[string]struct{}) bool {
+	for name := range moduleMutables {
+		if strings.Contains(line, name+"[") || strings.Contains(line, name+".append") ||
+			strings.Contains(line, name+".update") || strings.Contains(line, name+".pop") ||
+			(strings.HasPrefix(line, name+" ") && strings.Contains(line, "=")) ||
+			strings.HasPrefix(line, name+"=") {
+			return true
+		}
+	}
+	return false
 }
 
 func looksLikeRouteDef(defLine, deco string) bool {
@@ -367,7 +375,6 @@ func detectBPPY32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				continue
 			}
 			// Work on full source for multi-line args.
-			openAbs := line.byte + absInLine + len("FileResponse")
 			// Adjust: absInLine points to FileResponse; open paren may have spaces.
 			// Recompute open paren in source.
 			searchFrom := line.byte + absInLine
@@ -375,14 +382,14 @@ func detectBPPY32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			if openParen < 0 {
 				break
 			}
-			openAbs = searchFrom + openParen
-			arg, _, ok := firstCallArg(src, openAbs)
+			openAbs := searchFrom + openParen
+			arg, ok := firstCallArg(src, openAbs)
 			if !ok {
 				start = absInLine + len("FileResponse")
 				continue
 			}
 			// Named path= support: if first arg empty-ish, scan full args.
-			inner, _, iok := callArgsRegion(src, openAbs)
+			inner, iok := callArgsRegion(src, openAbs)
 			pathArg := arg
 			if iok {
 				if strings.Contains(inner, "path=") {
@@ -448,84 +455,60 @@ func isDynamicPathArg(arg string, params map[string]struct{}) bool {
 }
 
 func kwArgValue(inner, key string) string {
-	// Find key= at top level
 	needle := key + "="
-	start := 0
-	depth := 0
-	inStr := byte(0)
-	escape := false
+	var state pythonArgScanState
 	for i := 0; i < len(inner); i++ {
-		c := inner[i]
-		if inStr != 0 {
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+		if state.consume(inner[i]) || state.depth != 0 || !strings.HasPrefix(inner[i:], needle) {
 			continue
 		}
-		switch c {
-		case '"', '\'':
-			inStr = c
-		case '(', '[', '{':
-			depth++
-		case ')', ']', '}':
-			if depth > 0 {
-				depth--
-			}
+		if i == 0 || !isIdentByte(inner[i-1]) {
+			return topLevelArgValue(inner, i+len(needle))
 		}
-		if depth == 0 && i+len(needle) <= len(inner) && inner[i:i+len(needle)] == needle {
-			// Ensure not mid-ident
-			if i > 0 && isIdentByte(inner[i-1]) {
-				continue
-			}
-			valStart := i + len(needle)
-			// Read until top-level comma
-			for j := valStart; j < len(inner); j++ {
-				c2 := inner[j]
-				if inStr != 0 {
-					if escape {
-						escape = false
-						continue
-					}
-					if c2 == '\\' {
-						escape = true
-						continue
-					}
-					if c2 == inStr {
-						inStr = 0
-					}
-					continue
-				}
-				if c2 == '"' || c2 == '\'' {
-					inStr = c2
-					continue
-				}
-				if c2 == '(' || c2 == '[' || c2 == '{' {
-					depth++
-					continue
-				}
-				if c2 == ')' || c2 == ']' || c2 == '}' {
-					if depth > 0 {
-						depth--
-					}
-					continue
-				}
-				if c2 == ',' && depth == 0 {
-					return strings.TrimSpace(inner[valStart:j])
-				}
-			}
-			return strings.TrimSpace(inner[valStart:])
-		}
-		_ = start
 	}
 	return ""
+}
+
+type pythonArgScanState struct {
+	depth  int
+	quote  byte
+	escape bool
+}
+
+func (s *pythonArgScanState) consume(c byte) bool {
+	if s.quote != 0 {
+		switch {
+		case s.escape:
+			s.escape = false
+		case c == '\\':
+			s.escape = true
+		case c == s.quote:
+			s.quote = 0
+		}
+		return true
+	}
+	switch c {
+	case '"', '\'':
+		s.quote = c
+	case '(', '[', '{':
+		s.depth++
+	case ')', ']', '}':
+		if s.depth > 0 {
+			s.depth--
+		}
+	default:
+		return false
+	}
+	return true
+}
+
+func topLevelArgValue(inner string, start int) string {
+	var state pythonArgScanState
+	for i := start; i < len(inner); i++ {
+		if !state.consume(inner[i]) && inner[i] == ',' && state.depth == 0 {
+			return strings.TrimSpace(inner[start:i])
+		}
+	}
+	return strings.TrimSpace(inner[start:])
 }
 
 // isPlainStringLiteral is a non-f-string Python string/bytes literal.

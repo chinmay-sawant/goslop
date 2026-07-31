@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-397-vulnerable.py
+---
+def require_account(account):
+    if account is None:
+        raise Exception("account is required")

@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-1265-vulnerable.py
+---
+with lock:
+    with lock:
+        action()

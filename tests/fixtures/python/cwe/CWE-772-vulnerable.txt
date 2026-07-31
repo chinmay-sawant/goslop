@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-772-vulnerable.py
+---
+def load_settings():
+    settings = open("settings.json")
+    return settings.read()

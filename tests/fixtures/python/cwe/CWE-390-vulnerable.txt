@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-390-vulnerable.py
+---
+def read_optional(path):
+    try:
+        return open(path).read()
+    except OSError:
+        pass

@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-73-safe.py
+---
+from flask import request
+from werkzeug.utils import secure_filename
+
+open(secure_filename(request.args.get("file")))

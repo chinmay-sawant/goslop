@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1124-safe.py
+---
+if a and b and c:
+    action()

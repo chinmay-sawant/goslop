@@ -1,0 +1,5 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-613-safe.py
+---
+SESSION_COOKIE_AGE = 1800

@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1286-vulnerable.py
+---
+import json
+import requests
+from flask import request
+
+
+def fetch_remote_document():
+    return requests.get(json.loads(request.data)["url"])

@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-215-vulnerable.py
+---
+import logging
+
+
+def trace(token):
+    logging.debug("token=%s", token)

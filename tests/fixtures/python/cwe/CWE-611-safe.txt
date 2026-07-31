@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-611-safe.py
+---
+from lxml import etree
+
+
+def parse_untrusted_xml(data: bytes):
+    parser = etree.XMLParser(resolve_entities=False, no_network=True)
+    return etree.fromstring(data, parser)

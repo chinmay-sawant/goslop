@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics-cwe.md` — canonical #52 ledger  
 > **Epic:** [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
 > **Issue:** [#52](https://github.com/chinmay-sawant/goslop/issues/52) expansion — batchwise PRs for remaining catalogue CWEs  
-> **Status:** **planning** — priority 5 CWEs shipped; 339 pending partitioned into implement + deferred  
+> **Status:** **complete** — 159 feasible Python CWE heuristics shipped; 185 catalogue IDs remain honestly deferred
 > **Inventory snapshot:** `plans/v0.0.2/heuristics/cwe-plans/_inventory.json`  
 > **Catalogue:** `ruleset/python/chunks/cwe-*.json` (**344** rules)  
 > **Scan method:** 5 parallel agents (2026-07-31) over chunks + Go CWE parity hints
@@ -22,8 +22,8 @@ Batch plans under this directory are **live execution ledgers** for #52 follow-u
 
 | Bucket | Count | Meaning |
 |--------|------:|---------|
-| Implemented (batch-00) | **5** | CWE-22, 78, 79, 89, 502 on `main` |
-| Missing / implement batches | **154** | Owned by batch-01..14 + 16 (tier A+B) |
+| Implemented (batches 00–14, 16) | **159** | Source-only Python CWE heuristics with paired fixtures |
+| Missing / implement batches | **0** | All approved implement-batch IDs are shipped |
 | Deferred (batch-deferred) | **185** | No pure-Go sink heuristic in v0 — catalogue-only |
 | **Catalogue total** | **344** | Partition is complete |
 
@@ -127,12 +127,15 @@ tests/fixtures/python/bp/BP-PY-1-{vulnerable,safe}.txt
 
 ### 4. Definition of done (per CWE ID in an implement batch)
 
-- [ ] Detector + `RegisterRule` + meta + gates
-- [ ] Unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go`
-- [ ] Fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt`
-- [ ] Integration matrix picks up the new pair (no hard-coded allowlist required if discovery is glob-based — verify count increases)
-- [ ] `make lint` + `make test` green (includes unit + usually integration via `./...` if configured; always run `make integration-python` before merge)
-- [ ] Inventory / ledger checkboxes updated
+All six conditions are complete for the 159 approved implementation IDs in
+batches 00–14 and 16. The 185 deferred IDs are governed by §5 instead.
+
+- [x] Detector + `RegisterRule` + meta + gates — 159 source-only registered rules; gates are omitted unless false-negative-safe.
+- [x] Unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go` — every rule uses the paired text-fixture corpus.
+- [x] Fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` — 159 canonical safe/vulnerable pairs.
+- [x] Integration matrix picks up the new pair — `TestPythonCWEFixturesMatrix` auto-discovers all 159 paired stems.
+- [x] `make lint-all` + `make test` green — `make integration-python` also passed before PR publication.
+- [x] Inventory / ledger checkboxes updated — `_inventory.json` reports 159 implemented / 0 missing, and all implement-batch ledgers are complete.
 
 ### 5. What deferred IDs skip
 

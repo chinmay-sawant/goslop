@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1046-vulnerable.py
+---
+for item in items:
+    text += item

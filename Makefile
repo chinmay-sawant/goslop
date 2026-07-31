@@ -5,13 +5,13 @@ export CGO_ENABLED ?= 0
 # Default scan path for product-style runs (Rust makefile parity).
 SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
 # Python-only product scan (opt-in languages = ["python"]).
-PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory
+PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets
 PYTHON_CONFIG ?= templates/goslop-python.toml
 # Rust: make run RUN_ARGS="--export-context --export-chunks --no-cache"
 # Defaults match product reference-export surface; override with RUN_ARGS=... as needed.
 RUN_ARGS ?= --export-context --export-chunks --no-cache
 # Python runs default to no-cache text summary; override with PYTHON_RUN_ARGS=...
-PYTHON_RUN_ARGS ?= --no-cache
+PYTHON_RUN_ARGS ?= --export-context --export-chunks --no-cache
 
 # Product benches (ns/op, B/op, allocs/op). Override path/time as needed.
 #   make bench

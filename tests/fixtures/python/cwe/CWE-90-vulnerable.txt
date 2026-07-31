@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-90-vulnerable.py
+---
+from ldap3 import Connection
+
+
+def find_user(conn: Connection, username: str):
+    return conn.search(f"(uid={username})")

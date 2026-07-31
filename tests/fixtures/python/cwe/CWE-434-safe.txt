@@ -1,0 +1,14 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-434-safe.py
+---
+from flask import request
+from werkzeug.utils import secure_filename
+
+def upload():
+    uploaded = request.files["document"]
+    if allowed_file(uploaded.filename):
+        uploaded.save("/srv/uploads/" + secure_filename(uploaded.filename))
+
+def allowed_file(filename):
+    return filename.rsplit(".", 1)[-1].lower() in {"pdf", "txt"}

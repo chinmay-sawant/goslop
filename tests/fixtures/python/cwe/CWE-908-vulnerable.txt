@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-908-vulnerable.py
+---
+resource = None
+resource.read()

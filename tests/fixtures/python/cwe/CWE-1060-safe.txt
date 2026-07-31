@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1060-safe.py
+---
+for user in User.objects.prefetch_related("orders"):
+    process(user)

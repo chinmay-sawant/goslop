@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-454-vulnerable.py
+---
+settings = pickle.load(request.files["settings"])

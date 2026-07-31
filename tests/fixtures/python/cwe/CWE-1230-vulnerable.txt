@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1230-vulnerable.py
+---
+from flask import request
+
+
+def download(response):
+    response.headers["Content-Disposition"] = "attachment; filename=" + request.args["original_name"]
+    return response

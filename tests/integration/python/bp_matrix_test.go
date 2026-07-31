@@ -83,8 +83,8 @@ func TestPythonBPFixtureInventorySorted(t *testing.T) {
 	}
 }
 
-func formatFailures(failures []string, max int) string {
-	if len(failures) <= max {
+func formatFailures(failures []string, limit int) string {
+	if len(failures) <= limit {
 		out := ""
 		for _, f := range failures {
 			out += "  - " + f + "\n"
@@ -92,9 +92,9 @@ func formatFailures(failures []string, max int) string {
 		return out
 	}
 	out := ""
-	for _, f := range failures[:max] {
+	for _, f := range failures[:limit] {
 		out += "  - " + f + "\n"
 	}
-	out += fmt.Sprintf("  ... +%d more\n", len(failures)-max)
+	out += fmt.Sprintf("  ... +%d more\n", len(failures)-limit)
 	return out
 }

@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1108-safe.py
+---
+def update(state):
+    state["one"] = 1
