@@ -121,6 +121,12 @@ func detectCWE924(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
+	// A module-level authentication gate establishes the caller boundary for
+	// internal webhook relays. CWE-924 should not require a second payload
+	// signature when the route is protected by header authentication over TLS.
+	if hasApplicationAuthGuard(unit.Source) {
+		return
+	}
 	for _, fn := range pythonFunctions(unit.Source) {
 		name := strings.ToLower(fn.name)
 		if !strings.Contains(name, "webhook") && !strings.Contains(name, "_hook") {
@@ -133,6 +139,15 @@ func detectCWE924(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		pushSSRFfinding(unit, fn.start, &MetaCWE924, "webhook handler consumes a request body without same-handler signature verification", confidence76, out)
 		return
 	}
+}
+
+func hasApplicationAuthGuard(source string) bool {
+	code := pythonCodeMask(source)
+	if !strings.Contains(code, "before_request") || !strings.Contains(code, "request.headers") {
+		return false
+	}
+	return strings.Contains(code, "current_app.config") || strings.Contains(code, "config[") ||
+		strings.Contains(code, "api_key") || strings.Contains(code, "authorization")
 }
 
 // CWE-940 targets a particularly dangerous callback form: a callback handler

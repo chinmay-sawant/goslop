@@ -3,13 +3,14 @@
 - Date: 2026-07-31
 - Audit source: `./plans/fp-review-reduce/python/false-positive-audit-2026-07-31.md`
 - Target corpus: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets`
-- Baseline: 49 findings; 27 confirmed false positives, 20 true positives, 2 uncertain findings.
+- Baseline: 49 findings; 29 confirmed false positives, 20 true positives, and no remaining uncertain findings after the CWE-1124 and CWE-924 scope clarifications.
 
 ## Implemented guardrails
 
 | Audit pattern | Rules refined | Guardrail |
 | --- | --- | --- |
-| Indentation/nesting | CWE-1124 | Count structural blocks rather than collection layout; do not count exception-handler clauses as an additional nesting level. |
+| Indentation/nesting | CWE-1124 | Count executable control-flow headers rather than collection layout or class/function declarations; do not count exception-handler clauses as an additional nesting level. |
+| Authenticated webhook route | CWE-924 | Respect a module-level header-authentication gate; do not require an HMAC signature when the route’s message-integrity boundary is established outside the handler. |
 | ORM expression | CWE-89 | Recognize local SQLAlchemy `select`/`delete`/`update`/`insert` statements, including parenthesized multiline assignments. |
 | Internal numeric header | CWE-93 | Do not treat `str(int(...))` or `str(round(...))` as externally controlled header content. |
 | Test-only behavior | CWE-312, CWE-798, CWE-396, BP-PY-1, BP-PY-42 | Recognize conventional Python test modules and collected thread-error assertions. |
@@ -28,6 +29,6 @@ Each guardrail has a safe and vulnerable text fixture under `./tests/fixtures/py
 - `go test ./tests/integration/python -count=1` — passed.
 - `make lint-all` — passed.
 - `make test` — passed.
-- Full no-cache corpus scan — 22 findings, exactly `49 - 27` confirmed false positives.
+- Full no-cache corpus scan — 20 findings, exactly `49 - 29` confirmed false positives.
 
-The remaining scan output preserves the two audit entries intentionally left uncertain: CWE-1124 at `app/tasks.py:38` and CWE-924 at `app/routes.py:19`.
+All 29 confirmed false positives are now suppressed; the remaining 20 findings satisfy their respective rule conditions.

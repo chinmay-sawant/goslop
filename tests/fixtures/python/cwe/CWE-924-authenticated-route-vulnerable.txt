@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-924-authenticated-route-vulnerable.py
+---
+from flask import request
+
+def ingest_webhook():
+    data = request.get_json(silent=True)
+    return process_event(data)

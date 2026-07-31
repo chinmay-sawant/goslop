@@ -1,0 +1,14 @@
+# goslop text fixture
+lang: python
+file: CWE-1124-declaration-scope-safe.py
+---
+class BackgroundTaskManager:
+    async def cleanup(self, session_factory):
+        while not self.shutdown:
+            try:
+                async with session_factory() as session:
+                    while True:
+                        stmt = delete(MetricSample).where(
+                            MetricSample.created_at < cutoff
+                        )
+                        await session.execute(stmt)

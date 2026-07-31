@@ -15,6 +15,8 @@ func TestCWEFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "CWE-798", caseName: "CWE-798-test-fixture"},
 		{rule: "CWE-1046", caseName: "CWE-1046-counter-loop"},
 		{rule: "CWE-1124", caseName: "CWE-1124-data-layout"},
+		{rule: "CWE-1124", caseName: "CWE-1124-declaration-scope"},
+		{rule: "CWE-924", caseName: "CWE-924-authenticated-route"},
 	} {
 		tc := tc
 		t.Run(tc.caseName, func(t *testing.T) {
