@@ -2,5 +2,5 @@
 lang: python
 file: CWE-66-vulnerable.py
 ---
-def read(request, root):
-    return open(os.path.join(root, request.args["name"])).read()
+with open("CON", "rb") as virtual_resource:
+    virtual_resource.read()

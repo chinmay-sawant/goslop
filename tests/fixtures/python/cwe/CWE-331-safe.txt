@@ -2,4 +2,4 @@
 lang: python
 file: CWE-331-safe.py
 ---
-token = secrets.token_bytes(32)
+token = secrets.token_bytes(16)

@@ -27,8 +27,8 @@ func init() {
 }
 
 var (
-	pyTierBNoneUseRE     = regexp.MustCompile(`(?is)\w+\s*=\s*None[\s\S]{0,220}\w+\.(?:read|write|execute|connect)\s*\(`)
-	pyTierBClosedUseRE   = regexp.MustCompile(`(?is)\w+\.close\s*\(\s*\)[\s\S]{0,180}\w+\.(?:read|write|flush)\s*\(`)
+	pyTierBNoneAssignRE  = regexp.MustCompile(`(?m)\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*None\b`)
+	pyTierBCloseCallRE   = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\.close\s*\(\s*\)`)
 	pyTierBBusyLoopRE    = regexp.MustCompile(`(?is)while\s+True\s*:[\s\S]{0,260}(?:hashlib|sha256|calculate|compute)`)
 	pyTierBHomoglyphRE   = regexp.MustCompile(`(?is)render_template\s*\([^\n]*request\.(?:args|form)\.get\s*\([^\n]*username`)
 	pyTierBFrameRE       = regexp.MustCompile(`(?is)response\s*=\s*make_response\s*\([^\n]*render_template[\s\S]{0,240}return\s+response`)
@@ -40,8 +40,13 @@ var (
 )
 
 func detectCWE908(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBNoneUseRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE908, start, "resource initialized to None is used without initialization", 0.78, out)
+	code := pythonCodeMask(unit.Source)
+	for _, match := range pyTierBNoneAssignRE.FindAllStringSubmatchIndex(code, -1) {
+		name := code[match[2]:match[3]]
+		if resourceUseStart(unit.Source, code, name, match[1], 220, "read", "write", "execute", "connect") >= 0 {
+			emitTierBFinding(unit, &MetaCWE908, match[0], "resource initialized to None is used without initialization", 0.78, out)
+			return
+		}
 	}
 }
 
@@ -56,9 +61,31 @@ func detectCWE909(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 }
 
 func detectCWE910(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBClosedUseRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE910, start, "closed file descriptor is used again", 0.86, out)
+	code := pythonCodeMask(unit.Source)
+	for _, match := range pyTierBCloseCallRE.FindAllStringSubmatchIndex(code, -1) {
+		name := code[match[2]:match[3]]
+		if resourceUseStart(unit.Source, code, name, match[1], 180, "read", "write", "flush") >= 0 {
+			emitTierBFinding(unit, &MetaCWE910, match[0], "closed file descriptor is used again", 0.86, out)
+			return
+		}
 	}
+}
+
+func resourceUseStart(source, code, name string, from, span int, methods ...string) int {
+	end := min(from+span, len(code))
+	assignment := regexp.MustCompile(`(?m)\b` + regexp.QuoteMeta(name) + `\s*=`)
+	if next := assignment.FindStringIndex(code[from:end]); next != nil {
+		end = from + next[0]
+	}
+	qualified := make([]string, 0, len(methods))
+	for _, method := range methods {
+		qualified = append(qualified, name+"."+method)
+	}
+	calls := findCalls(source[from:end], qualified...)
+	if len(calls) == 0 {
+		return -1
+	}
+	return from + calls[0].Start
 }
 
 func detectCWE911(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {

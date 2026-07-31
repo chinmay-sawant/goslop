@@ -2,5 +2,8 @@
 lang: python
 file: CWE-910-safe.py
 ---
-handle.read()
-handle.close()
+closed = open("old.txt")
+active = open("report.txt")
+closed.close()
+active.read()
+active.close()

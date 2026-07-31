@@ -28,7 +28,7 @@ func init() {
 }
 
 var (
-	pyTierBVirtualNameRE = regexp.MustCompile(`(?is)os\.path\.join\s*\([^\n]*request\.(?:args|form|files)[^\n]*\)\s*\)\s*`)
+	pyTierBVirtualNameRE = regexp.MustCompile(`(?i)\b(?:open|Path)\s*\(\s*["'](?:CON|NUL|COM1)(?:\.[^"']*)?["']`)
 	pyTierBStripTagRE    = regexp.MustCompile(`(?is)\.replace\s*\(\s*["']<["']\s*,\s*["']["']\s*\)`)
 	pyTierBEarlyDecodeRE = regexp.MustCompile(`(?is)(?:validate_[a-z_]+|validate\s*\()[^\n]*\n[^\n]*(?:unquote|unescape|decode)\s*\(`)
 	pyTierBCollapseRE    = regexp.MustCompile(`(?is)re\.sub\s*\([^\n]*request\.[^\n]*\)[\s\S]{0,300}(?:is_admin|authorize|check_permission)\s*\(`)
@@ -39,7 +39,7 @@ var (
 
 func detectCWE66(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if start := firstCodeMatchStart(unit.Source, pyTierBVirtualNameRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE66, start, "request-controlled filename is joined into a virtual resource path", 0.78, out)
+		emitTierBFinding(unit, &MetaCWE66, start, "Windows virtual resource name is used as a file path", 0.78, out)
 	}
 }
 
@@ -143,7 +143,7 @@ func detectCWE323(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 func detectCWE331(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for _, call := range findCalls(unit.Source, "secrets.token_bytes", "secrets.token_urlsafe") {
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) > 0 && shortPositiveLiteral(args[0], 8) {
+		if len(args) > 0 && shortPositiveLiteral(args[0], 15) {
 			emitTierBFinding(unit, &MetaCWE331, call.Start, "security token is generated with fewer than 16 bytes of entropy", 0.82, out)
 			return
 		}

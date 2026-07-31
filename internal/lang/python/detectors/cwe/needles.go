@@ -118,24 +118,4 @@ var pyCweNeedles = []string{
 	"SESSION_COOKIE_HTTPONLY",
 	"SECURE_HSTS_SECONDS",
 	"ALLOWED_HOSTS",
-	// CWE-434 / CWE-427 resource upload and search-path control
-	"request.files",
-	".save(",
-	"LD_LIBRARY_PATH",
-	"PYTHONPATH",
-	"os.putenv",
-	// CWE-459 / CWE-772 resource lifecycle
-	"tempfile.mkstemp",
-	"NamedTemporaryFile",
-	"socket.socket",
-	"urlopen(",
-	// CWE-770 request size limit
-	"request.get_data",
-	// CWE-708 ownership assignment
-	"os.chown",
-	// CWE-477 obsolete Python APIs
-	"tempfile.mktemp",
-	"cgi.escape",
-	"asyncore.",
-	"imp.",
 }

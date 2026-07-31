@@ -2,5 +2,7 @@
 lang: python
 file: CWE-94-safe.py
 ---
+# eval("ignored")
+example = "eval('ignored')"
 def compute():
     return eval("1 + 1")

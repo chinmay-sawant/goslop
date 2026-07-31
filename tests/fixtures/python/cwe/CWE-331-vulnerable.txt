@@ -2,4 +2,4 @@
 lang: python
 file: CWE-331-vulnerable.py
 ---
-token = secrets.token_bytes(8)
+token = secrets.token_bytes(15)

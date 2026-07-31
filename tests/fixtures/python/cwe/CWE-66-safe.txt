@@ -2,5 +2,5 @@
 lang: python
 file: CWE-66-safe.py
 ---
-def read(root):
-    return open(os.path.join(root, "report.txt")).read()
+with open("report.txt", "rb") as report:
+    report.read()

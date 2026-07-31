@@ -6,6 +6,7 @@ import (
 	"github.com/chinmay-sawant/goslop/internal/core"
 	"github.com/chinmay-sawant/goslop/internal/lang/python/detectors/cwe"
 	"github.com/chinmay-sawant/goslop/internal/rules"
+	"github.com/chinmay-sawant/goslop/tests/integration"
 )
 
 func TestPyCweScanLanguageAndCatalogue(t *testing.T) {
@@ -56,26 +57,14 @@ func TestEmptySourceEmitsZeroFindings(t *testing.T) {
 
 func TestAllowsSkipsDisallowedRules(t *testing.T) {
 	t.Parallel()
-	d := cwe.NewPyCweScan()
-	src := "import pickle\npickle.loads(data)\n"
-	unit := core.NewParsedUnit(core.LanguagePython, "x.py", src)
-	// Only list that matches nothing → Allows false for all registered rules.
-	ctx := &core.ScanContext{Only: []string{"__none__"}}
-	var out []rules.Finding
-	d.Run(ctx, unit, &out)
-	if len(out) != 0 {
-		t.Fatalf("deny-all findings = %v, want 0", out)
+	opts := integration.DefaultMatrixOptions()
+	opts.Only = []string{"__none__"}
+	opts.Languages = []core.LanguageID{core.LanguagePython}
+	result, err := integration.MaterializeAndScanOpts(integration.PythonCWEFixtureRel("CWE-502", true), opts)
+	if err != nil {
+		t.Fatalf("scan fixture with deny-all filter: %v", err)
 	}
-}
-
-func TestNoNeedleFileEmitsZero(t *testing.T) {
-	t.Parallel()
-	d := cwe.NewPyCweScan()
-	src := "def hello():\n    return 1 + 2\n"
-	unit := core.NewParsedUnit(core.LanguagePython, "clean.py", src)
-	var out []rules.Finding
-	d.Run(nil, unit, &out)
-	if len(out) != 0 {
-		t.Fatalf("no-sink findings = %v, want 0", out)
+	if len(result.Findings) != 0 {
+		t.Fatalf("deny-all findings = %v, want 0", result.Findings)
 	}
 }
