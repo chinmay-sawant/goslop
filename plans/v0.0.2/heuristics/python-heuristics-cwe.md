@@ -226,13 +226,13 @@ Phase 1 framework  →  Phase 2 detectors  →  Phase 3 plugin wire
 
 - [x] Document how to add CWE-N: catalogue row exists → meta + `RegisterRule` + needles + tests (README in detectors/cwe).
 - [x] **Batch expansion plans** written under [cwe-plans/](./cwe-plans/) (mirror of `bp-plans/`) after 5-agent scan of `ruleset/python/chunks/` (2026-07-31 on `main` post-PR #67).  
-  **Partition:** 5 shipped · **154** implement-owned (batches 01–14, 16) · **185** deferred (tier-C / no pure-Go sink).  
+  **Partition:** **159** implemented (batches 00–14, 16) · **0** implement-owned pending · **185** deferred (tier-C / no pure-Go sink).
   **Tiers:** A≈59 · B≈94 · C≈186 — success ≠ full 344 `RegisterRule`.  
   **Testing contract (every implement ID):** unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go` + fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` (same `.txt` layout as `tests/fixtures/python/bp/`) + `TestPythonCWEFixturesMatrix` / `make integration-python` — see [cwe-plans/README.md § Testing contract](./cwe-plans/README.md).
-- [ ] Execute **wave P0** implement batches: [batch-01](./cwe-plans/batch-01-injection-expand.md) … [batch-04](./cwe-plans/batch-04-secrets-credentials.md) (one PR each; each ID ships unit + fixtures + matrix).
-- [ ] Execute **wave P1** (crypto / SSRF / XXE / path-fs): batches 05–08.
-- [ ] Execute **wave P2** (web config / authz / info / validation): batches 09–12.
-- [ ] Execute **wave P3** (platform quality / resources / tier-B expansion): batches 13–14, 16 (split 16 if large).
+- [x] Execute **wave P0** implement batches: [batch-01](./cwe-plans/batch-01-injection-expand.md) … [batch-04](./cwe-plans/batch-04-secrets-credentials.md) (each ID has source-only detector coverage, paired text fixtures, and Python matrix proof).
+- [x] Execute **wave P1** (crypto / SSRF / XXE / path-fs): batches 05–08.
+- [x] Execute **wave P2** (web config / authz / info / validation): batches 09–12.
+- [x] Execute **wave P3** (platform quality / resources / tier-B expansion): batches 13–14, 16. All waves are intentionally delivered in one integration PR by the explicit release decision for `feature/cwe-implementation`.
 - [~] Full 344-rule registration — **not a goal**; remainder lives in [batch-deferred.md](./cwe-plans/batch-deferred.md).
 - [~] Inter-procedural taint for Python 22/78/79/89 — **deferred** (Go has separate taint package; not required for expansion waves).
 

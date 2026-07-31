@@ -3,7 +3,7 @@
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics-cwe.md` — canonical #52 ledger  
 > **Epic:** [#51](https://github.com/chinmay-sawant/goslop/issues/51)  
 > **Issue:** [#52](https://github.com/chinmay-sawant/goslop/issues/52) expansion — batchwise PRs for remaining catalogue CWEs  
-> **Status:** **planning** — priority 5 CWEs shipped; 339 pending partitioned into implement + deferred  
+> **Status:** **complete** — 159 feasible Python CWE heuristics shipped; 185 catalogue IDs remain honestly deferred
 > **Inventory snapshot:** `plans/v0.0.2/heuristics/cwe-plans/_inventory.json`  
 > **Catalogue:** `ruleset/python/chunks/cwe-*.json` (**344** rules)  
 > **Scan method:** 5 parallel agents (2026-07-31) over chunks + Go CWE parity hints
@@ -22,8 +22,8 @@ Batch plans under this directory are **live execution ledgers** for #52 follow-u
 
 | Bucket | Count | Meaning |
 |--------|------:|---------|
-| Implemented (batch-00) | **5** | CWE-22, 78, 79, 89, 502 on `main` |
-| Missing / implement batches | **154** | Owned by batch-01..14 + 16 (tier A+B) |
+| Implemented (batches 00–14, 16) | **159** | Source-only Python CWE heuristics with paired fixtures |
+| Missing / implement batches | **0** | All approved implement-batch IDs are shipped |
 | Deferred (batch-deferred) | **185** | No pure-Go sink heuristic in v0 — catalogue-only |
 | **Catalogue total** | **344** | Partition is complete |
 
