@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: BP-PY-26-read-only-vulnerable.py
+---
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def create_order(request):
+    Order.objects.create(payload=request.POST["payload"])
+    return JsonResponse({"ok": True})

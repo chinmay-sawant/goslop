@@ -6,4 +6,5 @@ from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 def webhook(request):
-    return handle(request)
+    Event.objects.create(payload=request.POST["payload"])
+    return JsonResponse({"ok": True})

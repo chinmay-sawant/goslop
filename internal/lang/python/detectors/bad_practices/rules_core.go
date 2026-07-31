@@ -47,6 +47,9 @@ func detectBPPY1(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		// except Exception: / except BaseException: (optional "as x")
 		if isBroadExcept(t) {
+			if isPythonTestFile(unit) && broadExceptCollectsTestEvidence(lines, i) {
+				continue
+			}
 			// Flag broad Exception/BaseException unless suite clearly re-raises.
 			if suiteReraises(lines, i) {
 				continue
@@ -54,6 +57,34 @@ func detectBPPY1(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			pushAt(unit, meta, line.byte, "broad except Exception/BaseException hides failures; catch specific types or re-raise", out)
 		}
 	}
+}
+
+func broadExceptCollectsTestEvidence(lines []codeLine, exceptIdx int) bool {
+	if exceptIdx < 0 || exceptIdx >= len(lines) {
+		return false
+	}
+	exceptIndent := indentWidth(lines[exceptIdx].raw)
+	collects := false
+	for j := exceptIdx + 1; j < len(lines); j++ {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		if indentWidth(lines[j].raw) <= exceptIndent {
+			break
+		}
+		collects = collects || strings.Contains(t, ".append(")
+	}
+	if !collects {
+		return false
+	}
+	for _, line := range lines[exceptIdx+1:] {
+		t := strings.TrimSpace(line.text)
+		if strings.HasPrefix(t, "assert ") || strings.Contains(t, ".assert") {
+			return true
+		}
+	}
+	return false
 }
 
 func isBroadExcept(t string) bool {

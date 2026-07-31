@@ -1,0 +1,22 @@
+# goslop text fixture
+lang: python
+file: CWE-1124-data-layout-safe.py
+---
+def render(rows):
+    result = []
+    for row in rows:
+        result.append({
+            "name": row.name,
+            "count": row.count,
+        })
+    return result
+
+class RetryWorker:
+    async def send(self, attempts):
+        try:
+            for attempt in attempts:
+                try:
+                    await publish(attempt)
+                except TransientError:
+                    if attempt.can_retry:
+                        delay = attempt.delay

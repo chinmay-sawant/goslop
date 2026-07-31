@@ -34,6 +34,9 @@ var (
 // CWE-396 reports only the two Python root exception classes. Specific
 // exception handlers intentionally remain outside this narrow heuristic.
 func detectCWE396(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if isPythonTestModule(unit) {
+		return
+	}
 	if start := firstMatchStart(unit, pyGenericExceptRE); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE396, start, "generic Exception or BaseException handler can hide distinct failure conditions", confidence84, out)
 	}

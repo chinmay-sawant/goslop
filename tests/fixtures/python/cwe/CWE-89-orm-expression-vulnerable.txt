@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-89-orm-expression-vulnerable.py
+---
+async def find(session, owner_id):
+    stmt = f"SELECT * FROM items WHERE owner_id = {owner_id}"
+    return await session.execute(stmt)

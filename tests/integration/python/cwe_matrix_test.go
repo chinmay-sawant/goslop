@@ -23,12 +23,7 @@ func TestPythonCWEFixturesMatrix(t *testing.T) {
 
 	var failures []string
 	for _, c := range cases {
-		// Stem CWE-78 → CWE-78
-		rule := c
-		if len(c) > 4 && c[:4] == "CWE-" {
-			// already CWE-N
-			rule = c
-		}
+		rule := integration.PythonCWERuleID(c)
 		opts := integration.DefaultMatrixOptions()
 		opts.Only = []string{rule}
 		opts.Languages = []core.LanguageID{core.LanguagePython}

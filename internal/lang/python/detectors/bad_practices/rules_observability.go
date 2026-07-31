@@ -39,6 +39,8 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	lines := codeLinesFacts(facts, unit.Source)
 	// Track whether we are inside if __name__ == "__main__": block.
 	mainIndent := -1
+	cliDecorator := false
+	cliIndent := -1
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if t == "" {
@@ -48,12 +50,33 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if mainIndent >= 0 && ind <= mainIndent {
 			mainIndent = -1
 		}
+		if cliIndent >= 0 && ind <= cliIndent {
+			cliIndent = -1
+		}
 		if isMainGuard(t) {
 			mainIndent = ind
 			continue
 		}
 		if mainIndent >= 0 && ind > mainIndent {
 			// Under main guard — skip print.
+			continue
+		}
+		if strings.HasPrefix(t, "@") && strings.Contains(t, ".cli.command(") {
+			cliDecorator = true
+			continue
+		}
+		if cliDecorator {
+			if strings.HasPrefix(t, "@") {
+				continue
+			}
+			if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") {
+				cliIndent = ind
+				cliDecorator = false
+				continue
+			}
+			cliDecorator = false
+		}
+		if cliIndent >= 0 && ind > cliIndent {
 			continue
 		}
 		// Flag print( calls that are not import-like.

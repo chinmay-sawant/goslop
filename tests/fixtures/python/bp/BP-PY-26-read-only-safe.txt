@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: BP-PY-26-read-only-safe.py
+---
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def availability(request):
+    return JsonResponse(get_availability(request.body))

@@ -1,0 +1,12 @@
+# goslop text fixture
+lang: python
+file: BP-PY-38-task-list-safe.py
+---
+import asyncio
+
+async def start():
+    tasks = [
+        asyncio.create_task(cleanup()),
+        asyncio.create_task(export()),
+    ]
+    await asyncio.gather(*tasks)

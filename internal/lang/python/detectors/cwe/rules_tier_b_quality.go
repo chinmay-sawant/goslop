@@ -37,6 +37,7 @@ var (
 	pyTierBAsyncSleepRE  = regexp.MustCompile(`(?is)async\s+def\s+\w+\s*\([^)]*\)\s*:[\s\S]{0,260}time\.sleep\s*\(`)
 	pyTierBFloatMoneyRE  = regexp.MustCompile(`(?is)float\s*\(\s*request\.(?:args|form)\.get\s*\([^\n]*(?:price|amount|balance)`)
 	pyTierBDoubleCloseRE = regexp.MustCompile(`(?is)\w+\.close\s*\(\s*\)[\s\S]{0,180}\w+\.close\s*\(\s*\)`)
+	pyControlHeaderRE    = regexp.MustCompile(`^(?:(?:async\s+)?(?:def|if|elif|else|for|while|try|except|finally|with|match|case)|class)\b.*:\s*$`)
 )
 
 func detectCWE1104(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
@@ -79,22 +80,48 @@ func detectCWE1123(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 }
 
 func detectCWE1124(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for offset := 0; offset < len(unit.Source); {
-		next := strings.IndexByte(unit.Source[offset:], '\n')
-		end := len(unit.Source)
-		if next >= 0 {
-			end = offset + next
+	if unit == nil || out == nil {
+		return
+	}
+	type structuralFrame struct{ indent int }
+	var frames []structuralFrame
+	offset := 0
+	for _, line := range strings.Split(pythonCodeMask(unit.Source), "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			offset += len(line) + 1
+			continue
 		}
-		text := pythonCodeMask(unit.Source[offset:end])
-		if strings.TrimSpace(text) != "" && len(text)-len(strings.TrimLeft(text, " ")) >= 24 {
-			emitTierBFinding(unit, &MetaCWE1124, offset, "executable statement is nested at least six indentation levels", confidence70, out)
+		indent := len(line) - len(strings.TrimLeft(line, " \t"))
+		for len(frames) > 0 && indent <= frames[len(frames)-1].indent {
+			frames = frames[:len(frames)-1]
+		}
+		if pyControlHeaderRE.MatchString(trimmed) {
+			// Exception-handler clauses belong to the preceding try control flow;
+			// counting them as an additional nesting level overstates ordinary
+			// recovery and retry paths.
+			if !strings.HasPrefix(trimmed, "except") && !strings.HasPrefix(trimmed, "finally") {
+				frames = append(frames, structuralFrame{indent: indent})
+			}
+			offset += len(line) + 1
+			continue
+		}
+		if len(frames) >= 6 && isExecutableNestedStatement(trimmed) {
+			emitTierBFinding(unit, &MetaCWE1124, offset, "executable statement is nested at least six structural levels", confidence70, out)
 			return
 		}
-		if end == len(unit.Source) {
-			break
-		}
-		offset = end + 1
+		offset += len(line) + 1
 	}
+}
+
+func isExecutableNestedStatement(line string) bool {
+	if line == "" || strings.HasPrefix(line, "@") || strings.HasPrefix(line, "def ") || strings.HasPrefix(line, "class ") {
+		return false
+	}
+	if strings.HasPrefix(line, "return ") || strings.HasPrefix(line, "raise ") || strings.HasPrefix(line, "break") || strings.HasPrefix(line, "continue") {
+		return true
+	}
+	return strings.Contains(line, "=") || strings.Contains(line, "(")
 }
 
 func detectCWE1220(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {

@@ -76,7 +76,7 @@ func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	for i, line := range originalLines {
 		lhs, _, ok := strings.Cut(maskedLines[i], "=")
 		_, rhs, _ := strings.Cut(line, "=")
-		if !ok || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) {
+		if !ok || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) {
 			lineOffset += len(line) + 1
 			continue
 		}
@@ -91,6 +91,11 @@ func headerValueLooksSanitized(expr string) bool {
 	compact := compactWhitespace(expr)
 	return (strings.Contains(compact, `replace("\r","")`) || strings.Contains(compact, `replace('\r','')`)) &&
 		(strings.Contains(compact, `replace("\n","")`) || strings.Contains(compact, `replace('\n','')`))
+}
+
+func headerValueIsInternalNumeric(expr string) bool {
+	compact := compactWhitespace(expr)
+	return strings.Contains(compact, "str(int(") || strings.Contains(compact, "str(round(")
 }
 
 // CWE-94: code-generation and dynamic-import APIs are only findings when the

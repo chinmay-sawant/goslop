@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-93-numeric-header-vulnerable.py
+---
+def redirect(response, next_url):
+    response.headers["Location"] = f"/next?to={next_url}"

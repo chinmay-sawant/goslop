@@ -1,6 +1,7 @@
 package cwe
 
 import (
+	"path/filepath"
 	"regexp"
 	"strings"
 	"unicode"
@@ -45,6 +46,31 @@ func unitFile(unit *core.ParsedUnit) string {
 		return unit.DisplayPath
 	}
 	return unit.Path
+}
+
+// isPythonTestModule identifies test modules so source-only rules can avoid
+// treating deliberate test fixtures and assertions as deployed code.
+func isPythonTestModule(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.DisplayPath, unit.Path} {
+		if path == "" {
+			continue
+		}
+		base := filepath.Base(path)
+		if base == "tests.py" || base == "conftest.py" ||
+			(strings.HasPrefix(base, "test_") && strings.HasSuffix(base, ".py")) ||
+			strings.HasSuffix(base, "_test.py") {
+			return true
+		}
+		normalized := filepath.ToSlash(path)
+		if strings.Contains(normalized, "/tests/") || strings.Contains(normalized, "/test/") ||
+			strings.HasPrefix(normalized, "tests/") || strings.HasPrefix(normalized, "test/") {
+			return true
+		}
+	}
+	return false
 }
 
 // callSite is a lightweight function/method call match in source text.

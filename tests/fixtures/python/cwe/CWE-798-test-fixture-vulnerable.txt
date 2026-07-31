@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-798-test-fixture-vulnerable.py
+---
+API_KEY = "production-secret-value"

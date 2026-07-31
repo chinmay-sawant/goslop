@@ -157,6 +157,9 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		tests = append(tests, region{start: 0, end: len(lines), indent: -1})
 	}
 	for _, reg := range tests {
+		if testRegionCollectsThreadErrors(lines, reg.start, reg.end) {
+			continue
+		}
 		for i := reg.start; i < reg.end; i++ {
 			t := strings.TrimSpace(lines[i].text)
 			if t != "try:" && !strings.HasPrefix(t, "try:") {
@@ -190,6 +193,20 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 		}
 	}
+}
+
+func testRegionCollectsThreadErrors(lines []codeLine, start, end int) bool {
+	if start < 0 || end > len(lines) || start >= end {
+		return false
+	}
+	hasThread, collects, asserts := false, false, false
+	for _, line := range lines[start:end] {
+		t := strings.TrimSpace(line.text)
+		hasThread = hasThread || strings.Contains(t, "threading.Thread(")
+		collects = collects || strings.Contains(t, ".append(")
+		asserts = asserts || strings.HasPrefix(t, "assert ") || strings.Contains(t, ".assert")
+	}
+	return hasThread && collects && asserts
 }
 
 func isExpectFailureExcept(st string) bool {

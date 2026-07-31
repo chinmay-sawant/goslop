@@ -31,6 +31,9 @@ var (
 // Environment or secret-manager lookups do not match, keeping the heuristic
 // focused on credentials that are actually committed to Python source.
 func detectCWE798(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if isPythonTestModule(unit) {
+		return
+	}
 	if start := firstMatchStart(unit, pyHardcodedCredentialRE); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE798, start, "credential is hard-coded in Python source", confidence82, out)
 	}
@@ -67,6 +70,9 @@ func detectCWE261(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 }
 
 func detectCWE312(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+	if isPythonTestModule(unit) {
+		return
+	}
 	if start := firstMatchStart(unit, pyCleartextSecretRE); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE312, start, "sensitive key or token is stored as a cleartext source literal", confidence80, out)
 	}

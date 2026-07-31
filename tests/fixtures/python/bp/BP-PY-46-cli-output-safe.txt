@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: BP-PY-46-cli-output-safe.py
+---
+def register_commands(app):
+    @app.cli.command("queue-depth")
+    def queue_depth():
+        print("Queue depth")

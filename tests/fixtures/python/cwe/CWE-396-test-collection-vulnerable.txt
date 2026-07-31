@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-396-test-collection-vulnerable.py
+---
+def process():
+    try:
+        work()
+    except Exception:
+        return None

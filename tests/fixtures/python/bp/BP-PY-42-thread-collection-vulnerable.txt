@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: test_raises_vuln.py
+---
+def test_raises():
+    try:
+        boom()
+    except Exception:
+        pass
