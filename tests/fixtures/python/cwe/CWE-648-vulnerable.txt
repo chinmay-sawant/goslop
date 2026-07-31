@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-648-vulnerable.py
+---
+library = ctypes.CDLL("libcap.so")

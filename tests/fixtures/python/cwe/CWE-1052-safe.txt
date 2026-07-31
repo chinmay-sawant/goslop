@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1052-safe.py
+---
+import os
+from sqlalchemy import create_engine
+
+engine = create_engine(os.environ["DATABASE_URL"])

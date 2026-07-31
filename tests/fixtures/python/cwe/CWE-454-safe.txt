@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-454-safe.py
+---
+settings = load_reviewed_settings()

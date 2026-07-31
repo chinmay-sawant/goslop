@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-459-vulnerable.py
+---
+import tempfile
+
+def stage_upload():
+    descriptor, path = tempfile.mkstemp()
+    return path

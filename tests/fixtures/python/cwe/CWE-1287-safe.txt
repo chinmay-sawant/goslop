@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-1287-safe.py
+---
+payload = request.get_json()
+if isinstance(payload, str):
+    cursor.execute(payload)

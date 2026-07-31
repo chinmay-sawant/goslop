@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-911-vulnerable.py
+---
+ctypes.pythonapi.Py_IncRef(value)

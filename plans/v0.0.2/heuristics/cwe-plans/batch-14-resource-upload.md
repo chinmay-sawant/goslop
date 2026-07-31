@@ -2,7 +2,8 @@
 
 > **Parent:** `plans/v0.0.2/heuristics/cwe-plans/README.md` — v0.0.2 Python CWE remaining heuristics
 > **Epic / issue:** [#51](https://github.com/chinmay-sawant/goslop/issues/51) · [#52](https://github.com/chinmay-sawant/goslop/issues/52) expansion
-> **Status:** **pending** — not started
+> **Status:** **complete** — implemented and validated 2026-07-31
+> **Validation evidence:** fixture-only per-rule tests, Python CWE fixture matrix, `gofmt`, `make lint`, `make test`, and `git diff --check` passed.
 > **Wave:** P3
 > **IDs (8):** CWE-434, CWE-427, CWE-379, CWE-459, CWE-772, CWE-770, CWE-708, CWE-477
 > **PR policy:** one PR for this batch only — do not mix other wave IDs
@@ -48,11 +49,11 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ## Phase 0: Placement + budget
 
-- [ ] Record baseline: `wc -l internal/lang/python/detectors/cwe/*.go`
-- [ ] Ensure target `rules_resource.go` exists (create if needed); keep ≤1500 lines projected
-- [ ] Prefer domain file over growing `rules.go` past soft cap
-- [ ] Append FN-safe needles to `needles.go` / per-rule gates
-- [ ] No changes to `detectors/all.go` unless constructor rename (should be none)
+- [x] Record baseline: `wc -l internal/lang/python/detectors/cwe/*.go`
+- [x] Ensure target `rules_resource.go` exists (create if needed); keep ≤1500 lines projected
+- [x] Prefer domain file over growing `rules.go` past soft cap
+- [x] Append FN-safe needles to `needles.go` / per-rule gates
+- [x] No changes to `detectors/all.go` unless constructor rename (should be none)
 
 ## Phase 1: `CWE-434` — Unrestricted Upload of File with Dangerous Type
 
@@ -60,29 +61,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE434` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-434", detectCWE434, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-434`
+- [x] Add `MetaCWE434` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-434", detectCWE434, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-434`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Dynamic Analysis with Automated Results Interpretation, Dynamic Analysis with Manual Results Interpretation, Manual Static Analysis - Source Code, Automated Static Analysis - Source Code, Archite…
 - Suggested sinks/patterns: `request.files save without allowlist`, `secure_filename only`, `.html/.php/.svg upload`, `werkzeug FileStorage.save`
-- [ ] Implement `detectCWE434` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE434` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-434`
-- [ ] Unit miss: safe pattern → no `CWE-434`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-434-vulnerable.txt` + `CWE-434-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-434`
+- [x] Unit miss: safe pattern → no `CWE-434`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-434-vulnerable.txt` + `CWE-434-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 2: `CWE-427` — Uncontrolled Search Path Element
 
@@ -90,29 +91,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE427` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-427", detectCWE427, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-427`
+- [x] Add `MetaCWE427` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-427", detectCWE427, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-427`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or bin…
 - Suggested sinks/patterns: `LD_LIBRARY_PATH set`, `PYTHONPATH mutation`, `dll load from cwd`
-- [ ] Implement `detectCWE427` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE427` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-427`
-- [ ] Unit miss: safe pattern → no `CWE-427`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-427-vulnerable.txt` + `CWE-427-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-427`
+- [x] Unit miss: safe pattern → no `CWE-427`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-427-vulnerable.txt` + `CWE-427-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 3: `CWE-379` — Creation of Temporary File in Directory with Insecure Permissions
 
@@ -120,29 +121,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE379` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-379", detectCWE379, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-379`
+- [x] Add `MetaCWE379` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-379", detectCWE379, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-379`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or bin…
 - Suggested sinks/patterns: `hardcoded /tmp writes`, `tempfile.tempdir = '/tmp'`
-- [ ] Implement `detectCWE379` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE379` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-379`
-- [ ] Unit miss: safe pattern → no `CWE-379`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-379-vulnerable.txt` + `CWE-379-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-379`
+- [x] Unit miss: safe pattern → no `CWE-379`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-379-vulnerable.txt` + `CWE-379-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 4: `CWE-459` — Incomplete Cleanup
 
@@ -150,29 +151,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE459` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-459", detectCWE459, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-459`
+- [x] Add `MetaCWE459` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-459", detectCWE459, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-459`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or bin…
 - Suggested sinks/patterns: `tempfile without delete`, `mkstemp never unlink`
-- [ ] Implement `detectCWE459` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE459` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-459`
-- [ ] Unit miss: safe pattern → no `CWE-459`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-459-vulnerable.txt` + `CWE-459-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-459`
+- [x] Unit miss: safe pattern → no `CWE-459`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-459-vulnerable.txt` + `CWE-459-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 5: `CWE-772` — Missing Release of Resource after Effective Lifetime
 
@@ -180,29 +181,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE772` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-772", detectCWE772, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-772`
+- [x] Add `MetaCWE772` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-772", detectCWE772, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-772`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Automated Static Analysis. Automated static analysis, commonly referred to as Static Application Security Testing (SAST), can find some instances of this weakness by analyzing source code (or bin…
 - Suggested sinks/patterns: `open( without with/`, `socket.socket without close/context`, `urllib urlopen without with`
-- [ ] Implement `detectCWE772` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE772` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-772`
-- [ ] Unit miss: safe pattern → no `CWE-772`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-772-vulnerable.txt` + `CWE-772-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-772`
+- [x] Unit miss: safe pattern → no `CWE-772`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-772-vulnerable.txt` + `CWE-772-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 6: `CWE-770` — Allocation of Resources Without Limits or Throttling
 
@@ -210,29 +211,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE770` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-770", detectCWE770, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-770`
+- [x] Add `MetaCWE770` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-770", detectCWE770, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-770`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Manual Static Analysis, Fuzzing, Automated Dynamic Analysis, Automated Static Analysis. Manual static analysis can be useful for finding this weakness, but it might not achieve desired code cover…
 - Suggested sinks/patterns: `request.get_data(cache=True) no max`, `MAX_CONTENT_LENGTH missing`, `read() unbounded`, `while True: accept/socket`
-- [ ] Implement `detectCWE770` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE770` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-770`
-- [ ] Unit miss: safe pattern → no `CWE-770`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-770-vulnerable.txt` + `CWE-770-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-770`
+- [x] Unit miss: safe pattern → no `CWE-770`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-770-vulnerable.txt` + `CWE-770-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 7: `CWE-708` — Incorrect Ownership Assignment
 
@@ -240,29 +241,29 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE708` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-708", detectCWE708, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-708`
+- [x] Add `MetaCWE708` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-708", detectCWE708, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-708`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Automated Analysis. Use automated tools to check for privilege settings. Python-oriented (future detector): prefer stdlib/framework sinks (pathlib/os, subprocess, django/flask/fastapi templates &…
 - Suggested sinks/patterns: `os.chown`, `os.fchown`, `pathlib chmod 0o777`, `os.chmod(.*0o777`
-- [ ] Implement `detectCWE708` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE708` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-708`
-- [ ] Unit miss: safe pattern → no `CWE-708`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-708-vulnerable.txt` + `CWE-708-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-708`
+- [x] Unit miss: safe pattern → no `CWE-708`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-708-vulnerable.txt` + `CWE-708-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 8: `CWE-477` — Use of Obsolete Function
 
@@ -270,42 +271,42 @@ Ship **8** remaining CWE heuristics in this theme. Prefer high-signal, low-FP pa
 
 ### Register + meta
 
-- [ ] Add `MetaCWE477` in `metadata.go` (or domain metadata file) — title/name match catalogue
-- [ ] `RegisterRule("CWE-477", detectCWE477, &Meta…, gates...)` in `rules_resource.go` `init()`
-- [ ] Confirm ID exists in chunk JSON key `CWE-477`
+- [x] Add `MetaCWE477` in `metadata.go` (or domain metadata file) — title/name match catalogue
+- [x] `RegisterRule("CWE-477", detectCWE477, &Meta…, gates...)` in `rules_resource.go` `init()`
+- [x] Confirm ID exists in chunk JSON key `CWE-477`
 
 ### Detect heuristic
 
 - Cite **detection_notes** (abbrev): MITRE detection methods: Automated Static Analysis - Binary or Bytecode, Manual Static Analysis - Binary or Bytecode, Dynamic Analysis with Manual Results Interpretation, Manual Static Analysis - Source Code, Automated S…
 - Suggested sinks/patterns: `tempfile.mktemp`, `cgi.escape`, `asyncore`, `imp module`, `platform-specific obsolete`
-- [ ] Implement `detectCWE477` with needle prefilter
-- [ ] Prefer high-signal positive; document safe suppressions
-- [ ] Message catalogue-aligned; confidence documented
+- [x] Implement `detectCWE477` with needle prefilter
+- [x] Prefer high-signal positive; document safe suppressions
+- [x] Message catalogue-aligned; confidence documented
 
 ### Hit / miss tests + fixtures (triad)
 
-- [ ] **Unit hit:** vulnerable snippet → finding `CWE-477`
-- [ ] Unit miss: safe pattern → no `CWE-477`
-- [ ] **Fixtures:** `tests/fixtures/python/cwe/CWE-477-vulnerable.txt` + `CWE-477-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
-- [ ] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
-- [ ] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
+- [x] **Unit hit:** vulnerable snippet → finding `CWE-477`
+- [x] Unit miss: safe pattern → no `CWE-477`
+- [x] **Fixtures:** `tests/fixtures/python/cwe/CWE-477-vulnerable.txt` + `CWE-477-safe.txt` (`lang: python` header; same `.txt` format as `tests/fixtures/python/bp/`)
+- [x] **Integration:** pair auto-discovered by `DiscoverPythonCWECases` → `TestPythonCWEFixturesMatrix` in `tests/integration/python/cwe_matrix_test.go`
+- [x] Run: `go test ./internal/lang/python/detectors/cwe/ -count=1` and `go test ./tests/integration/python/ -count=1` (or `make integration-python`)
 
 ### Proof
 
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` covers this ID
 
 ## Phase 9: Batch validation
 
-- [ ] `gofmt -w` on touched files
-- [ ] `make lint`
-- [ ] `make test`
-- [ ] `go test ./internal/lang/python/detectors/cwe/ -count=1` (individual unit tests)
-- [ ] `go test ./tests/integration/python/ -count=1` **or** `make integration-python` (CWE matrix over all `python/cwe` pairs)
-- [ ] Confirm every batch ID has both `CWE-N-vulnerable.txt` and `CWE-N-safe.txt` under `tests/fixtures/python/cwe/`
-- [ ] Fixture count: `DiscoverPythonCWECases` includes all new IDs (pair discovery, not a manual allowlist)
-- [ ] Update `_inventory.json`: move batch IDs from `missing` → `implemented`
-- [ ] Update this ledger statuses to `[x]` with evidence
-- [ ] Package files still ≤2000 lines (split if not)
+- [x] `gofmt -w` on touched files
+- [x] `make lint`
+- [x] `make test`
+- [x] `go test ./internal/lang/python/detectors/cwe/ -count=1` (individual unit tests)
+- [x] `go test ./tests/integration/python/ -count=1` **or** `make integration-python` (CWE matrix over all `python/cwe` pairs)
+- [x] Confirm every batch ID has both `CWE-N-vulnerable.txt` and `CWE-N-safe.txt` under `tests/fixtures/python/cwe/`
+- [x] Fixture count: `DiscoverPythonCWECases` includes all new IDs (pair discovery, not a manual allowlist)
+- [x] Update `_inventory.json`: move batch IDs from `missing` → `implemented`
+- [x] Update this ledger statuses to `[x]` with evidence
+- [x] Package files still ≤2000 lines (split if not)
 
 
 ## Testing requirements (fixtures + unit + integration)
@@ -360,11 +361,11 @@ BP analogue (do not mix): `tests/fixtures/python/bp/` + `bp_matrix_test.go` + `D
 
 ### Per-ID checklist (repeat for every rule in this batch)
 
-- [ ] Unit hit/miss for `CWE-N`
-- [ ] `tests/fixtures/python/cwe/CWE-N-vulnerable.txt`
-- [ ] `tests/fixtures/python/cwe/CWE-N-safe.txt`
-- [ ] Matrix auto-discovers pair; vulnerable asserts finding; safe asserts absence
-- [ ] `make lint` + `make test` + `make integration-python` green before PR merge
+- [x] Unit hit/miss for `CWE-N`
+- [x] `tests/fixtures/python/cwe/CWE-N-vulnerable.txt`
+- [x] `tests/fixtures/python/cwe/CWE-N-safe.txt`
+- [x] Matrix auto-discovers pair; vulnerable asserts finding; safe asserts absence
+- [x] `make lint` + `make test` + `make integration-python` green before PR merge
 
 ## Dependencies
 
@@ -373,4 +374,3 @@ BP analogue (do not mix): `tests/fixtures/python/bp/` + `bp_matrix_test.go` + `D
 | batch-00 | Framework + priority rules already present |
 | Catalogue chunks | IDs must exist in `ruleset/python/chunks/` |
 | Parent README | ownership + PR policy |
-

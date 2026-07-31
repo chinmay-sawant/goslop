@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-403-safe.py
+---
+subprocess.run(["worker"], close_fds=True)

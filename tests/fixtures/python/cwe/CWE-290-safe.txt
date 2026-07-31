@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-290-safe.py
+---
+def ip(request):
+    return proxy_client_ip(request)

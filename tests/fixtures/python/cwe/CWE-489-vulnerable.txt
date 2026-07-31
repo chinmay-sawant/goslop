@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-489-vulnerable.py
+---
+import pdb
+
+
+def inspect_request():
+    pdb.set_trace()

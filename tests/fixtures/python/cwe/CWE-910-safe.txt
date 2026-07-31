@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-910-safe.py
+---
+handle.read()
+handle.close()

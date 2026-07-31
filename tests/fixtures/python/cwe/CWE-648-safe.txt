@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-648-safe.py
+---
+library = load_application_library()

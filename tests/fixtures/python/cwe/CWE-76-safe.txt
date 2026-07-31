@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-76-safe.py
+---
+import html
+def clean(value):
+    return html.escape(value)

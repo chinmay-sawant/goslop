@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-939-vulnerable.py
+---
+webbrowser.open(request.args.get("target"))

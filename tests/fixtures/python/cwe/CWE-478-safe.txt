@@ -1,0 +1,12 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-478-safe.py
+---
+def display_state(state):
+    match state:
+        case "ready":
+            return "ready"
+        case "failed":
+            return "failed"
+        case _:
+            return "unknown"

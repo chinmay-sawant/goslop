@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-477-vulnerable.py
+---
+import cgi
+
+def render(value):
+    return cgi.escape(value)

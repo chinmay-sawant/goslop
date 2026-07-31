@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1230-safe.py
+---
+def download(response):
+    response.headers["Content-Disposition"] = "attachment; filename=report.csv"
+    return response

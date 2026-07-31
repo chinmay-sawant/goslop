@@ -1,0 +1,6 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-698-safe.py
+---
+def transfer():
+    return redirect("/login")

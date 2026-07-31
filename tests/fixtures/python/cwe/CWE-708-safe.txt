@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-708-safe.py
+---
+import os
+
+def publish(path):
+    os.chown(path, 1001, 1001)

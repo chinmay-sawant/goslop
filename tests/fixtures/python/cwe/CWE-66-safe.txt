@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-66-safe.py
+---
+def read(root):
+    return open(os.path.join(root, "report.txt")).read()

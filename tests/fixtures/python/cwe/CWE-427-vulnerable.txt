@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-427-vulnerable.py
+---
+import os
+from flask import request
+
+def configure_loader_path():
+    os.environ["LD_LIBRARY_PATH"] = request.args["library_path"]

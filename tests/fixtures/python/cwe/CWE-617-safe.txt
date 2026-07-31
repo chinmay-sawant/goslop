@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-617-safe.py
+---
+def action(request):
+    if not request.user.is_authenticated:
+        raise PermissionError()

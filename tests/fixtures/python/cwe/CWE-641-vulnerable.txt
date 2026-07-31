@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-641-vulnerable.py
+---
+with open(os.path.join(root, request.files["upload"].filename)) as source:
+    data = source.read()

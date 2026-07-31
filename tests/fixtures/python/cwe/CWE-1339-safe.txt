@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1339-safe.py
+---
+price = Decimal(request.args.get("price"))

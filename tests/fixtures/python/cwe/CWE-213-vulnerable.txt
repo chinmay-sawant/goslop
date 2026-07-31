@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-213-vulnerable.py
+---
+import requests
+
+
+def share_with_guest(employee):
+    requests.post("https://partner.example/guest", json={"name": employee.name, "salary": employee.salary})

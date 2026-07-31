@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-179-vulnerable.py
+---
+def path(raw):
+    validate_path(raw)
+    return urllib.parse.unquote(raw)

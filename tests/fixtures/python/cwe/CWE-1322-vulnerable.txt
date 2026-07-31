@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1322-vulnerable.py
+---
+async def refresh():
+    time.sleep(1)

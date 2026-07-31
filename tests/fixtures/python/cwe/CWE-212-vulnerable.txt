@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-212-vulnerable.py
+---
+import json
+
+
+def export_customer(customer, destination):
+    json.dump({"id": customer.id, "ssn": customer.ssn}, destination)

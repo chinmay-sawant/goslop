@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-379-safe.py
+---
+import tempfile
+
+def write_report(contents):
+    with tempfile.NamedTemporaryFile(mode="w", delete=True) as report:
+        report.write(contents)

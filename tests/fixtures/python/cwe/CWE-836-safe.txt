@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-836-safe.py
+---
+user = authenticate(password=request.data["password"])

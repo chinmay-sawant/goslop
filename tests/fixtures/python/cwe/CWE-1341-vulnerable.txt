@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1341-vulnerable.py
+---
+connection.close()
+connection.close()

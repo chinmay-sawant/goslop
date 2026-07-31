@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-939-safe.py
+---
+webbrowser.open("https://example.test/help")

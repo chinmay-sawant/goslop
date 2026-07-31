@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1050-vulnerable.py
+---
+for name in names:
+    open(name).read()

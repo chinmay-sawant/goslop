@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-1284-vulnerable.py
+---
+limit = int(request.args.get("limit"))
+rows = Query.objects.all()[:limit]
+limit = limit

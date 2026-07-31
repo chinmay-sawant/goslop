@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-212-safe.py
+---
+import json
+
+
+def export_customer(customer, destination):
+    json.dump({"id": customer.id, "display_name": customer.display_name}, destination)

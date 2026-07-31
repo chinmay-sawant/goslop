@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1051-vulnerable.py
+---
+import requests
+
+
+def fetch_inventory():
+    return requests.get("http://10.42.0.15:8080/inventory")

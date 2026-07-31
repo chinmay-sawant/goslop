@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1021-vulnerable.py
+---
+response = make_response(render_template("account.html"))
+return response

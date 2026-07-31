@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-472-safe.py
+---
+account = Account(email=request.data["email"])

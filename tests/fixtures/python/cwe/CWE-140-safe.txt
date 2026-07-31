@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-140-safe.py
+---
+import csv
+from flask import request
+
+
+def export_tags(stream):
+    writer = csv.writer(stream)
+    writer.writerow(request.args.getlist("tag"))

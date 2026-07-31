@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-910-vulnerable.py
+---
+handle.close()
+handle.read()

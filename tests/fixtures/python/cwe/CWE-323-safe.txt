@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-323-safe.py
+---
+nonce = os.urandom(12)
+encrypted = AESGCM(key).encrypt(nonce, data, None)

@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-921-safe.py
+---
+def write_token(token):
+    with open("/var/lib/service/session-token.txt", "w") as handle:
+        handle.write(token)

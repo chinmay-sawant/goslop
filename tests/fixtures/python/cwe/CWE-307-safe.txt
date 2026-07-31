@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-307-safe.py
+---
+@app.post("/login")
+@limiter.limit("5 per minute")
+def login():
+    return authenticate(request.form["username"], request.form["password"])

@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-334-vulnerable.py
+---
+otp = random.randint(0, 9999)

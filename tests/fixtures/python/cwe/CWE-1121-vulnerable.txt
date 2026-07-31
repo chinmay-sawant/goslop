@@ -1,0 +1,17 @@
+# goslop text fixture
+lang: python
+file: CWE-1121-vulnerable.py
+---
+def complex(value):
+    if a: pass
+    if b: pass
+    if c: pass
+    if d: pass
+    if e: pass
+    if f: pass
+    if g: pass
+    if h: pass
+    if i: pass
+    if j: pass
+    if k: pass
+    if l: pass

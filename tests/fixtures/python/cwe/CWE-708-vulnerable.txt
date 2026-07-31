@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-708-vulnerable.py
+---
+import os
+
+def publish(path):
+    os.chown(path, 0, 0)

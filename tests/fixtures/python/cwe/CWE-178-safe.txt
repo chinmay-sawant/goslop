@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-178-safe.py
+---
+def login(request, username):
+    return request.args.get("username").casefold() == username.casefold()

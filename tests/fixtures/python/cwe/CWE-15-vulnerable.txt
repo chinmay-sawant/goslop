@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-15-vulnerable.py
+---
+from flask import Flask, request
+
+app = Flask(__name__)
+
+
+def configure_from_request():
+    app.config["UPLOAD_FOLDER"] = request.args["folder"]

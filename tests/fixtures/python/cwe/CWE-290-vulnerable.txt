@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-290-vulnerable.py
+---
+def ip(request):
+    return request.headers.get("X-Forwarded-For")

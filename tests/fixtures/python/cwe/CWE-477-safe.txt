@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-477-safe.py
+---
+import html
+
+def render(value):
+    return html.escape(value)

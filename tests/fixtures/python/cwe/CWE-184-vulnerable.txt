@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-184-vulnerable.py
+---
+def check(request):
+    for bad in blocked:
+        if bad in request.args.get("path"):
+            return False
+    return True

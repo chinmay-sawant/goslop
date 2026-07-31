@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-538-vulnerable.py
+---
+with open("/tmp/secret-token", "w") as output:
+    output.write(token)

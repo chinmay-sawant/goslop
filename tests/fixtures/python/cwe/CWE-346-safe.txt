@@ -1,0 +1,5 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-346-safe.py
+---
+CORS(app, origins=["https://console.example.test"], supports_credentials=True)

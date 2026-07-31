@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-182-safe.py
+---
+def role(request):
+    return is_admin(request.args.get("role"))

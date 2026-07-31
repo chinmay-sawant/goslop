@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1389-vulnerable.py
+---
+from flask import request
+
+
+def select_port():
+    return int(request.args["port"], 0)

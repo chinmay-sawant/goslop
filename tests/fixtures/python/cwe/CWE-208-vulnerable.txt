@@ -1,0 +1,6 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-208-vulnerable.py
+---
+def authenticate(candidate_token, expected_token):
+    return candidate_token == expected_token

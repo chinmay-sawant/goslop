@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-208-safe.py
+---
+import hmac
+
+
+def authenticate(candidate_token, expected_token):
+    return hmac.compare_digest(candidate_token, expected_token)

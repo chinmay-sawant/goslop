@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-379-vulnerable.py
+---
+def write_report(contents):
+    with open("/tmp/report.txt", "w") as report:
+        report.write(contents)

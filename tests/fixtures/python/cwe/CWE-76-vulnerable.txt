@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-76-vulnerable.py
+---
+def clean(value):
+    return value.replace("<", "")

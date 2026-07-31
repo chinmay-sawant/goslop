@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-584-vulnerable.py
+---
+def publish(item):
+    try:
+        send(item)
+    finally:
+        return False

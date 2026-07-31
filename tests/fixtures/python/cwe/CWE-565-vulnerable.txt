@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-565-vulnerable.py
+---
+def account(request):
+    user_id = request.cookies.get("user_id")
+    return load_user(user_id)

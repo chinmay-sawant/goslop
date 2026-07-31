@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-921-vulnerable.py
+---
+def write_token(token):
+    with open("/tmp/session-token.txt", "w") as handle:
+        handle.write(token)

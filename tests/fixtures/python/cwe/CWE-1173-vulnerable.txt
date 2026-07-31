@@ -1,0 +1,12 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1173-vulnerable.py
+---
+from flask import request
+
+
+@app.route("/profiles", methods=["POST"])
+def create_profile():
+    payload = request.get_json()
+    profile = Profile(**payload)
+    profile.save()

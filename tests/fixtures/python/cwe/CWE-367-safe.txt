@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-367-safe.py
+---
+def remove(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass

@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1236-vulnerable.py
+---
+import csv
+from flask import request
+
+
+def export_rows(stream):
+    writer = csv.writer(stream)
+    writer.writerow([request.args["customer_name"]])

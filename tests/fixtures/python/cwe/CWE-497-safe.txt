@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-497-safe.py
+---
+from flask import jsonify
+
+
+def diagnostics():
+    return jsonify(status="unavailable")

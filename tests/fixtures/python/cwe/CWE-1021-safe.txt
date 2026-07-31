@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-1021-safe.py
+---
+response = make_response(render_template("account.html"))
+response.headers["X-Frame-Options"] = "DENY"
+return response

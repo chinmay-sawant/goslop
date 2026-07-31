@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-279-safe.py
+---
+os.chmod(path, 0o600)

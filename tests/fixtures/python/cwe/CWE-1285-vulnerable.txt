@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1285-vulnerable.py
+---
+selected = rows[int(request.args.get("index"))]

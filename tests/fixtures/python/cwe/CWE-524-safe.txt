@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-524-safe.py
+---
+cache.set("theme", user.theme)

@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-1084-vulnerable.py
+---
+def report():
+    open("a").read()
+    open("b").read()
+    open("c").read()

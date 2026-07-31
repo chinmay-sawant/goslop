@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-289-vulnerable.py
+---
+def host(request, trusted_host):
+    return request.headers.get("Host") == trusted_host

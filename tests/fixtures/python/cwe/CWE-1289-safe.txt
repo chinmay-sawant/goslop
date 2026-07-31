@@ -1,0 +1,14 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1289-safe.py
+---
+from pathlib import Path
+from flask import request
+
+
+def read_document(base_dir):
+    path = request.args["path"]
+    candidate = (Path(base_dir) / path).resolve()
+    if base_dir not in candidate.parents:
+        raise ValueError("outside document root")
+    return candidate.read_text()

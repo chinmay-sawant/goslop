@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1060-vulnerable.py
+---
+for user in User.objects.all():
+    user.orders.all()

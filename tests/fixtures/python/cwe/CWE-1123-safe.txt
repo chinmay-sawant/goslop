@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-1123-safe.py
+---
+def dynamic():
+    return "fixed"

@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-1106-safe.py
+---
+response.set_cookie("session", max_age=SESSION_MAX_AGE)

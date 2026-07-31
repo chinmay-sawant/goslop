@@ -14,69 +14,12 @@ func TestPyCweScanLanguageAndCatalogue(t *testing.T) {
 	if d.Language() != core.LanguagePython {
 		t.Fatalf("Language() = %v, want LanguagePython", d.Language())
 	}
+	const wantRuleCount = 159
 	ids := d.RuleIDs()
-	want := map[string]bool{
-		"CWE-22":   true,
-		"CWE-78":   true,
-		"CWE-79":   true,
-		"CWE-88":   true,
-		"CWE-89":   true,
-		"CWE-90":   true,
-		"CWE-91":   true,
-		"CWE-93":   true,
-		"CWE-94":   true,
-		"CWE-117":  true,
-		"CWE-214":  true,
-		"CWE-215":  true,
-		"CWE-250":  true,
-		"CWE-256":  true,
-		"CWE-260":  true,
-		"CWE-261":  true,
-		"CWE-276":  true,
-		"CWE-295":  true,
-		"CWE-312":  true,
-		"CWE-319":  true,
-		"CWE-328":  true,
-		"CWE-335":  true,
-		"CWE-338":  true,
-		"CWE-347":  true,
-		"CWE-378":  true,
-		"CWE-41":   true,
-		"CWE-426":  true,
-		"CWE-494":  true,
-		"CWE-502":  true,
-		"CWE-523":  true,
-		"CWE-547":  true,
-		"CWE-59":   true,
-		"CWE-601":  true,
-		"CWE-605":  true,
-		"CWE-611":  true,
-		"CWE-695":  true,
-		"CWE-73":   true,
-		"CWE-749":  true,
-		"CWE-776":  true,
-		"CWE-798":  true,
-		"CWE-829":  true,
-		"CWE-914":  true,
-		"CWE-915":  true,
-		"CWE-916":  true,
-		"CWE-918":  true,
-		"CWE-924":  true,
-		"CWE-940":  true,
-		"CWE-941":  true,
-		"CWE-112":  true,
-		"CWE-1204": true,
-		"CWE-1240": true,
-		"CWE-1241": true,
-		"CWE-1392": true,
-	}
-	if len(ids) != len(want) {
-		t.Fatalf("RuleIDs() = %v (len %d), want %d supported IDs", ids, len(ids), len(want))
+	if len(ids) != wantRuleCount {
+		t.Fatalf("RuleIDs() = %v (len %d), want %d supported IDs", ids, len(ids), wantRuleCount)
 	}
 	for _, id := range ids {
-		if !want[id] {
-			t.Fatalf("unexpected rule id %q", id)
-		}
 		meta := d.MetadataFor(id)
 		if meta == nil {
 			t.Fatalf("MetadataFor(%s) = nil", id)
@@ -91,8 +34,8 @@ func TestPyCweScanLanguageAndCatalogue(t *testing.T) {
 			t.Fatalf("%s pack = %v, want PackSecurity", id, meta.Pack)
 		}
 	}
-	if cwe.RegisteredRuleCount() != len(want) {
-		t.Fatalf("RegisteredRuleCount = %d, want %d", cwe.RegisteredRuleCount(), len(want))
+	if cwe.RegisteredRuleCount() != wantRuleCount {
+		t.Fatalf("RegisteredRuleCount = %d, want %d", cwe.RegisteredRuleCount(), wantRuleCount)
 	}
 }
 

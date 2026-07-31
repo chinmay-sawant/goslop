@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: CWE-524-vulnerable.py
+---
+cache.set("session", user.password)

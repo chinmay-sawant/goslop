@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-552-safe.py
+---
+def download():
+    return send_file("public-report.pdf")

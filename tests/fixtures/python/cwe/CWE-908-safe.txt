@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-908-safe.py
+---
+resource = open("report.txt")
+resource.read()

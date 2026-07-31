@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-66-vulnerable.py
+---
+def read(request, root):
+    return open(os.path.join(root, request.args["name"])).read()
