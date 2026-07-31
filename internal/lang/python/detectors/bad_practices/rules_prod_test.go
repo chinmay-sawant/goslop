@@ -113,19 +113,19 @@ func TestBPPY50InsecureCookieFlags(t *testing.T) {
 	t.Parallel()
 	hitSession := "SESSION_COOKIE_SECURE = False\n"
 	hitCSRF := "CSRF_COOKIE_SECURE = False\n"
-	hitHttpOnly := "SESSION_COOKIE_HTTPONLY = False\n"
+	hitHTTPOnly := "SESSION_COOKIE_HTTPONLY = False\n"
 	hitFlaskConfig := "app.config['SESSION_COOKIE_SECURE'] = False\n"
 	missSecureTrue := "SESSION_COOKIE_SECURE = True\n"
 	missCSRFTrue := "CSRF_COOKIE_SECURE = True\n"
-	missHttpOnlyTrue := "SESSION_COOKIE_HTTPONLY = True\n"
+	missHTTPOnlyTrue := "SESSION_COOKIE_HTTPONLY = True\n"
 
 	assertRule(t, "BP-PY-50", "settings.py", hitSession, true)
 	assertRule(t, "BP-PY-50", "settings.py", hitCSRF, true)
-	assertRule(t, "BP-PY-50", "settings.py", hitHttpOnly, true)
+	assertRule(t, "BP-PY-50", "settings.py", hitHTTPOnly, true)
 	assertRule(t, "BP-PY-50", "app.py", hitFlaskConfig, true)
 	assertRule(t, "BP-PY-50", "settings.py", missSecureTrue, false)
 	assertRule(t, "BP-PY-50", "settings.py", missCSRFTrue, false)
-	assertRule(t, "BP-PY-50", "settings.py", missHttpOnlyTrue, false)
+	assertRule(t, "BP-PY-50", "settings.py", missHTTPOnlyTrue, false)
 	// test file skip
 	assertRule(t, "BP-PY-50", "test_settings.py", hitSession, false)
 

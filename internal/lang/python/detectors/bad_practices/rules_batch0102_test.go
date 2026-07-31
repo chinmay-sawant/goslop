@@ -149,7 +149,6 @@ func TestBatch0102MetadataSeverities(t *testing.T) {
 		meta := badpractices.MetadataForID(id)
 		if meta == nil {
 			t.Fatalf("MetadataForID(%s) = nil", id)
-			continue
 		}
 		if meta.Severity != want {
 			t.Errorf("%s severity = %v, want %v", id, meta.Severity, want)

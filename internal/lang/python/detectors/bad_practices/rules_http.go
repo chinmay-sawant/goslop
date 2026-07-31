@@ -57,10 +57,10 @@ func scanHTTPCallsNoTimeout(unit *core.ParsedUnit, src string, re *regexp.Regexp
 			continue
 		}
 		openAbs := m[0] + open
-		inner, _, ok := callArgsRegion(src, openAbs)
+		inner, ok := callArgsRegion(src, openAbs)
 		if !ok {
 			// Fallback window for unmatched paren
-			windowEnd := m[1] + 240
+			windowEnd := m[1] + httpTimeoutFallbackBytes
 			if windowEnd > len(src) {
 				windowEnd = len(src)
 			}
@@ -72,6 +72,8 @@ func scanHTTPCallsNoTimeout(unit *core.ParsedUnit, src string, re *regexp.Regexp
 		pushAt(unit, meta, m[0], "requests call missing timeout=; hung network can stall workers", out)
 	}
 }
+
+const httpTimeoutFallbackBytes = 240
 
 // callArgsHasTimeout reports timeout= as a keyword (not a variable named timeout alone).
 func callArgsHasTimeout(args string) bool {

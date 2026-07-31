@@ -20,7 +20,7 @@ var (
 )
 
 // BP-PY-33: Jinja2 Environment(autoescape=False).
-func detectBPPY33(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+func detectBPPY33(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-33")
 	if isPythonTestFile(unit) {
 		return
@@ -55,10 +55,10 @@ func detectBPPY33(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			start = abs + 1
 			continue
 		}
-		inner, _, ok := callArgsRegion(src, openAbs)
+		inner, ok := callArgsRegion(src, openAbs)
 		if !ok {
 			// Window fallback
-			end := openAbs + 200
+			end := openAbs + templateCallFallbackBytes
 			if end > len(src) {
 				end = len(src)
 			}
@@ -86,59 +86,69 @@ func detectBPPY34(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 	// Markup( non-literal )
 	if hasMarkup {
-		start := 0
-		for {
-			// Prefer markupsafe.Markup and bare Markup(
-			idx := indexOfMarkupCall(src, start)
-			if idx < 0 {
-				break
-			}
-			open := strings.Index(src[idx:], "(")
-			if open < 0 {
-				break
-			}
-			openAbs := idx + open
-			arg, _, ok := firstCallArg(src, openAbs)
-			if !ok {
-				start = idx + 6
-				continue
-			}
-			arg = strings.TrimSpace(arg)
-			if arg == "" {
-				start = idx + 6
-				continue
-			}
-			// Miss: plain string/bytes literal (non-f)
-			if isPlainStringLiteral(arg) {
-				start = idx + 6
-				continue
-			}
-			// Hit: f-string, name, call, concat, etc.
-			pushAt(unit, meta, idx, "Markup marks dynamic HTML as safe; only use on trusted/sanitized literals", out)
-			start = idx + 6
-		}
+		scanDynamicMarkup(unit, meta, src, out)
 	}
 
-	// Python source embedding Jinja |safe (string templates in .py)
 	if hasSafe {
-		lines := codeLinesFacts(facts, src)
-		for _, line := range lines {
-			t := line.text
-			if !jinjaSafeFilter.MatchString(t) {
-				continue
+		scanJinjaSafeFilter(unit, meta, facts, src, out)
+	}
+}
+
+const templateCallFallbackBytes = 200
+
+func scanDynamicMarkup(unit *core.ParsedUnit, meta *rules.RuleMetadata, src string, out *[]rules.Finding) {
+	start := 0
+	for {
+		// Prefer markupsafe.Markup and bare Markup(
+		idx := indexOfMarkupCall(src, start)
+		if idx < 0 {
+			break
+		}
+		open := strings.Index(src[idx:], "(")
+		if open < 0 {
+			break
+		}
+		openAbs := idx + open
+		arg, ok := firstCallArg(src, openAbs)
+		if !ok {
+			start = idx + 6
+			continue
+		}
+		arg = strings.TrimSpace(arg)
+		if arg == "" {
+			start = idx + 6
+			continue
+		}
+		// Miss: plain string/bytes literal (non-f)
+		if isPlainStringLiteral(arg) {
+			start = idx + 6
+			continue
+		}
+		// Hit: f-string, name, call, concat, etc.
+		pushAt(unit, meta, idx, "Markup marks dynamic HTML as safe; only use on trusted/sanitized literals", out)
+		start = idx + 6
+	}
+}
+
+func scanJinjaSafeFilter(unit *core.ParsedUnit, meta *rules.RuleMetadata, facts *bpFacts, src string, out *[]rules.Finding) {
+	// Python source embedding Jinja |safe (string templates in .py)
+	lines := codeLinesFacts(facts, src)
+	for _, line := range lines {
+		t := line.text
+		if !jinjaSafeFilter.MatchString(t) {
+			continue
+		}
+		// Skip pure comments already stripped; skip if only in docs without template context.
+		// Flag when appears inside a string-looking template fragment.
+		if strings.Contains(t, "{{") || strings.Contains(t, "|safe") || strings.Contains(t, "| safe") {
+			// Avoid flagging documentation that says "use |safe carefully" without template braces —
+			// still flag |safe as high-signal in .py per plan.
+			loc := jinjaSafeFilter.FindStringIndex(t)
+			off := line.byte
+			if loc != nil {
+				off += loc[0]
 			}
-			// Skip pure comments already stripped; skip if only in docs without template context.
-			// Flag when appears inside a string-looking template fragment.
-			if strings.Contains(t, "{{") || strings.Contains(t, "|safe") || strings.Contains(t, "| safe") {
-				// Avoid flagging documentation that says "use |safe carefully" without template braces —
-				// still flag |safe as high-signal in .py per plan.
-				loc := jinjaSafeFilter.FindStringIndex(t)
-				off := line.byte
-				if loc != nil {
-					off += loc[0]
-				}
-				pushAt(unit, meta, off, "Jinja |safe disables escaping on a value; ensure the value is trusted", out)
-			}
+			pushAt(unit, meta, off, "Jinja |safe disables escaping on a value; ensure the value is trusted", out)
 		}
 	}
 }

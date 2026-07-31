@@ -1,3 +1,4 @@
+// Package badpractices detects common Python implementation mistakes.
 package badpractices
 
 import (
@@ -60,41 +61,41 @@ func stripPyComment(line string) string {
 	triple := false
 	for i := 0; i < len(line); i++ {
 		c := line[i]
-		if inStr != 0 {
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && !triple {
-				escape = true
-				continue
-			}
-			if triple {
-				if c == inStr && i+2 < len(line) && line[i+1] == inStr && line[i+2] == inStr {
-					inStr = 0
-					triple = false
+		if inStr == 0 {
+			if c == '"' || c == '\'' {
+				// Triple-quoted?
+				if i+2 < len(line) && line[i+1] == c && line[i+2] == c {
+					inStr = c
+					triple = true
 					i += 2
+					continue
 				}
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
-			continue
-		}
-		if c == '"' || c == '\'' {
-			// Triple-quoted?
-			if i+2 < len(line) && line[i+1] == c && line[i+2] == c {
 				inStr = c
-				triple = true
-				i += 2
 				continue
 			}
-			inStr = c
+			if c == '#' {
+				return strings.TrimRight(line[:i], " \t")
+			}
 			continue
 		}
-		if c == '#' {
-			return strings.TrimRight(line[:i], " \t")
+		if escape {
+			escape = false
+			continue
+		}
+		if c == '\\' && !triple {
+			escape = true
+			continue
+		}
+		if triple {
+			if c == inStr && i+2 < len(line) && line[i+1] == inStr && line[i+2] == inStr {
+				inStr = 0
+				triple = false
+				i += 2
+			}
+			continue
+		}
+		if c == inStr {
+			inStr = 0
 		}
 	}
 	return line
@@ -255,10 +256,10 @@ func isStringLiteral(s string) bool {
 }
 
 // firstCallArg extracts the first top-level argument text of a call starting at
-// openParen (index of '('). Returns arg, end offset of ')', ok.
-func firstCallArg(source string, openParen int) (arg string, close int, ok bool) {
+// openParen (index of '('). Returns arg and ok.
+func firstCallArg(source string, openParen int) (string, bool) {
 	if openParen < 0 || openParen >= len(source) || source[openParen] != '(' {
-		return "", -1, false
+		return "", false
 	}
 	depth := 0
 	inStr := byte(0)
@@ -291,24 +292,15 @@ func firstCallArg(source string, openParen int) (arg string, close int, ok bool)
 				// Full arg list region.
 				inner := source[start:i]
 				// Split first top-level comma.
-				arg = splitFirstArg(inner)
-				return strings.TrimSpace(arg), i, true
+				return strings.TrimSpace(splitFirstArg(inner)), true
 			}
 		case ',':
 			if depth == 1 {
-				arg = strings.TrimSpace(source[start:i])
-				// Still need to find close for completeness — continue scan? For first arg only we have it.
-				// Find matching close.
-				for j := i; j < len(source); j++ {
-					// reuse simplified: just return with close unknown; scan for close
-				}
-				// Find close paren at depth 0 from here.
-				close = findMatchingClose(source, openParen)
-				return arg, close, true
+				return strings.TrimSpace(source[start:i]), true
 			}
 		}
 	}
-	return "", -1, false
+	return "", false
 }
 
 func splitFirstArg(inner string) string {
@@ -385,29 +377,19 @@ func findMatchingClose(source string, openParen int) int {
 }
 
 // callArgsRegion returns the full argument list text inside (... ) for a call.
-func callArgsRegion(source string, openParen int) (inner string, close int, ok bool) {
-	close = findMatchingClose(source, openParen)
-	if close < 0 {
-		return "", -1, false
+func callArgsRegion(source string, openParen int) (string, bool) {
+	closeParen := findMatchingClose(source, openParen)
+	if closeParen < 0 {
+		return "", false
 	}
-	return source[openParen+1 : close], close, true
+	return source[openParen+1 : closeParen], true
 }
 
 // lineContainsWithOpen reports whether the line uses open as a with context.
 func lineContainsWithOpen(line string) bool {
 	t := strings.TrimSpace(line)
-	// with open(...) or with path.open(...)
-	if !strings.HasPrefix(t, "with ") && !strings.Contains(t, " with ") {
-		// also: async with
-		if !strings.HasPrefix(t, "async with ") {
-			// may still be "with open" after leading content? rare
-			if !strings.Contains(t, "with open(") && !strings.Contains(t, "with Path.open(") {
-				// check "with <expr>.open("
-				if !containsWithOpenCall(t) {
-					return false
-				}
-			}
-		}
+	if !containsWithOpenCall(t) {
+		return false
 	}
 	return strings.Contains(t, "open(")
 }

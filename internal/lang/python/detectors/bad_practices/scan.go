@@ -65,14 +65,14 @@ func (d *PythonBadPracticeScan) Run(ctx *core.ScanContext, unit *core.ParsedUnit
 	}
 
 	all := bpCatalogueSnapshot()
-	any := false
+	hasAllowedRule := false
 	for _, e := range all {
 		if ctx == nil || ctx.Allows(e.id) {
-			any = true
+			hasAllowedRule = true
 			break
 		}
 	}
-	if !any {
+	if !hasAllowedRule {
 		return
 	}
 

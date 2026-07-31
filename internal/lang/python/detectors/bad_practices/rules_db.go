@@ -59,35 +59,15 @@ func isPercentFormatted(arg string) bool {
 	for i := 0; i < len(arg); i++ {
 		c := arg[i]
 		if inStr != 0 {
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && !triple {
-				escape = true
-				continue
-			}
-			if triple {
-				if c == inStr && i+2 < len(arg) && arg[i+1] == inStr && arg[i+2] == inStr {
-					inStr = 0
-					triple = false
-					i += 2
-				}
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i = consumeQuotedCharacter(arg, i, &inStr, &escape, &triple)
 			continue
 		}
 		if c == '"' || c == '\'' {
-			if i+2 < len(arg) && arg[i+1] == c && arg[i+2] == c {
-				inStr = c
-				triple = true
-				i += 2
-				continue
-			}
 			inStr = c
+			triple = i+2 < len(arg) && arg[i+1] == c && arg[i+2] == c
+			if triple {
+				i += 2
+			}
 			continue
 		}
 		switch c {
@@ -98,29 +78,56 @@ func isPercentFormatted(arg string) bool {
 				depth--
 			}
 		case '%':
-			if depth == 0 {
-				// Python modulo formatting: string-lit % expr
-				// Ensure not %% and not mid-ident
-				if i+1 < len(arg) && arg[i+1] == '%' {
-					i++
-					continue
-				}
-				// Look left for a string end (we only see % outside strings, so left should be closed string)
-				left := strings.TrimSpace(arg[:i])
-				right := strings.TrimSpace(arg[i+1:])
-				if left != "" && right != "" && (strings.HasSuffix(left, `"`) || strings.HasSuffix(left, `'`) ||
-					strings.HasSuffix(left, `"""`) || strings.HasSuffix(left, `'''`)) {
-					return true
-				}
+			if i+1 < len(arg) && arg[i+1] == '%' {
+				i++
+				continue
+			}
+			if depth == 0 && isStringFormattingOperator(arg, i) {
+				return true
 			}
 		}
 	}
 	return false
 }
 
+func consumeQuotedCharacter(arg string, index int, quote *byte, escaped *bool, triple *bool) int {
+	c := arg[index]
+	if *escaped {
+		*escaped = false
+		return index
+	}
+	if c == '\\' && !*triple {
+		*escaped = true
+		return index
+	}
+	if !*triple {
+		if c == *quote {
+			*quote = 0
+		}
+		return index
+	}
+	if c == *quote && index+2 < len(arg) && arg[index+1] == *quote && arg[index+2] == *quote {
+		*quote = 0
+		*triple = false
+		return index + 2
+	}
+	return index
+}
+
+func isStringFormattingOperator(arg string, operatorIdx int) bool {
+	// We only see % outside strings, so the left side should end with a string.
+	left := strings.TrimSpace(arg[:operatorIdx])
+	right := strings.TrimSpace(arg[operatorIdx+1:])
+	if left == "" || right == "" {
+		return false
+	}
+	return strings.HasSuffix(left, `"`) || strings.HasSuffix(left, `'`) ||
+		strings.HasSuffix(left, `"""`) || strings.HasSuffix(left, `'''`)
+}
+
 // BP-PY-35: sqlalchemy.text with f-string / format / % / concat.
 // Policy: fire on text(...); BP-PY-37 covers bare .execute(f"...") without text().
-func detectBPPY35(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+func detectBPPY35(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-35")
 	if isPythonTestFile(unit) {
 		return
@@ -144,16 +151,9 @@ func detectBPPY35(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		abs := start + idx
 		// Must be text( or sa.text / sqlalchemy.text — check prefix
-		if abs > 0 && isIdentByte(src[abs-1]) {
-			// Could be sqlalchemy.text — check
-			if abs >= 11 && src[abs-11:abs] == "sqlalchemy." {
-				// ok
-			} else if abs >= 3 && src[abs-3:abs] == "sa." {
-				// ok
-			} else {
-				start = abs + 4
-				continue
-			}
+		if abs > 0 && isIdentByte(src[abs-1]) && !isSQLAlchemyTextCall(src, abs) {
+			start = abs + 4
+			continue
 		}
 		end := abs + len("text")
 		if end >= len(src) {
@@ -170,7 +170,7 @@ func detectBPPY35(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		openAbs := end + sp
-		arg, _, ok := firstCallArg(src, openAbs)
+		arg, ok := firstCallArg(src, openAbs)
 		if !ok {
 			start = abs + 4
 			continue
@@ -182,6 +182,11 @@ func detectBPPY35(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		start = abs + 4
 	}
+}
+
+func isSQLAlchemyTextCall(src string, textStart int) bool {
+	return (textStart >= len("sqlalchemy.") && src[textStart-len("sqlalchemy."):textStart] == "sqlalchemy.") ||
+		(textStart >= len("sa.") && src[textStart-len("sa."):textStart] == "sa.")
 }
 
 // BP-PY-36: Session / SessionLocal created without with or .close().
@@ -205,48 +210,40 @@ func detectBPPY36(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if strings.HasPrefix(t, "with ") || strings.HasPrefix(t, "async with ") {
 			continue
 		}
-		// Match assignment session = SessionLocal( or Session(
-		m := sessionAssignRe.FindStringSubmatchIndex(t)
-		if m == nil {
-			// Also: session = SessionLocal() without nested sessionmaker complexity
-			if !strings.Contains(t, "SessionLocal(") && !strings.Contains(t, "Session(") {
-				continue
-			}
-			// Manual parse: name = SessionLocal( or name = Session(
-			eq := strings.Index(t, "=")
-			if eq <= 0 {
-				continue
-			}
-			lhs := strings.TrimSpace(t[:eq])
-			rhs := strings.TrimSpace(t[eq+1:])
-			if !isSimpleIdent(lhs) {
-				continue
-			}
-			if !strings.HasPrefix(rhs, "SessionLocal(") && !strings.HasPrefix(rhs, "Session(") &&
-				!strings.Contains(rhs, "sessionmaker(") {
-				continue
-			}
-			// sessionmaker()() double call
-			if strings.HasPrefix(rhs, "sessionmaker") && !strings.Contains(rhs, ")(") {
-				// sessionmaker(...) alone is factory, not session
-				if !strings.Contains(rhs, ")(") {
-					continue
-				}
-			}
-			if sessionUnclosedInScope(lines, i, lhs) {
-				pushAt(unit, meta, line.byte, "SQLAlchemy Session created without with/close; use a context manager or session.close()", out)
-			}
-			continue
-		}
-		name := t[m[2]:m[3]]
-		// Ensure this line is not inside a with header on same line
-		if strings.Contains(t, "with ") {
+		name := sessionAssignmentName(t)
+		if name == "" || strings.Contains(t, "with ") {
 			continue
 		}
 		if sessionUnclosedInScope(lines, i, name) {
 			pushAt(unit, meta, line.byte, "SQLAlchemy Session created without with/close; use a context manager or session.close()", out)
 		}
 	}
+}
+
+func sessionAssignmentName(line string) string {
+	if match := sessionAssignRe.FindStringSubmatchIndex(line); match != nil {
+		return line[match[2]:match[3]]
+	}
+	if !strings.Contains(line, "SessionLocal(") && !strings.Contains(line, "Session(") {
+		return ""
+	}
+	equals := strings.Index(line, "=")
+	if equals <= 0 {
+		return ""
+	}
+	name := strings.TrimSpace(line[:equals])
+	right := strings.TrimSpace(line[equals+1:])
+	if !isSimpleIdent(name) {
+		return ""
+	}
+	if !strings.HasPrefix(right, "SessionLocal(") && !strings.HasPrefix(right, "Session(") &&
+		!strings.Contains(right, "sessionmaker(") {
+		return ""
+	}
+	if strings.HasPrefix(right, "sessionmaker") && !strings.Contains(right, ")(") {
+		return ""
+	}
+	return name
 }
 
 // sessionUnclosedInScope reports whether `name` has no .close() and was not created via with
@@ -303,7 +300,7 @@ func sessionUnclosedInScope(lines []codeLine, assignLineIdx int, name string) bo
 // BP-PY-37: DB-API / driver .execute with f-string / % / .format SQL.
 // Overlap policy: session.execute(text(f"...")) may also fire BP-PY-35 on text(;
 // this rule targets the .execute( call when the first arg itself is dynamic SQL.
-func detectBPPY37(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
+func detectBPPY37(unit *core.ParsedUnit, _ *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-37")
 	if isPythonTestFile(unit) {
 		return
@@ -331,7 +328,7 @@ func detectBPPY37(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			openAbs += abs
 		}
-		arg, _, ok := firstCallArg(src, openAbs)
+		arg, ok := firstCallArg(src, openAbs)
 		if !ok {
 			start = abs + 8
 			continue

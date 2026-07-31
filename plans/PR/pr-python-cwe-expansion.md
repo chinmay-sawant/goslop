@@ -54,6 +54,7 @@ Expands Python CWE coverage from the initial five priority rules to 159 source-o
 
 - [x] `make test`
 - [x] `make lint` / `go vet`
+- [x] `make lint-all`
 - [x] `CGO_ENABLED=0 go build -o /tmp/goslop-cwe-pr ./cmd/goslop`
 - [x] `make reference-metrics REFERENCE_PATH=/home/chinmay/ChinmayPersonalProjects/gopdfsuit`
 - [x] `make integration-python`
@@ -63,6 +64,7 @@ Expands Python CWE coverage from the initial five priority rules to 159 source-o
 
 ```sh
 make lint
+make lint-all
 make test
 make integration-python
 CGO_ENABLED=0 go build -o /tmp/goslop-cwe-pr ./cmd/goslop
@@ -100,7 +102,6 @@ exports: 915 context files and 37 chunk files
 ## Follow-ups (out of scope)
 
 - The remaining 185 Tier-C catalogue IDs stay deferred because they do not have a trustworthy pure-Go source-pattern heuristic in v0.
-- `make lint-all` remains red on the repository baseline: `origin/main` has 74 strict-linter diagnostics. This branch introduces zero diagnostics under `golangci-lint run --new-from-rev=origin/main ./...` and reduces the full-run count to 60; baseline cleanup is intentionally separate from this CWE implementation PR.
 
 ---
 

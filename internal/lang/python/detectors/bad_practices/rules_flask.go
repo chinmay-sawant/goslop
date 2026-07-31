@@ -216,49 +216,49 @@ func detectBPPY19(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			// Also if next lines form a def used inline is rare; continue to look for nearby def only when decorator.
 		}
-		// Decorator path: walk to def
-		if strings.HasPrefix(t, "@") || strings.Contains(t, ".errorhandler(") {
-			for defIdx < len(lines) {
-				dt := strings.TrimSpace(lines[defIdx].text)
-				if dt == "" {
-					defIdx++
-					continue
-				}
-				if strings.HasPrefix(dt, "@") {
-					defIdx++
-					continue
-				}
+		// Decorator path: walk to def.
+		if !isFlaskErrorHandlerDecorator(t) {
+			continue
+		}
+		for defIdx < len(lines) {
+			dt := strings.TrimSpace(lines[defIdx].text)
+			if dt == "" || strings.HasPrefix(dt, "@") {
+				defIdx++
+				continue
+			}
+			break
+		}
+		if defIdx >= len(lines) {
+			continue
+		}
+		defLine := strings.TrimSpace(lines[defIdx].text)
+		if !strings.HasPrefix(defLine, "def ") && !strings.HasPrefix(defLine, "async def ") {
+			continue
+		}
+		defIndent := indentWidth(lines[defIdx].raw)
+		for k := defIdx + 1; k < len(lines); k++ {
+			bt := strings.TrimSpace(lines[k].text)
+			if bt == "" {
+				continue
+			}
+			ind := indentWidth(lines[k].raw)
+			if ind <= defIndent {
 				break
 			}
-			if defIdx >= len(lines) {
-				continue
-			}
-			defLine := strings.TrimSpace(lines[defIdx].text)
-			if !strings.HasPrefix(defLine, "def ") && !strings.HasPrefix(defLine, "async def ") {
-				continue
-			}
-			defIndent := indentWidth(lines[defIdx].raw)
-			for k := defIdx + 1; k < len(lines); k++ {
-				bt := strings.TrimSpace(lines[k].text)
-				if bt == "" {
-					continue
-				}
-				ind := indentWidth(lines[k].raw)
-				if ind <= defIndent {
-					break
-				}
-				// Flag return/jsonify of exception text; also bare traceback.format_exc in body returned.
-				if excLeakRe.MatchString(bt) {
-					// Prefer lines that look like they leave the handler (return / jsonify / make_response).
-					if strings.Contains(bt, "return") || strings.Contains(bt, "jsonify") ||
-						strings.Contains(bt, "make_response") || strings.Contains(bt, "format_exc") {
-						pushAt(unit, meta, lines[k].byte, "error handler returns exception text to clients; use a generic message", out)
-						break
-					}
-				}
+			if exceptionTextIsReturned(bt) {
+				pushAt(unit, meta, lines[k].byte, "error handler returns exception text to clients; use a generic message", out)
+				break
 			}
 		}
 	}
+}
+
+func exceptionTextIsReturned(line string) bool {
+	if !excLeakRe.MatchString(line) {
+		return false
+	}
+	return strings.Contains(line, "return") || strings.Contains(line, "jsonify") ||
+		strings.Contains(line, "make_response") || strings.Contains(line, "format_exc")
 }
 
 // BP-PY-20: send_file / send_from_directory with request-derived path without safe_join.
@@ -279,9 +279,9 @@ func detectBPPY20(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		openAbs := m[0] + open
-		inner, _, ok := callArgsRegion(src, openAbs)
+		inner, ok := callArgsRegion(src, openAbs)
 		if !ok {
-			windowEnd := m[1] + 200
+			windowEnd := m[1] + flaskSendFileFallbackBytes
 			if windowEnd > len(src) {
 				windowEnd = len(src)
 			}
@@ -297,7 +297,7 @@ func detectBPPY20(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		// Also: first arg is a bare name that was assigned from request in nearby lines (simple window).
-		first, _, argOK := firstCallArg(src, openAbs)
+		first, argOK := firstCallArg(src, openAbs)
 		if !argOK || first == "" {
 			continue
 		}
@@ -326,7 +326,7 @@ func nameAssignedFromRequest(src string, before int, name string) bool {
 		before = 0
 	}
 	// Window: last ~1500 bytes before the call.
-	start := before - 1500
+	start := before - flaskRequestAssignmentBytes
 	if start < 0 {
 		start = 0
 	}
@@ -335,4 +335,13 @@ func nameAssignedFromRequest(src string, before int, name string) bool {
 	// Also name = request.args.get(...)
 	re := regexp.MustCompile(`(?m)\b` + regexp.QuoteMeta(name) + `\s*=\s*request\.(args|form|files|view_args|json)\b`)
 	return re.MatchString(window)
+}
+
+const (
+	flaskSendFileFallbackBytes  = 200
+	flaskRequestAssignmentBytes = 1500
+)
+
+func isFlaskErrorHandlerDecorator(line string) bool {
+	return strings.HasPrefix(line, "@") || strings.Contains(line, ".errorhandler(")
 }

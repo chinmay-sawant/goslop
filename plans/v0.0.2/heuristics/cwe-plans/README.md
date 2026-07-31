@@ -134,7 +134,7 @@ batches 00–14 and 16. The 185 deferred IDs are governed by §5 instead.
 - [x] Unit hit/miss in `internal/lang/python/detectors/cwe/*_test.go` — every rule uses the paired text-fixture corpus.
 - [x] Fixture pair `tests/fixtures/python/cwe/CWE-N-{vulnerable,safe}.txt` — 159 canonical safe/vulnerable pairs.
 - [x] Integration matrix picks up the new pair — `TestPythonCWEFixturesMatrix` auto-discovers all 159 paired stems.
-- [x] `make lint` + `make test` green — `make integration-python` also passed before PR publication.
+- [x] `make lint-all` + `make test` green — `make integration-python` also passed before PR publication.
 - [x] Inventory / ledger checkboxes updated — `_inventory.json` reports 159 implemented / 0 missing, and all implement-batch ledgers are complete.
 
 ### 5. What deferred IDs skip

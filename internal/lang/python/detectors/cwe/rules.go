@@ -55,7 +55,7 @@ func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			unitFile(unit),
 			line, col,
 			"yaml.unsafe_load deserializes untrusted data without a safe loader",
-			0.85,
+			confidence85,
 			out,
 		)
 		return
@@ -158,12 +158,6 @@ func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			return
 		}
 	}
-
-	// Generic shell=True near subprocess import without list argv — catch shell=True with string cmd via broader scan
-	if strings.Contains(src, "shell=True") && strings.Contains(src, "subprocess") {
-		// already covered call sites above; if shell=True with pure literal list we should not flag
-		// handled by isDynamicExpr on first arg
-	}
 }
 
 // --- CWE-89 SQL injection ---
@@ -212,15 +206,11 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 func findExecuteCalls(src string) []callSite {
 	// Match .execute( / .executemany( and also bare execute( / executemany(
-	var out []callSite
-	out = append(out, findCalls(src, ".execute", ".executemany")...)
+	out := findCalls(src, ".execute", ".executemany")
 	// bare names — findCalls with "execute" would match .execute too if boundary allows '.'
 	// Our boundary treats '.' on left as failure for "execute", so bare works; but ".execute" already matched method form.
-	for _, call := range findCalls(src, "execute", "executemany") {
-		// skip if this is part of a method call we already covered (offset would differ)
-		// findCalls("execute") won't match ".execute" because left boundary sees '.'
-		out = append(out, call)
-	}
+	// findCalls("execute") won't match ".execute" because left boundary sees '.'.
+	out = append(out, findCalls(src, "execute", "executemany")...)
 	return out
 }
 
@@ -294,28 +284,21 @@ func detectCWE22(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 	// Path(root) / user then used — flag join-style Path division with dynamic right-hand side near open/read
 	// Simple pattern: ` / ` with request-like or bare identifiers after Path(
-	if strings.Contains(src, "Path(") && strings.Contains(src, " / ") {
-		// look for assignment Path(...) / something non-literal without confinement
-		if strings.Contains(src, "open(") || strings.Contains(src, "read_text(") || strings.Contains(src, "write_text(") ||
-			strings.Contains(src, "unlink(") || strings.Contains(src, "os.remove(") {
-			// crude: Path(x) / y where y not a pure string
-			if hasDynamicPathDiv(src) {
-				i := strings.Index(src, "Path(")
-				if i < 0 {
-					i = strings.Index(src, " / ")
-				}
-				line, col := unit.LineCol(i)
-				rules.PushFindingWithConfidence(
-					&MetaCWE22,
-					unitFile(unit),
-					line, col,
-					"pathlib path joined with dynamic segment without resolve+prefix confinement",
-					0.65,
-					out,
-				)
-			}
-		}
+	if !strings.Contains(src, "Path(") || !strings.Contains(src, " / ") || !hasPathSink(src) || !hasDynamicPathDiv(src) {
+		return
 	}
+	i := strings.Index(src, "Path(")
+	if i < 0 {
+		i = strings.Index(src, " / ")
+	}
+	line, col := unit.LineCol(i)
+	rules.PushFindingWithConfidence(&MetaCWE22, unitFile(unit), line, col,
+		"pathlib path joined with dynamic segment without resolve+prefix confinement", confidence65, out)
+}
+
+func hasPathSink(source string) bool {
+	return strings.Contains(source, "open(") || strings.Contains(source, "read_text(") || strings.Contains(source, "write_text(") ||
+		strings.Contains(source, "unlink(") || strings.Contains(source, "os.remove(")
 }
 
 func joinAllLiterals(pathArg string) bool {
@@ -355,7 +338,7 @@ func hasDynamicPathDiv(src string) bool {
 		end := abs + 3
 		for end < len(src) && src[end] != '\n' && src[end] != ')' && src[end] != ';' && src[end] != '#' {
 			end++
-			if end-abs > 80 {
+			if end-abs > pathDivisionContextWindow {
 				break
 			}
 		}
@@ -453,7 +436,7 @@ func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			unitFile(unit),
 			line, col,
 			"Jinja |safe filter disables escaping for dynamic content (XSS risk)",
-			0.65,
+			confidence65,
 			out,
 		)
 		return

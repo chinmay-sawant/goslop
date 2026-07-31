@@ -8,6 +8,13 @@ import (
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
+const (
+	bareExceptClause  = "except:"
+	exceptionName     = "Exception"
+	baseExceptionName = "BaseException"
+	maxSignatureLines = 30
+)
+
 func init() {
 	RegisterRule("BP-PY-1", detectBPPY1)
 	RegisterRule("BP-PY-2", detectBPPY2)
@@ -30,7 +37,7 @@ func detectBPPY1(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		// Bare except:
-		if t == "except:" || strings.HasPrefix(t, "except:") {
+		if t == bareExceptClause || strings.HasPrefix(t, bareExceptClause) {
 			// "except:" only (no type)
 			rest := strings.TrimSpace(strings.TrimPrefix(t, "except"))
 			if rest == ":" || strings.HasPrefix(rest, ":") {
@@ -64,7 +71,7 @@ func isBroadExcept(t string) bool {
 	if i := strings.Index(rest, " as "); i >= 0 {
 		rest = strings.TrimSpace(rest[:i])
 	}
-	return rest == "Exception" || rest == "BaseException"
+	return rest == exceptionName || rest == baseExceptionName
 }
 
 func suiteReraises(lines []codeLine, exceptIdx int) bool {
@@ -99,7 +106,7 @@ func detectBPPY2(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		// Must look like an except clause (not a variable named except_foo).
-		if t != "except:" && !strings.HasPrefix(t, "except ") && !strings.HasPrefix(t, "except:") {
+		if t != bareExceptClause && !strings.HasPrefix(t, "except ") && !strings.HasPrefix(t, bareExceptClause) {
 			continue
 		}
 		exceptIndent := indentWidth(line.raw)
@@ -152,17 +159,17 @@ func detectBPPY4(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			j++
 			sig += " " + strings.TrimSpace(lines[j].text)
 			// Safety: stop after many lines
-			if j-i > 30 {
+			if j-i > maxSignatureLines {
 				break
 			}
 		}
 		// Only look inside parentheses of the def.
 		open := strings.Index(sig, "(")
-		close := strings.LastIndex(sig, ")")
-		if open < 0 || close <= open {
+		closeParen := strings.LastIndex(sig, ")")
+		if open < 0 || closeParen <= open {
 			continue
 		}
-		params := sig[open+1 : close]
+		params := sig[open+1 : closeParen]
 		if mutableDefaultRe.MatchString(params) {
 			pushAt(unit, meta, line.byte, "mutable default argument is shared across calls; use None and assign inside the body", out)
 		}

@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	confidence65 = 0.65
 	confidence68 = 0.68
 	confidence70 = 0.70
 	confidence72 = 0.72
@@ -20,6 +21,7 @@ const (
 	confidence80 = 0.80
 	confidence82 = 0.82
 	confidence84 = 0.84
+	confidence85 = 0.85
 	confidence86 = 0.86
 	confidence88 = 0.88
 	confidence90 = 0.90
@@ -31,6 +33,7 @@ const (
 	uninitializedResourceWindow = 220
 	closedResourceWindow        = 180
 	minimumRouteBranches        = 12
+	pathDivisionContextWindow   = 80
 )
 
 // unitFile returns the display path for findings.
@@ -199,7 +202,7 @@ func skipWS(s string, i int) int {
 }
 
 // scanCallArgs starts at '(' and returns index of matching ')' and interior args.
-func scanCallArgs(source string, open int) (closeAt int, args string) {
+func scanCallArgs(source string, open int) (int, string) {
 	if open >= len(source) || source[open] != '(' {
 		return -1, ""
 	}
@@ -211,26 +214,7 @@ func scanCallArgs(source string, open int) (closeAt int, args string) {
 	for i := open; i < len(source); i++ {
 		c := source[i]
 		if inStr != 0 {
-			if triple > 0 {
-				// inside triple-quoted string
-				if c == inStr && i+2 < len(source) && source[i+1] == inStr && source[i+2] == inStr {
-					inStr = 0
-					triple = 0
-					i += 2
-				}
-				continue
-			}
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && (inStr == '"' || inStr == '\'') {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i, inStr, triple, escape = advancePythonQuotedString(source, i, inStr, triple, escape)
 			continue
 		}
 		// not in string
@@ -269,25 +253,7 @@ func splitTopLevelArgs(args string) []string {
 	for i := 0; i < len(args); i++ {
 		c := args[i]
 		if inStr != 0 {
-			if triple > 0 {
-				if c == inStr && i+2 < len(args) && args[i+1] == inStr && args[i+2] == inStr {
-					inStr = 0
-					triple = 0
-					i += 2
-				}
-				continue
-			}
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' && (inStr == '"' || inStr == '\'') {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i, inStr, triple, escape = advancePythonQuotedString(args, i, inStr, triple, escape)
 			continue
 		}
 		if c == '"' || c == '\'' {
@@ -404,16 +370,16 @@ func looksStaticStringList(expr string) bool {
 	if len(t) < 2 {
 		return false
 	}
-	open, close := t[0], byte(0)
-	switch open {
+	var closeDelimiter byte
+	switch t[0] {
 	case '[':
-		close = ']'
+		closeDelimiter = ']'
 	case '(':
-		close = ')'
+		closeDelimiter = ')'
 	default:
 		return false
 	}
-	if t[len(t)-1] != close {
+	if t[len(t)-1] != closeDelimiter {
 		return false
 	}
 	inner := strings.TrimSpace(t[1 : len(t)-1])
@@ -575,25 +541,7 @@ func indexTopLevelPercent(s string) int {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if inStr != 0 {
-			if triple > 0 {
-				if c == inStr && i+2 < len(s) && s[i+1] == inStr && s[i+2] == inStr {
-					inStr = 0
-					triple = 0
-					i += 2
-				}
-				continue
-			}
-			if escape {
-				escape = false
-				continue
-			}
-			if c == '\\' {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
+			i, inStr, triple, escape = advancePythonQuotedString(s, i, inStr, triple, escape)
 			continue
 		}
 		if c == '"' || c == '\'' {
@@ -624,6 +572,26 @@ func indexTopLevelPercent(s string) int {
 		}
 	}
 	return -1
+}
+
+func advancePythonQuotedString(source string, index int, quote byte, triple int, escaped bool) (int, byte, int, bool) {
+	current := source[index]
+	if triple > 0 {
+		if current == quote && index+2 < len(source) && source[index+1] == quote && source[index+2] == quote {
+			return index + 2, 0, 0, false
+		}
+		return index, quote, triple, false
+	}
+	if escaped {
+		return index, quote, 0, false
+	}
+	if current == '\\' {
+		return index, quote, 0, true
+	}
+	if current == quote {
+		return index, 0, 0, false
+	}
+	return index, quote, 0, false
 }
 
 // hasSafePathConfinement reports file-level safe patterns for CWE-22.

@@ -7,6 +7,8 @@ import (
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
+const assertionErrorType = "AssertionError"
+
 func init() {
 	metaByID["BP-PY-41"] = &rules.RuleMetadata{
 		ID: "BP-PY-41", Title: "pytest assert With Side Effects Only",
@@ -130,7 +132,7 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	type region struct {
 		start, end, indent int
 	}
-	var tests []region
+	tests := make([]region, 0, len(lines))
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "def test_") && !strings.HasPrefix(t, "async def test_") {
@@ -207,12 +209,12 @@ func isExpectFailureExcept(st string) bool {
 		rest = strings.TrimSpace(rest[:i])
 	}
 	switch rest {
-	case "Exception", "BaseException", "AssertionError", "Exception as e":
+	case "Exception", "BaseException", assertionErrorType, "Exception as e":
 		return true
 	}
 	// bare multi? keep conservative: only broad / AssertionError
-	if rest == "AssertionError" || rest == "Exception" || rest == "BaseException" {
+	if rest == assertionErrorType || rest == "Exception" || rest == "BaseException" {
 		return true
 	}
-	return rest == "AssertionError" || strings.HasPrefix(rest, "AssertionError")
+	return rest == assertionErrorType || strings.HasPrefix(rest, assertionErrorType)
 }

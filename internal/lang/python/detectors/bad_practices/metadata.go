@@ -1,3 +1,4 @@
+// Package badpractices implements Python bad-practice detection rules.
 package badpractices
 
 import (
@@ -174,7 +175,7 @@ type catalogueEntry struct {
 var (
 	fullCatalogueOnce sync.Once
 	fullCatalogue     map[string]catalogueEntry
-	fullCatalogueErr  error
+	errFullCatalogue  error
 )
 
 // loadFullCatalogue parses ruleset/python/bad-practices.json when reachable from CWD.
@@ -182,22 +183,23 @@ func loadFullCatalogue() (map[string]catalogueEntry, error) {
 	fullCatalogueOnce.Do(func() {
 		path, err := findPythonBPCatalogue()
 		if err != nil {
-			fullCatalogueErr = err
+			errFullCatalogue = err
 			return
 		}
-		raw, err := os.ReadFile(path)
+		cleanPath := filepath.Clean(path)
+		raw, err := os.ReadFile(cleanPath)
 		if err != nil {
-			fullCatalogueErr = err
+			errFullCatalogue = err
 			return
 		}
 		var m map[string]catalogueEntry
 		if err := json.Unmarshal(raw, &m); err != nil {
-			fullCatalogueErr = err
+			errFullCatalogue = err
 			return
 		}
 		fullCatalogue = m
 	})
-	return fullCatalogue, fullCatalogueErr
+	return fullCatalogue, errFullCatalogue
 }
 
 func findPythonBPCatalogue() (string, error) {

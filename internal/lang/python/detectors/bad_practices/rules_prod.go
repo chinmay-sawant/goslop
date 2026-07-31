@@ -69,6 +69,8 @@ var (
 	)
 )
 
+const corsCallFallbackBytes = 400
+
 // BP-PY-48: CORS `*` origins combined with credentials True.
 //
 // Hits when the same unit enables wildcard origins and credentials together:
@@ -134,10 +136,10 @@ func detectBPPY48(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			open = m[0] + idx
 		}
-		inner, _, ok := callArgsRegion(src, open)
+		inner, ok := callArgsRegion(src, open)
 		if !ok {
 			// Window fallback for multi-line or unmatched paren.
-			end := m[0] + 400
+			end := m[0] + corsCallFallbackBytes
 			if end > len(src) {
 				end = len(src)
 			}
