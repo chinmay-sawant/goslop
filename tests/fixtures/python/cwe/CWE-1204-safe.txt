@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1204-safe.py
+---
+from Crypto.Cipher import AES
+import secrets
+
+cipher = AES.new(key, AES.MODE_CBC, iv=secrets.token_bytes(16))

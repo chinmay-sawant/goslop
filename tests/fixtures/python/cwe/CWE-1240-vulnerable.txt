@@ -1,0 +1,6 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1240-vulnerable.py
+---
+def xor_encrypt(data, key):
+    return bytes(a ^ b for a, b in zip(data, key))

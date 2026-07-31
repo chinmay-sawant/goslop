@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-1204-vulnerable.py
+---
+from Crypto.Cipher import AES
+
+cipher = AES.new(key, AES.MODE_CBC, iv=b"0" * 16)

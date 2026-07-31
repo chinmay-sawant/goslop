@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-940-safe.py
+---
+def oauth_callback(request):
+    verify_state(request.args["state"])
+    user = lookup_user(request.args["user_id"])
+    login_user(user)

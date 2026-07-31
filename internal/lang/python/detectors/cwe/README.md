@@ -27,6 +27,10 @@ Pure-Go **source-pattern** security heuristics for Python (issue #52).
 | CWE-214 / 215 / 695 / 749 / 829 | Sensitive process args, debug output, low-level APIs, dynamic route/code loading | Password-file options, redacted logs, package-controlled imports |
 | CWE-256 / 260 / 261 / 312 / 319 / 523 / 547 / 798 | Password/secret storage and transport, weak encoding, insecure security settings | Environment/secret-provider values, TLS, default verification, secure settings |
 | CWE-914 / 915 / 916 | Request-controlled names/attributes and fast password hashing | Allowlisted attributes and modern password hashes |
+| CWE-295 / 328 / 335 / 338 / 347 / 1204 / 1240 / 1241 / 1392 | Certificate/signature bypasses, weak hashes/PRNG/IVs, risky crypto, default passwords | Verified TLS/signatures, `secrets`, runtime IVs, vetted crypto, non-default credentials |
+| CWE-601 / 605 / 918 / 924 / 940 / 941 | Request-controlled redirects/HTTP/mail destinations and channel integrity | Allowlisted destinations, signature/state checks, non-wildcard bindings |
+| CWE-112 / 611 / 776 | Request XML parsing and explicit entity-expansion configuration | Schema-aware parsing and disabled entity resolution |
+| CWE-41 / 59 / 73 / 250 / 276 / 378 / 426 / 494 | Filesystem path/link/permission/temp/search-path and downloaded-code hazards | Canonical paths, private modes, secure temp APIs, trusted import/download flows |
 
 ## Non-goals
 

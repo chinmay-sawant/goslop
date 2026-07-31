@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-494-safe.py
+---
+local_source = "print('trusted plugin')"
+
+exec(compile(local_source, "plugin.py", "exec"))

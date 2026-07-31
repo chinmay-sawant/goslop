@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-426-safe.py
+---
+import sys
+
+sys.path.append("/opt/trusted/lib")

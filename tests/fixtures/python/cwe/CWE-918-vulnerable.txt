@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-918-vulnerable.py
+---
+import requests
+
+
+def fetch_preview(request):
+    return requests.get(request.args["url"])

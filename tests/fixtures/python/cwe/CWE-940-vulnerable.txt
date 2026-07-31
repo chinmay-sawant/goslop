@@ -1,0 +1,7 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-940-vulnerable.py
+---
+def oauth_callback(request):
+    user = lookup_user(request.args["user_id"])
+    login_user(user)

@@ -1,0 +1,8 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-378-safe.py
+---
+import tempfile
+
+with tempfile.NamedTemporaryFile() as temporary_file:
+    temporary_file.write(b"safe")
