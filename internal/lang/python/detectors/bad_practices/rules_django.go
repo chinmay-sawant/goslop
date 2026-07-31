@@ -474,9 +474,6 @@ func detectBPPY26(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		body := functionBodyText(lines, defIdx)
 		if viewLooksStateChanging(body) {
 			pushAt(unit, meta, line.byte, "csrf_exempt on state-changing view; CSRF bypass risk", out)
-		} else {
-			// v0: still flag any csrf_exempt on a def (high signal per plan); message notes review.
-			pushAt(unit, meta, line.byte, "csrf_exempt disables CSRF on this view; verify it is not state-changing without alternate auth", out)
 		}
 	}
 }
@@ -518,8 +515,7 @@ func viewLooksStateChanging(body string) bool {
 		return false
 	}
 	needles := []string{
-		"request.POST", "request.body", "request.FILES",
-		"request.method", "POST", "PUT", "PATCH", "DELETE",
+		"request.POST", "request.FILES",
 		".save(", ".delete(", ".create(", ".update(",
 	}
 	for _, n := range needles {

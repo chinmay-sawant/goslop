@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: BP-PY-46-cli-output-vulnerable.py
+---
+def compute():
+    print("debug")

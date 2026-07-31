@@ -126,6 +126,18 @@ func PythonBPFixtureRel(caseName string, vulnerable bool) string {
 	return filepath.ToSlash(filepath.Join("python", "bp", caseName+"-"+suf+".txt"))
 }
 
+// PythonCWERuleID maps a fixture stem such as CWE-89-orm-expression to CWE-89.
+func PythonCWERuleID(caseName string) string {
+	parts := strings.Split(caseName, "-")
+	if len(parts) < 2 || parts[0] != "CWE" {
+		return caseName
+	}
+	if _, err := strconv.Atoi(parts[1]); err != nil {
+		return caseName
+	}
+	return "CWE-" + parts[1]
+}
+
 // PythonCWEFixtureRel returns path relative to tests/fixtures/ for a CWE case.
 func PythonCWEFixtureRel(caseName string, vulnerable bool) string {
 	suf := "safe"

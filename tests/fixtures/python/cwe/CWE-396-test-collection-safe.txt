@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: tests.py
+---
+def test_concurrent_work():
+    errors = []
+    try:
+        reserve()
+    except Exception as error:
+        errors.append(error)
+    assert len(errors) == 1

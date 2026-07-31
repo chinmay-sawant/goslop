@@ -30,7 +30,7 @@ func isPythonTestFile(unit *core.ParsedUnit) bool {
 			continue
 		}
 		base := filepath.Base(p)
-		if strings.HasPrefix(base, "test_") && strings.HasSuffix(base, ".py") {
+		if base == "tests.py" || base == "conftest.py" || (strings.HasPrefix(base, "test_") && strings.HasSuffix(base, ".py")) {
 			return true
 		}
 		if strings.HasSuffix(base, "_test.py") {

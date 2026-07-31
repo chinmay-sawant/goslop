@@ -32,7 +32,8 @@ var (
 	pyTierBBusyLoopRE    = regexp.MustCompile(`(?is)while\s+True\s*:[\s\S]{0,260}(?:hashlib|sha256|calculate|compute)`)
 	pyTierBHomoglyphRE   = regexp.MustCompile(`(?is)render_template\s*\([^\n]*request\.(?:args|form)\.get\s*\([^\n]*username`)
 	pyTierBFrameRE       = regexp.MustCompile(`(?is)response\s*=\s*make_response\s*\([^\n]*render_template[\s\S]{0,240}return\s+response`)
-	pyTierBConcatLoopRE  = regexp.MustCompile(`(?is)(?:for|while)\s+[^\n]+:\s*\n(?:\s+[^\n]*\n){0,4}\s*\w+\s*\+=\s*`)
+	pyTierBLoopHeaderRE  = regexp.MustCompile(`^(?:for|while)\b.*:\s*$`)
+	pyTierBAugAssignRE   = regexp.MustCompile(`^([A-Za-z_][A-Za-z0-9_]*)\s*\+=\s*(.+)$`)
 	pyTierBOpenLoopRE    = regexp.MustCompile(`(?is)(?:for|while)\s+[^\n]+:\s*\n(?:\s+[^\n]*\n){0,4}\s*open\s*\(`)
 	pyTierBNPlusOneRE    = regexp.MustCompile(`(?is)for\s+\w+\s+in\s+\w+\.objects\.(?:all|filter)\s*\([^\n]*\)\s*:[\s\S]{0,180}\w+\.[a-z_]+\.(?:all|filter)\s*\(`)
 	pyTierBEmptyExceptRE = regexp.MustCompile(`(?is)except(?:\s+[A-Za-z_][A-Za-z0-9_.]*)?\s*:\s*\n\s*pass\b`)
@@ -123,9 +124,54 @@ func detectCWE1021(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 }
 
 func detectCWE1046(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBConcatLoopRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1046, start, "immutable text is repeatedly concatenated inside a loop", confidence76, out)
+	if unit == nil || out == nil {
+		return
 	}
+	maskedLines := strings.Split(pythonCodeMask(unit.Source), "\n")
+	originalLines := strings.Split(unit.Source, "\n")
+	loopIndents := make([]int, 0, 4)
+	offset := 0
+	for i, masked := range maskedLines {
+		trimmed := strings.TrimSpace(masked)
+		if trimmed == "" {
+			offset += len(masked) + 1
+			continue
+		}
+		indent := len(masked) - len(strings.TrimLeft(masked, " \t"))
+		for len(loopIndents) > 0 && indent <= loopIndents[len(loopIndents)-1] {
+			loopIndents = loopIndents[:len(loopIndents)-1]
+		}
+		if pyTierBLoopHeaderRE.MatchString(trimmed) {
+			loopIndents = append(loopIndents, indent)
+			offset += len(masked) + 1
+			continue
+		}
+		match := pyTierBAugAssignRE.FindStringSubmatch(trimmed)
+		if len(loopIndents) > 0 && len(match) == 3 && textAccumulatorEvidence(originalLines[:i], match[1], match[2]) {
+			emitTierBFinding(unit, &MetaCWE1046, offset, "immutable text is repeatedly concatenated inside a loop", confidence76, out)
+			return
+		}
+		offset += len(masked) + 1
+	}
+}
+
+func textAccumulatorEvidence(previous []string, name, rhs string) bool {
+	for i := len(previous) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(previous[i])
+		if strings.HasPrefix(line, name+" = ") {
+			value := strings.TrimSpace(strings.TrimPrefix(line, name+" = "))
+			if strings.HasPrefix(value, "\"") || strings.HasPrefix(value, "'") || strings.HasPrefix(value, "str(") {
+				return true
+			}
+		}
+	}
+	lowerName := strings.ToLower(name)
+	if strings.Contains(lowerName, "text") || strings.Contains(lowerName, "string") || strings.Contains(lowerName, "message") || strings.Contains(lowerName, "output") {
+		return true
+	}
+	trimmedRHS := strings.TrimSpace(rhs)
+	return strings.HasPrefix(trimmedRHS, "f\"") || strings.HasPrefix(trimmedRHS, "f'") ||
+		strings.HasPrefix(trimmedRHS, "\"") || strings.HasPrefix(trimmedRHS, "'")
 }
 
 func detectCWE1050(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {

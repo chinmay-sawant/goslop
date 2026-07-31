@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: BP-PY-1-thread-collection-vulnerable.py
+---
+def process():
+    try:
+        work()
+    except Exception:
+        pass

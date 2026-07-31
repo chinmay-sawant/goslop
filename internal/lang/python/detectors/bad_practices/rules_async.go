@@ -38,9 +38,12 @@ func detectBPPY38(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	lines := codeLinesFacts(facts, unit.Source)
-	for _, line := range lines {
+	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if t == "" || !isBareTaskSpawn(t) {
+			continue
+		}
+		if taskSpawnStoredInCollection(lines, i) {
 			continue
 		}
 		// Consumed forms on the same statement.
@@ -58,6 +61,29 @@ func detectBPPY38(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			"create_task/ensure_future result discarded; store the task and await/gather with exception handling",
 			out)
 	}
+}
+
+func taskSpawnStoredInCollection(lines []codeLine, taskIdx int) bool {
+	if taskIdx <= 0 || taskIdx >= len(lines) {
+		return false
+	}
+	taskIndent := indentWidth(lines[taskIdx].raw)
+	for i := taskIdx - 1; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i].text)
+		if line == "" {
+			continue
+		}
+		if indentWidth(lines[i].raw) < taskIndent {
+			return strings.Contains(line, "=") && strings.HasSuffix(line, "[")
+		}
+		if indentWidth(lines[i].raw) == taskIndent {
+			if strings.HasSuffix(line, ",") {
+				continue
+			}
+			return false
+		}
+	}
+	return false
 }
 
 // isBareTaskSpawn reports a statement that is only a create_task/ensure_future call

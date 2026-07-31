@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: BP-PY-38-task-list-vulnerable.py
+---
+import asyncio
+
+async def start():
+    asyncio.create_task(cleanup())

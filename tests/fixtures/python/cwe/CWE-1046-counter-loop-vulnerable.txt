@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-1046-counter-loop-vulnerable.py
+---
+def render(items):
+    text = ""
+    for item in items:
+        text += item
+    return text

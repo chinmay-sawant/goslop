@@ -176,6 +176,9 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			continue
 		}
 		sqlArg := args[0]
+		if isBoundQueryBuilderExpression(src, call.Start, sqlArg) {
+			continue
+		}
 		// Parameterized: first arg is pure string with placeholders AND second arg is present (bound params)
 		if len(args) >= 2 && isPureStringLiteral(sqlArg) && !looksSQLFormatted(sqlArg) {
 			// bound args tuple/list → safe
@@ -202,6 +205,48 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			return
 		}
 	}
+}
+
+// isBoundQueryBuilderExpression recognizes a local SQLAlchemy-style statement
+// variable. These objects carry bound values into execute and are not dynamic
+// SQL strings merely because their variable name is non-literal.
+func isBoundQueryBuilderExpression(source string, callStart int, arg string) bool {
+	name := strings.TrimSpace(arg)
+	if !isIdentOnly(name) || callStart < 0 || callStart > len(source) {
+		return false
+	}
+	lines := strings.Split(pythonCodeMask(source[:callStart]), "\n")
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i])
+		if line == "" {
+			continue
+		}
+		lhs, rhs, ok := strings.Cut(line, "=")
+		if !ok || strings.TrimSpace(lhs) != name {
+			continue
+		}
+		rhs = strings.TrimSpace(rhs)
+		if isQueryBuilderConstructor(rhs) {
+			return true
+		}
+		if rhs != "(" {
+			return false
+		}
+		for j := i + 1; j < len(lines); j++ {
+			continued := strings.TrimSpace(lines[j])
+			if continued == "" {
+				continue
+			}
+			return isQueryBuilderConstructor(continued)
+		}
+		return false
+	}
+	return false
+}
+
+func isQueryBuilderConstructor(expression string) bool {
+	return strings.HasPrefix(expression, "select(") || strings.HasPrefix(expression, "delete(") ||
+		strings.HasPrefix(expression, "update(") || strings.HasPrefix(expression, "insert(")
 }
 
 func findExecuteCalls(src string) []callSite {

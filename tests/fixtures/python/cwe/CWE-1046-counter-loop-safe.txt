@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: CWE-1046-counter-loop-safe.py
+---
+def redrive(items):
+    count = 0
+    for item in items:
+        item.status = "PENDING"
+        count += 1
+    return count

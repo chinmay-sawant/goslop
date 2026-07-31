@@ -1,0 +1,17 @@
+# goslop text fixture
+lang: python
+file: tests.py
+---
+import threading
+
+def test_concurrent_work():
+    errors = []
+    def worker():
+        try:
+            reserve()
+        except Exception as error:
+            errors.append(error)
+    thread = threading.Thread(target=worker)
+    thread.start()
+    thread.join()
+    assert len(errors) == 1

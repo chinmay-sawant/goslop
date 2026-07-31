@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-93-numeric-header-safe.py
+---
+def add_duration(response, start):
+    duration_ms = elapsed(start)
+    response.headers["X-Request-Duration-Ms"] = str(int(duration_ms))
