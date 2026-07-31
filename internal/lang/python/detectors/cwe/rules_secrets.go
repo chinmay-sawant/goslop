@@ -9,18 +9,14 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-798", detectCWE798, &MetaCWE798,
-		"password", "PASSWORD", "api_key", "API_KEY", "SECRET_KEY", "aws_secret_access_key")
-	RegisterRule("CWE-256", detectCWE256, &MetaCWE256, "password", "PASSWORD", "passwd")
-	RegisterRule("CWE-260", detectCWE260, &MetaCWE260, "DATABASES", "PASSWORD", "config[")
-	RegisterRule("CWE-261", detectCWE261, &MetaCWE261, "base64.b64encode", "binascii.hexlify", "codecs.encode")
-	RegisterRule("CWE-312", detectCWE312, &MetaCWE312,
-		"SECRET_KEY", "API_KEY", "aws_secret_access_key", "access_token", "auth_token")
-	RegisterRule("CWE-319", detectCWE319, &MetaCWE319, "http://", "ftplib.FTP", "smtplib.SMTP")
-	RegisterRule("CWE-547", detectCWE547, &MetaCWE547,
-		"SECURE_SSL_REDIRECT", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE", "SESSION_COOKIE_HTTPONLY", "SECURE_HSTS_SECONDS", "ALLOWED_HOSTS")
-	RegisterRule("CWE-523", detectCWE523, &MetaCWE523,
-		"verify=False", "CERT_NONE", "check_hostname", "_create_unverified_context")
+	RegisterRule("CWE-798", detectCWE798, &MetaCWE798)
+	RegisterRule("CWE-256", detectCWE256, &MetaCWE256)
+	RegisterRule("CWE-260", detectCWE260, &MetaCWE260)
+	RegisterRule("CWE-261", detectCWE261, &MetaCWE261)
+	RegisterRule("CWE-312", detectCWE312, &MetaCWE312)
+	RegisterRule("CWE-319", detectCWE319, &MetaCWE319)
+	RegisterRule("CWE-547", detectCWE547, &MetaCWE547)
+	RegisterRule("CWE-523", detectCWE523, &MetaCWE523)
 }
 
 var (
@@ -96,7 +92,7 @@ func detectCWE319(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		pushSecretFinding(unit, &MetaCWE319, calls[0].Start, "FTP transports credentials without TLS protection", 0.76, out)
 		return
 	}
-	if !strings.Contains(unit.Source, ".starttls(") {
+	if !strings.Contains(pythonCodeMask(unit.Source), ".starttls(") {
 		if calls := findCalls(unit.Source, "smtplib.SMTP"); len(calls) > 0 {
 			pushSecretFinding(unit, &MetaCWE319, calls[0].Start, "SMTP transport is used without a same-file STARTTLS upgrade", 0.72, out)
 		}
@@ -121,13 +117,14 @@ func detectCWE523(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			}
 		}
 	}
+	masked := pythonCodeMask(unit.Source)
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
-		if start := strings.Index(unit.Source, marker); start >= 0 {
+		if start := strings.Index(masked, marker); start >= 0 {
 			pushSecretFinding(unit, &MetaCWE523, start, "TLS certificate verification is explicitly disabled", 0.82, out)
 			return
 		}
 	}
-	if start := regexp.MustCompile(`(?m)check_hostname\s*=\s*False\b`).FindStringIndex(unit.Source); start != nil {
+	if start := regexp.MustCompile(`(?m)check_hostname\s*=\s*False\b`).FindStringIndex(masked); start != nil {
 		pushSecretFinding(unit, &MetaCWE523, start[0], "TLS hostname verification is explicitly disabled", 0.82, out)
 	}
 }
@@ -136,11 +133,7 @@ func firstMatchStart(unit *core.ParsedUnit, pattern *regexp.Regexp) int {
 	if unit == nil || pattern == nil {
 		return -1
 	}
-	match := pattern.FindStringIndex(unit.Source)
-	if match == nil {
-		return -1
-	}
-	return match[0]
+	return firstCodeMatchStart(unit.Source, pattern)
 }
 
 func passwordArgument(args string) bool {
@@ -149,7 +142,8 @@ func passwordArgument(args string) bool {
 }
 
 func hasSensitiveTransportValue(args string) bool {
-	return strings.Contains(args, "auth=") || strings.Contains(args, "password") || strings.Contains(args, "passwd") || strings.Contains(args, "token")
+	return strings.Contains(args, "auth=") || strings.Contains(args, "password") || strings.Contains(args, "passwd") ||
+		strings.Contains(args, "token=") || strings.Contains(args, "headers=") || strings.Contains(args, "params=")
 }
 
 func pushSecretFinding(unit *core.ParsedUnit, meta *rules.RuleMetadata, start int, message string, confidence float32, out *[]rules.Finding) {

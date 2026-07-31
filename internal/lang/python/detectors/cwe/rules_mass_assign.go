@@ -26,12 +26,9 @@ var (
 )
 
 func init() {
-	RegisterRule("CWE-915", detectCWE915, &MetaCWE915,
-		".objects.create", ".objects.update", ".__dict__.update", "setattr(", "request.data", "request.POST")
-	RegisterRule("CWE-914", detectCWE914, &MetaCWE914,
-		"globals()", "locals()", "vars(", "setattr(")
-	RegisterRule("CWE-916", detectCWE916, &MetaCWE916,
-		"hashlib.md5", "hashlib.sha1", "crypt.crypt", "md5_crypt")
+	RegisterRule("CWE-915", detectCWE915, &MetaCWE915)
+	RegisterRule("CWE-914", detectCWE914, &MetaCWE914)
+	RegisterRule("CWE-916", detectCWE916, &MetaCWE916)
 }
 
 // detectCWE915 detects direct request payload unpacking and request-key
@@ -41,7 +38,7 @@ func detectCWE915(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	src := unit.Source
+	src := pythonCodeMask(unit.Source)
 	if start := pyMassAssignRequestUnpack.FindStringIndex(src); start != nil {
 		pushCWE915(unit, start[0], "request data is unpacked directly into object attributes (allowlist writable fields)", out)
 		return

@@ -1,6 +1,7 @@
 package cwe
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -30,21 +31,22 @@ type callSite struct {
 // findCalls finds call-like sites for each name in names (exact callee strings).
 func findCalls(source string, names ...string) []callSite {
 	var out []callSite
+	code := pythonCodeMask(source)
 	for _, name := range names {
 		start := 0
 		for {
-			idx := strings.Index(source[start:], name)
+			idx := strings.Index(code[start:], name)
 			if idx < 0 {
 				break
 			}
 			abs := start + idx
-			if !identBoundaryOK(source, abs, abs+len(name)) {
+			if !identBoundaryOK(code, abs, abs+len(name)) {
 				start = abs + len(name)
 				continue
 			}
 			after := abs + len(name)
-			j := skipWS(source, after)
-			if j >= len(source) || source[j] != '(' {
+			j := skipWS(code, after)
+			if j >= len(code) || code[j] != '(' {
 				start = after
 				continue
 			}
@@ -63,6 +65,80 @@ func findCalls(source string, names ...string) []callSite {
 		}
 	}
 	return out
+}
+
+// pythonCodeMask keeps byte offsets stable while blanking comments and string
+// literals. Source-pattern rules can use it to avoid interpreting examples in
+// docstrings, comments, and quoted data as executable Python.
+func pythonCodeMask(source string) string {
+	masked := []byte(source)
+	inString := byte(0)
+	triple := false
+	escaped := false
+	inComment := false
+	for i := 0; i < len(masked); i++ {
+		c := masked[i]
+		if inComment {
+			if c == '\n' {
+				inComment = false
+			} else {
+				masked[i] = ' '
+			}
+			continue
+		}
+		if inString != 0 {
+			masked[i] = ' '
+			if triple {
+				if c == inString && i+2 < len(masked) && masked[i+1] == inString && masked[i+2] == inString {
+					masked[i+1], masked[i+2] = ' ', ' '
+					i += 2
+					inString = 0
+					triple = false
+				}
+				continue
+			}
+			if escaped {
+				escaped = false
+				continue
+			}
+			if c == '\\' {
+				escaped = true
+				continue
+			}
+			if c == inString {
+				inString = 0
+			}
+			continue
+		}
+		switch c {
+		case '#':
+			masked[i] = ' '
+			inComment = true
+		case '\'', '"':
+			inString = c
+			if i+2 < len(masked) && masked[i+1] == c && masked[i+2] == c {
+				masked[i], masked[i+1], masked[i+2] = ' ', ' ', ' '
+				i += 2
+				triple = true
+			} else {
+				masked[i] = ' '
+			}
+		}
+	}
+	return string(masked)
+}
+
+func firstCodeMatchStart(source string, pattern *regexp.Regexp) int {
+	if pattern == nil {
+		return -1
+	}
+	masked := pythonCodeMask(source)
+	for _, match := range pattern.FindAllStringIndex(source, -1) {
+		if strings.TrimSpace(masked[match[0]:match[1]]) != "" {
+			return match[0]
+		}
+	}
+	return -1
 }
 
 func identBoundaryOK(source string, start, end int) bool {

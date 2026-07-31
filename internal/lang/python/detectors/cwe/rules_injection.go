@@ -8,12 +8,12 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-90", detectCWE90, &MetaCWE90, "ldap3", "ldap.initialize", ".search(", ".search_s(")
-	RegisterRule("CWE-91", detectCWE91, &MetaCWE91, ".xpath(", "XPath(", ".fromstring(")
-	RegisterRule("CWE-93", detectCWE93, &MetaCWE93, "response.headers[", ".set_header(", ".add_header(", "HttpResponseRedirect(")
-	RegisterRule("CWE-94", detectCWE94, &MetaCWE94, "eval(", "exec(", "compile(", "__import__(", "importlib.import_module")
-	RegisterRule("CWE-88", detectCWE88, &MetaCWE88, "subprocess.")
-	RegisterRule("CWE-117", detectCWE117, &MetaCWE117, "logging.", "logger.", "log.")
+	RegisterRule("CWE-90", detectCWE90, &MetaCWE90)
+	RegisterRule("CWE-91", detectCWE91, &MetaCWE91)
+	RegisterRule("CWE-93", detectCWE93, &MetaCWE93)
+	RegisterRule("CWE-94", detectCWE94, &MetaCWE94)
+	RegisterRule("CWE-88", detectCWE88, &MetaCWE88)
+	RegisterRule("CWE-117", detectCWE117, &MetaCWE117)
 }
 
 // CWE-90: only dynamic LDAP filter expressions reach LDAP search APIs. Filter
@@ -69,12 +69,18 @@ func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			"dynamic value is written to an HTTP response header without CRLF neutralization", 0.72, out)
 		return
 	}
-	for _, line := range strings.Split(unit.Source, "\n") {
-		lhs, rhs, ok := strings.Cut(line, "=")
+	masked := pythonCodeMask(unit.Source)
+	originalLines := strings.Split(unit.Source, "\n")
+	maskedLines := strings.Split(masked, "\n")
+	lineOffset := 0
+	for i, line := range originalLines {
+		lhs, _, ok := strings.Cut(maskedLines[i], "=")
+		_, rhs, _ := strings.Cut(line, "=")
 		if !ok || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) {
+			lineOffset += len(line) + 1
 			continue
 		}
-		start := strings.Index(unit.Source, line) + strings.Index(line, ".headers[")
+		start := lineOffset + strings.Index(line, ".headers[")
 		pushInjectionFinding(unit, start, &MetaCWE93,
 			"dynamic value is written to an HTTP response header without CRLF neutralization", 0.72, out)
 		return

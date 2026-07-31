@@ -22,6 +22,7 @@ func TestCWESecretsHitMiss(t *testing.T) {
 		{"CWE-312 environment secret is safe", "CWE-312", "import os\nSECRET_KEY = os.environ['SECRET_KEY']\n", false},
 		{"CWE-319 HTTP basic auth", "CWE-319", "import requests\ndef login(password):\n    return requests.get('http://service.example/login', auth=('user', password))\n", true},
 		{"CWE-319 HTTPS basic auth is safe", "CWE-319", "import requests\ndef login(password):\n    return requests.get('https://service.example/login', auth=('user', password))\n", false},
+		{"CWE-319 HTTP token URL path is safe", "CWE-319", "import requests\nrequests.get('http://service.example/token')\n", false},
 		{"CWE-547 insecure Django cookie setting", "CWE-547", "SESSION_COOKIE_SECURE = False\n", true},
 		{"CWE-547 secure Django cookie setting is safe", "CWE-547", "SESSION_COOKIE_SECURE = True\n", false},
 		{"CWE-523 requests verification disabled", "CWE-523", "import requests\nrequests.get('https://service.example', verify=False)\n", true},

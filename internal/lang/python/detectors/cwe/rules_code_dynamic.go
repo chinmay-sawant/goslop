@@ -9,22 +9,18 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-749", detectCWE749, &MetaCWE749,
-		"eval(", "exec(", "compile(", "__import__(", "importlib.import_module", "os.system")
-	RegisterRule("CWE-829", detectCWE829, &MetaCWE829,
-		"__import__(", "importlib.import_module", "spec_from_file_location", "runpy.run_path")
-	RegisterRule("CWE-695", detectCWE695, &MetaCWE695,
-		"ctypes.", "cffi.FFI", "mmap.mmap")
-	RegisterRule("CWE-214", detectCWE214, &MetaCWE214,
-		"subprocess.")
-	RegisterRule("CWE-215", detectCWE215, &MetaCWE215,
-		"print(", "logging.debug", ".debug(")
+	RegisterRule("CWE-749", detectCWE749, &MetaCWE749)
+	RegisterRule("CWE-829", detectCWE829, &MetaCWE829)
+	RegisterRule("CWE-695", detectCWE695, &MetaCWE695)
+	RegisterRule("CWE-214", detectCWE214, &MetaCWE214)
+	RegisterRule("CWE-215", detectCWE215, &MetaCWE215)
 }
 
 var (
 	pythonRouteDecoratorRE = regexp.MustCompile(`(?m)^\s*@(?:[A-Za-z_][\w]*\.)?(?:route|api_route|get|post|put|delete|patch)\s*\(`)
 	sensitiveValueRE       = regexp.MustCompile(`(?i)\b(?:password|passwd|token|secret|api[_-]?key|credential)s?\b`)
 	sensitiveCommandRE     = regexp.MustCompile(`(?i)(?:--(?:password|passwd|token|secret|api[_-]?key|credential)(?:=|\b)|\b(?:password|passwd|token|secret|api[_-]?key|credential)\s*=)`)
+	sensitiveFileOptionRE  = regexp.MustCompile(`(?i)--(?:password|passwd|token|secret|api[_-]?key|credential)s?-file\b`)
 )
 
 // CWE-749 reports dynamic execution only when it is in a route-decorated
@@ -105,10 +101,11 @@ func detectCWE214(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 	for _, name := range []string{"subprocess.run", "subprocess.call", "subprocess.check_call", "subprocess.check_output", "subprocess.Popen"} {
 		for _, call := range findCalls(unit.Source, name) {
-			if !sensitiveCommandRE.MatchString(call.ArgsText) && !strings.Contains(strings.ToLower(call.ArgsText), "env=") {
+			visibleArgs := sensitiveFileOptionRE.ReplaceAllString(call.ArgsText, "")
+			if !sensitiveCommandRE.MatchString(visibleArgs) && !strings.Contains(strings.ToLower(visibleArgs), "env=") {
 				continue
 			}
-			if sensitiveValueRE.MatchString(call.ArgsText) && isDynamicExpr(call.ArgsText) {
+			if sensitiveValueRE.MatchString(visibleArgs) && isDynamicExpr(visibleArgs) {
 				emitCodeDynamic(unit, &MetaCWE214, call.Start,
 					"subprocess receives a sensitive value through visible arguments or environment", 0.82, out)
 				return
@@ -140,16 +137,17 @@ type routeHandlerBody struct {
 }
 
 func routeHandlerBodies(src string) []routeHandlerBody {
-	locs := pythonRouteDecoratorRE.FindAllStringIndex(src, -1)
+	code := pythonCodeMask(src)
+	locs := pythonRouteDecoratorRE.FindAllStringIndex(code, -1)
 	bodies := make([]routeHandlerBody, 0, len(locs))
 	for _, loc := range locs {
-		defAt := strings.Index(src[loc[1]:], "\ndef ")
+		defAt := strings.Index(code[loc[1]:], "\ndef ")
 		if defAt < 0 {
 			continue
 		}
 		start := loc[1] + defAt + 1
 		end := len(src)
-		if next := strings.Index(src[start+4:], "\ndef "); next >= 0 {
+		if next := strings.Index(code[start+4:], "\ndef "); next >= 0 {
 			end = start + 4 + next
 		}
 		bodies = append(bodies, routeHandlerBody{start: start, body: src[start:end]})

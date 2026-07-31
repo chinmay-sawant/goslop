@@ -9,12 +9,12 @@ Pure-Go **source-pattern** security heuristics for Python (issue #52).
 | `PyCweScan` | Unified detector (`LanguagePython`, many rules) |
 | `RegisterRule` / `init` | Catalogue registration with optional needle gates |
 | `PyCweFacts` + `pyCweNeedles` | Per-file `ast.SourceIndex` prefilter |
-| `metadata.go` | Hand-authored meta for priority batch |
-| `rules.go` | CWE-22 / 78 / 79 / 89 / 502 heuristics |
+| `metadata*.go` | Hand-authored metadata, split by detector domain |
+| `rules*.go` | Heuristics, split by detector domain to stay within the file-size budget |
 
 **No CGO / tree-sitter.** Detectors operate on `unit.Source` only (source-only `ParsedUnit`).
 
-## Priority batch (v0.0.2 / #52)
+## Implemented rules (v0.0.2 / #52)
 
 | Rule | Sinks (high signal) | Safe suppressions |
 |------|---------------------|-------------------|
@@ -23,6 +23,10 @@ Pure-Go **source-pattern** security heuristics for Python (issue #52).
 | CWE-89 | `execute` / `executemany` with f-string / `%` / `.format` SQL | parameterized `?` / `%s` + bound args tuple |
 | CWE-22 | `open(os.path.join(root, user))`, `Path(root) / user` without confinement | `os.path.basename` only; `resolve` + `startswith` root |
 | CWE-79 | `mark_safe`, `Markup(`, `render_template_string` dynamic | plain `render_template("…html", …)` |
+| CWE-88 / 90 / 91 / 93 / 94 / 117 | Dynamic subprocess arguments, LDAP/XPath/header/code/log sinks | Literal, escaped, parameterized, or sanitized expressions |
+| CWE-214 / 215 / 695 / 749 / 829 | Sensitive process args, debug output, low-level APIs, dynamic route/code loading | Password-file options, redacted logs, package-controlled imports |
+| CWE-256 / 260 / 261 / 312 / 319 / 523 / 547 / 798 | Password/secret storage and transport, weak encoding, insecure security settings | Environment/secret-provider values, TLS, default verification, secure settings |
+| CWE-914 / 915 / 916 | Request-controlled names/attributes and fast password hashing | Allowlisted attributes and modern password hashes |
 
 ## Non-goals
 
@@ -34,10 +38,10 @@ Pure-Go **source-pattern** security heuristics for Python (issue #52).
 ## Adding a rule later
 
 1. Ensure the CWE id exists in `ruleset/python/chunks/cwe-*.json`.
-2. Add `MetaCWEN` in `metadata.go` (titles aligned with catalogue).
-3. Add needles to `pyCweNeedles` for prefilter gates.
-4. `RegisterRule("CWE-N", detect, &MetaCWEN, gates...)` in `init`.
-5. Unit hit/miss tests in `rules_test.go`.
+2. Add `MetaCWEN` in `metadata.go` or the matching domain metadata file (titles aligned with catalogue).
+3. Add a needle to `pyCweNeedles` only when it is proven FN-safe for the detector gate.
+4. `RegisterRule("CWE-N", detect, &MetaCWEN, gates...)` in the matching domain file; omit gates rather than risk suppressing a valid finding.
+5. Unit hit/miss tests in the matching domain test file.
 
 ## Tests
 

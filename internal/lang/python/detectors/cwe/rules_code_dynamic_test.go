@@ -43,6 +43,10 @@ func TestCWECodeDynamicHitMiss(t *testing.T) {
 			src: "import subprocess\ndef upload():\n    subprocess.run(['tool', '--password-file', '/run/secret'])\n",
 		},
 		{
+			name: "CWE-214 dynamic password file path is safe", id: "CWE-214", hit: false,
+			src: "import subprocess\ndef upload(path):\n    subprocess.run(['tool', '--password-file', path])\n",
+		},
+		{
 			name: "CWE-215 debug logs token", id: "CWE-215", hit: true,
 			src: "import logging\ndef request(token):\n    logging.debug('token=%s', token)\n",
 		},
