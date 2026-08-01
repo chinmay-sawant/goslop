@@ -1,0 +1,13 @@
+# Nested for/while layout used by PERF-PY-26 facts inLoop consistency tests.
+# Not a rule safe/vulnerable pair.
+lang: python
+file: PERF-PY-26-inloop-nested.py
+---
+for x in xs:
+    if True:
+        y = 1
+    z = 2
+a = 3
+for i in range(2):
+    for j in range(2):
+        k = i + j

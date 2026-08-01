@@ -1,0 +1,9 @@
+# Source used by TestBuildCodeLinesBlanksTripleQuotedBodies (PERF-PY-26 facts).
+lang: python
+file: PERF-PY-26-code-lines-docstring.py
+---
+def f():
+    """
+    Job.objects.filter(status="pending").first()
+    """
+    return 1

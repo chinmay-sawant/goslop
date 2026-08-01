@@ -108,8 +108,10 @@ func looksLikeRegexSearchReceiver(recv string) bool {
 		strings.HasSuffix(r, "Pattern") || strings.HasSuffix(r, "pattern")
 }
 
-// CWE-91: flag dynamic XML/XPath expression construction only at parser and
-// XPath APIs. Literal XPath with bound variables remains a supported safe form.
+// CWE-91: flag dynamic XML/XPath expression construction at XPath APIs and at
+// XML parse APIs only when the document argument is itself constructed
+// (f-string / format / concat). Bare ET.fromstring(xml_data) is document
+// parsing, not injection. Literal XPath with bound variables remains safe.
 func detectCWE91(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
@@ -119,10 +121,28 @@ func detectCWE91(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		if len(args) == 0 || !isDynamicExpr(args[0]) {
 			continue
 		}
+		if isXMLParseCall(call.Name) && !looksXMLConstructed(args[0]) {
+			continue
+		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE91,
 			"dynamic value is formatted into an XML or XPath expression", confidence75, out)
 		return
 	}
+}
+
+func isXMLParseCall(name string) bool {
+	switch name {
+	case "etree.fromstring", "ElementTree.fromstring", "ET.fromstring", ".fromstring":
+		return true
+	default:
+		return strings.HasSuffix(name, ".fromstring")
+	}
+}
+
+func looksXMLConstructed(expr string) bool {
+	t := strings.TrimSpace(expr)
+	return isFStringExpr(t) || strings.Contains(t, ".format(") || indexTopLevelPercent(t) > 0 ||
+		(strings.Contains(t, "+") && !isPureStringLiteral(t))
 }
 
 // CWE-93: header sinks are limited to explicit header mutation APIs. Values

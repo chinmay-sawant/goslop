@@ -1,10 +1,18 @@
 package perf
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+	"testing"
+
+	"github.com/chinmay-sawant/goslop/internal/fixture"
+)
 
 func TestBuildCodeLinesBlanksTripleQuotedBodies(t *testing.T) {
 	t.Parallel()
-	src := "def f():\n    \"\"\"\n    Job.objects.filter(status=\"pending\").first()\n    \"\"\"\n    return 1\n"
+	src := loadPerfFactsFixture(t, "PERF-PY-26-code-lines-docstring.txt")
 	lines := buildCodeLines(src)
 	joined := ""
 	for _, line := range lines {
@@ -17,7 +25,7 @@ func TestBuildCodeLinesBlanksTripleQuotedBodies(t *testing.T) {
 
 func TestBuildCodeLinesKeepsOrdinaryStringKeywords(t *testing.T) {
 	t.Parallel()
-	src := "job = Job.objects.filter(status=\"pending\").first()\n"
+	src := loadPerfFactsFixture(t, "PERF-PY-26-code-lines-string-keyword.txt")
 	lines := buildCodeLines(src)
 	if len(lines) == 0 || !containsFold(lines[0].text, "pending") {
 		t.Fatalf("ordinary string keyword should remain for heuristics: %#v", lines)
@@ -26,15 +34,24 @@ func TestBuildCodeLinesKeepsOrdinaryStringKeywords(t *testing.T) {
 
 func TestComputeInLoopMatchesScan(t *testing.T) {
 	t.Parallel()
-	src := "" +
-		"for x in xs:\n" +
-		"    if True:\n" +
-		"        y = 1\n" +
-		"    z = 2\n" +
-		"a = 3\n" +
-		"for i in range(2):\n" +
-		"    for j in range(2):\n" +
-		"        k = i + j\n"
+	assertInLoopConsistent(t, loadPerfFactsFixture(t, "PERF-PY-26-inloop-nested.txt"))
+}
+
+func TestComputeInLoopStopsAtFunctionBoundary(t *testing.T) {
+	t.Parallel()
+	src := loadPerfFactsFixture(t, "PERF-PY-26-cli-parse-safe.txt")
+	lines := buildCodeLines(src)
+	got := computeInLoop(lines)
+	assertInLoopConsistent(t, src)
+	for i, line := range lines {
+		if strings.Contains(line.text, "parse_report(xml_data)") && got[i] {
+			t.Fatalf("main() parse_report call must not inherit parse_report's loop: line=%q", line.raw)
+		}
+	}
+}
+
+func assertInLoopConsistent(t *testing.T, src string) {
+	t.Helper()
 	lines := buildCodeLines(src)
 	got := computeInLoop(lines)
 	if len(got) != len(lines) {
@@ -47,9 +64,36 @@ func TestComputeInLoopMatchesScan(t *testing.T) {
 	}
 }
 
+func loadPerfFactsFixture(t *testing.T, name string) string {
+	t.Helper()
+	txtPath := filepath.Join(perfFixturesRoot(t), name)
+	data, err := os.ReadFile(txtPath)
+	if err != nil {
+		t.Fatalf("read fixture %s: %v", txtPath, err)
+	}
+	fx, err := fixture.ParseFixture(string(data), txtPath)
+	if err != nil {
+		t.Fatalf("parse fixture %s: %v", txtPath, err)
+	}
+	return fx.Source
+}
+
+func perfFixturesRoot(t *testing.T) string {
+	t.Helper()
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime.Caller failed")
+	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", ".."))
+	fx := filepath.Join(root, "tests", "fixtures", "python", "perf")
+	if _, err := os.Stat(fx); err != nil {
+		t.Fatalf("fixtures root %s: %v", fx, err)
+	}
+	return fx
+}
+
 func containsFold(s, needle string) bool {
 	return len(s) >= len(needle) && (func() bool {
-		// simple contains; case-sensitive is fine for these needles
 		for i := 0; i+len(needle) <= len(s); i++ {
 			if s[i:i+len(needle)] == needle {
 				return true

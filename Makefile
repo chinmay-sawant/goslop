@@ -5,7 +5,7 @@ export CGO_ENABLED ?= 0
 # Default scan path for product-style runs (Rust makefile parity).
 SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
 # Python-only product scan (opt-in languages = ["python"]).
-PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/pythoncoreengine
+PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets
 PYTHON_CONFIG ?= templates/goslop-python.toml
 # Rust: make run RUN_ARGS="--export-context --export-chunks --no-cache"
 # Defaults match product reference-export surface; override with RUN_ARGS=... as needed.

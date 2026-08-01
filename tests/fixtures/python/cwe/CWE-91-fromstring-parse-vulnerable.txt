@@ -1,0 +1,10 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# Constructed XML document passed to fromstring is injection.
+lang: python
+file: CWE-91-fromstring-parse-vulnerable.py
+---
+import xml.etree.ElementTree as ET
+
+
+def wrap_user(username: str):
+    return ET.fromstring(f"<user name='{username}'/>")

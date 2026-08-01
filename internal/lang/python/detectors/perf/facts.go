@@ -1,7 +1,6 @@
 package perf
 
 import (
-	"math"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -122,24 +121,31 @@ func isLoopLine(line string) bool {
 	return isLoopTrim(strings.TrimSpace(line))
 }
 
-// computeInLoop precomputes the same membership predicate as the former
-// backward scan: a line is "in a loop" iff some earlier non-empty for/while
-// header has strictly smaller indent. Using the running minimum loop indent
-// yields an O(n) pass with identical results.
+// computeInLoop precomputes loop membership matching inLoop: a line is in a
+// loop iff a for/while in the same function (not an earlier sibling function)
+// has strictly smaller indent. Function/class headers clear nested loops from
+// prior scopes so one-shot CLI mains are not poisoned by earlier parsers.
 func computeInLoop(lines []codeLine) []bool {
 	out := make([]bool, len(lines))
-	minLoopIndent := math.MaxInt
-	seenLoop := false
+	var loopIndents []int
 	for i, line := range lines {
 		indent := indentWidth(line.raw)
-		if seenLoop && minLoopIndent < indent {
+		t := line.trim
+		if t != "" {
+			for len(loopIndents) > 0 && indent <= loopIndents[len(loopIndents)-1] {
+				loopIndents = loopIndents[:len(loopIndents)-1]
+			}
+			if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") || strings.HasPrefix(t, "class ") {
+				for len(loopIndents) > 0 && loopIndents[len(loopIndents)-1] >= indent {
+					loopIndents = loopIndents[:len(loopIndents)-1]
+				}
+			}
+		}
+		if len(loopIndents) > 0 && loopIndents[len(loopIndents)-1] < indent {
 			out[i] = true
 		}
-		if line.trim != "" && isLoopTrim(line.trim) {
-			if !seenLoop || indent < minLoopIndent {
-				minLoopIndent = indent
-			}
-			seenLoop = true
+		if t != "" && isLoopTrim(t) {
+			loopIndents = append(loopIndents, indent)
 		}
 	}
 	return out
@@ -154,7 +160,8 @@ func (f *pyPerfFacts) lineInLoop(idx int) bool {
 }
 
 // inLoop reports whether lines[idx] sits under a prior for/while header with
-// smaller indent. Prefer facts.lineInLoop when a pyPerfFacts is available.
+// smaller indent inside the same function/class. Prefer facts.lineInLoop when
+// a pyPerfFacts is available.
 func inLoop(lines []codeLine, idx int) bool {
 	if idx < 0 || idx >= len(lines) {
 		return false
@@ -165,7 +172,11 @@ func inLoop(lines []codeLine, idx int) bool {
 		if t == "" {
 			continue
 		}
-		if indentWidth(lines[i].raw) < indent && isLoopTrim(t) {
+		iw := indentWidth(lines[i].raw)
+		if iw < indent && (strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") || strings.HasPrefix(t, "class ")) {
+			return false
+		}
+		if iw < indent && isLoopTrim(t) {
 			return true
 		}
 	}

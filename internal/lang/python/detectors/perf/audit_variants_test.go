@@ -20,6 +20,7 @@ func TestPERFFalsePositiveAuditFixtureVariants(t *testing.T) {
 	}{
 		{rule: "PERF-PY-27", caseName: "PERF-PY-27-unique-path"},
 		{rule: "PERF-PY-27", caseName: "PERF-PY-27-analyze-once"},
+		{rule: "PERF-PY-26", caseName: "PERF-PY-26-cli-parse"},
 	} {
 		tc := tc
 		t.Run(tc.caseName, func(t *testing.T) {

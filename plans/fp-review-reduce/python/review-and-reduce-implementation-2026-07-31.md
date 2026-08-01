@@ -145,3 +145,35 @@ All 29 confirmed false positives are now suppressed; the remaining 20 findings s
 - `make lint-all` — **fails** on pre-existing branch issues outside this reduction (unused helpers in `rules_auth.go` / `perf/facts.go`, revive `unexported-return` on `PyCweFacts`, etc.). Introduced G304/wastedassign/`close` issues from this work were fixed before rescan.
 - Audit checklist `[ ]` boxes left unchanged (per skill).
 - Remaining uncertainty: finding 40 dual-use MD5 — not specially suppressed; password MD5 at `encrypt.py:236` still reports.
+
+## Follow-up reduction: full-corpus perf-targets audit (2026-08-02)
+
+- Audit source: `./plans/fp-review-reduce/python/false-positive-audit-2026-08-02-perf-targets.md`
+- Target corpus: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets` (all projects)
+- Baseline: **45** findings (2 FP, 43 TP, 0 Uncertain)
+- Validation timestamp: `2026-08-01T21:15:00Z` (local 2026-08-02)
+
+### FP mechanisms
+
+| Finding | Rule | Mechanism |
+| --- | --- | --- |
+| 38 | CWE-91 | `ET.fromstring(xml_data)` parses a whole document; rule condition is formatting into XML/XPath. Detector treated any dynamic parse arg as injection. |
+| 39 | PERF-PY-26 | One-shot CLI `main()` calling `parse_report`; `computeInLoop`/`inLoop` treated later lines as in-loop after earlier `for` loops in a sibling function, so hot-path fired incorrectly. |
+
+### Completion record
+
+| Findings | Rule | Detector condition changed | Safe fixture | Vulnerable fixture | Tests |
+| --- | --- | --- | --- | --- | --- |
+| 38 | CWE-91 | For `*.fromstring` only, require constructed markup (`f-string` / `.format` / `%` / concat). Bare dynamic parse args skipped. XPath sinks unchanged. | `tests/fixtures/python/cwe/CWE-91-fromstring-parse-safe.txt` | `tests/fixtures/python/cwe/CWE-91-fromstring-parse-vulnerable.txt` | `audit_variants_test.go` (`CWE-91-fromstring-parse`); `rules_injection_test.go` pair; `tests/integration/python` |
+| 39 | PERF-PY-26 | Function-scoped loop membership: `def`/`class` boundaries clear prior loops in `computeInLoop` / `inLoop`. Cross-function loop poison removed for all PERF rules using `lineInLoop`. | `tests/fixtures/python/perf/PERF-PY-26-cli-parse-safe.txt` | `tests/fixtures/python/perf/PERF-PY-26-cli-parse-vulnerable.txt` | `audit_variants_test.go` (`PERF-PY-26-cli-parse`); `facts_test.go` boundary case; existing `PERF-PY-26` pair |
+
+### Validation
+
+- Focused: `go test ./internal/lang/python/detectors/cwe/... ./internal/lang/python/detectors/perf/... ./tests/integration/python -count=1` — passed.
+- Full tests: `go test ./... -count=1` — passed.
+- Diff hygiene: `git diff --check` — passed.
+- Exact no-cache rescan: `make run-python` — **43 findings** from 116 files / 23033 lines (was 45). Removes both audited FPs; CWE-91 and PERF-PY-26 absent from chunks.
+- Retained TPs still present: CWE-88 (`verapdf_report.py`), BP-PY-46 (`doc.py`), CWE-328 (`encrypt.py:236`), PERF-PY-24 (`layout.py`), plus Django/FastAPI/Flask TPs.
+- `make lint-all` — fails on pre-existing branch issues outside this reduction.
+- Audit checklist `[ ]` boxes left unchanged (per skill).
+- Remaining uncertainty: none.

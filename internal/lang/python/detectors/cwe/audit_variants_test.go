@@ -15,6 +15,7 @@ func TestCWEFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "CWE-89", caseName: "CWE-89-orm-direct"},
 		{rule: "CWE-89", caseName: "CWE-89-execute-wrapper"},
 		{rule: "CWE-90", caseName: "CWE-90-regex-search"},
+		{rule: "CWE-91", caseName: "CWE-91-fromstring-parse"},
 		{rule: "CWE-93", caseName: "CWE-93-numeric-header"},
 		{rule: "CWE-256", caseName: "CWE-256-fixture-password"},
 		{rule: "CWE-312", caseName: "CWE-312-benchmark-secret"},
