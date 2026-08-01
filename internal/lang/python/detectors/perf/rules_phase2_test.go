@@ -22,6 +22,7 @@ func TestPhase2Rules(t *testing.T) {
 		{"counter save", "PERF-PY-4", "def reserve(stock, amount):\n    stock.reserved_quantity += amount\n    stock.save()\n", true},
 		{"atomic counter", "PERF-PY-4", "def reserve(stock, amount):\n    Stock.objects.filter(pk=stock.pk).update(reserved_quantity=models.F('reserved_quantity') + amount)\n", false},
 		{"parse then dump", "PERF-PY-9", "def ingest(request, session):\n    payload = request.get_json()\n    session.add(Event(body=json.dumps(payload)))\n", true},
+		{"dump for log unrelated create", "PERF-PY-9", "def ingest(request, session):\n    payload = request.get_json()\n    logger.info(json.dumps(payload))\n    session.add(Event(name='x'))\n", false},
 		{"raw payload", "PERF-PY-9", "def ingest(request, session):\n    session.add(Event(body=request.data))\n", false},
 		{"sleep after work", "PERF-PY-10", "def worker():\n    while True:\n        processed = process_batch()\n        if processed:\n            logger.info('processed')\n        time.sleep(5)\n", true},
 		{"continue after work", "PERF-PY-10", "def worker():\n    while True:\n        processed = process_batch()\n        if processed:\n            continue\n        time.sleep(5)\n", false},

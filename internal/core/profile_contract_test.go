@@ -51,6 +51,18 @@ func TestProfileOnlyPatternsContract(t *testing.T) {
 	if !hasPERF1 || !hasCWE22 {
 		t.Fatalf("recommended missing core ids: %#v", rec)
 	}
+
+	// Experimental PERF-PY must not enter recommended/perf allow-lists.
+	recCtx := BuildScanContext(ProfileRecommended, nil, nil)
+	perfCtx := BuildScanContext(ProfilePerf, nil, nil)
+	for _, id := range []string{"PERF-PY-1", "PERF-PY-20"} {
+		if recCtx.Allows(id) {
+			t.Fatalf("recommended must deny %s", id)
+		}
+		if perfCtx.Allows(id) {
+			t.Fatalf("perf pack must deny %s", id)
+		}
+	}
 }
 
 func TestBuildScanContextCLIUnion(t *testing.T) {

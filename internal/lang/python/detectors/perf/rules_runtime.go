@@ -1,6 +1,7 @@
 package perf
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -20,8 +21,20 @@ func detectPERFPY5SequentialDelivery(unit *core.ParsedUnit, facts *pyPerfFacts, 
 		if !inLoop(facts.lines, i) || !runtimeDeliveryCall(line.text) {
 			continue
 		}
+		loop, ok := enclosingLoopHeader(facts.lines, i)
+		if !ok {
+			continue
+		}
+		_, iterable, bindOK := perfLoopBinding(loop.text)
+		if !bindOK {
+			continue
+		}
 		start, end := functionWindow(facts.lines, i)
 		if !runtimeHasBatchClaim(facts.lines, start, end) || runtimeHasBoundedFanout(facts.lines, start, end) {
+			continue
+		}
+		// Require the loop iterable to be the claimed batch (or a name assigned from a claim).
+		if !runtimeIterableFromClaim(facts.lines, start, end, iterable) {
 			continue
 		}
 		pushLine(unit, "PERF-PY-5", line, strings.TrimSpace(line.text), "claimed batch is delivered synchronously inside a loop", out)
@@ -117,6 +130,32 @@ func runtimeHasBatchClaim(lines []codeLine, start, end int) bool {
 		}
 	}
 	return false
+}
+
+func runtimeIterableFromClaim(lines []codeLine, start, end int, iterable string) bool {
+	iterable = strings.TrimSpace(iterable)
+	if iterable == "" {
+		return false
+	}
+	start, end = safeLineRange(lines, start, end)
+	assignRE := regexp.MustCompile(`\b` + regexp.QuoteMeta(iterable) + `\s*=\s*(.+)$`)
+	for _, line := range lines[start:end] {
+		m := assignRE.FindStringSubmatch(strings.TrimSpace(line.text))
+		if len(m) != 2 {
+			continue
+		}
+		rhs := strings.ToLower(m[1])
+		if strings.Contains(rhs, "claim_") || strings.Contains(rhs, ".claim(") ||
+			strings.Contains(rhs, "reserve_") || strings.Contains(rhs, "lease_") ||
+			strings.Contains(rhs, "fetch_pending") || strings.Contains(rhs, "select_for_update") {
+			return true
+		}
+	}
+	// Direct for x in claim_pending_batch():
+	lower := strings.ToLower(iterable)
+	return strings.Contains(lower, "claim_") || strings.Contains(lower, ".claim(") ||
+		strings.Contains(lower, "reserve_") || strings.Contains(lower, "lease_") ||
+		strings.Contains(lower, "fetch_pending")
 }
 
 func runtimeHasBoundedFanout(lines []codeLine, start, end int) bool {

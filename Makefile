@@ -1,11 +1,11 @@
-.PHONY: build test vet fmt lint lint-all ci integration integration-go integration-python version help reference-metrics run run-python bench
+.PHONY: build test test-go test-python vet fmt lint lint-all ci integration integration-go integration-python version help reference-metrics run run-python bench
 # Pure Go by default (go/ast parse path — no tree-sitter / CGO).
 export CGO_ENABLED ?= 0
 
 # Default scan path for product-style runs (Rust makefile parity).
 SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/gopdfsuit
 # Python-only product scan (opt-in languages = ["python"]).
-PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets
+PYTHON_SCAN_PATH ?= /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/
 PYTHON_CONFIG ?= templates/goslop-python.toml
 # Rust: make run RUN_ARGS="--export-context --export-chunks --no-cache"
 # Defaults match product reference-export surface; override with RUN_ARGS=... as needed.
@@ -21,11 +21,26 @@ BENCHPKG ?= ./internal/bench/
 GOSLOP_BENCH_SCAN_PATH ?= $(SCAN_PATH)
 export GOSLOP_BENCH_SCAN_PATH
 
+# Python Go packages (detectors, ruleset, fixture matrix + slim corpus).
+PYTHON_TEST_PKGS ?= ./internal/lang/python/... ./ruleset/python/ ./tests/integration/python/
+
 build:
 	go build -o bin/goslop ./cmd/goslop
 
+# Full suite (Go + Python packages). Prefer test-go / test-python when iterating.
 test:
 	go test ./...
+
+# Go-only: everything except the Python language plugin, Python ruleset, and
+# Python integration matrices.
+test-go:
+	go test $$(go list ./... | grep -v -E '/internal/lang/python(/|$$)|/ruleset/python(/|$$)|/tests/integration/python(/|$$)')
+
+# Python-only: plugin/detectors, Python ruleset validation, BP/CWE/PERF matrices + corpus.
+#   make test-python
+#   make test-python PYTHON_TEST_PKGS='./internal/lang/python/detectors/perf/ ./tests/integration/python/'
+test-python:
+	go test $(PYTHON_TEST_PKGS)
 
 # Focused integration harness (materialized fixture seed expectations).
 # Go and Python matrices live in separate packages so DefaultRegistry (Go-only)
@@ -36,7 +51,7 @@ integration: integration-go integration-python
 integration-go:
 	go test ./tests/integration/
 
-# Python fixture matrices (BP-PY + CWE under tests/fixtures/python).
+# Python fixture matrices + slim corpus (BP-PY / CWE / PERF-PY under tests/fixtures/python).
 integration-python:
 	go test ./tests/integration/python/
 
@@ -56,8 +71,12 @@ version: build
 	./bin/goslop --version
 
 help:
-	@echo "Targets: build test integration integration-go integration-python vet fmt lint lint-all ci version run run-python reference-metrics bench"
+	@echo "Targets: build test test-go test-python integration integration-go integration-python vet fmt lint lint-all ci version run run-python reference-metrics bench"
 	@echo "CGO_ENABLED=$(CGO_ENABLED) (0 = pure Go / go/ast; default)"
+	@echo "test: full go test ./..."
+	@echo "test-go: Go packages only (excludes internal/lang/python, ruleset/python, tests/integration/python)"
+	@echo "test-python: Python detectors + ruleset + integration matrices/corpus"
+	@echo "  PYTHON_TEST_PKGS=$(PYTHON_TEST_PKGS)"
 	@echo "run: product summary scan (profile all, --no-fail --no-terminal + RUN_ARGS)"
 	@echo "  SCAN_PATH=$(SCAN_PATH)"
 	@echo "  RUN_ARGS=$(RUN_ARGS)"

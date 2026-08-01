@@ -1,0 +1,24 @@
+# Fixture for PERF-PY-24 (vulnerable)
+lang: python
+file: app/layout.py
+---
+def wrap_text(text, width):
+    return text.split()
+
+def row_height(cells, size):
+    lines = 1
+    for cell in cells:
+        lines = max(lines, len(wrap_text(cell, 80)))
+    return lines * size
+
+def draw_row(cells, size):
+    height = row_height(cells, size)
+    for cell in cells:
+        lines = wrap_text(cell, 80)
+        paint(lines, height)
+
+def emit(rows, size):
+    for row in rows:
+        h = row_height(row, size)
+        ensure_space(h)
+        draw_row(row, size)

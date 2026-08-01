@@ -115,8 +115,12 @@ func TestBPPY20FlaskSendFileUserPath(t *testing.T) {
 	hit := "from flask import send_file, request\n\n@app.route('/dl')\ndef dl():\n    return send_file(request.args['path'])\n"
 	assertRule(t, "BP-PY-20", "app.py", hit, true)
 
-	hitDir := "from flask import send_from_directory, request\n\ndef dl():\n    return send_from_directory('/var/data', request.args.get('f'))\n"
-	assertRule(t, "BP-PY-20", "app.py", hitDir, true)
+	// Idiomatic Flask jail: fixed root + request filename → miss.
+	missDir := "from flask import send_from_directory, request\n\ndef dl():\n    return send_from_directory('/var/data', request.args.get('f'))\n"
+	assertRule(t, "BP-PY-20", "app.py", missDir, false)
+
+	hitDirRoot := "from flask import send_from_directory, request\n\ndef dl():\n    return send_from_directory(request.args.get('root'), 'f')\n"
+	assertRule(t, "BP-PY-20", "app.py", hitDirRoot, true)
 
 	missLit := "from flask import send_file\n\ndef dl():\n    return send_file('/var/data/report.pdf')\n"
 	assertRule(t, "BP-PY-20", "app.py", missLit, false)

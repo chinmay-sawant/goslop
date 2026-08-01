@@ -1,0 +1,20 @@
+# Fixture for PERF-PY-23 (vulnerable)
+lang: python
+file: app/export.py
+---
+def encode_value(value):
+    if isinstance(value, dict):
+        parts = []
+        for key, item in value.items():
+            parts.append(str(key))
+            parts.append(encode_value(item))
+        return "{" + ",".join(parts) + "}"
+    if isinstance(value, list):
+        return "[" + ",".join(encode_value(x) for x in value) + "]"
+    return str(value)
+
+def export_records(records):
+    payloads = []
+    for record in records:
+        payloads.append(encode_value(record))
+    return payloads

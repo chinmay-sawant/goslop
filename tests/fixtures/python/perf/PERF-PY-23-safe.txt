@@ -1,0 +1,13 @@
+# Fixture for PERF-PY-23 (safe)
+lang: python
+file: app/export.py
+---
+def encode_record(record):
+    # Fixed schema for homogeneous records (no per-field type walk).
+    return "%s|%s|%s" % (record["id"], record["name"], record["score"])
+
+def export_records(records):
+    payloads = []
+    for record in records:
+        payloads.append(encode_record(record))
+    return payloads

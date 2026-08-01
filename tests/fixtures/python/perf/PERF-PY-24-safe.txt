@@ -1,0 +1,25 @@
+# Fixture for PERF-PY-24 (safe)
+lang: python
+file: app/layout.py
+---
+def wrap_text(text, width):
+    return text.split()
+
+def measure_row(cells, size):
+    per_cell = []
+    max_lines = 1
+    for cell in cells:
+        lines = wrap_text(cell, 80)
+        per_cell.append(lines)
+        max_lines = max(max_lines, len(lines))
+    return max_lines * size, per_cell
+
+def draw_row(cell_lines, height):
+    for lines in cell_lines:
+        paint(lines, height)
+
+def emit(rows, size):
+    for row in rows:
+        height, cell_lines = measure_row(row, size)
+        ensure_space(height)
+        draw_row(cell_lines, height)

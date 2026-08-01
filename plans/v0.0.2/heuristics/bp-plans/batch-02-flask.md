@@ -55,7 +55,7 @@
 |------|-----------------------------|
 | `BP-PY-18` | Heuristic: route handlers that call `request.form` / `get_json` / POST-like logic without `methods=['POST',...]` or methods list. Flag CSRF-sensitive form posts especially. |
 | `BP-PY-19` | Match Flask `errorhandler` / `register_error_handler` bodies returning `str(exc)`, `traceback.format_exc()`, or `repr(e)` in JSON/HTML responses. |
-| `BP-PY-20` | Match `flask.send_file` / `send_from_directory` where path/filename comes from `request.args` / form / view args without `safe_join` + root check. Complements CWE-22. |
+| `BP-PY-20` | Match `flask.send_file` where path comes from request without `safe_join`. Idiomatic `send_from_directory(fixed_root, request_name)` is a miss; flag only when the directory/root arg is request-derived. Complements CWE-22. (Precision hardening 2026-08-01.) |
 
 Historical note: `python-heuristics-bp.md` Phase 4 listed `BP-PY-20` as `[~]` deferred and 18/19 as lower signal — this batch **owns** shipping them with explicit heuristics and tests.
 

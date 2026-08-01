@@ -71,7 +71,9 @@ func detectBPPY9(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-// BP-PY-10: pickle.load / pickle.loads / _pickle / cloudpickle
+// BP-PY-10: pickle.load / pickle.loads / _pickle / cloudpickle on non-constant /
+// untrusted-looking sources (request body, user path, generic payload names).
+// Trusted/local cache-style constant loads are missed.
 func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-10")
 	if !facts.hasAny("pickle.", "cloudpickle.", "_pickle.") {
@@ -91,10 +93,50 @@ func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				break
 			}
 			abs := start + idx
-			pushAt(unit, meta, abs, "pickle load can execute arbitrary code; avoid on untrusted data", out)
+			open := abs + len(n) - 1 // points at '('
+			inner, ok := callArgsRegion(src, open)
+			if !ok {
+				windowEnd := abs + len(n) + 120
+				if windowEnd > len(src) {
+					windowEnd = len(src)
+				}
+				inner = src[abs:windowEnd]
+			}
+			if pickleArgLooksUntrusted(inner) {
+				pushAt(unit, meta, abs, "pickle load can execute arbitrary code; avoid on untrusted data", out)
+			}
 			start = abs + len(n)
 		}
 	}
+}
+
+func pickleArgLooksUntrusted(arg string) bool {
+	lower := strings.ToLower(arg)
+	if strings.Contains(lower, "request.") || strings.Contains(lower, "sys.stdin") {
+		return true
+	}
+	untrusted := []string{
+		"body", "payload", "data", "raw", "user", "upload", "content",
+		"message", "socket", "recv", "input",
+	}
+	for _, n := range untrusted {
+		if strings.Contains(lower, n) {
+			return true
+		}
+	}
+	// Literal constant / ALL_CAPS cache names → miss.
+	trimmed := strings.TrimSpace(arg)
+	if isStringLiteral(trimmed) {
+		return false
+	}
+	if isSimpleIdent(trimmed) && trimmed == strings.ToUpper(trimmed) && len(trimmed) > 1 {
+		return false
+	}
+	if strings.Contains(lower, "cache") && !strings.Contains(lower, "request") {
+		return false
+	}
+	// Bare non-literal name with no trust signal → still flag (conservative).
+	return strings.TrimSpace(arg) != ""
 }
 
 // BP-PY-11: yaml.load without SafeLoader

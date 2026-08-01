@@ -39,6 +39,19 @@ def read_x():
 	assertRule(t, "BP-PY-29", "app.py", vuln, true)
 	assertRule(t, "BP-PY-29", "app.py", vulnMut, true)
 	assertRule(t, "BP-PY-29", "app.py", safe, false)
+
+	// Flask @app.route must not arm FastAPI-only rules.
+	flaskish := `from flask import Flask
+app = Flask(__name__)
+STORE = {}
+
+@app.route("/x")
+def read_x(k):
+    global STORE
+    STORE[k] = 1
+    return STORE
+`
+	assertRule(t, "BP-PY-29", "routes.py", flaskish, false)
 }
 
 func TestBPPY30BlockingIOAsyncRoute(t *testing.T) {

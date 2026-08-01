@@ -156,6 +156,44 @@ func TestLookupInSmallExplicitLoopIsSuppressed(t *testing.T) {
 `, false)
 }
 
+func TestPERFPY6RequiresBoundStatusMutation(t *testing.T) {
+	t.Parallel()
+	assertPERFRule(t, "PERF-PY-6", `def claim():
+    job = Job.objects.filter(status="pending").first()
+    other.status = "running"
+    other.save()
+`, false)
+}
+
+func TestPERFPY20PKSuppressAndUnrelatedIndex(t *testing.T) {
+	t.Parallel()
+	assertPERFRule(t, "PERF-PY-20", `class Stock(models.Model):
+    warehouse_id = models.IntegerField()
+    quantity = models.IntegerField()
+
+def available():
+    return Stock.objects.filter(pk=1).order_by("-quantity")
+`, false)
+	assertPERFRule(t, "PERF-PY-20", `class Stock(models.Model):
+    warehouse_id = models.IntegerField()
+    quantity = models.IntegerField()
+    name = models.CharField(max_length=32, db_index=True)
+
+def available():
+    return Stock.objects.filter(warehouse_id=1).order_by("-quantity")
+`, true)
+}
+
+func TestPERFPY14RequiresSharedKey(t *testing.T) {
+	t.Parallel()
+	assertPERFRule(t, "PERF-PY-14", `def create(idempotency_key):
+    existing = Event.objects.filter(idempotency_key=idempotency_key).first()
+    if existing:
+        return existing
+    return Other.objects.create(name="x")
+`, false)
+}
+
 func assertPERFRule(t *testing.T, id, source string, want bool) {
 	t.Helper()
 	ctx := core.DefaultScanContext()

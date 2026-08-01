@@ -1,0 +1,4 @@
+def deliver(session):
+    items = session.query(DeliveryOutbox).all()
+    for item in items:
+        send(item.partner_endpoint.url)

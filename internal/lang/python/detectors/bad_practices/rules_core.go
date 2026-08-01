@@ -248,14 +248,14 @@ func signatureComplete(sig string) bool {
 	return false
 }
 
-// BP-PY-6: assert in non-test modules.
+// BP-PY-6: assert used for request/CLI/authz/path validation in non-test modules.
+// Internal invariant asserts (no security/input needle) are intentionally missed.
 func detectBPPY6(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-6")
 	if isPythonTestFile(unit) {
 		return
 	}
 	if !facts.has("assert ") && !strings.Contains(unit.Source, "assert ") {
-		// also bare "assert(" unusual
 		if !strings.Contains(unit.Source, "assert") {
 			return
 		}
@@ -263,11 +263,46 @@ func detectBPPY6(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	lines := codeLinesFacts(facts, unit.Source)
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
-		// assert expr / assert expr, msg
-		if strings.HasPrefix(t, "assert ") || t == "assert" || strings.HasPrefix(t, "assert(") {
-			pushAt(unit, meta, line.byte, "assert is stripped with python -O; use if + raise for runtime validation", out)
+		if !(strings.HasPrefix(t, "assert ") || t == "assert" || strings.HasPrefix(t, "assert(")) {
+			continue
+		}
+		if !assertLooksLikeRuntimeValidation(t) {
+			continue
+		}
+		pushAt(unit, meta, line.byte, "assert is stripped with python -O; use if + raise for runtime validation", out)
+	}
+}
+
+func assertLooksLikeRuntimeValidation(line string) bool {
+	lower := strings.ToLower(line)
+	needles := []string{
+		"request.", "request(", "request ",
+		"args.", "form.", "files.",
+		"is_authenticated", "is_anonymous", "has_perm", "permission", "authorize",
+		"csrf", "safe_join",
+		"filename", "filepath", "dirname",
+		"sys.argv", "click.", "argparse",
+		"user_input", "untrusted",
+	}
+	for _, n := range needles {
+		if strings.Contains(lower, n) {
+			return true
 		}
 	}
+	// Word-ish tokens to avoid matching "author"/"apathy"/etc.
+	for _, re := range []*regexp.Regexp{
+		regexp.MustCompile(`\bauth\b`),
+		regexp.MustCompile(`\brole\b`),
+		regexp.MustCompile(`\btoken\b`),
+		regexp.MustCompile(`\bpath\b`),
+		regexp.MustCompile(`\bcli\b`),
+		regexp.MustCompile(`\bargv\b`),
+	} {
+		if re.MatchString(lower) {
+			return true
+		}
+	}
+	return false
 }
 
 // BP-PY-7: open( / .open( without with.

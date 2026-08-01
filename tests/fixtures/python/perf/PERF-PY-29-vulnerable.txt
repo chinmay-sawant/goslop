@@ -1,0 +1,15 @@
+# Fixture for PERF-PY-29 (vulnerable)
+lang: python
+file: app/writer.py
+---
+def render(parts):
+    bodies = []
+    for part in parts:
+        bodies.append(encode_part(part))
+    estimate = sum(len(body) for body in bodies) + 256
+    buffer = bytearray(estimate)
+    offset = 0
+    for body in bodies:
+        buffer[offset : offset + len(body)] = body
+        offset += len(body)
+    return bytes(buffer[:offset])

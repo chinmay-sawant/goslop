@@ -2,9 +2,9 @@
 
 > **Parent:** `plans/v0.0.2/python-heuristics.md` — epic [#51](https://github.com/chinmay-sawant/goslop/issues/51); issue body `plans/PR/v0.0.2/issue-python-perf-heuristics-body.md`  
 > **Issue:** [#54](https://github.com/chinmay-sawant/goslop/issues/54) — python(perf): seed PERF catalogue and implement performance heuristics  
-> **Status:** 22/22 experimental detectors and paired fixtures implemented (2026-07-31); reference-corpus canary and maturity decision pending
-> **Estimated effort:** initial detector batch complete; remaining work is canary evidence, false-positive triage, and maturity review
-> **Ledger rule:** the canonical atomic evidence is `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md`; do not promote maturity without fresh canary evidence.
+> **Status:** **complete** — experimental detectors + fixtures; reference-corpus canary and maturity decision recorded 2026-08-01 (stay experimental; no pack promotion)
+> **Estimated effort:** closed for #54 scope; future tier promotion needs a fresh canary
+> **Ledger rule:** canonical evidence is `pref-plans/PERF-PY-IMPLEMENTATION-CHECKLIST.md` + `pref-plans/PERF-PY-CANARY-2026-08-01.md`; do not promote maturity without a fresh canary.
 
 ---
 
@@ -27,7 +27,7 @@ Python today:
 | **PERF catalogue** | `ruleset/python/chunks/perf-py-001-014.json` + `perf-py-015-022.json` | **seeded** (22 Python-only rules) |
 | PERF detectors | `internal/lang/python/detectors/perf/` | **22** experimental `PERF-PY-*` rules; Python remains opt-in |
 
-**#54 has an implemented experimental detector batch.** Every seeded ID has source-only detection, a paired fixture, and repository validation; corpus canary remains a separate closure phase.
+**#54 is closed experimentally.** Seeded IDs have source-only detection, paired fixtures, repository validation, and a 2026-08-01 reference-corpus canary with an explicit “stay experimental” maturity decision.
 
 ---
 

@@ -16,8 +16,8 @@ func TestPERFPYCatalogueRegistersAllSeededRules(t *testing.T) {
 		t.Fatalf("Language = %v, want Python", detector.Language())
 	}
 	ids := detector.RuleIDs()
-	if len(ids) != 22 {
-		t.Fatalf("RuleIDs length = %d, want 22: %v", len(ids), ids)
+	if len(ids) != 30 {
+		t.Fatalf("RuleIDs length = %d, want 30: %v", len(ids), ids)
 	}
 	seen := make(map[string]bool, len(ids))
 	for _, id := range ids {
@@ -27,14 +27,14 @@ func TestPERFPYCatalogueRegistersAllSeededRules(t *testing.T) {
 			t.Fatalf("metadata for %s = %#v, want performance metadata", id, meta)
 		}
 	}
-	for i := 1; i <= 22; i++ {
+	for i := 1; i <= 30; i++ {
 		want := fmt.Sprintf("PERF-PY-%d", i)
 		if !seen[want] {
 			t.Fatalf("missing registered %s", want)
 		}
 	}
-	if perf.CatalogueSize() != 22 {
-		t.Fatalf("CatalogueSize = %d, want 22", perf.CatalogueSize())
+	if perf.CatalogueSize() != 30 {
+		t.Fatalf("CatalogueSize = %d, want 30", perf.CatalogueSize())
 	}
 	for _, id := range ids {
 		if strings.HasPrefix(id, "PERF-") && !strings.HasPrefix(id, "PERF-PY-") {

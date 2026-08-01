@@ -167,8 +167,11 @@ func TestBPPY4MutableDefault(t *testing.T) {
 
 func TestBPPY6AssertValidation(t *testing.T) {
 	t.Parallel()
-	vuln := "def check(user):\n    assert user.is_admin\n    return True\n"
+	vuln := "def check(request):\n    assert request.user.is_authenticated\n    return True\n"
 	assertRule(t, "BP-PY-6", "lib.py", vuln, true)
+	// Internal invariant asserts are intentionally missed.
+	invariant := "def normalize(user):\n    assert user is not None\n    return user\n"
+	assertRule(t, "BP-PY-6", "lib.py", invariant, false)
 	// Test file skip
 	assertRule(t, "BP-PY-6", "test_auth.py", vuln, false)
 	assertRule(t, "BP-PY-6", "auth_test.py", vuln, false)
@@ -212,6 +215,9 @@ func TestBPPY10Pickle(t *testing.T) {
 	safe := "import json\ndata = json.loads(body)\n"
 	assertRule(t, "BP-PY-10", "pk.py", vuln, true)
 	assertRule(t, "BP-PY-10", "pk.py", safe, false)
+	// Trusted/local cache-style loads are intentionally missed.
+	assertRule(t, "BP-PY-10", "pk.py", "import pickle\ndata = pickle.loads(LOCAL_CACHE_BYTES)\n", false)
+	assertRule(t, "BP-PY-10", "pk.py", "import pickle\ndata = pickle.loads(cache_blob)\n", false)
 }
 
 func TestBPPY11YamlLoad(t *testing.T) {

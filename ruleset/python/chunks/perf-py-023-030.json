@@ -1,0 +1,98 @@
+{
+  "PERF-PY-23": {
+    "id": "PERF-PY-23",
+    "name": "Polymorphic Serialize Or Encode Inside Hot Loop",
+    "original_description": "Detect a generic encode or serialize helper invoked once per element of a large collection.",
+    "description": "A polymorphic encoder or serializer runs inside a loop over collection items. Type dispatch and temporary objects scale with N; for homogeneous records use a fixed-schema encoder or build the payload outside the per-item loop when the shape is stable.",
+    "detection_notes": "Match a for-loop body that calls a generic helper such as encode_value, encode_dict, serialize, dumps, or to_bytes on a loop variable or one of its fields. Suppress a single encode of an entire document or response outside the loop, and suppress tests.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-24": {
+    "id": "PERF-PY-24",
+    "name": "Duplicate Pure Measure Before Process",
+    "original_description": "Detect the same pure sizing or formatting helper applied twice to one logical unit.",
+    "description": "A pure helper that sizes, wraps, or formats data is used to decide layout or capacity and is later called again on the same inputs while producing the output. The second pass repeats work already done; return both the metric and the intermediate result from one pass.",
+    "detection_notes": "Match two calls to the same pure helper (for example wrap_text, text_width, measure_*, compute_height, line_count, or row_height) on the same argument within one function, especially when one call feeds sizing and another feeds emit/render/process. Suppress intentionally different arguments and helpers that already return a (measure, payload) pair.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "High",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-25": {
+    "id": "PERF-PY-25",
+    "name": "Heavy Object Construction Per Homogeneous Element",
+    "original_description": "Detect per-iteration class, dict, or lambda construction for uniform batch items.",
+    "description": "Inside a loop over a homogeneous collection, each iteration allocates heavy objects (custom instances, nested dicts, or lambdas closed over the item) only to represent a fixed schema. Allocator traffic and retained graphs scale with N; prefer lightweight records, pre-sized buffers, or a specialized writer for that schema.",
+    "detection_notes": "Match for-loops that construct a project type, nested dict, or lambda capturing the loop variable and then append or register that object. Suppress heterogeneous type switches, loops over a static list of at most two items, and pure streaming writers that do not retain per-item objects.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-26": {
+    "id": "PERF-PY-26",
+    "name": "Expensive Decode Or Parse On Hot Path",
+    "original_description": "Detect repeated binary or document decode without reuse on a request or job path.",
+    "description": "A hot path re-decodes or re-parses the same or repeated binary/document payload on every call. Decode cost can dominate wall time; parse once and reuse immutable results when the input does not change per job.",
+    "detection_notes": "Match decode_*, parse_*, Image.open, or full-buffer zlib.decompress inside handlers or builders that process jobs/requests, especially when the argument is a reused field or constant asset. Suppress one-shot CLI tools and functions that already consult a cache or lru_cache around the decode.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-27": {
+    "id": "PERF-PY-27",
+    "name": "Repeated Load Of Same Filesystem Path",
+    "original_description": "Detect opening or parsing the same path on every iteration or unit of work.",
+    "description": "A filesystem path is opened and parsed on every loop iteration or document/job build. I/O and parse cost repeat for identical content; load once per process or cache by resolved path when the file is immutable for the worker lifetime.",
+    "detection_notes": "Match Path.read_bytes/read_text, open(...).read, or load_*/from_file inside a loop or per-unit builder when the path is a constant, module-level name, or loop-invariant. Suppress mtime-aware reloads, explicit caches, and loops whose path is the loop variable over distinct files.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-28": {
+    "id": "PERF-PY-28",
+    "name": "Short-Lived Executor Per Unit Of Work",
+    "original_description": "Detect thread or process pools created and shut down per request or job.",
+    "description": "A ThreadPoolExecutor or ProcessPoolExecutor is constructed for a single request, job, or document and then discarded. Create and join cost can exceed the parallel work; reuse a long-lived pool or skip pooling for tiny work sets.",
+    "detection_notes": "Match ThreadPoolExecutor or ProcessPoolExecutor constructed inside a function that maps or submits work in the same function (including with statements). Suppress module-level pools and pools created only in process startup or main.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "Medium",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-29": {
+    "id": "PERF-PY-29",
+    "name": "Retain Full Intermediate Buffer Graph Until Full Emit",
+    "original_description": "Detect holding every encoded chunk in memory while also allocating the full output buffer.",
+    "description": "A builder appends every encoded fragment to a list and then allocates a full output buffer sized from that list without releasing fragments during the write. Peak memory approaches twice the output size; free or stream each fragment after it is written when re-read is not required.",
+    "detection_notes": "Match append of encoded bodies into a list followed by bytearray(sum(len...)) or join of the same list without clearing entries during the copy loop. Suppress streaming writers that write-and-discard per item and file-backed outputs.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Variant",
+    "python_relevance": "Medium",
+    "applicable_to": ["python"]
+  },
+  "PERF-PY-30": {
+    "id": "PERF-PY-30",
+    "name": "String Or Bytes Concatenation In Nested Loops",
+    "original_description": "Detect building large text or binary output with + inside nested loops.",
+    "description": "Nested loops assemble output by repeatedly concatenating small strings or bytes. Copy cost grows with items times fragments; append to a list or bytearray and join once per batch, page, or response.",
+    "detection_notes": "Match nested for-loops where the inner body uses str/bytes += or name = name + fragment. Suppress numeric accumulation and builders that only append to a list and join once outside the inner loop.",
+    "category": "Performance",
+    "status": "Seeded",
+    "weakness_abstraction": "Base",
+    "python_relevance": "High",
+    "applicable_to": ["python"]
+  }
+}

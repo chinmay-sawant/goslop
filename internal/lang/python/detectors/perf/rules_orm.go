@@ -27,6 +27,10 @@ func detectPERFPY2(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 		if !ok || perfSmallExplicitLoop(loop.text) {
 			continue
 		}
+		loopVar, _, bindOK := perfLoopBinding(loop.text)
+		if !bindOK || !strings.Contains(line.text, loopVar) {
+			continue
+		}
 		start, end := functionWindow(facts.lines, i)
 		if containsAnyFold(linesText(facts.lines, start, end), "page_size", "paginator", "page_number", "management command", "pagination") {
 			continue
@@ -49,18 +53,28 @@ func perfSmallExplicitLoop(loop string) bool {
 	return strings.Count(inside, ",") < 2
 }
 
+var perfClaimAssignRE = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*[^\n]*\.objects\.filter\([^\n]*\)\s*\.first\s*\(`)
+
 // PERF-PY-6 finds a visible select-then-mark work claim without a locking primitive.
+// Status mutation must target the same bound name as the claim lookup.
 func detectPERFPY6(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	for i, line := range facts.lines {
 		if !strings.Contains(line.text, ".objects.filter(") || !strings.Contains(line.text, ".first()") || !containsAnyFold(line.text, "pending", "queued", "ready", "new") {
 			continue
 		}
+		m := perfClaimAssignRE.FindStringSubmatch(line.text)
+		if len(m) < 2 {
+			continue
+		}
+		name := m[1]
 		start, end := functionWindow(facts.lines, i)
 		body := linesText(facts.lines, start, end)
 		if containsAnyFold(body, "select_for_update", "with_for_update", "skip_locked", "atomic update", "single-process", "single process") {
 			continue
 		}
-		if !strings.Contains(body, ".status =") || !strings.Contains(body, ".save()") {
+		statusRE := regexp.MustCompile(`\b` + regexp.QuoteMeta(name) + `\s*\.\s*status\s*=`)
+		saveRE := regexp.MustCompile(`\b` + regexp.QuoteMeta(name) + `\s*\.\s*save\s*\(`)
+		if !statusRE.MatchString(body) || !saveRE.MatchString(body) {
 			continue
 		}
 		pushLine(unit, "PERF-PY-6", line, ".objects.filter(", "work claim selects and updates status without a visible row lock or atomic update", out)
@@ -131,7 +145,14 @@ func detectPERFPY21(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		}
 		start, end := functionWindow(facts.lines, i)
 		body := linesText(facts.lines, start, end)
-		if !containsAnyFold(body, "purge", "cleanup", "retention", "expire", "delete") || containsAnyFold(body, "[:", ".limit(", "chunk", "batch", "keyset", "partition") {
+		header := ""
+		if start >= 0 && start < len(facts.lines) {
+			header = facts.lines[start].text
+		}
+		// Require a maintenance marker in the function name or nearby comments/body —
+		// do not treat the ".delete()" trigger itself as evidence.
+		if !containsAnyFold(header+"\n"+body, "purge", "cleanup", "retention", "expire", "maintenance") ||
+			containsAnyFold(body, "[:", ".limit(", "chunk", "batch", "keyset", "partition") {
 			continue
 		}
 		pushLine(unit, "PERF-PY-21", line, ".delete()", "maintenance delete has no visible batch bound; delete in bounded chunks", out)

@@ -1,0 +1,27 @@
+# Fixture for PERF-PY-27 (safe)
+lang: python
+file: app/resources.py
+---
+from pathlib import Path
+
+CONFIG_PATH = Path("/etc/myapp/defaults.json")
+_CONFIG_CACHE = {}
+
+def load_config(path):
+    key = str(path.resolve())
+    cached = _CONFIG_CACHE.get(key)
+    if cached is not None:
+        return cached
+    text = path.read_text()
+    _CONFIG_CACHE[key] = text
+    return text
+
+def build_response(user_id):
+    config = load_config(CONFIG_PATH)
+    return format_response(user_id, config)
+
+def run_batch(user_ids):
+    out = []
+    for user_id in user_ids:
+        out.append(build_response(user_id))
+    return out

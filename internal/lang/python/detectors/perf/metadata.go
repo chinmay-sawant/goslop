@@ -6,6 +6,7 @@ func perfMeta(id, title string) *rules.RuleMetadata {
 	return &rules.RuleMetadata{
 		ID: id, Title: title, Description: title + " can add avoidable work on a Python service path.",
 		Severity: rules.SeverityMedium, Pack: rules.PackPerformance,
+		Maturity: rules.MaturityExperimental,
 	}
 }
 
@@ -32,6 +33,14 @@ var metaByID = map[string]*rules.RuleMetadata{
 	"PERF-PY-20": perfMeta("PERF-PY-20", "ORM Sort Without Supporting Composite Index"),
 	"PERF-PY-21": perfMeta("PERF-PY-21", "Unbounded Bulk Delete In Maintenance Path"),
 	"PERF-PY-22": perfMeta("PERF-PY-22", "SQLite Backend For Concurrent Service Writes"),
+	"PERF-PY-23": perfMeta("PERF-PY-23", "Polymorphic Serialize Or Encode Inside Hot Loop"),
+	"PERF-PY-24": perfMeta("PERF-PY-24", "Duplicate Pure Measure Before Process"),
+	"PERF-PY-25": perfMeta("PERF-PY-25", "Heavy Object Construction Per Homogeneous Element"),
+	"PERF-PY-26": perfMeta("PERF-PY-26", "Expensive Decode Or Parse On Hot Path"),
+	"PERF-PY-27": perfMeta("PERF-PY-27", "Repeated Load Of Same Filesystem Path"),
+	"PERF-PY-28": perfMeta("PERF-PY-28", "Short-Lived Executor Per Unit Of Work"),
+	"PERF-PY-29": perfMeta("PERF-PY-29", "Retain Full Intermediate Buffer Graph Until Full Emit"),
+	"PERF-PY-30": perfMeta("PERF-PY-30", "String Or Bytes Concatenation In Nested Loops"),
 }
 
 // MetadataForID returns metadata for an implemented PERF-PY rule.

@@ -309,8 +309,8 @@ func TestPythonPERFSeedChunks(t *testing.T) {
 	if files == 0 {
 		t.Fatal("no perf-*.json chunk files found")
 	}
-	if total != 22 {
-		t.Fatalf("Python PERF seed size = %d, want 22", total)
+	if total != 30 {
+		t.Fatalf("Python PERF seed size = %d, want 30", total)
 	}
 	for id := 1; id <= 22; id++ {
 		key := "PERF-PY-" + itoa(id)

@@ -1,0 +1,13 @@
+# Fixture for PERF-PY-25 (safe)
+lang: python
+file: app/batch.py
+---
+def encode_cell(parent_id, value, seq):
+    return (parent_id, seq, value)
+
+def process_batch(rows, parent_id, attach):
+    seq = 0
+    for row in rows:
+        for value in row:
+            attach(encode_cell(parent_id, value, seq))
+            seq += 1

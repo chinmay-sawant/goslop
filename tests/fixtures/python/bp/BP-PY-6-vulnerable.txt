@@ -2,7 +2,7 @@
 lang: python
 file: BP-PY-6-vulnerable.py
 ---
-def check_user(user):
-    assert user is not None
-    assert user.is_active
-    return user
+def check_user(request):
+    assert request.user.is_authenticated
+    assert request.path.startswith("/admin")
+    return request.user

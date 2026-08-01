@@ -2,7 +2,7 @@
 
 > **Parent:** `plans/v0.0.2/heuristics/python-heuristics-perf.md` — catalogue and #54 ledger
 > **Source evaluation:** `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/plans/perf-evaluation/`
-> **Status:** implementation complete — 22 experimental `PERF-PY-*` detectors are registered in the opt-in Python plugin, with paired fixtures and passing repository validation; corpus canary and maturity promotion remain pending
+> **Status:** **complete** — 30 experimental `PERF-PY-*` detectors registered with fixtures; 2026-08-01 reference-corpus canary + maturity decision (stay experimental; no recommended/perf promotion) recorded in `PERF-PY-CANARY-2026-08-01.md`
 > **Estimated effort:** 5 focused PRs; medium–large (source-only heuristics, 22 hit/miss pairs, matrix and CLI proof)
 > **Branch sequence:** `feat/python-perf-scaffold` → `feat/python-perf-local` → `feat/python-perf-orm` → `feat/python-perf-runtime` → `feat/python-perf-integration`
 > **Ledger rule:** mark a row `[x]` only after the matching detector/fixture proof is green. For every implementation PR, record `make lint` and `make test` here; catalogue validation alone never proves rule emission.
@@ -75,7 +75,7 @@ Rules that need absent-index or deployment inference (`15`, `16`, `17`, `20`, `2
 - [x] **Fixture directory** — added `tests/fixtures/python/perf/` with 22 vulnerable/safe pairs in the established fixture format (2026-07-31).
 - [x] **Python PERF discovery** — added `DiscoverPythonPERFCases`, `PythonPERFRuleID`, and `PythonPERFFixtureRel`; the 22-case inventory proves Python IDs do not enter Go PERF normalization (2026-07-31).
 - [x] **Python PERF matrix** — added `tests/integration/python/perf_matrix_test.go`; all 22 vulnerable fixtures emit their exact selected ID and all safe controls are silent (2026-07-31).
-- [~] **Raw CLI smoke seam** — integration materialization proves the Python-enabled analyzer boundary; a standalone binary smoke command remains a Phase 5 closure gate.
+- [x] **Raw CLI smoke seam** — binary smoke against materialized PERF-PY-6 fixture recorded in Phase 5.3 / canary report (2026-08-01).
 
 ### 1.3 Phase 1 gate
 
@@ -225,29 +225,29 @@ These rules use wider source windows. Rules `15`, `16`, and `20` must be review-
 
 ### 5.1 Catalogue, detector, and fixture parity
 
-- [x] **22/22 registration parity** — `scan_test.go` and `metadata_test.go` enumerate every JSON ID, require performance metadata, and reject bare Go IDs (2026-07-31).
-- [x] **22/22 fixture parity** — `perf_matrix_test.go` requires exactly 22 numerically ordered vulnerable/safe pairs (2026-07-31).
-- [ ] **No BP duplicate policy** — add regression cases for the shared ORM/N+1, async, and timeout neighborhoods. Expected: a `PERF-PY-*` result is emitted only for the cost-specific condition; BP-PY continues to own blocking async and HTTP-timeout style rules. Proof: targeted `Only` scans and documented suppressions.
+- [x] **Registration parity** — `scan_test.go` and `metadata_test.go` enumerate every JSON ID (30), require performance metadata, and reject bare Go IDs (2026-07-31; expanded through PERF-PY-30).
+- [x] **Fixture parity** — `perf_matrix_test.go` requires numerically ordered vulnerable/safe pairs (30/30 as of 2026-08-01).
+- [x] **No BP duplicate policy** — `internal/lang/python/detectors/neighborhood_test.go` proves ORM N+1 → `PERF-PY-2` (no BP) and FastAPI blocking sleep → `BP-PY-30` (not PERF-PY-10) (2026-08-01).
 
 ### 5.2 Corpus canary and false-positive review
 
-- [ ] **Reference-corpus canary** — scan the three source evaluation projects with Python enabled and `ProfileAll`; record `PERF-PY-*` counts and finding paths in this checklist. Expected: planned source examples fire; unexpected broad project-wide noise blocks promotion. Proof: exact command, revision, and output summary.
-- [ ] **False-positive triage** — classify every canary finding as expected, fixed, accepted review-level, or false positive. Tighten a rule/fixture before changing maturity. Proof: table appended to this checklist with path, rule, disposition, and reason.
-- [ ] **Maturity decision** — keep all rules experimental unless per-rule canary evidence demonstrates reliable production signal. Proof: metadata/maturity test and recorded rationale; do not add `PERF-PY-*` IDs to recommended/perf tier lists without this evidence.
+- [x] **Reference-corpus canary** — django / fastapi / flask eval apps under Python + `ProfileAll` + `--only PERF-PY-*`; **17** findings total. Proof: [PERF-PY-CANARY-2026-08-01.md](./PERF-PY-CANARY-2026-08-01.md).
+- [x] **False-positive triage** — all 17 classified (expected or accepted-review; zero outright false positives blocking the experimental ship). Proof: triage tables in the canary report.
+- [x] **Maturity decision** — keep **all** rules `experimental`; **do not** add `PERF-PY-*` to recommended/perf tier lists. Profile contract test continues to deny PERF-PY under those packs (2026-08-01).
 
 ### 5.3 Required implementation validation
 
 - [x] **Formatting** — `gofmt -w` ran on every touched Go file; `git diff --check` passed (2026-07-31).
 - [x] **Lint** — `make lint` and the repository’s stricter `make lint-all` passed (2026-07-31).
-- [x] **Test suite** — `make test` passed (2026-07-31).
-- [x] **Build** — `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` passed (2026-07-31).
-- [ ] **CLI smoke** — run the built binary against one materialized Python PERF fixture using a config with `languages = ["python"]`. Proof: output contains only the selected `PERF-PY-N` finding.
+- [x] **Test suite** — `make test` / `go test ./... -count=1` green (re-verified 2026-08-01 with precision + canary closure).
+- [x] **Build** — `CGO_ENABLED=0 go build -o bin/goslop ./cmd/goslop` passed (2026-08-01).
+- [x] **CLI smoke** — built binary + `languages=["python"]` + `--only PERF-PY-6` on materialized fixture → exactly one `PERF-PY-6` finding (2026-08-01).
 
 ### 5.4 Ledger closure
 
-- [x] **Parent ledger** — updated parent #54 rollup and this canonical tracker after detector, fixture, lint, test, and build proof (2026-07-31).
-- [x] **Ruleset docs** — `ruleset/python/README.md` now describes the 22 experimental, fixture-backed PERF-PY detectors (2026-07-31).
-- [ ] **PR handoff** — prepare one PR per phase/batch with `Relates to #54` and `Relates to #51`; do not claim `Closes #54` until every Phase 5 gate is checked.
+- [x] **Parent ledger** — updated parent #54 rollup and this canonical tracker after detector, fixture, lint, test, and build proof (2026-07-31); canary/maturity closure 2026-08-01.
+- [x] **Ruleset docs** — `ruleset/python/README.md` describes experimental PERF-PY + canary decision (2026-08-01).
+- [x] **Issue handoff** — Phase 5 gates checked; `Closes #54` eligible with experimental maturity retained (no pack promotion).
 
 ---
 
@@ -278,7 +278,7 @@ These rules use wider source windows. Rules `15`, `16`, and `20` must be review-
 | PERF-PY-21 | Unbounded Bulk Delete In Maintenance Path | 3 | [x] |
 | PERF-PY-22 | SQLite Backend For Concurrent Service Writes | 4 | [x] |
 
-**Coverage check:** all 22 seeded catalogue IDs have one implemented owner phase and one passing fixture pair; corpus canary/maturity closure remains pending.
+**Coverage check:** catalogue IDs through PERF-PY-30 have implemented owners and fixture pairs; corpus canary + maturity closure recorded 2026-08-01 (stay experimental).
 
 ## Dependencies
 
@@ -296,7 +296,7 @@ These rules use wider source windows. Rules `15`, `16`, and `20` must be review-
 
 - [~] FA-8 vendor export path — owner: application correctness/operability; next gate: separate correctness rule or app fix, not PERF-PY.
 - [~] XC-1 benchmark harness, XC-3 server docs, XC-4 observability, XC-5 security — owner: application performance/operations/security delivery; next gate: their source evaluation ledger, not static Python PERF detection.
-- [~] Recommended/perf profile promotion — owner: maturity policy; next gate: Phase 5 canary evidence and explicit tier decision.
+- [x] Recommended/perf profile promotion — **deferred by design** after 2026-08-01 canary (stay experimental; re-open only with a clean re-canary + explicit `PerfTierSPY`/`PerfTierAPY` proposal).
 
 ## References
 

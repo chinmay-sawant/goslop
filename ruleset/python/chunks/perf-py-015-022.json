@@ -4,24 +4,24 @@
     "name": "ORM Composite Filter Without Supporting Index",
     "original_description": "Detect recurring multi-column ORM filters without a visible supporting composite index.",
     "description": "A hot ORM read filters on a tenant or owner key together with a time-range column, but the model declaration has no visible composite index. The database may scan and sort a large table for every request; add the index through the model or migration after validating the query plan.",
-    "detection_notes": "Match SQLAlchemy select/query where clauses or Django QuerySet filters combining an identity column and timestamp/range column when the parsed model declaration has no matching Index, db_index, Meta.indexes, or equivalent. This is review-level: suppress when indexes are defined in external migrations or configuration that is outside the parsed unit.",
+    "detection_notes": "Match Django QuerySet filters combining an identity column and timestamp/range column when the parsed model declaration has no Index/db_index/Meta.indexes covering those columns. Unparseable index markers and external-migration comments suppress (FN-safe). SQLAlchemy shapes are not yet implemented.",
     "category": "Performance",
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "sqlalchemy", "django", "fastapi"]
+    "applicable_to": ["python", "django", "fastapi"]
   },
   "PERF-PY-16": {
     "id": "PERF-PY-16",
     "name": "Retention Timestamp Predicate Without Index",
     "original_description": "Detect time-based cleanup or purge predicates on unindexed timestamp fields.",
     "description": "A TTL, retention, or purge path filters by a timestamp such as created_at, received_at, attempted_at, or expires_at without a visible index. Each maintenance run can scan the entire table and compete with foreground work; index the predicate or use partition lifecycle operations at larger scale.",
-    "detection_notes": "Match delete/filter queries comparing a model DateTime field to cutoff, retention, or now-like values in cleanup, purge, expire, or maintenance functions. Require no visible db_index, Index, Meta.indexes, __table_args__, or partition declaration; suppress external migration/index definitions.",
+    "detection_notes": "Match Django delete/filter queries comparing a DateTime field to cutoff/retention values in cleanup/purge/expire functions when no covering db_index/Index/Meta.indexes is visible for that column. Unparseable __table_args__/partition markers and external-migration comments suppress. SQLAlchemy shapes are not yet implemented.",
     "category": "Performance",
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "django", "sqlalchemy", "flask", "fastapi"]
+    "applicable_to": ["python", "django", "flask", "fastapi"]
   },
   "PERF-PY-17": {
     "id": "PERF-PY-17",
@@ -64,12 +64,12 @@
     "name": "ORM Sort Without Supporting Composite Index",
     "original_description": "Detect an ORM equality filter followed by ordering on another column without a visible composite index.",
     "description": "A multi-warehouse or tenant-scoped ORM query filters by one key and orders by a second column, but the model has no matching composite index. The database must sort the candidate set for every request; add the index after confirming the query plan.",
-    "detection_notes": "Match Django filter(sku=...).order_by('-quantity') or equivalent SQLAlchemy where/order_by chains when the parsed model lacks an index covering the equality and ordering columns. Suppress external migration indexes, small bounded datasets, and queries already constrained to one primary-key row.",
+    "detection_notes": "Match Django filter(...).order_by(...) when the parsed model lacks an index covering the equality and ordering columns as a composite prefix. Suppress external migration indexes, unparseable index markers, and queries already constrained to one primary-key row (pk=/id=). SQLAlchemy shapes are not yet implemented.",
     "category": "Performance",
     "status": "Seeded",
     "weakness_abstraction": "Variant",
     "python_relevance": "Low",
-    "applicable_to": ["python", "django", "sqlalchemy"]
+    "applicable_to": ["python", "django"]
   },
   "PERF-PY-21": {
     "id": "PERF-PY-21",

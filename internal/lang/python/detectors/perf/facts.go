@@ -32,19 +32,35 @@ func buildCodeLines(source string) []codeLine {
 	lines := strings.SplitAfter(source, "\n")
 	out := make([]codeLine, 0, len(lines))
 	offset := 0
+	inTriple := byte(0)
 	for _, rawWithNL := range lines {
 		raw := strings.TrimSuffix(rawWithNL, "\n")
-		out = append(out, codeLine{text: stripPyComment(raw), raw: raw, byte: offset})
+		text, nextTriple := stripPyLineForFacts(raw, inTriple)
+		inTriple = nextTriple
+		out = append(out, codeLine{text: text, raw: raw, byte: offset})
 		offset += len(rawWithNL)
 	}
 	return out
 }
 
-func stripPyComment(line string) string {
+// stripPyLineForFacts blanks comments and triple-quoted string bodies while
+// keeping ordinary single-line string literals (so keyword heuristics like
+// status="pending" still work).
+func stripPyLineForFacts(line string, inTriple byte) (string, byte) {
+	if inTriple != 0 {
+		if at := strings.Index(line, string([]byte{inTriple, inTriple, inTriple})); at >= 0 {
+			// Keep prefix blanked; resume after closing delimiter.
+			rest, next := stripPyLineForFacts(line[at+3:], 0)
+			return strings.Repeat(" ", at+3) + rest, next
+		}
+		return strings.Repeat(" ", len(line)), inTriple
+	}
+
+	buf := []byte(line)
 	inQuote := byte(0)
 	escaped := false
-	for i := 0; i < len(line); i++ {
-		c := line[i]
+	for i := 0; i < len(buf); i++ {
+		c := buf[i]
 		if inQuote != 0 {
 			if escaped {
 				escaped = false
@@ -52,18 +68,33 @@ func stripPyComment(line string) string {
 			}
 			if c == '\\' {
 				escaped = true
-			} else if c == inQuote {
+				continue
+			}
+			if c == inQuote {
 				inQuote = 0
 			}
 			continue
 		}
+		if c == '#' {
+			return strings.TrimRight(string(buf[:i]), " \t"), 0
+		}
 		if c == '\'' || c == '"' {
+			if i+2 < len(buf) && buf[i+1] == c && buf[i+2] == c {
+				// Enter triple-quoted string; blank the opener and the rest of the line.
+				for j := i; j < len(buf); j++ {
+					buf[j] = ' '
+				}
+				return string(buf), c
+			}
 			inQuote = c
-		} else if c == '#' {
-			return strings.TrimRight(line[:i], " \t")
 		}
 	}
-	return line
+	return string(buf), 0
+}
+
+func stripPyComment(line string) string {
+	text, _ := stripPyLineForFacts(line, 0)
+	return text
 }
 
 func indentWidth(line string) int { return len(line) - len(strings.TrimLeft(line, " \t")) }

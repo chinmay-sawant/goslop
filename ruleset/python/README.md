@@ -9,7 +9,7 @@
 **Runnable detectors (priority batches):**
 - CWE-22, CWE-78, CWE-79, CWE-89, CWE-502 — `internal/lang/python/detectors/cwe`
 - BP-PY priority subset (core + security + sample Flask/Django) — `internal/lang/python/detectors/bad_practices`
-- PERF-PY-1 through PERF-PY-22 — `internal/lang/python/detectors/perf` (experimental)
+- PERF-PY-1 through PERF-PY-30 — `internal/lang/python/detectors/perf` (experimental; 23–30 from dump-backed pure-Python hot-path patterns)
 
 Pure-Go source patterns; catalogue JSON remains source of truth. Full CWE-344 / all 50 BP / full PERF detector parity not claimed.
 
@@ -26,6 +26,7 @@ ruleset/python/
     cwe-1351-1400.json
     perf-py-001-014.json       # initial Python PERF seed
     perf-py-015-022.json       # remaining static evaluation gaps
+    perf-py-023-030.json       # dump-backed pure-Python hot-path patterns (pdf engine study)
 ```
 
 Sibling Go catalogues remain the default product source of truth:
@@ -116,8 +117,10 @@ sequence. The seed deliberately leaves async blocking and HTTP timeouts with `BP
 
 Every PERF entry is marked `Seeded`, has `applicable_to` including `python`, and uses
 Python-specific `detection_notes`. All 22 are emitted by the opt-in Python plugin and have paired
-vulnerable/safe fixtures under `tests/fixtures/python/perf/`. They remain experimental until a
-reference-corpus canary supports a maturity decision.
+vulnerable/safe fixtures under `tests/fixtures/python/perf/`. They remain **experimental** after the
+2026-08-01 reference-corpus canary (`plans/v0.0.2/heuristics/pref-plans/PERF-PY-CANARY-2026-08-01.md`):
+useful under `--profile all` + Python enablement, **not** in recommended/perf packs until a future
+tier promotion.
 FA-8 remains a correctness/operability issue, while XC-1/XC-3/XC-4/XC-5 are benchmark, deployment,
 observability, or security work rather than source PERF rules; XC-2 is represented by `PERF-PY-17`.
 
@@ -131,7 +134,7 @@ observability, or security work rather than source PERF rules; XC-2 is represent
 ## What this is not
 
 - Not a claim that experimental PERF-PY findings belong in the recommended/perf profile
-- Not a substitute for reference-corpus canary and false-positive review
+- Not a substitute for re-running canary before any future tier-list promotion
 
 ## Validation
 

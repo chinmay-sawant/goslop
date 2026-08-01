@@ -49,6 +49,7 @@ func detectPYPERF1(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 
 // PERF-PY-9: parsing a request payload only to dump it unchanged before
 // persistence adds CPU and allocation churn; keep raw bytes when possible.
+// The dumps(...) result (or dumps call) must appear in the create/add argument list.
 func detectPYPERF9(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	if facts == nil || isPythonTestFile(unit) {
 		return
@@ -58,19 +59,33 @@ func detectPYPERF9(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 		if len(m) < 2 {
 			continue
 		}
+		name := m[1]
 		start, end := functionWindow(facts.lines, i)
 		if windowHas(facts.lines, start, end, "redact", "normalize", "sanitiz", "transform") {
 			continue
 		}
-		dumpRE := regexp.MustCompile(`\bjson\.dumps\s*\(\s*` + regexp.QuoteMeta(m[1]) + `\b`)
-		dumped := false
+		inlineDumpRE := regexp.MustCompile(`\bjson\.dumps\s*\(\s*` + regexp.QuoteMeta(name) + `\b`)
+		dumpAssignRE := regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*json\.dumps\s*\(\s*` + regexp.QuoteMeta(name) + `\b`)
 		laterStart, laterEnd := safeLineRange(facts.lines, i+1, end)
+		dumpNames := map[string]struct{}{}
 		for _, later := range facts.lines[laterStart:laterEnd] {
-			if dumpRE.MatchString(later.text) {
-				dumped = true
+			if dm := dumpAssignRE.FindStringSubmatch(later.text); len(dm) == 2 {
+				dumpNames[dm[1]] = struct{}{}
 			}
-			if dumped && (strings.Contains(later.text, ".add(") || strings.Contains(later.text, ".objects.create(") || strings.Contains(later.text, ".create(")) {
-				pushLine(unit, "PERF-PY-9", line, m[1], "request JSON is parsed and re-serialized before persistence; persist the raw payload when no transformation is needed", out)
+			if !strings.Contains(later.text, ".add(") && !strings.Contains(later.text, ".objects.create(") && !strings.Contains(later.text, ".create(") {
+				continue
+			}
+			usesDump := inlineDumpRE.MatchString(later.text)
+			if !usesDump {
+				for dumped := range dumpNames {
+					if strings.Contains(later.text, dumped) {
+						usesDump = true
+						break
+					}
+				}
+			}
+			if usesDump {
+				pushLine(unit, "PERF-PY-9", line, name, "request JSON is parsed and re-serialized before persistence; persist the raw payload when no transformation is needed", out)
 				break
 			}
 		}
@@ -99,6 +114,7 @@ func detectPYPERF12(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 
 // PERF-PY-14: checking an idempotency key and later creating the same model
 // is a select-then-insert race unless the database operation is an upsert.
+// The later insert must share an idempotency/key token with the lookup.
 func detectPYPERF14(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	if facts == nil || isPythonTestFile(unit) {
 		return
@@ -107,16 +123,30 @@ func detectPYPERF14(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if !isIdempotencyLookup(line.text) {
 			continue
 		}
+		keys := idempotencyKeyTokens(line.text)
+		if len(keys) == 0 {
+			continue
+		}
 		start, end := functionWindow(facts.lines, i)
 		if windowHas(facts.lines, start, end, "get_or_create", "update_or_create", "on_conflict", "ON CONFLICT", "IntegrityError", "insert_or_ignore") {
 			continue
 		}
+		model := ormModelToken(line.text)
 		laterStart, laterEnd := safeLineRange(facts.lines, i+1, end)
 		for _, later := range facts.lines[laterStart:laterEnd] {
-			if strings.Contains(later.text, ".objects.create(") || strings.Contains(later.text, ".add(") || strings.Contains(later.text, "insert(") {
-				pushLine(unit, "PERF-PY-14", line, "idempotency", "idempotency lookup is followed by an insert; use a database upsert or conflict-safe create", out)
-				break
+			if !strings.Contains(later.text, ".objects.create(") && !strings.Contains(later.text, ".add(") && !strings.Contains(later.text, "insert(") {
+				continue
 			}
+			if model != "" {
+				if createModel := ormModelToken(later.text); createModel != "" && createModel != model && !strings.Contains(later.text, model+"(") {
+					continue
+				}
+			}
+			if !lineHasAnyToken(later.text, keys) {
+				continue
+			}
+			pushLine(unit, "PERF-PY-14", line, "idempotency", "idempotency lookup is followed by an insert; use a database upsert or conflict-safe create", out)
+			break
 		}
 	}
 }
@@ -126,4 +156,39 @@ func isIdempotencyLookup(line string) bool {
 	keyed := strings.Contains(lower, "idempotency") || strings.Contains(lower, "event_key") || strings.Contains(lower, "request_key")
 	lookup := strings.Contains(lower, ".filter(") || strings.Contains(lower, ".get(") || strings.Contains(lower, "find_") || strings.Contains(lower, "lookup_") || strings.Contains(lower, ".query(")
 	return keyed && lookup
+}
+
+func idempotencyKeyTokens(line string) []string {
+	lower := strings.ToLower(line)
+	var keys []string
+	for _, tok := range []string{"idempotency_key", "idempotency", "event_key", "request_key"} {
+		if strings.Contains(lower, tok) {
+			keys = append(keys, tok)
+		}
+	}
+	// Also capture a simple RHS name: filter(idempotency_key=key) → key
+	if m := regexp.MustCompile(`(?i)(?:idempotency_key|event_key|request_key)\s*=\s*([A-Za-z_][A-Za-z0-9_\.]*)`).FindStringSubmatch(line); len(m) == 2 {
+		keys = append(keys, m[1])
+	}
+	return keys
+}
+
+func ormModelToken(line string) string {
+	if m := regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\.objects\.`).FindStringSubmatch(line); len(m) == 2 {
+		return m[1]
+	}
+	if m := regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\s*\(`).FindStringSubmatch(line); len(m) == 2 {
+		return m[1]
+	}
+	return ""
+}
+
+func lineHasAnyToken(line string, tokens []string) bool {
+	lower := strings.ToLower(line)
+	for _, tok := range tokens {
+		if tok != "" && strings.Contains(lower, strings.ToLower(tok)) {
+			return true
+		}
+	}
+	return false
 }

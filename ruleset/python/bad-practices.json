@@ -174,7 +174,7 @@
     "id": "BP-PY-20",
     "name": "Flask send_file User Path",
     "description": "`send_file` / `send_from_directory` is fed a path derived from request input without a jail.",
-    "detection_notes": "Match flask.send_file/send_from_directory where path/filename comes from request.args/form/view args without safe_join + root check. Complements CWE-22.",
+    "detection_notes": "Match flask.send_file where the path comes from request.args/form/view args without safe_join. Idiomatic send_from_directory(fixed_root, request_name) is a miss (Flask jails via safe_join); flag send_from_directory only when the directory/root argument is request-derived. Complements CWE-22.",
     "severity": "high",
     "category": "Flask",
     "applicable_to": ["python", "flask"]
