@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: views.py
+---
+def create(request):
+    return User.objects.create(username=request.POST['u'])

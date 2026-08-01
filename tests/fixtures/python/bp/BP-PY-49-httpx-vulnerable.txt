@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: client.py
+---
+import httpx
+httpx.get(url, verify=False)

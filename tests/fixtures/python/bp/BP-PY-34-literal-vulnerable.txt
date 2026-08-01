@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: tpl.py
+---
+from markupsafe import Markup
+def render(user_html):
+    return Markup(user_html)

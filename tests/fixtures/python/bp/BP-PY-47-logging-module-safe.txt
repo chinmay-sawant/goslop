@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: log.py
+---
+import logging
+logging.info("user=%s", user)

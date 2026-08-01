@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/chinmay-sawant/goslop/internal/fixture"
@@ -19,10 +20,13 @@ func TestBPFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "BP-PY-26", caseName: "BP-PY-26-read-only"},
 		{rule: "BP-PY-38", caseName: "BP-PY-38-task-list"},
 		{rule: "BP-PY-41", caseName: "BP-PY-41-assert-helper"},
+		{rule: "BP-PY-41", caseName: "BP-PY-41-assertionerror-helper"},
+		{rule: "BP-PY-41", caseName: "BP-PY-41-sibling-helpers"},
 		{rule: "BP-PY-42", caseName: "BP-PY-42-thread-collection"},
 		{rule: "BP-PY-46", caseName: "BP-PY-46-cli-output"},
 		{rule: "BP-PY-46", caseName: "BP-PY-46-benchmark-script"},
 		{rule: "BP-PY-46", caseName: "BP-PY-46-argparse-cli"},
+		{rule: "BP-PY-46", caseName: "BP-PY-46-main-guard"},
 	} {
 		tc := tc
 		t.Run(tc.caseName, func(t *testing.T) {
@@ -52,7 +56,14 @@ func loadBPFixture(t *testing.T, caseName string, vulnerable bool) bpFixtureSour
 	if vulnerable {
 		suf = "vulnerable"
 	}
-	txtPath := filepath.Join(repoFixturesRoot(t), "python", "bp", caseName+"-"+suf+".txt")
+	return loadBPFixtureFile(t, caseName+"-"+suf+".txt")
+}
+
+// loadBPFixtureFile loads any .txt under tests/fixtures/python/bp/ (including
+// non-paired helpers used by TempDir sibling tests).
+func loadBPFixtureFile(t *testing.T, fileName string) bpFixtureSource {
+	t.Helper()
+	txtPath := filepath.Join(repoFixturesRoot(t), "python", "bp", fileName)
 	data, err := os.ReadFile(txtPath)
 	if err != nil {
 		t.Fatalf("read fixture %s: %v", txtPath, err)
@@ -63,7 +74,7 @@ func loadBPFixture(t *testing.T, caseName string, vulnerable bool) bpFixtureSour
 	}
 	path := fx.Filename
 	if path == "" {
-		path = caseName + "-" + suf + ".py"
+		path = strings.TrimSuffix(fileName, ".txt") + ".py"
 	}
 	return bpFixtureSource{path: path, body: fx.Source}
 }

@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: tpl.py
+---
+from flask import request
+from markupsafe import Markup
+def render():
+    return Markup(request.args["x"])

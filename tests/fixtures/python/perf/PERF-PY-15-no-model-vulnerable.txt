@@ -1,0 +1,10 @@
+# PERF-PY-15 no-model variant (vulnerable)
+lang: python
+file: models.py
+---
+class Metric(models.Model):
+    tenant_id = models.IntegerField()
+    timestamp = models.DateTimeField()
+
+def read(cutoff):
+    return Metric.objects.filter(tenant_id=1, timestamp__gte=cutoff)

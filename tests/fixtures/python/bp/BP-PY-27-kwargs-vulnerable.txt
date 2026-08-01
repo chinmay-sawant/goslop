@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: views.py
+---
+def create(request):
+    u = User(**request.POST)
+    return u

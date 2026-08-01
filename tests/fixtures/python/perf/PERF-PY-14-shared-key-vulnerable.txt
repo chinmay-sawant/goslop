@@ -1,0 +1,9 @@
+# PERF-PY-14 shared key (vulnerable)
+lang: python
+file: events.py
+---
+def create(idempotency_key):
+    existing = Event.objects.filter(idempotency_key=idempotency_key).first()
+    if existing:
+        return existing
+    return Event.objects.create(idempotency_key=idempotency_key)

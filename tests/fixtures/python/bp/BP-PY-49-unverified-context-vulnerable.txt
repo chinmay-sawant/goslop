@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: ssl_util.py
+---
+import ssl
+ctx = ssl._create_unverified_context()

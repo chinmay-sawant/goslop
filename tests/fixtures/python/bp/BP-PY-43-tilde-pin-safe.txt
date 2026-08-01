@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: requirements-tilde-safe.py
+---
+django~=4.2

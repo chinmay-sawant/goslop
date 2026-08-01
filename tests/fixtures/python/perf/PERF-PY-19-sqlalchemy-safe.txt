@@ -1,0 +1,8 @@
+# PERF-PY-19 sqlalchemy bounded lock (safe)
+lang: python
+file: sweeper.py
+---
+def release(session):
+    with session.begin():
+        for row in session.query(Reservation).with_for_update().limit(100):
+            row.release()

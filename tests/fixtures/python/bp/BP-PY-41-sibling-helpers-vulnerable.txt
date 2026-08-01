@@ -1,0 +1,7 @@
+# goslop text fixture
+# side-effect-only test (matrix + production-layout fire)
+lang: python
+file: test_api.py
+---
+def test_api():
+    client.get('/x')

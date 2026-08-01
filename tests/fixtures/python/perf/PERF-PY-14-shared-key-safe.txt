@@ -1,0 +1,9 @@
+# PERF-PY-14 requires shared key (safe)
+lang: python
+file: events.py
+---
+def create(idempotency_key):
+    existing = Event.objects.filter(idempotency_key=idempotency_key).first()
+    if existing:
+        return existing
+    return Other.objects.create(name="x")

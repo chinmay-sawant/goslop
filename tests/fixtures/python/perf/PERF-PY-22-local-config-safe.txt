@@ -1,0 +1,7 @@
+# PERF-PY-22 local settings suppress (safe)
+lang: python
+file: config/local_settings.py
+---
+ENVIRONMENT = "production"
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3"}}
+CELERY_WORKER_CONCURRENCY = 4

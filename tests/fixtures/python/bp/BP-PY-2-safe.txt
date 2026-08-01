@@ -1,10 +1,10 @@
-# Fixture for BP-PY-2 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-2-safe.py
+file: pass.py
 ---
 def f():
     try:
         x()
     except ValueError as e:
-        logger.exception("x")
+        logger.exception('x')
         raise

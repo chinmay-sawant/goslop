@@ -1,0 +1,7 @@
+# PERF-PY-2 small-loop variant (vulnerable)
+lang: python
+file: reservation.py
+---
+def reserve(items):
+    for item in items:
+        sku = Sku.objects.get(code=item["code"])

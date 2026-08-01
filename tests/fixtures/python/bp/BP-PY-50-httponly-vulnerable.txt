@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: settings.py
+---
+SESSION_COOKIE_HTTPONLY = False

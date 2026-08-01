@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: routes.py
+---
+from flask import Flask
+app = Flask(__name__)
+STORE = {}
+
+@app.route("/x")
+def read_x(k):
+    global STORE
+    STORE[k] = 1
+    return STORE

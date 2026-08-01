@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from flask import send_file, request
+
+@app.route('/dl')
+def dl():
+    return send_file(request.args['path'])

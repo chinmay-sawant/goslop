@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: test_settings.py
+---
+SESSION_COOKIE_SECURE = False

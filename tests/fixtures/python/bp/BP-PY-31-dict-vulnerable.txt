@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+from sqlalchemy.orm import Session
+app = FastAPI()
+
+@app.get("/u/{id}")
+def get_user(id: int, session: Session):
+    return session.query(User).get(id)

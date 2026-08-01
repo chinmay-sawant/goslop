@@ -97,7 +97,7 @@ func TestBPRulesRegistered(t *testing.T) {
 		}
 	}
 	if badpractices.CatalogueSize() < len(want) {
-		t.Errorf("catalogue size too small: %d", badpractices.CatalogueSize())
+		t.Fatalf("catalogue size too small: %d", badpractices.CatalogueSize())
 	}
 }
 
@@ -128,36 +128,24 @@ func TestFullCatalogueParseable(t *testing.T) {
 
 func TestBPPY1BareExcept(t *testing.T) {
 	t.Parallel()
-	vuln := "def f():\n    try:\n        x()\n    except:\n        pass\n"
-	safe := "def f():\n    try:\n        x()\n    except ValueError as e:\n        raise RuntimeError('bad') from e\n"
-	assertRule(t, "BP-PY-1", "bare.py", vuln, true)
-	assertRule(t, "BP-PY-1", "bare.py", safe, false)
+	assertBPFixtureCase(t, "BP-PY-1", "BP-PY-1")
 }
 
 func TestBPPY1BroadException(t *testing.T) {
 	t.Parallel()
-	vuln := "def f():\n    try:\n        x()\n    except Exception:\n        log()\n"
-	safe := "def f():\n    try:\n        x()\n    except Exception:\n        raise\n"
-	assertRule(t, "BP-PY-1", "broad.py", vuln, true)
-	assertRule(t, "BP-PY-1", "broad.py", safe, false)
+	assertBPFixtureCase(t, "BP-PY-1", "BP-PY-1-broad")
 }
 
 func TestBPPY2ExceptPass(t *testing.T) {
 	t.Parallel()
-	vuln := "def f():\n    try:\n        x()\n    except ValueError:\n        pass\n"
-	safe := "def f():\n    try:\n        x()\n    except ValueError as e:\n        logger.exception('x')\n        raise\n"
-	assertRule(t, "BP-PY-2", "pass.py", vuln, true)
-	assertRule(t, "BP-PY-2", "pass.py", safe, false)
+	assertBPFixtureCase(t, "BP-PY-2", "BP-PY-2")
 }
 
 func TestBPPY4MutableDefault(t *testing.T) {
 	t.Parallel()
-	vuln := "def append_item(x, items=[]):\n    items.append(x)\n    return items\n"
-	safe := "def append_item(x, items=None):\n    if items is None:\n        items = []\n    items.append(x)\n    return items\n"
-	assertRule(t, "BP-PY-4", "mut.py", vuln, true)
-	assertRule(t, "BP-PY-4", "mut.py", safe, false)
-	// Severity high
-	findings := runBP(t, nil, vuln, "mut.py")
+	assertBPFixtureCase(t, "BP-PY-4", "BP-PY-4")
+	vuln := loadBPFixture(t, "BP-PY-4", true)
+	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-4" && f.Severity != rules.SeverityHigh {
 			t.Fatalf("BP-PY-4 severity = %v, want high", f.Severity)
@@ -167,32 +155,25 @@ func TestBPPY4MutableDefault(t *testing.T) {
 
 func TestBPPY6AssertValidation(t *testing.T) {
 	t.Parallel()
-	vuln := "def check(request):\n    assert request.user.is_authenticated\n    return True\n"
-	assertRule(t, "BP-PY-6", "lib.py", vuln, true)
-	// Internal invariant asserts are intentionally missed.
-	invariant := "def normalize(user):\n    assert user is not None\n    return user\n"
-	assertRule(t, "BP-PY-6", "lib.py", invariant, false)
-	// Test file skip
-	assertRule(t, "BP-PY-6", "test_auth.py", vuln, false)
-	assertRule(t, "BP-PY-6", "auth_test.py", vuln, false)
-	assertRule(t, "BP-PY-6", "tests/test_auth.py", vuln, false)
+	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6")
+	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-invariant")
+	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-test-path")
+	// Extra test-path filename shapes reuse the vulnerable body.
+	vuln := loadBPFixture(t, "BP-PY-6", true)
+	assertRule(t, "BP-PY-6", "auth_test.py", vuln.body, false)
+	assertRule(t, "BP-PY-6", "tests/test_auth.py", vuln.body, false)
 }
 
 func TestBPPY7OpenWithoutWith(t *testing.T) {
 	t.Parallel()
-	vuln := "def read(path):\n    f = open(path)\n    return f.read()\n"
-	safe := "def read(path):\n    with open(path) as f:\n        return f.read()\n"
-	assertRule(t, "BP-PY-7", "io.py", vuln, true)
-	assertRule(t, "BP-PY-7", "io.py", safe, false)
+	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7")
 }
 
 func TestBPPY8SubprocessShell(t *testing.T) {
 	t.Parallel()
-	vuln := "import subprocess\nsubprocess.run(cmd, shell=True)\n"
-	safe := "import subprocess\nsubprocess.run(['ls', '-la'], shell=False)\n"
-	assertRule(t, "BP-PY-8", "sh.py", vuln, true)
-	assertRule(t, "BP-PY-8", "sh.py", safe, false)
-	findings := runBP(t, nil, vuln, "sh.py")
+	assertBPFixtureCase(t, "BP-PY-8", "BP-PY-8")
+	vuln := loadBPFixture(t, "BP-PY-8", true)
+	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-8" && f.Severity != rules.SeverityHigh {
 			t.Fatalf("BP-PY-8 severity = %v, want high", f.Severity)
@@ -202,79 +183,50 @@ func TestBPPY8SubprocessShell(t *testing.T) {
 
 func TestBPPY9OSSystem(t *testing.T) {
 	t.Parallel()
-	vuln := "import os\nos.system('ls ' + path)\n"
-	safe := "import subprocess\nsubprocess.run(['ls', path])\n"
-	assertRule(t, "BP-PY-9", "sys.py", vuln, true)
-	assertRule(t, "BP-PY-9", "sys.py", safe, false)
-	assertRule(t, "BP-PY-9", "pop.py", "import os\nos.popen('ls')\n", true)
+	assertBPFixtureCase(t, "BP-PY-9", "BP-PY-9")
+	assertBPFixtureCase(t, "BP-PY-9", "BP-PY-9-popen")
 }
 
 func TestBPPY10Pickle(t *testing.T) {
 	t.Parallel()
-	vuln := "import pickle\ndata = pickle.loads(body)\n"
-	safe := "import json\ndata = json.loads(body)\n"
-	assertRule(t, "BP-PY-10", "pk.py", vuln, true)
-	assertRule(t, "BP-PY-10", "pk.py", safe, false)
-	// Trusted/local cache-style loads are intentionally missed.
-	assertRule(t, "BP-PY-10", "pk.py", "import pickle\ndata = pickle.loads(LOCAL_CACHE_BYTES)\n", false)
-	assertRule(t, "BP-PY-10", "pk.py", "import pickle\ndata = pickle.loads(cache_blob)\n", false)
+	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10")
+	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-local-cache")
+	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-cache-blob")
 }
 
 func TestBPPY11YamlLoad(t *testing.T) {
 	t.Parallel()
-	vuln := "import yaml\ncfg = yaml.load(stream)\n"
-	safe := "import yaml\ncfg = yaml.safe_load(stream)\n"
-	safe2 := "import yaml\ncfg = yaml.load(stream, Loader=yaml.SafeLoader)\n"
-	assertRule(t, "BP-PY-11", "y.py", vuln, true)
-	assertRule(t, "BP-PY-11", "y.py", safe, false)
-	assertRule(t, "BP-PY-11", "y.py", safe2, false)
+	assertBPFixtureCase(t, "BP-PY-11", "BP-PY-11")
+	assertBPFixtureCase(t, "BP-PY-11", "BP-PY-11-safe-loader")
 }
 
 func TestBPPY12EvalExec(t *testing.T) {
 	t.Parallel()
-	vuln := "def run(user_code):\n    return eval(user_code)\n"
-	safe := "def run():\n    return eval('1+1')\n"
-	assertRule(t, "BP-PY-12", "ev.py", vuln, true)
-	assertRule(t, "BP-PY-12", "ev.py", safe, false)
-	assertRule(t, "BP-PY-12", "ex.py", "exec(payload)\n", true)
+	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12")
+	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-exec")
 }
 
 func TestBPPY13HardcodedSecret(t *testing.T) {
 	t.Parallel()
-	vuln := "api_key = 'prod_not_a_real_credential_abcdef'\n"
-	safePlaceholder := "password = 'changeme'\n"
-	safeEnv := "import os\npassword = os.environ['PASSWORD']\n"
-	assertRule(t, "BP-PY-13", "sec.py", vuln, true)
-	assertRule(t, "BP-PY-13", "sec.py", safePlaceholder, false)
-	assertRule(t, "BP-PY-13", "sec.py", safeEnv, false)
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-placeholder")
 }
 
 func TestBPPY16FlaskDebug(t *testing.T) {
 	t.Parallel()
-	vuln := "from flask import Flask\napp = Flask(__name__)\nif __name__ == '__main__':\n    app.run(debug=True)\n"
-	safe := "from flask import Flask\napp = Flask(__name__)\nif __name__ == '__main__':\n    app.run(debug=False)\n"
-	assertRule(t, "BP-PY-16", "app.py", vuln, true)
-	assertRule(t, "BP-PY-16", "app.py", safe, false)
-	// test file skip
-	assertRule(t, "BP-PY-16", "test_app.py", vuln, false)
+	assertBPFixtureCase(t, "BP-PY-16", "BP-PY-16")
+	assertBPFixtureCase(t, "BP-PY-16", "BP-PY-16-test-path")
 }
 
 func TestBPPY17FlaskSecretKey(t *testing.T) {
 	t.Parallel()
-	vuln := "from flask import Flask\napp = Flask(__name__)\napp.secret_key = 'super-secret-key-value'\n"
-	safe := "from flask import Flask\nimport os\napp = Flask(__name__)\napp.secret_key = os.environ['SECRET_KEY']\n"
-	assertRule(t, "BP-PY-17", "app.py", vuln, true)
-	assertRule(t, "BP-PY-17", "app.py", safe, false)
+	assertBPFixtureCase(t, "BP-PY-17", "BP-PY-17")
 }
 
 func TestBPPY21DjangoDebug(t *testing.T) {
 	t.Parallel()
-	vuln := "DEBUG = True\nINSTALLED_APPS = []\n"
-	safe := "DEBUG = False\nINSTALLED_APPS = []\n"
-	assertRule(t, "BP-PY-21", "settings.py", vuln, true)
-	assertRule(t, "BP-PY-21", "settings.py", safe, false)
-	// non-settings path without django markers should not fire
-	assertRule(t, "BP-PY-21", "util.py", "DEBUG = True\n", false)
+	assertBPFixtureCase(t, "BP-PY-21", "BP-PY-21")
+	assertBPFixtureCase(t, "BP-PY-21", "BP-PY-21-util")
 }
 
 func TestNonPythonUnitSkipped(t *testing.T) {

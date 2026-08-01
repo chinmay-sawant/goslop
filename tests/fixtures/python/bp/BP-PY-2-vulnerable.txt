@@ -1,6 +1,6 @@
-# Fixture for BP-PY-2 (vulnerable)
+# goslop text fixture
 lang: python
-file: BP-PY-2-vulnerable.py
+file: pass.py
 ---
 def f():
     try:

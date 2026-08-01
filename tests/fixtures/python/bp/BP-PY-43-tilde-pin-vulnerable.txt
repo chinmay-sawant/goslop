@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: requirements-tilde-vulnerable.py
+---
+requests
+flask

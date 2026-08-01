@@ -1,7 +1,8 @@
-# Fixture for BP-PY-16 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-16-safe.py
+file: app.py
 ---
 from flask import Flask
 app = Flask(__name__)
-app.run(debug=False)
+if __name__ == '__main__':
+    app.run(debug=False)

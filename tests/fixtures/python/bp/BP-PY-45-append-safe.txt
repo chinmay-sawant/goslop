@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+import sys
+print(sys.path)

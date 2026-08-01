@@ -1,0 +1,10 @@
+# PERF-PY-20 pk filter suppress (safe)
+lang: python
+file: models.py
+---
+class Stock(models.Model):
+    warehouse_id = models.IntegerField()
+    quantity = models.IntegerField()
+
+def available():
+    return Stock.objects.filter(pk=1).order_by("-quantity")

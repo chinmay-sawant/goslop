@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: requirements-dev-safe.py
+---
+pytest==8.0.0

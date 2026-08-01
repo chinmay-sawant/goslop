@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: db.py
+---
+def q(cursor, uid):
+    cursor.execute("SELECT * FROM t WHERE id = %s", (uid,))

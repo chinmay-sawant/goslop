@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: http.py
+---
+import httpx
+async def f():
+    client = httpx.AsyncClient()
+    try:
+        await client.get(url)
+    finally:
+        await client.aclose()

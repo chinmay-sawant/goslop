@@ -1,0 +1,7 @@
+# goslop text fixture
+# unit-only: test that relies on sibling helpers.py
+lang: python
+file: test_doc.py
+---
+def test_catalog_and_pages_present():
+    find_object_with(b'', b'/Type', {})

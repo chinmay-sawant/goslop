@@ -1,0 +1,6 @@
+# PERF-PY-17 test path suppress (safe)
+lang: python
+file: tests/test_database.py
+---
+ENVIRONMENT = "production"
+engine = create_engine("postgresql://db/service")

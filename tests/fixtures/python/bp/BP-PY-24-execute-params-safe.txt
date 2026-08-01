@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: views.py
+---
+cursor.execute("SELECT * FROM t WHERE id = %s", [uid])

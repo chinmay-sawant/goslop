@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: settings.py
+---
+import os
+SECRET_KEY = os.getenv('SECRET_KEY')
+INSTALLED_APPS = []

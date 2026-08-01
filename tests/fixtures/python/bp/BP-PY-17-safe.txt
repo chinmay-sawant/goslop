@@ -1,8 +1,8 @@
-# Fixture for BP-PY-17 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-17-safe.py
+file: app.py
 ---
-import os
 from flask import Flask
+import os
 app = Flask(__name__)
-app.secret_key = os.environ["SECRET_KEY"]
+app.secret_key = os.environ['SECRET_KEY']

@@ -1,6 +1,6 @@
-# Fixture for BP-PY-4 (vulnerable)
+# goslop text fixture
 lang: python
-file: BP-PY-4-vulnerable.py
+file: mut.py
 ---
 def append_item(x, items=[]):
     items.append(x)

@@ -1,0 +1,7 @@
+# PERF-PY-9 dump-for-log variant (vulnerable)
+lang: python
+file: ingest.py
+---
+def ingest(request, session):
+    payload = request.get_json()
+    session.add(Event(body=json.dumps(payload)))

@@ -1,0 +1,6 @@
+# PERF-PY-20 query without model declaration (safe)
+lang: python
+file: models.py
+---
+def available():
+    return Stock.objects.filter(warehouse_id=1).order_by("-quantity")

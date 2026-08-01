@@ -15,8 +15,8 @@ func TestPythonPERFFixturesMatrix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cases) < 30 {
-		t.Fatalf("PERF-PY fixture cases = %d, want at least 30", len(cases))
+	if len(cases) < 50 {
+		t.Fatalf("PERF-PY fixture cases = %d, want at least 50", len(cases))
 	}
 	t.Logf("Python PERF-PY fixture cases: %d (×2 files)", len(cases))
 	var failures []string
@@ -51,8 +51,8 @@ func TestPythonPERFFixtureInventory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cases) < 30 {
-		t.Fatalf("inventory = %d, want at least 30", len(cases))
+	if len(cases) < 50 {
+		t.Fatalf("inventory = %d, want at least 50", len(cases))
 	}
 	seen := map[string]struct{}{}
 	rules := map[string]struct{}{}

@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: lib.py
+---
+def normalize(user):
+    assert user is not None
+    return user

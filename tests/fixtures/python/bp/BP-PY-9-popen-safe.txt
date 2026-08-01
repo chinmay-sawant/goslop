@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: pop.py
+---
+import subprocess
+subprocess.run(['ls'])

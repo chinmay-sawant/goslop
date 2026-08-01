@@ -1,6 +1,6 @@
-# Fixture for BP-PY-9 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-9-safe.py
+file: sys.py
 ---
 import subprocess
-subprocess.run(["ls", path])
+subprocess.run(['ls', path])

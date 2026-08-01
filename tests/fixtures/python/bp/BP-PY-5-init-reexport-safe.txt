@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: pkg/__init__.py
+---
+from .models import *

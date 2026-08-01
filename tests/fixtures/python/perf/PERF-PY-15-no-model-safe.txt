@@ -1,0 +1,6 @@
+# PERF-PY-15 query without model declaration (safe)
+lang: python
+file: models.py
+---
+def read(cutoff):
+    return Metric.objects.filter(tenant_id=1, timestamp__gte=cutoff)

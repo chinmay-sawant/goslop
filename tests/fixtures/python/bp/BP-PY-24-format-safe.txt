@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: views.py
+---
+from django.contrib.auth.models import User
+User.objects.raw("SELECT * FROM auth_user WHERE id = %s", [uid])

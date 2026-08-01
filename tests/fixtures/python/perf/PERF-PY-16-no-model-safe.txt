@@ -1,0 +1,6 @@
+# PERF-PY-16 query without model declaration (safe)
+lang: python
+file: models.py
+---
+def purge(cutoff):
+    return Metric.objects.filter(created_at__lt=cutoff).delete()

@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: requirements-directives-safe.py
+---
+-r other.txt
+# comment
+-e .

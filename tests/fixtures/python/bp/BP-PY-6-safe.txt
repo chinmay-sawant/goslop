@@ -1,6 +1,6 @@
-# Fixture for BP-PY-6 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-6-safe.py
+file: lib.py
 ---
 def check_user(user):
     if user is None:

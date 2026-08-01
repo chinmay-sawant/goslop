@@ -1,0 +1,11 @@
+# PERF-PY-15 external migration comment (safe)
+lang: python
+file: models.py
+---
+# external migration manages this index
+class Metric(models.Model):
+    tenant_id = models.IntegerField()
+    timestamp = models.DateTimeField()
+
+def read(cutoff):
+    return Metric.objects.filter(tenant_id=1, timestamp__gte=cutoff)

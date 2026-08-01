@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: ssl_util.py
+---
+import ssl
+ctx = ssl.create_default_context()
+ctx.verify_mode = ssl.CERT_NONE

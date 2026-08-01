@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from flask import Flask, request
+app = Flask(__name__)
+
+@app.route('/login')
+def login():
+    user = request.form['user']
+    return user

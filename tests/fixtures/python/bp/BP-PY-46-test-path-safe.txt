@@ -1,0 +1,7 @@
+# goslop text fixture
+# print in test file is skipped
+lang: python
+file: test_lib.py
+---
+def f():
+    print('debug')

@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: threads.py
+---
+import threading
+def run():
+    pass
+t = threading.Thread(target=run)
+t.start()

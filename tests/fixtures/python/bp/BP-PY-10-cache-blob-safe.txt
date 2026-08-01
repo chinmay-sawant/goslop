@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: pk.py
+---
+import pickle
+data = pickle.loads(cache_blob)

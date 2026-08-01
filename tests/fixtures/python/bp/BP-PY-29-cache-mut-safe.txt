@@ -1,0 +1,12 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/x")
+def read_x():
+    local = {}
+    local["a"] = 1
+    return local

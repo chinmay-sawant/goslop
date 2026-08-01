@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: db.py
+---
+from sqlalchemy import text
+def q(uid):
+    return text("SELECT * FROM users WHERE id = {}".format(uid))

@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: broad.py
+---
+def f():
+    try:
+        x()
+    except Exception:
+        raise

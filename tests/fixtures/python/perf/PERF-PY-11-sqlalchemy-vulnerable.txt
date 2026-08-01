@@ -1,0 +1,8 @@
+# PERF-PY-11 sqlalchemy per-row mutation (vulnerable)
+lang: python
+file: redrive.py
+---
+def redrive(session):
+    for job in session.query(Job).filter(Job.state == 'dead'):
+        job.state = 'queued'
+    session.commit()

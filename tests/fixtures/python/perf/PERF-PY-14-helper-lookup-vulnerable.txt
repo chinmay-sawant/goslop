@@ -1,0 +1,9 @@
+# PERF-PY-14 helper lookup then insert (vulnerable)
+lang: python
+file: events.py
+---
+async def create(request, session):
+    existing = await self._find_batch_by_key(request.idempotency_key)
+    if existing:
+        return existing
+    session.add(Event(idempotency_key=request.idempotency_key))

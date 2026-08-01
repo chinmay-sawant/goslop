@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: test_api.py
+---
+def test_api():
+    r = client.get('/x')
+    self.assertEqual(r.status_code, 200)

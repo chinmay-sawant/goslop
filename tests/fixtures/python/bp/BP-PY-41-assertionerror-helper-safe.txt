@@ -1,0 +1,10 @@
+# goslop text fixture
+# audit FP 75: same-file helper that raises AssertionError
+lang: python
+file: test_doc.py
+---
+def find_object_with(data, marker, offsets):
+    raise AssertionError('missing')
+
+def test_catalog_and_pages_present():
+    find_object_with(b'', b'/Type', {})

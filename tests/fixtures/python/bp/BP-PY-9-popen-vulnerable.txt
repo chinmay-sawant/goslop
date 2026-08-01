@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: pop.py
+---
+import os
+os.popen('ls')

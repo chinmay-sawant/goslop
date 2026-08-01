@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+from starlette.responses import FileResponse
+app = FastAPI()
+
+@app.get("/report")
+def report():
+    return FileResponse("/safe/fixed.pdf")

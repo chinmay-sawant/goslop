@@ -1,6 +1,6 @@
-# Fixture for BP-PY-7 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-7-safe.py
+file: io.py
 ---
 def read(path):
     with open(path) as f:

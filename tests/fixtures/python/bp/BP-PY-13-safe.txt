@@ -1,6 +1,6 @@
-# Fixture for BP-PY-13 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-13-safe.py
+file: sec.py
 ---
 import os
-API_KEY = os.environ["API_KEY"]
+password = os.environ['PASSWORD']

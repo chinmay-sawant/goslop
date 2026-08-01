@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: tests/helpers.py
+---
+def f():
+    raise Exception('bad')

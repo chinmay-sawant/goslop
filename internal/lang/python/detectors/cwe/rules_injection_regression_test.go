@@ -1,19 +1,30 @@
 package cwe
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/fixture"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
 func TestDetectCWE93PreservesMultilineSourceAlignment(t *testing.T) {
-	source := `"""A multiline docstring.
-The masked source must keep this line.
-"""
-response.headers["Location"] = next_url
-`
-	unit := core.NewParsedUnit(core.LanguagePython, "app.py", source)
+	fixturePath := filepath.Join("..", "..", "..", "..", "..", "tests", "fixtures", "python", "cwe", "CWE-93-multiline-docstring-vulnerable.txt")
+	contents, err := os.ReadFile(fixturePath)
+	if err != nil {
+		t.Fatalf("read %s: %v", fixturePath, err)
+	}
+	fx, err := fixture.ParseFixture(string(contents), filepath.Base(fixturePath))
+	if err != nil {
+		t.Fatalf("parse %s: %v", fixturePath, err)
+	}
+	path := fx.Filename
+	if path == "" {
+		path = "app.py"
+	}
+	unit := core.NewParsedUnit(core.LanguagePython, path, fx.Source)
 	var findings []rules.Finding
 
 	detectCWE93(unit, nil, &findings)

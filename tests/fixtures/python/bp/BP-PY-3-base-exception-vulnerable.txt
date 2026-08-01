@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+def f():
+    raise BaseException('x')

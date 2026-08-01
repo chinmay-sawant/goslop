@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: db.py
+---
+def work():
+    session = SessionLocal()
+    rows = session.query(User).all()
+    return rows

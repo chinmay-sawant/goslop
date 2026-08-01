@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: views.py
+---
+User.objects.raw("SELECT * FROM t WHERE id = {}".format(uid))

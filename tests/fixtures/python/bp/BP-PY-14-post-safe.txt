@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: client.py
+---
+import requests
+requests.post(url, json=body, timeout=5)
