@@ -65,21 +65,26 @@ func detectCWE295(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 }
 
-// CWE-328 reports legacy MD5 and SHA-1 hash construction. It does not report
-// uses of their names in comments, docstrings, or arbitrary string data.
+// CWE-328 reports legacy MD5 and SHA-1 hash construction only when the call
+// sits in a security-sensitive context (password / credential / token / auth /
+// key-derivation). Non-security fingerprints — checksums, format IDs, bench
+// digests, test equality hashes — are intentionally omitted. Comments and
+// docstrings are already masked before call discovery.
 func detectCWE328(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"hashlib.md5", "hashlib.sha1", "Crypto.Hash.MD5.new", "Crypto.Hash.SHA1.new"} {
-		if calls := findCalls(facts, unit.Source, name); len(calls) > 0 {
-			emitCryptoFinding(unit, &MetaCWE328, calls[0].Start, "weak MD5 or SHA-1 hash algorithm is used", confidence84, out)
-			return
+		for _, call := range findCalls(facts, unit.Source, name) {
+			if securityHashContext(facts, unit.Source, call.Start) {
+				emitCryptoFinding(unit, &MetaCWE328, call.Start, "weak MD5 or SHA-1 hash algorithm is used", confidence84, out)
+				return
+			}
 		}
 	}
 	for _, call := range findCalls(facts, unit.Source, "hashlib.new") {
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) > 0 && weakHashName(args[0]) {
+		if len(args) > 0 && weakHashName(args[0]) && securityHashContext(facts, unit.Source, call.Start) {
 			emitCryptoFinding(unit, &MetaCWE328, call.Start, "weak MD5 or SHA-1 hash algorithm is selected dynamically", confidence84, out)
 			return
 		}
@@ -89,6 +94,56 @@ func detectCWE328(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 func weakHashName(expr string) bool {
 	t := strings.ToLower(strings.TrimSpace(expr))
 	return t == "'md5'" || t == `"md5"` || t == "'sha1'" || t == `"sha1"`
+}
+
+// securityHashContext mirrors securityRandomContext: require a security-shaped
+// identifier on the call line, or in the enclosing function name/body.
+func securityHashContext(facts *PyCweFacts, source string, offset int) bool {
+	if offset < 0 || offset > len(source) {
+		return false
+	}
+	start := strings.LastIndex(source[:offset], "\n") + 1
+	end := len(source)
+	if next := strings.Index(source[offset:], "\n"); next >= 0 {
+		end = offset + next
+	}
+	lineSrc := source[start:end]
+	var line string
+	if facts != nil {
+		line = strings.ToLower(facts.codeMask(lineSrc, start))
+	} else {
+		line = strings.ToLower(pythonCodeMask(lineSrc))
+	}
+	if hasSecurityHashIdent(line) {
+		return true
+	}
+	if facts == nil {
+		return false
+	}
+	fn, ok := containingPythonFunction(facts.Functions(), offset)
+	if !ok {
+		return false
+	}
+	if hasSecurityHashIdent(strings.ToLower(fn.name)) {
+		return true
+	}
+	return hasSecurityHashIdent(strings.ToLower(facts.codeMask(fn.body, fn.bodyStart)))
+}
+
+func hasSecurityHashIdent(text string) bool {
+	// Distinctive substrings match compound names (user_password, hash_password).
+	for _, frag := range []string{"password", "passwd", "credential", "pbkdf", "key_derivation", "derive_key"} {
+		if strings.Contains(text, frag) {
+			return true
+		}
+	}
+	// Short tokens stay whole-identifier to avoid "author"/"tokenizer" noise.
+	for _, ident := range []string{"token", "auth"} {
+		if containsIdent(text, ident) {
+			return true
+		}
+	}
+	return false
 }
 
 // CWE-335 limits reports to an explicitly constant seed. A seed drawn from

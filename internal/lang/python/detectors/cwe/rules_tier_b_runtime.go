@@ -214,12 +214,18 @@ func detectCWE1046(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 func textAccumulatorEvidence(previous []string, name, rhs string) bool {
 	for i := len(previous) - 1; i >= 0; i-- {
 		line := strings.TrimSpace(previous[i])
-		if strings.HasPrefix(line, name+" = ") {
-			value := strings.TrimSpace(strings.TrimPrefix(line, name+" = "))
-			if strings.HasPrefix(value, "\"") || strings.HasPrefix(value, "'") || strings.HasPrefix(value, "str(") {
-				return true
-			}
+		if !strings.HasPrefix(line, name+" = ") {
+			continue
 		}
+		value := strings.TrimSpace(strings.TrimPrefix(line, name+" = "))
+		// bytearray += is in-place mutable buffer extend, not immutable text concat.
+		if strings.HasPrefix(value, "bytearray(") {
+			return false
+		}
+		if strings.HasPrefix(value, "\"") || strings.HasPrefix(value, "'") || strings.HasPrefix(value, "str(") {
+			return true
+		}
+		break
 	}
 	lowerName := strings.ToLower(name)
 	if strings.Contains(lowerName, "text") || strings.Contains(lowerName, "string") || strings.Contains(lowerName, "message") || strings.Contains(lowerName, "output") {

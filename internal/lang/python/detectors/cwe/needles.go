@@ -51,10 +51,11 @@ var pyCweNeedles = []string{
 	"print(",
 	"logging.debug",
 	".debug(",
-	// CWE-90 LDAP injection
+	// CWE-90 LDAP injection (not bare ".search(" — that matches re.Pattern.search)
 	"ldap3",
 	"ldap.initialize",
-	".search(",
+	"import ldap",
+	"from ldap ",
 	".search_s(",
 	// CWE-91 XML / XPath injection
 	".xpath(",

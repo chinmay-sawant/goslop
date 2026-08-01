@@ -8,8 +8,10 @@ import (
 )
 
 func init() {
+	// Gate on LDAP library evidence only. Bare ".search(" matches re.Pattern.search
+	// and must not schedule this rule on non-LDAP files.
 	RegisterRule("CWE-90", detectCWE90, &MetaCWE90,
-		"ldap3", "ldap.initialize", ".search(", ".search_s(")
+		"ldap3", "ldap.initialize", "import ldap", "from ldap ", ".search_s(")
 	RegisterRule("CWE-91", detectCWE91, &MetaCWE91,
 		".xpath(", "XPath(", ".fromstring(")
 	RegisterRule("CWE-93", detectCWE93, &MetaCWE93,
@@ -24,13 +26,22 @@ func init() {
 
 // CWE-90: only dynamic LDAP filter expressions reach LDAP search APIs. Filter
 // values escaped through the standard ldap3 helper are intentionally suppressed.
+// Regex .search / Pattern.search sinks are excluded via LDAP library context and
+// receiver shape (re / *_RE), not treated as LDAP injection.
 func detectCWE90(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
+	if !pythonFileLooksLikeLDAP(unit.Source) {
+		return
+	}
 	for _, call := range findCalls(facts, unit.Source, ".search", ".search_s") {
+		if call.Name == ".search" && looksLikeRegexSearchReceiver(methodReceiver(unit.Source, call.Start)) {
+			continue
+		}
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) == 0 || !isDynamicExpr(args[0]) || ldapFilterLooksEscaped(args[0]) {
+		filterArg := ldapFilterArg(args, call.Name)
+		if filterArg == "" || !isDynamicExpr(filterArg) || ldapFilterLooksEscaped(filterArg) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE90,
@@ -39,8 +50,62 @@ func detectCWE90(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	}
 }
 
+func pythonFileLooksLikeLDAP(source string) bool {
+	return strings.Contains(source, "ldap3") ||
+		strings.Contains(source, "ldap.initialize") ||
+		strings.Contains(source, "import ldap") ||
+		strings.Contains(source, "from ldap ") ||
+		strings.Contains(source, ".search_s(")
+}
+
 func ldapFilterLooksEscaped(expr string) bool {
 	return strings.Contains(expr, "escape_filter_chars(") || strings.Contains(expr, "escape_filter_value(")
+}
+
+// ldapFilterArg picks the LDAP filter operand. python-ldap search_s is
+// (base, scope, filter, ...); ldap3 Connection.search is often (base, filter, ...)
+// or a single filter expression in simplified call sites.
+func ldapFilterArg(args []string, callName string) string {
+	switch {
+	case callName == ".search_s" && len(args) >= 3:
+		return args[2]
+	case len(args) >= 2:
+		return args[1]
+	case len(args) == 1:
+		return args[0]
+	default:
+		return ""
+	}
+}
+
+// methodReceiver returns the identifier immediately left of a ".method" match
+// start (call.Start points at the '.').
+func methodReceiver(source string, dotAt int) string {
+	if dotAt <= 0 || dotAt > len(source) {
+		return ""
+	}
+	i := dotAt - 1
+	for i >= 0 {
+		c := source[i]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+			i--
+			continue
+		}
+		break
+	}
+	return source[i+1 : dotAt]
+}
+
+func looksLikeRegexSearchReceiver(recv string) bool {
+	r := strings.TrimSpace(recv)
+	if r == "" {
+		return false
+	}
+	if r == "re" || r == "regex" {
+		return true
+	}
+	return strings.HasSuffix(r, "_RE") || strings.HasSuffix(r, "_re") ||
+		strings.HasSuffix(r, "Pattern") || strings.HasSuffix(r, "pattern")
 }
 
 // CWE-91: flag dynamic XML/XPath expression construction only at parser and
@@ -135,8 +200,13 @@ func detectCWE94(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 // CWE-88: shell=False is not sufficient when an untrusted argument can become
 // a tool option. Detect only explicit argv literals with a dynamic segment; a
 // pre-built argv variable has insufficient same-file evidence to report.
+// Conventional Python test modules are skipped: fixed fixture paths and
+// hardcoded flavours are not attacker-controlled option sinks.
 func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if isPythonTestModule(unit) {
 		return
 	}
 	for _, call := range findCalls(facts, unit.Source,
@@ -167,11 +237,102 @@ func looksDynamicArgv(expr string) bool {
 		return false
 	}
 	for _, arg := range splitTopLevelArgs(t[1 : len(t)-1]) {
-		if isDynamicExpr(arg) {
+		if argvSegmentLooksDynamic(arg) {
 			return true
 		}
 	}
 	return false
+}
+
+// argvSegmentLooksDynamic is true when a list/tuple argv element can carry
+// attacker-controlled option text. Pure string/bytes literals and static
+// concatenations of those literals are not dynamic.
+func argvSegmentLooksDynamic(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if isPureStringLiteral(t) || isPureBytesLiteral(t) {
+		return false
+	}
+	if looksStaticStringList(t) {
+		return false
+	}
+	if looksStaticLiteralConcat(t) {
+		return false
+	}
+	return true
+}
+
+func isPureBytesLiteral(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if len(t) < 3 {
+		return false
+	}
+	if (t[0] == 'b' || t[0] == 'B') && (t[1] == '"' || t[1] == '\'') {
+		return isPureStringLiteral(t[1:])
+	}
+	return false
+}
+
+func looksStaticLiteralConcat(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if !strings.Contains(t, "+") {
+		return false
+	}
+	parts := splitTopLevelConcat(t)
+	if len(parts) < 2 {
+		return false
+	}
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if !isPureStringLiteral(p) && !isPureBytesLiteral(p) {
+			return false
+		}
+	}
+	return true
+}
+
+func splitTopLevelConcat(expr string) []string {
+	var parts []string
+	depth := 0
+	start := 0
+	inStr := byte(0)
+	esc := false
+	for i := 0; i < len(expr); i++ {
+		c := expr[i]
+		if inStr != 0 {
+			if esc {
+				esc = false
+				continue
+			}
+			if c == '\\' {
+				esc = true
+				continue
+			}
+			if c == inStr {
+				inStr = 0
+			}
+			continue
+		}
+		switch c {
+		case '\'', '"':
+			inStr = c
+		case '(', '[', '{':
+			depth++
+		case ')', ']', '}':
+			if depth > 0 {
+				depth--
+			}
+		case '+':
+			if depth == 0 {
+				parts = append(parts, strings.TrimSpace(expr[start:i]))
+				start = i + 1
+			}
+		}
+	}
+	parts = append(parts, strings.TrimSpace(expr[start:]))
+	return parts
 }
 
 // CWE-117: keep the signal to dynamically formatted messages passed to known

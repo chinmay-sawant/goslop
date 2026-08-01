@@ -178,8 +178,10 @@ func detectPYPERF26(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 	}
 }
 
-// PERF-PY-27: from_file / read_bytes of invariant path inside batch loop.
-// Requires the load site to be in-loop or in a function directly called from a loop.
+// PERF-PY-27: from_file / read_bytes of the same invariant path inside a batch loop.
+// Requires the load site to be in-loop or in a function directly called from a loop,
+// and that the path expression is not the loop variable or a callee parameter
+// (once-per-distinct-path loads are not "repeated same path").
 func detectPYPERF27(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	if facts == nil || isPythonTestFile(unit) {
 		return
@@ -200,9 +202,22 @@ func detectPYPERF27(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 			strings.Contains(line.text, "from_file") || windowHas(facts.lines, start, end, "CONFIG_PATH", "Path(")) {
 			continue
 		}
-		if facts.lineInLoop(i) || functionCalledFromLoop(facts, start) {
-			pushLine(unit, "PERF-PY-27", line, "load", "same path is loaded/parsed without a visible cache; reuse immutable parse results", out)
+		inLoop := facts.lineInLoop(i)
+		fromLoop := functionCalledFromLoop(facts, start)
+		if !inLoop && !fromLoop {
+			continue
 		}
+		if inLoop {
+			if loopVar, ok := enclosingForLoopVar(facts.lines, i); ok &&
+				perfLoadLineUsesName(line.text, loopVar) {
+				continue
+			}
+		} else if fromLoop {
+			if perfLoadLineUsesAnyName(line.text, pythonDefParamNames(facts.lines[start].trim)) {
+				continue
+			}
+		}
+		pushLine(unit, "PERF-PY-27", line, "load", "same path is loaded/parsed without a visible cache; reuse immutable parse results", out)
 	}
 }
 
@@ -212,7 +227,7 @@ func functionCalledFromLoop(facts *pyPerfFacts, defLineIdx int) bool {
 	}
 	lines := facts.lines
 	header := lines[defLineIdx].trim
-	name := ""
+	var name string
 	switch {
 	case strings.HasPrefix(header, "async def "):
 		name = strings.TrimSpace(strings.TrimPrefix(header, "async def "))
@@ -238,6 +253,81 @@ func functionCalledFromLoop(facts *pyPerfFacts, defLineIdx int) bool {
 		}
 	}
 	return false
+}
+
+func enclosingForLoopVar(lines []codeLine, idx int) (string, bool) {
+	if idx < 0 || idx >= len(lines) {
+		return "", false
+	}
+	indent := indentWidth(lines[idx].raw)
+	for i := idx - 1; i >= 0; i-- {
+		t := lines[i].trim
+		if t == "" {
+			continue
+		}
+		if indentWidth(lines[i].raw) >= indent {
+			continue
+		}
+		if !isLoopTrim(t) {
+			continue
+		}
+		if loopVar, _, ok := perfLoopBinding(lines[i].text); ok {
+			return loopVar, true
+		}
+		return "", false
+	}
+	return "", false
+}
+
+func pythonDefParamNames(header string) []string {
+	trimmed := strings.TrimSpace(header)
+	trimmed = strings.TrimPrefix(trimmed, "async def ")
+	trimmed = strings.TrimPrefix(trimmed, "def ")
+	open := strings.IndexByte(trimmed, '(')
+	closeParen := strings.LastIndexByte(trimmed, ')')
+	if open < 0 || closeParen <= open {
+		return nil
+	}
+	raw := trimmed[open+1 : closeParen]
+	if strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" || part == "*" || part == "/" {
+			continue
+		}
+		part = strings.TrimPrefix(part, "**")
+		part = strings.TrimPrefix(part, "*")
+		part = strings.TrimSpace(part)
+		if at := strings.IndexAny(part, ":="); at >= 0 {
+			part = strings.TrimSpace(part[:at])
+		}
+		if part == "" || part == "self" || part == "cls" {
+			continue
+		}
+		out = append(out, part)
+	}
+	return out
+}
+
+func perfLoadLineUsesAnyName(line string, names []string) bool {
+	for _, name := range names {
+		if perfLoadLineUsesName(line, name) {
+			return true
+		}
+	}
+	return false
+}
+
+func perfLoadLineUsesName(line, name string) bool {
+	if name == "" {
+		return false
+	}
+	re := regexp.MustCompile(`\b` + regexp.QuoteMeta(name) + `\b`)
+	return re.MatchString(line)
 }
 
 // PERF-PY-28: ThreadPoolExecutor constructed inside the unit of work.

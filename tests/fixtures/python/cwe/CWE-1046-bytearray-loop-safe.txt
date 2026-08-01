@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-1046-bytearray-loop-safe.py
+---
+def cbc_transform(chunks):
+    output = bytearray()
+    for chunk in chunks:
+        output += bytes(chunk)
+    return bytes(output)

@@ -1,0 +1,34 @@
+# Fixture for BP-PY-41 (safe) — assertion helpers, not bare side effects
+# Mirrors audit FPs 54–75 / 88–89: _assert_* with self.assert*, and
+# find_object_with raising AssertionError.
+lang: python
+file: test_compliance_safe.py
+---
+import unittest
+
+
+class TestPDFA4Compliance(unittest.TestCase):
+    def _assert_verapdf_compliant(self, fixture_name: str) -> None:
+        result_code = 0
+        stdout = 'isCompliant="true" failedRules="0"'
+        self.assertEqual(result_code, 0, fixture_name)
+        self.assertIn('isCompliant="true"', stdout)
+        self.assertIn('failedRules="0"', stdout)
+
+    def test_minimal_text_passes_pdfa4(self) -> None:
+        self._assert_verapdf_compliant("minimal-text")
+
+
+def find_object_with(data: bytes, marker: bytes, offsets: dict) -> int:
+    for obj_id, offset in offsets.items():
+        if marker in data[offset : offset + 64]:
+            return obj_id
+    raise AssertionError(f"no object contains {marker!r}")
+
+
+class TestShellObjects(unittest.TestCase):
+    def test_catalog_and_pages_present(self) -> None:
+        data = b"/Type /Catalog"
+        offsets = {1: 0}
+        for marker in (b"/Type /Catalog", b"/Type /Pages /", b"/Type /Page /"):
+            find_object_with(data, marker, offsets)

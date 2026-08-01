@@ -1,0 +1,12 @@
+# Fixture for PERF-PY-27 (safe): once-per-distinct-path load in a loop
+lang: python
+file: app/summarize_runs.py
+---
+from pathlib import Path
+
+def summarize(unique_paths):
+    runs = []
+    for path in unique_paths:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        runs.append(text)
+    return runs

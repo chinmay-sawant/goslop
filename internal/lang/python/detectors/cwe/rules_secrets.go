@@ -1,6 +1,7 @@
 package cwe
 
 import (
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -37,6 +38,8 @@ var (
 	pyCleartextSecretRE     = regexp.MustCompile(`(?im)^\s*(?:[a-z_]*api[_-]?key|[a-z_]*secret(?:_key)?|aws_secret_access_key|[a-z_]*access_token|[a-z_]*auth_token|private_key)\s*=\s*(?:'[^'\r\n]{3,}'|"[^"\r\n]{3,}")`)
 	pyWeakSecuritySettingRE = regexp.MustCompile(`(?im)^\s*(?:SECURE_SSL_REDIRECT|SESSION_COOKIE_SECURE|CSRF_COOKIE_SECURE|SESSION_COOKIE_HTTPONLY)\s*=\s*False\b|^\s*SECURE_HSTS_SECONDS\s*=\s*0\b|^\s*ALLOWED_HOSTS\s*=\s*\[\s*['"]\*['"]\s*\]`)
 	pyCheckHostnameFalseRE  = regexp.MustCompile(`(?m)check_hostname\s*=\s*False\b`)
+	// Explicit fixture-builder password literals (deterministic sample PDFs, etc.).
+	pyFixturePasswordLiteralRE = regexp.MustCompile(`(?i)(?:password|passwd|pwd)\s*=\s*['"]fixture[-_][^'"]*['"]`)
 )
 
 // CWE-798 reports direct source literals assigned to credential-shaped names.
@@ -48,6 +51,9 @@ func detectCWE798(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 	if start := firstLiteralMatchStartIfContains(facts, unit, pyHardcodedCredentialRE,
 		"='", "=\"", "= '", "= \""); start >= 0 {
+		if isFixtureCredentialAssignment(unit, facts, start) {
+			return
+		}
 		pushSecretFinding(unit, &MetaCWE798, start, "credential is hard-coded in Python source", confidence82, out)
 	}
 }
@@ -57,6 +63,9 @@ func detectCWE798(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 func detectCWE256(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if start := firstLiteralMatchStartIfContains(facts, unit, pyPlaintextPasswordRE,
 		"='", "=\"", "= '", "= \""); start >= 0 {
+		if isFixtureCredentialAssignment(unit, facts, start) {
+			return
+		}
 		pushSecretFinding(unit, &MetaCWE256, start, "password is stored as a plaintext source literal", confidence80, out)
 	}
 }
@@ -201,4 +210,55 @@ func pushSecretFinding(unit *core.ParsedUnit, meta *rules.RuleMetadata, start in
 	}
 	line, col := unit.LineCol(start)
 	rules.PushFindingWithConfidence(meta, unitFile(unit), line, col, message, confidence, out)
+}
+
+// isFixtureCredentialAssignment suppresses deterministic fixture-builder
+// passwords (fixtures.py / fixture-password / *fixture* builders) without
+// silencing real hardcoded production credentials.
+func isFixtureCredentialAssignment(unit *core.ParsedUnit, facts *PyCweFacts, matchStart int) bool {
+	if unit == nil || matchStart < 0 || matchStart >= len(unit.Source) {
+		return false
+	}
+	line := sourceLineAt(unit.Source, matchStart)
+	if pyFixturePasswordLiteralRE.MatchString(line) {
+		return true
+	}
+	if !isPythonFixturesFile(unit) {
+		return false
+	}
+	fn, ok := containingPythonFunction(facts.Functions(), matchStart)
+	if !ok {
+		return false
+	}
+	name := strings.ToLower(fn.name)
+	return strings.Contains(name, "fixture") ||
+		strings.HasPrefix(name, "generate_") ||
+		strings.Contains(name, "encrypted")
+}
+
+func isPythonFixturesFile(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.DisplayPath, unit.Path} {
+		if path == "" {
+			continue
+		}
+		if filepath.Base(path) == "fixtures.py" {
+			return true
+		}
+	}
+	return false
+}
+
+func sourceLineAt(src string, offset int) string {
+	if offset < 0 || offset >= len(src) {
+		return ""
+	}
+	start := strings.LastIndex(src[:offset], "\n") + 1
+	end := strings.IndexByte(src[offset:], '\n')
+	if end < 0 {
+		return src[start:]
+	}
+	return src[start : offset+end]
 }

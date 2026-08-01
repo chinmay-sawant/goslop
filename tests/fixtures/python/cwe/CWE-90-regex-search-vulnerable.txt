@@ -1,0 +1,15 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# LDAP search_s / Connection.search with dynamic filter must still fire.
+lang: python
+file: CWE-90-regex-search-vulnerable.py
+---
+import ldap
+from ldap3 import Connection
+
+
+def find_user_ldap3(conn: Connection, username: str):
+    return conn.search("ou=people,dc=example,dc=com", f"(uid={username})")
+
+
+def find_user_python_ldap(conn, username: str):
+    return conn.search_s("ou=people,dc=example,dc=com", ldap.SCOPE_SUBTREE, f"(uid={username})")

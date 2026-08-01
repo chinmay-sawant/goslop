@@ -1,6 +1,8 @@
 package badpractices
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -35,6 +37,8 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	lines := codeLinesFacts(facts, unit.Source)
+	// Same-file / same-dir helpers.py defs that assert or raise AssertionError count when called.
+	helpers := assertionHelpersForUnit(unit, lines)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "def test_") && !strings.HasPrefix(t, "async def test_") {
@@ -60,7 +64,7 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					break
 				}
 			}
-			if isTestAssertion(st) {
+			if isTestAssertion(st, helpers) {
 				hasAssert = true
 				break
 			}
@@ -76,7 +80,7 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func isTestAssertion(st string) bool {
+func isTestAssertion(st string, helpers map[string]struct{}) bool {
 	if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") {
 		return true
 	}
@@ -93,7 +97,140 @@ func isTestAssertion(st string) bool {
 	if strings.HasPrefix(st, "raises(") || strings.Contains(st, " assert_") {
 		return true
 	}
+	// Calls to assert_* / _assert_* helpers (e.g. self._assert_verapdf(...)).
+	if name := callCalleeIdent(st); name != "" {
+		if isAssertHelperName(name) {
+			return true
+		}
+		if _, ok := helpers[name]; ok {
+			return true
+		}
+	}
 	return false
+}
+
+// callCalleeIdent returns the final identifier of a call expression's callee, if any.
+// Handles "name(...)", "obj.name(...)", and "x = obj.name(...)" forms.
+func callCalleeIdent(st string) string {
+	st = strings.TrimSpace(st)
+	if st == "" {
+		return ""
+	}
+	// Prefer RHS of a simple assignment so "x = helper(...)" still resolves.
+	if eq := strings.IndexByte(st, '='); eq > 0 {
+		left := strings.TrimSpace(st[:eq])
+		right := strings.TrimSpace(st[eq+1:])
+		if left != "" && right != "" && !strings.HasPrefix(right, "=") {
+			last := left[len(left)-1]
+			if last != '!' && last != '<' && last != '>' && last != ':' && strings.Contains(right, "(") {
+				st = right
+			}
+		}
+	}
+	paren := strings.IndexByte(st, '(')
+	if paren <= 0 {
+		return ""
+	}
+	callee := strings.TrimSpace(st[:paren])
+	if callee == "" {
+		return ""
+	}
+	if dot := strings.LastIndexByte(callee, '.'); dot >= 0 {
+		callee = callee[dot+1:]
+	}
+	callee = strings.TrimSpace(callee)
+	if !isSimpleIdent(callee) {
+		return ""
+	}
+	return callee
+}
+
+func isAssertHelperName(name string) bool {
+	return strings.HasPrefix(name, "assert") || strings.HasPrefix(name, "_assert")
+}
+
+func assertionHelpersForUnit(unit *core.ParsedUnit, lines []codeLine) map[string]struct{} {
+	out := sameFileAssertionHelpers(lines)
+	mergeLocalHelpersPy(unit, out)
+	return out
+}
+
+// sameFileAssertionHelpers returns names of non-test defs whose bodies perform
+// unittest assertions or raise AssertionError (presence-check helpers).
+func sameFileAssertionHelpers(lines []codeLine) map[string]struct{} {
+	out := make(map[string]struct{})
+	for i, line := range lines {
+		t := strings.TrimSpace(line.text)
+		name, ok := defNameIfNotTest(t)
+		if !ok {
+			continue
+		}
+		defIndent := indentWidth(line.raw)
+		for j := i + 1; j < len(lines); j++ {
+			st := strings.TrimSpace(lines[j].text)
+			if st == "" {
+				continue
+			}
+			ind := indentWidth(lines[j].raw)
+			if ind <= defIndent {
+				break
+			}
+			if strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") ||
+				strings.Contains(st, "raise "+assertionErrorType) {
+				out[name] = struct{}{}
+				break
+			}
+		}
+	}
+	return out
+}
+
+// mergeLocalHelpersPy credits AssertionError / self.assert* helpers defined in a
+// sibling helpers.py (audited layout: test_*.py imports find_object_with from helpers).
+func mergeLocalHelpersPy(unit *core.ParsedUnit, into map[string]struct{}) {
+	if unit == nil || unit.Path == "" || into == nil {
+		return
+	}
+	dir := filepath.Dir(unit.Path)
+	if dir == "" || dir == "." {
+		return
+	}
+	if filepath.Base(unit.Path) == "helpers.py" {
+		return
+	}
+	helperPath := filepath.Join(dir, "helpers.py")
+	if filepath.Base(helperPath) != "helpers.py" {
+		return
+	}
+	// Fixed sibling basename only (not user-controlled).
+	data, err := os.ReadFile(helperPath) //nolint:gosec // G304: constant "helpers.py" next to the unit path
+	if err != nil || len(data) == 0 {
+		return
+	}
+	for name := range sameFileAssertionHelpers(buildCodeLines(string(data))) {
+		into[name] = struct{}{}
+	}
+}
+
+func defNameIfNotTest(t string) (string, bool) {
+	var rest string
+	switch {
+	case strings.HasPrefix(t, "def "):
+		rest = strings.TrimSpace(strings.TrimPrefix(t, "def "))
+	case strings.HasPrefix(t, "async def "):
+		rest = strings.TrimSpace(strings.TrimPrefix(t, "async def "))
+	default:
+		return "", false
+	}
+	end := strings.IndexByte(rest, '(')
+	if end <= 0 {
+		return "", false
+	}
+	name := strings.TrimSpace(rest[:end])
+	if !isSimpleIdent(name) || strings.HasPrefix(name, "test_") {
+		return "", false
+	}
+	return name, true
 }
 
 func looksLikeSideEffectCall(st string) bool {

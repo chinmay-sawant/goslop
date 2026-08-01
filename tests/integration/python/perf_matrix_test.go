@@ -15,9 +15,10 @@ func TestPythonPERFFixturesMatrix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cases) != 30 {
-		t.Fatalf("PERF-PY fixture cases = %d, want 30", len(cases))
+	if len(cases) < 30 {
+		t.Fatalf("PERF-PY fixture cases = %d, want at least 30", len(cases))
 	}
+	t.Logf("Python PERF-PY fixture cases: %d (×2 files)", len(cases))
 	var failures []string
 	for _, c := range cases {
 		rule := integration.PythonPERFRuleID(c)
@@ -50,13 +51,26 @@ func TestPythonPERFFixtureInventory(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cases) != 30 {
-		t.Fatalf("inventory = %d, want 30", len(cases))
+	if len(cases) < 30 {
+		t.Fatalf("inventory = %d, want at least 30", len(cases))
 	}
-	for i, c := range cases {
-		want := fmt.Sprintf("PERF-PY-%d", i+1)
-		if got := integration.PythonPERFRuleID(c); got != want {
-			t.Fatalf("case %q maps to %q, want %q", c, got, want)
+	seen := map[string]struct{}{}
+	rules := map[string]struct{}{}
+	for _, c := range cases {
+		if _, ok := seen[c]; ok {
+			t.Fatalf("duplicate case %q", c)
+		}
+		seen[c] = struct{}{}
+		rule := integration.PythonPERFRuleID(c)
+		if rule == "" {
+			t.Fatalf("empty rule id for %q", c)
+		}
+		rules[rule] = struct{}{}
+	}
+	for i := 1; i <= 30; i++ {
+		want := fmt.Sprintf("PERF-PY-%d", i)
+		if _, ok := rules[want]; !ok {
+			t.Fatalf("missing base fixture case for %s", want)
 		}
 	}
 }

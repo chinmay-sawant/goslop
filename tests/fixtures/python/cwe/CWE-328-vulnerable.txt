@@ -4,4 +4,4 @@ file: CWE-328-vulnerable.py
 ---
 import hashlib
 
-digest = hashlib.sha1(payload).hexdigest()
+digest = hashlib.md5(password.encode()).hexdigest()

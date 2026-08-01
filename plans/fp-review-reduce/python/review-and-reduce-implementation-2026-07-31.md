@@ -56,3 +56,92 @@ All 29 confirmed false positives are now suppressed; the remaining 20 findings s
 - Exact no-cache rescan: `make run-python` — 40 findings from 58 files and 2,716 lines; 7 high, 0 info, 0 low, 33 medium; 40 context files and 2 chunk files exported. This removes exactly the 16 audited false-positive findings from the 56-finding baseline.
 - Retained `CWE-312` and `CWE-798` findings are outside benchmark paths in Django settings and remain true positives. No audited false-positive `CWE-89` or `BP-PY-46` context remains in the current chunks.
 - Remaining uncertainty: none.
+
+## Follow-up reduction: CWE-90 regex and CWE-88 fixed-argv (2026-08-02)
+
+- Audit source: `./plans/fp-review-reduce/python/false-positive-audit-2026-08-02.md`
+- Scope: Assignment A (CWE-90 IDs 23, 31, 41, 51, 76, 79, 82–84, 86, 90, 92) and Assignment B (CWE-88 IDs 53, 87, 91; retain TP finding 7).
+- Do not change uncertain finding 40; audit checklist boxes left unchanged.
+
+### Completion record
+
+| Findings | Rule | Detector condition changed | Safe fixture | Vulnerable fixture | Tests |
+| --- | --- | --- | --- | --- | --- |
+| 23, 31, 41, 51, 76, 79, 82, 83, 84, 86, 90, 92 | CWE-90 | Drop bare `.search(` gate; require LDAP library evidence (`ldap3` / `import ldap` / `.search_s(`); skip `re` / `*_RE` receivers; pick LDAP filter arg for `search`/`search_s`. | `tests/fixtures/python/cwe/CWE-90-regex-search-safe.txt` | `tests/fixtures/python/cwe/CWE-90-regex-search-vulnerable.txt` | `audit_variants_test.go` (`CWE-90-regex-search`); `rules_injection_test.go` pair; `tests/integration/python` |
+| 53, 87, 91 | CWE-88 | Skip conventional Python test modules; treat pure string/bytes literals and static literal concatenations as non-dynamic argv segments. Library `run_verapdf_check`-style dynamic `flavour`/`pdf` still reports. | `tests/fixtures/python/cwe/CWE-88-fixed-argv-safe.txt` | `tests/fixtures/python/cwe/CWE-88-fixed-argv-vulnerable.txt` | `audit_variants_test.go` (`CWE-88-fixed-argv`); `rules_injection_test.go` pair; `tests/integration/python` |
+
+### Validation
+
+- Focused: `go test ./internal/lang/python/detectors/cwe/... ./tests/integration/python -count=1` — passed.
+- Diff hygiene: `git diff --check` — passed.
+- Full `make lint-all` / `make test` / corpus rescan: not run in this assignment (focused coverage only).
+- Remaining uncertainty: finding 40 (CWE-328) left untouched per assignment.
+
+## Follow-up reduction: path + secrets FPs (2026-08-02)
+
+- Audit source: `./plans/fp-review-reduce/python/false-positive-audit-2026-08-02.md`
+- Scope: CWE-22 IDs 19, 22, 29, 48, 94, 99; CWE-73 ID 44; CWE-256/798 IDs 42, 43.
+- Do not change uncertain finding 40; audit checklist boxes left unchanged; no commit.
+
+### Completion record
+
+| Findings | Rule | Detector condition changed | Safe fixture | Vulnerable fixture | Tests |
+| --- | --- | --- | --- | --- | --- |
+| 19, 22, 29, 48, 94, 99 | CWE-22 | Require confined-root join of a dynamic segment (`os.path.join` / same-line `Path(...) / dynamic`); skip `Path(__file__)`, intentional CLI `Path(argv)`, and `Path(path)+open` without join-escape; ignore comment/arithmetic ` / `. | `tests/fixtures/python/cwe/CWE-22-no-restricted-join-safe.txt` | `tests/fixtures/python/cwe/CWE-22-no-restricted-join-vulnerable.txt` | `audit_variants_test.go`; `rules_test.go` pair; `tests/integration/python` |
+| 44 | CWE-73 | Suppress `sys.argv`-only path sinks under `if __name__ == "__main__"` (CLI/fixture out-dir); keep request-controlled sinks. | `tests/fixtures/python/cwe/CWE-73-main-cli-outdir-safe.txt` | `tests/fixtures/python/cwe/CWE-73-main-cli-outdir-vulnerable.txt` | `audit_variants_test.go`; `rules_path_fs_test.go` pair; `tests/integration/python` |
+| 42 | CWE-256 | Suppress `fixture-password` literals and `fixtures.py` builder functions (`*fixture*` / `generate_*` / `*encrypted*`); production password literals still report. | `tests/fixtures/python/cwe/CWE-256-fixture-password-safe.txt` | `tests/fixtures/python/cwe/CWE-256-fixture-password-vulnerable.txt` | `audit_variants_test.go`; `rules_secrets_test.go` pair; `tests/integration/python` |
+| 43 | CWE-798 | Same fixture-credential guard as CWE-256 (extends existing test/bench suppressions). | `tests/fixtures/python/cwe/CWE-798-fixture-password-safe.txt` | `tests/fixtures/python/cwe/CWE-798-fixture-password-vulnerable.txt` | `audit_variants_test.go`; `rules_secrets_test.go` pair; `tests/integration/python` |
+
+### Validation
+
+- Focused: `go test ./internal/lang/python/detectors/cwe/ -count=1 -run 'TestCoreCWEFixturePairs|TestCWEPathFSFixturePairs|TestCWESecretsFixturePairs|TestCWEFalsePositiveAuditFixtureVariants'` — passed.
+- Integration: `go test ./tests/integration/python -count=1 -run TestPythonCWEFixturesMatrix` — passed.
+- Package: `go test ./internal/lang/python/detectors/cwe/ -count=1` — passed.
+- Diff hygiene: `git diff --check` on touched detector/fixture paths — passed.
+- Synthetic rescan (`templates/goslop-python.toml`, only CWE-22/73/256/798): FP samples silent; `Path(root)/user`, `request.args` open, and production `password`/`API_KEY` still emit.
+- Full `make lint-all` / `make test` / corpus `make run-python`: not required for this assignment (focused coverage only).
+- Remaining uncertainty: finding 40 (CWE-328) left untouched per assignment.
+
+## Follow-up reduction: pythoncoreengine audit 2026-08-02 (consolidated)
+
+- Audit source: `./plans/fp-review-reduce/python/false-positive-audit-2026-08-02.md`
+- Target corpus: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/pythoncoreengine`
+- Baseline: **102** findings (96 FP, 5 TP, 1 Uncertain)
+- Validation timestamp: `2026-08-01T20:25:00Z` (local 2026-08-02)
+- Delegated reducers: BP-PY-46, BP-PY-41, CWE-90/88, CWE-328, CWE-22/73/256/798, PERF-PY-27/CWE-1046
+
+### Completion record
+
+| Findings | Rule(s) | Detector condition changed | Safe fixture(s) | Vulnerable fixture(s) |
+| --- | --- | --- | --- | --- |
+| 2–6, 8–17, 20–21, 25–28, 32–35, 93, 96–98, 101–102 | BP-PY-46 | Skip argparse/`main()`/`print_*`/`cmd_*` CLI presentation; expand `bench*.py` stem matching. Keep library debug prints (TP 39). | `BP-PY-46-argparse-cli-safe.txt` | `BP-PY-46-argparse-cli-vulnerable.txt` |
+| 54–75, 88–89 | BP-PY-41 | Credit `_assert*`/`assert*` callees and same-file / sibling `helpers.py` helpers that `self.assert*` or raise `AssertionError`. | `BP-PY-41-assert-helper-safe.txt` | `BP-PY-41-assert-helper-vulnerable.txt` |
+| 23, 31, 41, 51, 76, 79, 82–84, 86, 90, 92 | CWE-90 | LDAP-only gates/receivers; skip `re` / `*_RE.search`. | `CWE-90-regex-search-safe.txt` | `CWE-90-regex-search-vulnerable.txt` |
+| 53, 87, 91 | CWE-88 | Skip test modules; treat pure literal argv segments as non-dynamic. Keep TP 7. | `CWE-88-fixed-argv-safe.txt` | `CWE-88-fixed-argv-vulnerable.txt` |
+| 18, 24, 30, 37, 38, 45, 47, 52, 77, 78, 80, 81, 85 | CWE-328 | Require `securityHashContext` (password/credential/token/auth/key-derivation). Fingerprint MD5 ignored. | `CWE-328-fingerprint-safe.txt` | `CWE-328-fingerprint-vulnerable.txt` |
+| 19, 22, 29, 48, 94, 99 | CWE-22 | Require confined-root dynamic join; skip `Path(__file__)`, CLI argv roots, plain `Path(path)+open`. | `CWE-22-no-restricted-join-safe.txt` | `CWE-22-no-restricted-join-vulnerable.txt` |
+| 44 | CWE-73 | Suppress `sys.argv` sinks under `__main__`. | `CWE-73-main-cli-outdir-safe.txt` | `CWE-73-main-cli-outdir-vulnerable.txt` |
+| 42, 43 | CWE-256, CWE-798 | Suppress fixture-password / `fixtures.py` builders. | `CWE-256-fixture-password-safe.txt`, `CWE-798-fixture-password-safe.txt` | matching `*-vulnerable.txt` |
+| 1, 95, 100 | PERF-PY-27 | Require invariant path (not loop var / callee param). | `PERF-PY-27-unique-path-safe.txt`, `PERF-PY-27-analyze-once-safe.txt` | matching `*-vulnerable.txt` |
+| 36 | CWE-1046 | `bytearray()` accumulators are not immutable text concat. | `CWE-1046-bytearray-loop-safe.txt` | `CWE-1046-bytearray-loop-vulnerable.txt` |
+
+### Retained findings (rescan)
+
+| Rule | Source | Maps to audit |
+| --- | --- | --- |
+| CWE-88 | `compliance/verapdf_report.py` | TP 7 |
+| BP-PY-46 | `engine/doc.py` (`ENGINE_DEBUG_BUFFERS`) | TP 39 |
+| CWE-328 | `engine/encrypt.py:236` password MD5 | Uncertain 40 family (security-context hit retained; `_md5_iterate` helper silent) |
+| PERF-PY-24 | `engine/layout.py` | TP 46 |
+| BP-PY-1 | `engine/render.py` | TP 49 |
+| CWE-396 | `engine/render.py` | TP 50 |
+
+### Validation
+
+- Focused detectors + Python integration: `go test ./internal/lang/python/detectors/cwe/... ./internal/lang/python/detectors/bad_practices/... ./internal/lang/python/detectors/perf/... ./tests/integration/python -count=1` — **passed**.
+- Full tests: `make test` — **passed**.
+- Diff hygiene: `git diff --check` — **passed**.
+- Exact no-cache rescan: `make run-python` — **6 findings** from 63 files / 20566 lines (was 102). Removes all **96** audited false positives; retains the 5 true positives plus one security-context CWE-328.
+- `make lint-all` — **fails** on pre-existing branch issues outside this reduction (unused helpers in `rules_auth.go` / `perf/facts.go`, revive `unexported-return` on `PyCweFacts`, etc.). Introduced G304/wastedassign/`close` issues from this work were fixed before rescan.
+- Audit checklist `[ ]` boxes left unchanged (per skill).
+- Remaining uncertainty: finding 40 dual-use MD5 — not specially suppressed; password MD5 at `encrypt.py:236` still reports.

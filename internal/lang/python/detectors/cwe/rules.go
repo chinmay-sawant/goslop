@@ -323,6 +323,11 @@ func isIdentOnly(s string) bool {
 }
 
 // --- CWE-22 Path traversal ---
+//
+// Classic traversal only: a dynamic segment joined into a restricted/base
+// directory (os.path.join / Path(base) / segment) without confinement.
+// Mere Path(__file__), Path(argv[0]) roots, or open(whole_caller_path) are
+// intentionally outside this rule.
 
 func detectCWE22(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
@@ -335,59 +340,68 @@ func detectCWE22(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		return
 	}
 
-	// open(os.path.join(...)) style — join of non-all-literals into open
+	// open(os.path.join(root, user)) or open(Path(root) / user)
 	for _, call := range findCalls(facts, src, "open") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
 		}
 		pathArg := args[0]
-		if isPureStringLiteral(pathArg) {
+		if isPureStringLiteral(pathArg) || !pathArgLooksJoined(pathArg) {
 			continue
 		}
-		// open(os.path.join(root, user)) or open(Path(...) / user)
-		if strings.Contains(pathArg, "os.path.join(") ||
-			strings.Contains(pathArg, "pathlib.Path(") ||
-			strings.Contains(pathArg, "Path(") ||
-			strings.Contains(pathArg, "/") {
-			// dynamic path composition
-			if isDynamicExpr(pathArg) || strings.Contains(pathArg, "os.path.join(") {
-				// if join args are all pure literals, skip
-				if joinAllLiterals(pathArg) {
-					continue
-				}
-				line, col := unit.LineCol(call.Start)
-				rules.PushFindingWithConfidence(
-					&MetaCWE22,
-					unitFile(unit),
-					line, col,
-					"user-influenced path segment reaches open() without confinement (basename/resolve+prefix)",
-					confidence70,
-					out,
-				)
-				return
-			}
+		if !openPathArgIsUnsafeJoin(pathArg) {
+			continue
 		}
-		// open(variable) with join elsewhere and open of that var is harder; flag open(os.path.join) primarily
-	}
-
-	// Path(root) / user then used — flag join-style Path division with dynamic right-hand side near open/read
-	// Simple pattern: ` / ` with request-like or bare identifiers after Path(
-	if !strings.Contains(src, "Path(") || !strings.Contains(src, " / ") || !hasPathSink(src) || !hasDynamicPathDiv(src) {
+		line, col := unit.LineCol(call.Start)
+		rules.PushFindingWithConfidence(
+			&MetaCWE22,
+			unitFile(unit),
+			line, col,
+			"user-influenced path segment reaches open() without confinement (basename/resolve+prefix)",
+			confidence70,
+			out,
+		)
 		return
 	}
-	i := strings.Index(src, "Path(")
-	if i < 0 {
-		i = strings.Index(src, " / ")
+
+	// Path(base) / dynamic_segment near a path sink (same-statement Path join)
+	if !hasPathSink(src) {
+		return
 	}
-	line, col := unit.LineCol(i)
-	rules.PushFindingWithConfidence(&MetaCWE22, unitFile(unit), line, col,
-		"pathlib path joined with dynamic segment without resolve+prefix confinement", confidence65, out)
+	if start := pathlibUnsafeJoinStart(facts, src); start >= 0 {
+		line, col := unit.LineCol(start)
+		rules.PushFindingWithConfidence(&MetaCWE22, unitFile(unit), line, col,
+			"pathlib path joined with dynamic segment without resolve+prefix confinement", confidence65, out)
+	}
 }
 
 func hasPathSink(source string) bool {
 	return strings.Contains(source, "open(") || strings.Contains(source, "read_text(") || strings.Contains(source, "write_text(") ||
 		strings.Contains(source, "unlink(") || strings.Contains(source, "os.remove(")
+}
+
+// pathArgLooksJoined reports join/concat composition into a base path — not
+// merely Path(whole) or a bare variable passed to open.
+func pathArgLooksJoined(pathArg string) bool {
+	if strings.Contains(pathArg, "os.path.join(") || strings.Contains(pathArg, " / ") {
+		return true
+	}
+	if strings.Contains(pathArg, "+") &&
+		(strings.Contains(pathArg, `"/"`) || strings.Contains(pathArg, `'/'`)) {
+		return true
+	}
+	return false
+}
+
+func openPathArgIsUnsafeJoin(pathArg string) bool {
+	if strings.Contains(pathArg, "os.path.join(") {
+		return !joinAllLiterals(pathArg)
+	}
+	if strings.Contains(pathArg, " / ") {
+		return pathExprHasDynamicPathDivision(pathArg)
+	}
+	return isDynamicExpr(pathArg)
 }
 
 func joinAllLiterals(pathArg string) bool {
@@ -414,31 +428,101 @@ func joinAllLiterals(pathArg string) bool {
 	return true
 }
 
-func hasDynamicPathDiv(src string) bool {
-	// Find " / " at top-ish level that is not pure string on both sides — lightweight
+// pathlibUnsafeJoinStart finds Path(...) / dynamic_segment on a code line.
+// Arithmetic and comment ` / ` tokens are ignored (masked + Path-left requirement).
+func pathlibUnsafeJoinStart(facts *PyCweFacts, src string) int {
+	masked := src
+	if facts != nil && facts.Masked != "" {
+		masked = facts.Masked
+	}
 	start := 0
 	for {
-		idx := strings.Index(src[start:], " / ")
+		idx := strings.Index(masked[start:], " / ")
+		if idx < 0 {
+			return -1
+		}
+		abs := start + idx
+		if pathlibJoinLeftHasPathCtor(src, abs) {
+			rhs := pathDivisionRHS(src, abs+3)
+			if rhs != "" && !isPureStringLiteral(rhs) && !looksNumericOrArithmetic(rhs) {
+				return abs
+			}
+		}
+		start = abs + 3
+	}
+}
+
+func pathlibJoinLeftHasPathCtor(src string, divAt int) bool {
+	if divAt <= 0 || divAt > len(src) {
+		return false
+	}
+	lineStart := strings.LastIndex(src[:divAt], "\n") + 1
+	left := strings.TrimSpace(src[lineStart:divAt])
+	return strings.Contains(left, "Path(") || strings.Contains(left, "pathlib.Path(")
+}
+
+func pathExprHasDynamicPathDivision(expr string) bool {
+	start := 0
+	for {
+		idx := strings.Index(expr[start:], " / ")
 		if idx < 0 {
 			return false
 		}
 		abs := start + idx
-		// take a short token/expression on the right-hand side
-		end := abs + 3
-		for end < len(src) && src[end] != '\n' && src[end] != ')' && src[end] != ';' && src[end] != '#' {
-			end++
-			if end-abs > pathDivisionContextWindow {
-				break
-			}
-		}
-		rhsExpr := strings.TrimSpace(src[abs+3 : end])
-		// strip trailing call punctuation
-		rhsExpr = strings.TrimRight(rhsExpr, ",)")
-		if rhsExpr != "" && !isPureStringLiteral(rhsExpr) {
+		rhs := pathDivisionRHS(expr, abs+3)
+		if rhs != "" && !isPureStringLiteral(rhs) && !looksNumericOrArithmetic(rhs) {
 			return true
 		}
 		start = abs + 3
 	}
+}
+
+func pathDivisionRHS(src string, from int) string {
+	if from < 0 || from >= len(src) {
+		return ""
+	}
+	end := from
+	depth := 0
+	for end < len(src) {
+		c := src[end]
+		if c == '\n' || c == '#' || c == ';' {
+			break
+		}
+		if c == '(' || c == '[' {
+			depth++
+		}
+		if c == ')' || c == ']' {
+			if depth == 0 {
+				break
+			}
+			depth--
+		}
+		if depth == 0 && (c == ',' || (c == ' ' && end+2 < len(src) && src[end:end+3] == " / ")) {
+			break
+		}
+		end++
+		if end-from > pathDivisionContextWindow {
+			break
+		}
+	}
+	return strings.TrimSpace(strings.TrimRight(src[from:end], ",)"))
+}
+
+func looksNumericOrArithmetic(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if t[0] >= '0' && t[0] <= '9' {
+		return true
+	}
+	if strings.HasPrefix(t, "float(") || strings.HasPrefix(t, "int(") {
+		return true
+	}
+	if strings.Contains(t, "<<") || strings.Contains(t, ">>") {
+		return true
+	}
+	return false
 }
 
 // --- CWE-79 XSS ---

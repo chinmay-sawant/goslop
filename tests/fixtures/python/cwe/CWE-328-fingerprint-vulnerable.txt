@@ -1,0 +1,14 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# Password / auth integrity still uses weak MD5 and must remain reportable.
+lang: python
+file: CWE-328-fingerprint-vulnerable.py
+---
+import hashlib
+
+
+def hash_password(password: str) -> str:
+    return hashlib.md5(password.encode()).hexdigest()
+
+
+def auth_token_digest(token: str) -> str:
+    return hashlib.sha1(token.encode()).hexdigest()

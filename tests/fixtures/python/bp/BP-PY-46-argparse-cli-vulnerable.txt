@@ -1,0 +1,21 @@
+# goslop text fixture
+lang: python
+file: engine/doc.py
+---
+import os
+
+
+def render(writer, buffer):
+    if os.environ.get("ENGINE_DEBUG_BUFFERS") == "1":
+        stats = writer.buffer_stats()
+        print(
+            "render: %d objects, %d bytes written, high-water %d, "
+            "buffer capacity %d"
+            % (
+                len(writer.objects),
+                stats["length"],
+                stats["high_water"],
+                len(buffer),
+            )
+        )
+    return writer.getvalue()

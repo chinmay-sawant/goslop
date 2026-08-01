@@ -1,0 +1,15 @@
+# Fixture for PERF-PY-27 (safe): one read_bytes per distinct call argument
+lang: python
+file: app/structure_tree_check.py
+---
+from pathlib import Path
+
+def analyze_pdf(pdf_path: str):
+    data = Path(pdf_path).read_bytes()
+    return len(data)
+
+def main(pdfs):
+    reports = []
+    for pdf in pdfs:
+        reports.append(analyze_pdf(pdf))
+    return reports

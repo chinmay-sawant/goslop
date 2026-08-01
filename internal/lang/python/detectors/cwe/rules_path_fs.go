@@ -23,6 +23,8 @@ func init() {
 // CWE-73 reports only direct framework request input at a filesystem sink.
 // A variable that might have been validated elsewhere is deliberately outside
 // this source-only rule, as are basename/secure_filename-safe expressions.
+// Intentional __main__ CLI destinations (Path(sys.argv[1]) fixture generators)
+// are suppressed; request-controlled sinks remain reportable.
 func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
@@ -31,6 +33,9 @@ func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		for _, call := range findCalls(facts, unit.Source, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) == 0 || !isDirectFilePathSource(args[0]) {
+				continue
+			}
+			if isArgvOnlyPathSource(args[0]) && underPythonMainGuard(unit.Source, call.Start) {
 				continue
 			}
 			emitPathFSFinding(unit, &MetaCWE73, call.Start, "directly request-controlled path reaches a filesystem API", confidence82, out)
@@ -180,6 +185,59 @@ func isDirectFilePathSource(expr string) bool {
 		return false
 	}
 	return isDirectRequestExpr(expr) || strings.Contains(compact, "input(") || strings.Contains(compact, "sys.argv[") || strings.Contains(compact, "os.environ[")
+}
+
+// isArgvOnlyPathSource is true for sys.argv path expressions that are not also
+// request/environ/input controlled (those remain CWE-73 positives).
+func isArgvOnlyPathSource(expr string) bool {
+	compact := compactWhitespace(expr)
+	if isDirectRequestExpr(expr) || strings.Contains(compact, "input(") || strings.Contains(compact, "os.environ[") {
+		return false
+	}
+	return strings.Contains(compact, "sys.argv[")
+}
+
+// underPythonMainGuard reports whether offset falls inside
+// if __name__ == "__main__": (intentional CLI / fixture-generator entrypoint).
+func underPythonMainGuard(src string, offset int) bool {
+	if offset < 0 || offset > len(src) {
+		return false
+	}
+	mainIndent := -1
+	lineStart := 0
+	for lineStart < len(src) {
+		nl := strings.IndexByte(src[lineStart:], '\n')
+		lineEnd := len(src)
+		if nl >= 0 {
+			lineEnd = lineStart + nl
+		}
+		raw := src[lineStart:lineEnd]
+		trimmed := strings.TrimSpace(raw)
+		indent := len(raw) - len(strings.TrimLeft(raw, " \t"))
+		if trimmed != "" {
+			if mainIndent >= 0 && indent <= mainIndent {
+				mainIndent = -1
+			}
+			if isPythonMainGuardLine(trimmed) {
+				mainIndent = indent
+			} else if mainIndent >= 0 && indent > mainIndent &&
+				offset >= lineStart && offset <= lineEnd {
+				return true
+			}
+		}
+		if nl < 0 {
+			break
+		}
+		lineStart = lineEnd + 1
+	}
+	return false
+}
+
+func isPythonMainGuardLine(t string) bool {
+	if !strings.HasPrefix(t, "if ") || !strings.Contains(t, "__name__") || !strings.Contains(t, "__main__") {
+		return false
+	}
+	return strings.Contains(t, "==") || strings.Contains(t, " is ")
 }
 
 func hasWorldWritableMode(args string) bool {

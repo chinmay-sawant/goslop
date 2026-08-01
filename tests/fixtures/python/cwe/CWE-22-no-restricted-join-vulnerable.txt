@@ -1,0 +1,11 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-22-no-restricted-join-vulnerable.py
+---
+"""CWE-22 vulnerable: Path(base) / dynamic segment without confinement."""
+
+from pathlib import Path
+
+
+def read_user_file(root: str, user_path: str):
+    return open(Path(root) / user_path)

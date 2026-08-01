@@ -1,0 +1,14 @@
+# Fixture for PERF-PY-27 (vulnerable): same path loaded repeatedly in a loop
+lang: python
+file: app/summarize_runs.py
+---
+from pathlib import Path
+
+REPORT_PATH = Path("/var/log/myapp/latest.txt")
+
+def summarize(user_ids):
+    runs = []
+    for user_id in user_ids:
+        text = REPORT_PATH.read_text(encoding="utf-8", errors="replace")
+        runs.append((user_id, text))
+    return runs

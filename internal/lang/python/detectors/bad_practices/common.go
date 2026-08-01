@@ -57,6 +57,11 @@ func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
 			if component == "bench" || component == "benchmarks" {
 				return true
 			}
+			stem := strings.TrimSuffix(component, filepath.Ext(component))
+			if stem == "bench" || stem == "benchmark" || stem == "benchmarks" ||
+				strings.HasPrefix(stem, "bench_") || strings.HasPrefix(stem, "benchmark_") {
+				return true
+			}
 		}
 	}
 	return false

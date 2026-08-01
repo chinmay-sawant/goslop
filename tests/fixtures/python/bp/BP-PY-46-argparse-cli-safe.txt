@@ -1,0 +1,36 @@
+# goslop text fixture
+lang: python
+file: BP-PY-46-argparse-cli-safe.py
+---
+import argparse
+import sys
+
+
+def print_result_lines(summary: str) -> None:
+    print(summary)
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    print_result_lines(args.summary)
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="check")
+    sub = parser.add_subparsers(dest="command", required=True)
+    check = sub.add_parser("check")
+    check.add_argument("--summary", default="ok")
+    check.set_defaults(func=cmd_check)
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    for path in getattr(args, "paths", []):
+        print(f"FAIL: file not found: {path}", file=sys.stderr)
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
