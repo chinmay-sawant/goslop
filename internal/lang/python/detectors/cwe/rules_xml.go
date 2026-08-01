@@ -19,11 +19,11 @@ func init() {
 // CWE-611 reports an explicit lxml entity-resolution opt-in. lxml's parser
 // default and ordinary stdlib XML parsing are intentionally not reported: this
 // source-only rule requires a configuration that directly enables expansion.
-func detectCWE611(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE611(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range lxmlXMLParserCalls(unit.Source) {
+	for _, call := range lxmlXMLParserCalls(facts, unit.Source) {
 		if !hasKwargTrue(call.ArgsText, "resolve_entities") {
 			continue
 		}
@@ -36,11 +36,11 @@ func detectCWE611(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-776 stays narrower than CWE-611: recursive expansion needs an entity
 // resolving parser plus a DTD-loading or huge-tree configuration. Explicitly
 // disabled entity resolution is therefore a safe suppression.
-func detectCWE776(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE776(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range lxmlXMLParserCalls(unit.Source) {
+	for _, call := range lxmlXMLParserCalls(facts, unit.Source) {
 		if !hasKwargTrue(call.ArgsText, "resolve_entities") ||
 			(!hasKwargTrue(call.ArgsText, "load_dtd") && !hasKwargTrue(call.ArgsText, "huge_tree")) {
 			continue
@@ -55,18 +55,18 @@ func detectCWE776(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // parsing API. Schema-aware parser arguments and a same-file named parser
 // configuration are intentionally suppressed; following separately validated
 // variables would require data flow beyond this source heuristic.
-func detectCWE112(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE112(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source,
+	for _, call := range findCalls(facts, unit.Source,
 		"etree.parse", "etree.fromstring", "etree.XML",
 		"lxml.etree.parse", "lxml.etree.fromstring", "lxml.etree.XML",
 		"ElementTree.parse", "ElementTree.fromstring", "ET.parse", "ET.fromstring",
 		"minidom.parse", "minidom.parseString", "xml.dom.minidom.parse", "xml.dom.minidom.parseString",
 		"xml.sax.parse", "xml.sax.parseString") {
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) == 0 || !looksRequestControlledXML(args[0]) || xmlParserHasSchema(unit.Source, args) {
+		if len(args) == 0 || !looksRequestControlledXML(args[0]) || xmlParserHasSchema(facts, unit.Source, args) {
 			continue
 		}
 		pushXMLFinding(unit, &MetaCWE112, call.Start,
@@ -75,15 +75,20 @@ func detectCWE112(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func lxmlXMLParserCalls(source string) []callSite {
-	code := pythonCodeMask(source)
+func lxmlXMLParserCalls(facts *PyCweFacts, source string) []callSite {
+	var code string
+	if facts != nil {
+		code = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		code = pythonCodeMask(source)
+	}
 	// A bare XMLParser is only treated as lxml when its import is visible in the
 	// same file. This avoids confusing a project helper or the stdlib parser
 	// with lxml's entity-resolution configuration.
 	if !strings.Contains(code, "lxml") {
 		return nil
 	}
-	return findCalls(source, "lxml.etree.XMLParser", "etree.XMLParser", "XMLParser")
+	return findCalls(facts, source, "lxml.etree.XMLParser", "etree.XMLParser", "XMLParser")
 }
 
 func looksRequestControlledXML(expr string) bool {
@@ -95,7 +100,7 @@ func looksRequestControlledXML(expr string) bool {
 		strings.Contains(compact, "request.stream")
 }
 
-func xmlParserHasSchema(source string, args []string) bool {
+func xmlParserHasSchema(facts *PyCweFacts, source string, args []string) bool {
 	for _, arg := range args {
 		compact := strings.ToLower(compactWhitespace(arg))
 		if strings.Contains(compact, "schema=") || strings.Contains(compact, "xmlschema") || strings.Contains(compact, "relaxng") {
@@ -107,7 +112,13 @@ func xmlParserHasSchema(source string, args []string) bool {
 	// XMLParser(schema=...) setup are recognized.
 	for _, arg := range args[1:] {
 		if strings.Contains(compactWhitespace(arg), "parser=parser") {
-			return strings.Contains(strings.ToLower(compactWhitespace(pythonCodeMask(source))), "xmlparser(schema=")
+			var masked string
+			if facts != nil {
+				masked = facts.codeMask(source, fragStartHint(facts, source))
+			} else {
+				masked = pythonCodeMask(source)
+			}
+			return strings.Contains(strings.ToLower(compactWhitespace(masked)), "xmlparser(schema=")
 		}
 	}
 	return false

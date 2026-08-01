@@ -17,6 +17,8 @@ func init() {
 
 var (
 	createCallRE    = regexp.MustCompile(`\b[A-Za-z_][A-Za-z0-9_]*\.objects\.create\s*\(`)
+	createAssignRE  = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*.*\.objects\.create\s*\(`)
+	processAssignRE = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:await\s+)?(?:process|handle|run|claim)[A-Za-z_0-9]*\s*\(`)
 	counterAssignRE = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\s*(?:\+=|-=)`)
 	fieldAssignRE   = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)\s*=`)
 )
@@ -26,11 +28,22 @@ func detectPYPERF3(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 		return
 	}
 	for i, line := range facts.lines {
-		if !inLoop(facts.lines, i) || !createCallRE.MatchString(line.text) || strings.Contains(strings.ToLower(line.raw), "signal") || strings.Contains(strings.ToLower(line.raw), "hook") {
+		// Cheap needle before O(1) inLoop; regex confirms the create call shape.
+		if !strings.Contains(line.text, ".objects.create") || !facts.lineInLoop(i) {
 			continue
 		}
-		if i > 0 && (strings.Contains(strings.ToLower(facts.lines[i-1].raw), "signal") || strings.Contains(strings.ToLower(facts.lines[i-1].raw), "hook")) {
+		if !createCallRE.MatchString(line.text) {
 			continue
+		}
+		rawLower := strings.ToLower(line.raw)
+		if strings.Contains(rawLower, "signal") || strings.Contains(rawLower, "hook") {
+			continue
+		}
+		if i > 0 {
+			prevLower := strings.ToLower(facts.lines[i-1].raw)
+			if strings.Contains(prevLower, "signal") || strings.Contains(prevLower, "hook") {
+				continue
+			}
 		}
 		start, end := functionWindow(facts.lines, i)
 		if strings.Contains(facts.lines[start].text, "range(2)") || strings.Contains(facts.lines[start].text, "range(1)") {
@@ -51,7 +64,7 @@ func detectPYPERF3(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Findi
 // flattened into one independent bulk_create without changing identity flow.
 func isDependentCreate(lines []codeLine, at, start int) bool {
 	for i := at - 1; i >= start && i >= at-3; i-- {
-		m := regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*.*\.objects\.create\s*\(`).FindStringSubmatch(lines[i].text)
+		m := createAssignRE.FindStringSubmatch(lines[i].text)
 		if len(m) > 1 && strings.Contains(lines[at].text, "="+m[1]) {
 			return true
 		}
@@ -60,7 +73,7 @@ func isDependentCreate(lines []codeLine, at, start int) bool {
 }
 
 func createdValueIsImmediatelyRequired(lines []codeLine, at, end int) bool {
-	assign := regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*.*\.objects\.create\s*\(`).FindStringSubmatch(lines[at].text)
+	assign := createAssignRE.FindStringSubmatch(lines[at].text)
 	if len(assign) < 2 {
 		return false
 	}
@@ -118,14 +131,14 @@ func detectPYPERF10(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		loopIndent := indentWidth(line.raw)
 		end := len(facts.lines)
 		for j := i + 1; j < len(facts.lines); j++ {
-			if strings.TrimSpace(facts.lines[j].text) != "" && indentWidth(facts.lines[j].raw) <= loopIndent {
+			if facts.lines[j].trim != "" && indentWidth(facts.lines[j].raw) <= loopIndent {
 				end = j
 				break
 			}
 		}
 		processed := ""
 		for j := i + 1; j < end; j++ {
-			if m := regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:await\s+)?(?:process|handle|run|claim)[A-Za-z_0-9]*\s*\(`).FindStringSubmatch(facts.lines[j].text); len(m) > 1 {
+			if m := processAssignRE.FindStringSubmatch(facts.lines[j].text); len(m) > 1 {
 				processed = m[1]
 			}
 			if processed == "" || !strings.Contains(facts.lines[j].text, "if "+processed) {
@@ -144,10 +157,11 @@ func successThenSleeps(lines []codeLine, ifAt, end int) bool {
 	hasExit := false
 	for i := ifAt + 1; i < end; i++ {
 		indent := indentWidth(lines[i].raw)
-		if strings.TrimSpace(lines[i].text) == "" {
+		t := lines[i].trim
+		if t == "" {
 			continue
 		}
-		if indent > ifIndent && (strings.TrimSpace(lines[i].text) == "continue" || strings.HasPrefix(strings.TrimSpace(lines[i].text), "return")) {
+		if indent > ifIndent && (t == "continue" || strings.HasPrefix(t, "return")) {
 			hasExit = true
 		}
 		if indent <= ifIndent && (strings.Contains(lines[i].text, "time.sleep(") || strings.Contains(lines[i].text, "asyncio.sleep(")) {
@@ -164,7 +178,7 @@ func detectPYPERF11(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 	for i, line := range facts.lines {
 		isSave := strings.Contains(line.text, ".save(")
 		isCommit := strings.Contains(line.text, ".commit(")
-		if (!isSave && !isCommit) || (isSave && !inLoop(facts.lines, i)) {
+		if (!isSave && !isCommit) || (isSave && !facts.lineInLoop(i)) {
 			continue
 		}
 		start, end := functionWindow(facts.lines, i)
@@ -194,10 +208,10 @@ func enclosingLoopHeader(lines []codeLine, at int) (codeLine, bool) {
 	}
 	indent := indentWidth(lines[at].raw)
 	for i := at - 1; i >= 0; i-- {
-		if strings.TrimSpace(lines[i].text) == "" {
+		if lines[i].trim == "" {
 			continue
 		}
-		if indentWidth(lines[i].raw) < indent && isLoopLine(lines[i].text) {
+		if indentWidth(lines[i].raw) < indent && isLoopTrim(lines[i].trim) {
 			return lines[i], true
 		}
 	}

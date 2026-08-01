@@ -9,11 +9,16 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-749", detectCWE749, &MetaCWE749)
-	RegisterRule("CWE-829", detectCWE829, &MetaCWE829)
-	RegisterRule("CWE-695", detectCWE695, &MetaCWE695)
-	RegisterRule("CWE-214", detectCWE214, &MetaCWE214)
-	RegisterRule("CWE-215", detectCWE215, &MetaCWE215)
+	RegisterRule("CWE-749", detectCWE749, &MetaCWE749,
+		"eval(", "exec(", "compile(", "__import__(", "importlib.import_module", "os.system")
+	RegisterRule("CWE-829", detectCWE829, &MetaCWE829,
+		"__import__(", "importlib.import_module", "runpy.run_path", "spec_from_file_location")
+	RegisterRule("CWE-695", detectCWE695, &MetaCWE695,
+		"ctypes.", "cffi.FFI", "mmap.mmap")
+	RegisterRule("CWE-214", detectCWE214, &MetaCWE214,
+		"subprocess.")
+	RegisterRule("CWE-215", detectCWE215, &MetaCWE215,
+		"print(", "logging.debug", ".debug(")
 }
 
 var (
@@ -26,13 +31,14 @@ var (
 // CWE-749 reports dynamic execution only when it is in a route-decorated
 // handler. This same-file boundary deliberately avoids treating internal admin
 // scripts or sandboxed helpers as an exposed API.
-func detectCWE749(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE749(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, handler := range routeHandlerBodies(unit.Source) {
+	for _, handler := range routeHandlerBodies(facts, unit.Source) {
+		masked := facts.codeMask(handler.body, handler.start)
 		for _, name := range []string{"eval", "exec", "compile", "__import__", "os.system"} {
-			for _, call := range findCalls(handler.body, name) {
+			for _, call := range findCallsMasked(handler.body, masked, name) {
 				if len(splitTopLevelArgs(call.ArgsText)) == 0 || !isDynamicExpr(call.ArgsText) {
 					continue
 				}
@@ -41,7 +47,7 @@ func detectCWE749(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 				return
 			}
 		}
-		for _, call := range findCalls(handler.body, "importlib.import_module") {
+		for _, call := range findCallsMasked(handler.body, masked, "importlib.import_module") {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && isDynamicExpr(args[0]) {
 				emitCodeDynamic(unit, &MetaCWE749, handler.start+call.Start,
@@ -54,12 +60,12 @@ func detectCWE749(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-829 reports only imports and source-file execution selected by a dynamic
 // expression; package-controlled literal module names and paths are suppressed.
-func detectCWE829(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE829(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"__import__", "importlib.import_module", "runpy.run_path"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && isDynamicExpr(args[0]) {
 				emitCodeDynamic(unit, &MetaCWE829, call.Start,
@@ -68,7 +74,7 @@ func detectCWE829(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			}
 		}
 	}
-	for _, call := range findCalls(unit.Source, "importlib.util.spec_from_file_location") {
+	for _, call := range findCalls(facts, unit.Source, "importlib.util.spec_from_file_location") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && isDynamicExpr(args[1]) {
 			emitCodeDynamic(unit, &MetaCWE829, call.Start,
@@ -80,12 +86,12 @@ func detectCWE829(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-695 is intentionally narrow: importing a module alone is common, while
 // these calls cross into native code or raw virtual-memory functionality.
-func detectCWE695(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE695(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"ctypes.CDLL", "ctypes.PyDLL", "ctypes.cast", "cffi.FFI", "mmap.mmap"} {
-		if calls := findCalls(unit.Source, name); len(calls) > 0 {
+		if calls := findCalls(facts, unit.Source, name); len(calls) > 0 {
 			emitCodeDynamic(unit, &MetaCWE695, calls[0].Start,
 				"low-level native or memory interface bypasses higher-level safety controls", confidence76, out)
 			return
@@ -95,12 +101,12 @@ func detectCWE695(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-214 recognizes dynamic secret-bearing process arguments or subprocess
 // environment maps. Literal examples and password-file options remain safe.
-func detectCWE214(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE214(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"subprocess.run", "subprocess.call", "subprocess.check_call", "subprocess.check_output", "subprocess.Popen"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			visibleArgs := sensitiveFileOptionRE.ReplaceAllString(call.ArgsText, "")
 			if !sensitiveCommandRE.MatchString(visibleArgs) && !strings.Contains(strings.ToLower(visibleArgs), "env=") {
 				continue
@@ -116,12 +122,12 @@ func detectCWE214(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-215 reports debug sinks only when their arguments include a sensitive
 // identifier. Generic debug logs and intentionally redacted literals are safe.
-func detectCWE215(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE215(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"print", "logging.debug", ".debug"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if sensitiveValueRE.MatchString(call.ArgsText) && !isPureStringLiteral(call.ArgsText) {
 				emitCodeDynamic(unit, &MetaCWE215, call.Start,
 					"debug output includes a sensitive value; redact it before logging", confidence86, out)
@@ -136,8 +142,15 @@ type routeHandlerBody struct {
 	body  string
 }
 
-func routeHandlerBodies(src string) []routeHandlerBody {
-	code := pythonCodeMask(src)
+func routeHandlerBodies(facts *PyCweFacts, src string) []routeHandlerBody {
+	var code string
+	if facts != nil && src == facts.Source {
+		code = facts.Masked
+	} else if facts != nil {
+		code = facts.codeMask(src, fragStartHint(facts, src))
+	} else {
+		code = pythonCodeMask(src)
+	}
 	locs := pythonRouteDecoratorRE.FindAllStringIndex(code, -1)
 	bodies := make([]routeHandlerBody, 0, len(locs))
 	for _, loc := range locs {

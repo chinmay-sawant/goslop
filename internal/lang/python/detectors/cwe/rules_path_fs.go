@@ -23,12 +23,12 @@ func init() {
 // CWE-73 reports only direct framework request input at a filesystem sink.
 // A variable that might have been validated elsewhere is deliberately outside
 // this source-only rule, as are basename/secure_filename-safe expressions.
-func detectCWE73(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"open", "os.remove", "os.unlink", "os.rename", "shutil.move", "shutil.copy", "Path", "pathlib.Path"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) == 0 || !isDirectFilePathSource(args[0]) {
 				continue
@@ -42,32 +42,33 @@ func detectCWE73(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-59 recognizes the explicit but race-prone islink/lexists check followed
 // by name-based file access. It avoids treating ordinary file access as proof
 // of a link-following weakness.
-func detectCWE59(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE59(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	functions := pythonFunctions(unit.Source)
+	functions := facts.Functions()
 	if len(functions) == 0 {
-		if start := linkCheckThenUse(unit.Source); start >= 0 {
+		if start := linkCheckThenUse(unit.Source, facts.Masked); start >= 0 {
 			emitPathFSFinding(unit, &MetaCWE59, start, "symbolic-link check is followed by access to the same path name (check-then-use race)", confidence80, out)
 		}
 		return
 	}
 	for _, fn := range functions {
-		if start := linkCheckThenUse(fn.body); start >= 0 {
+		masked := facts.codeMask(fn.body, fn.bodyStart)
+		if start := linkCheckThenUse(fn.body, masked); start >= 0 {
 			emitPathFSFinding(unit, &MetaCWE59, fn.bodyStart+start, "symbolic-link check is followed by access to the same path name (check-then-use race)", confidence80, out)
 			return
 		}
 	}
 }
 
-func linkCheckThenUse(source string) int {
-	for _, check := range findCalls(source, "os.path.islink", "os.path.lexists") {
+func linkCheckThenUse(source, masked string) int {
+	for _, check := range findCallsMasked(source, masked, "os.path.islink", "os.path.lexists") {
 		checked := strings.TrimSpace(check.ArgsText)
 		if checked == "" {
 			continue
 		}
-		for _, use := range findCalls(source, "open", "os.remove", "os.unlink", "os.rename", "shutil.move", "shutil.copy") {
+		for _, use := range findCallsMasked(source, masked, "open", "os.remove", "os.unlink", "os.rename", "shutil.move", "shutil.copy") {
 			if use.Start <= check.Start {
 				continue
 			}
@@ -83,11 +84,11 @@ func linkCheckThenUse(source string) int {
 // CWE-41 is intentionally narrower than CWE-22: it needs both a direct
 // request source and normpath at the same file-access expression. Canonical
 // resolution (realpath/resolve) in that expression is a safe suppression.
-func detectCWE41(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE41(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "open", "os.remove", "os.unlink", "Path", "pathlib.Path") {
+	for _, call := range findCalls(facts, unit.Source, "open", "os.remove", "os.unlink", "Path", "pathlib.Path") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
@@ -101,18 +102,18 @@ func detectCWE41(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE276(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE276(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "os.umask") {
+	for _, call := range findCalls(facts, unit.Source, "os.umask") {
 		if strings.TrimSpace(call.ArgsText) == "0" {
 			emitPathFSFinding(unit, &MetaCWE276, call.Start, "process umask is disabled, allowing insecure default file permissions", confidence84, out)
 			return
 		}
 	}
 	for _, name := range []string{"os.chmod", ".chmod", "os.makedirs"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if hasWorldWritableMode(call.ArgsText) {
 				emitPathFSFinding(unit, &MetaCWE276, call.Start, "filesystem permissions are explicitly world-writable", confidence86, out)
 				return
@@ -121,20 +122,20 @@ func detectCWE276(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE378(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE378(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if calls := findCalls(unit.Source, "tempfile.mktemp"); len(calls) > 0 {
+	if calls := findCalls(facts, unit.Source, "tempfile.mktemp"); len(calls) > 0 {
 		emitPathFSFinding(unit, &MetaCWE378, calls[0].Start, "tempfile.mktemp creates an unreserved temporary pathname", confidence90, out)
 	}
 }
 
-func detectCWE426(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE426(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "sys.path.insert", "sys.path.append") {
+	for _, call := range findCalls(facts, unit.Source, "sys.path.insert", "sys.path.append") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if isUntrustedSearchPath(call.Name, args) {
 			emitPathFSFinding(unit, &MetaCWE426, call.Start, "untrusted path is added to Python's import search path", confidence84, out)
@@ -143,12 +144,12 @@ func detectCWE426(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE250(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE250(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"os.setuid", "os.seteuid", "os.setgid", "os.setegid"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if strings.TrimSpace(call.ArgsText) == "0" {
 				emitPathFSFinding(unit, &MetaCWE250, call.Start, "process explicitly switches to the root user or group", confidence88, out)
 				return
@@ -159,12 +160,12 @@ func detectCWE250(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-494 reports a direct, same-expression download-and-execute sequence.
 // Downloading data alone and executing locally authored code remain safe.
-func detectCWE494(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE494(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"exec", "eval"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if isDownloadedCode(call.ArgsText) {
 				emitPathFSFinding(unit, &MetaCWE494, call.Start, "downloaded HTTP response is executed without an integrity verification step", confidence92, out)
 				return

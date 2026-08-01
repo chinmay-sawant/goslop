@@ -34,11 +34,11 @@ func init() {
 // detectCWE915 detects direct request payload unpacking and request-key
 // setattr loops. It deliberately requires the source itself to establish the
 // request origin, avoiding findings on internal maps and allowlisted updates.
-func detectCWE915(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE915(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	src := pythonCodeMask(unit.Source)
+	src := facts.Masked
 	if start := pyMassAssignRequestUnpack.FindStringIndex(src); start != nil {
 		pushCWE915(unit, start[0], "request data is unpacked directly into object attributes (allowlist writable fields)", out)
 		return
@@ -87,7 +87,7 @@ func requestSetattrLoopStart(src string) int {
 
 // detectCWE914 detects direct request-controlled variable and attribute names.
 // It does not flag ordinary dict access or a static attribute name.
-func detectCWE914(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE914(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
@@ -110,12 +110,12 @@ func detectCWE914(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // detectCWE916 detects fast, general-purpose password hashes. Generic uses of
 // MD5/SHA-1 are left alone; a password-like identifier is required at the call
 // site to retain a high signal-to-noise ratio.
-func detectCWE916(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE916(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"hashlib.md5", "hashlib.sha1", "md5_crypt.hash", "passlib.hash.md5_crypt.hash"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if !pyPasswordIdentifier.MatchString(call.ArgsText) {
 				continue
 			}
@@ -123,7 +123,7 @@ func detectCWE916(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			return
 		}
 	}
-	for _, call := range findCalls(unit.Source, "crypt.crypt") {
+	for _, call := range findCalls(facts, unit.Source, "crypt.crypt") {
 		if !pyPasswordIdentifier.MatchString(call.ArgsText) {
 			continue
 		}

@@ -229,18 +229,19 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 var secretNameRe = regexp.MustCompile(`(?i)\b([A-Za-z_][A-Za-z0-9_]*(?:password|passwd|secret|api_key|apikey|token|private_key|access_key)[A-Za-z0-9_]*)\s*=\s*`)
 
-// Also match SECRET_KEY, API_KEY, etc. as whole names.
+// Also match SECRET_KEY, API_KEY, etc. as whole names (case-insensitive).
 var secretExactAssignRe = regexp.MustCompile(`(?i)\b(password|passwd|secret|secret_key|api_key|apikey|token|private_key|access_key|auth_token)\s*=\s*`)
 
 // BP-PY-13: hardcoded secret heuristic (conservative).
 func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-13")
 	if !facts.hasAny("password", "secret", "api_key", "token", "private_key", "SECRET_KEY") {
-		// still check SECRET_KEY case via source
-		if !strings.Contains(strings.ToLower(unit.Source), "password") &&
-			!strings.Contains(strings.ToLower(unit.Source), "secret") &&
-			!strings.Contains(strings.ToLower(unit.Source), "token") &&
-			!strings.Contains(strings.ToLower(unit.Source), "api_key") {
+		// Case-fold once for the gate-miss path (avoids up to 4× ToLower on full source).
+		lower := strings.ToLower(unit.Source)
+		if !strings.Contains(lower, "password") &&
+			!strings.Contains(lower, "secret") &&
+			!strings.Contains(lower, "token") &&
+			!strings.Contains(lower, "api_key") {
 			return
 		}
 	}
@@ -263,12 +264,6 @@ func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		loc := secretExactAssignRe.FindStringIndex(t)
 		if loc == nil {
 			loc = secretNameRe.FindStringIndex(t)
-		}
-		if loc == nil {
-			// SECRET_KEY = '...'
-			if m := regexp.MustCompile(`(?i)\bSECRET_KEY\s*=\s*`).FindStringIndex(t); m != nil {
-				loc = m
-			}
 		}
 		if loc == nil {
 			continue

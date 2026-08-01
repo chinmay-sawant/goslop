@@ -91,14 +91,14 @@ func perfQueryModel(line string) (string, bool) {
 
 func perfModelDeclaration(facts *pyPerfFacts, model string) (string, bool) {
 	for i, line := range facts.lines {
-		matches := perfModelClass.FindStringSubmatch(strings.TrimSpace(line.text))
+		matches := perfModelClass.FindStringSubmatch(line.trim)
 		if len(matches) != 2 || matches[1] != model || !strings.Contains(line.text, "models.Model") {
 			continue
 		}
 		baseIndent := indentWidth(line.raw)
 		end := len(facts.lines)
 		for j := i + 1; j < len(facts.lines); j++ {
-			trimmed := strings.TrimSpace(facts.lines[j].text)
+			trimmed := facts.lines[j].trim
 			if trimmed != "" && indentWidth(facts.lines[j].raw) <= baseIndent && (strings.HasPrefix(trimmed, "class ") || strings.HasPrefix(trimmed, "def ") || strings.HasPrefix(trimmed, "async def ")) {
 				end = j
 				break

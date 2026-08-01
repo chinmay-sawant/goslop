@@ -9,11 +9,12 @@ import (
 )
 
 func init() {
-	// These are source-only checks with no SourceIndex gates. A gate would need
-	// to cover every valid exception, match, and process-call spelling, so it
-	// would be prone to false negatives before the rule can inspect source.
-	RegisterRule("CWE-396", detectCWE396, &MetaCWE396)
-	RegisterRule("CWE-397", detectCWE397, &MetaCWE397)
+	// CWE-396/397 are gated on the exact exception tokens they match. Remaining
+	// platform rules stay ungated: match/process-call spellings are too varied.
+	RegisterRule("CWE-396", detectCWE396, &MetaCWE396,
+		"except Exception", "except BaseException")
+	RegisterRule("CWE-397", detectCWE397, &MetaCWE397,
+		"raise Exception", "raise BaseException")
 	RegisterRule("CWE-478", detectCWE478, &MetaCWE478)
 	RegisterRule("CWE-252", detectCWE252, &MetaCWE252)
 	RegisterRule("CWE-390", detectCWE390, &MetaCWE390)
@@ -33,19 +34,19 @@ var (
 
 // CWE-396 reports only the two Python root exception classes. Specific
 // exception handlers intentionally remain outside this narrow heuristic.
-func detectCWE396(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if isPythonTestModule(unit) {
 		return
 	}
-	if start := firstMatchStart(unit, pyGenericExceptRE); start >= 0 {
+	if start := firstMatchStart(facts, unit, pyGenericExceptRE); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE396, start, "generic Exception or BaseException handler can hide distinct failure conditions", confidence84, out)
 	}
 }
 
 // CWE-397 recognizes direct construction or re-raising of Python's generic
 // root exception classes. Raising an application-specific exception is safe.
-func detectCWE397(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(unit, pyGenericRaiseRE); start >= 0 {
+func detectCWE397(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstMatchStart(facts, unit, pyGenericRaiseRE); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE397, start, "generic Exception or BaseException is raised directly", confidence82, out)
 	}
 }
@@ -53,11 +54,12 @@ func detectCWE397(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-478 reports a Python match statement only when it has two or more
 // immediate case branches and lacks a wildcard case. The indentation-aware
 // walk avoids confusing nested match cases with branches of the outer match.
-func detectCWE478(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE478(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if start := matchWithoutDefaultStart(unit.Source); start >= 0 {
+	lines := facts.MaskedLines()
+	if start := matchWithoutDefaultStart(lines); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE478, start, "multiple-case match expression has no wildcard default branch", confidence76, out)
 	}
 }
@@ -65,13 +67,13 @@ func detectCWE478(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-252 is deliberately limited to process calls used as standalone
 // statements. Assigned results and subprocess.run(..., check=True) have
 // explicit success handling paths and are not reported.
-func detectCWE252(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE252(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"subprocess.run", "subprocess.call", "os.system"} {
-		for _, call := range findCalls(unit.Source, name) {
-			if !standaloneCall(unit.Source, call) || (name == "subprocess.run" && hasKwargTrue(call.ArgsText, "check")) {
+		for _, call := range findCalls(facts, unit.Source, name) {
+			if !standaloneCall(facts, unit.Source, call) || (name == "subprocess.run" && hasKwargTrue(call.ArgsText, "check")) {
 				continue
 			}
 			emitPlatformFinding(unit, &MetaCWE252, call.Start, "process call return status is discarded without checking success", confidence82, out)
@@ -83,11 +85,11 @@ func detectCWE252(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-390 recognizes only an except clause whose direct body is pass. It does
 // not infer whether logging, recovery, re-raising, or a caller's behaviour is
 // sufficient error handling.
-func detectCWE390(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE390(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if start := exceptPassStart(unit.Source); start >= 0 {
+	if start := exceptPassStart(facts.MaskedLines()); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE390, start, "exception is detected but the handler takes no action", confidence82, out)
 	}
 }
@@ -95,11 +97,11 @@ func detectCWE390(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-584 limits reporting to direct returns in a finally suite. A return in
 // an unrelated nested definition is excluded by requiring the suite's direct
 // indentation level.
-func detectCWE584(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE584(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if start := finallyReturnStart(unit.Source); start >= 0 {
+	if start := finallyReturnStart(facts.MaskedLines()); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE584, start, "return inside finally can suppress an exception from the protected block", confidence90, out)
 	}
 }
@@ -110,8 +112,8 @@ type pyMaskedLine struct {
 	indent int
 }
 
-func maskedPythonLines(source string) []pyMaskedLine {
-	masked := pythonCodeMask(source)
+// buildMaskedPythonLines splits a pre-masked file into line spans.
+func buildMaskedPythonLines(masked string) []pyMaskedLine {
 	lines := make([]pyMaskedLine, 0, strings.Count(masked, "\n")+1)
 	for start := 0; start <= len(masked); {
 		end := len(masked)
@@ -129,13 +131,19 @@ func maskedPythonLines(source string) []pyMaskedLine {
 	return lines
 }
 
-func matchWithoutDefaultStart(source string) int {
-	for i, match := range maskedPythonLines(source) {
+// maskedPythonLines builds lines from source, remasking when facts are unavailable.
+// Prefer facts.MaskedLines() on the hot path.
+func maskedPythonLines(source string) []pyMaskedLine {
+	return buildMaskedPythonLines(pythonCodeMask(source))
+}
+
+func matchWithoutDefaultStart(lines []pyMaskedLine) int {
+	for i, match := range lines {
 		if !pyMatchStartRE.MatchString(match.text) {
 			continue
 		}
 		caseIndent, cases, hasDefault := -1, 0, false
-		for _, line := range maskedPythonLines(source)[i+1:] {
+		for _, line := range lines[i+1:] {
 			if strings.TrimSpace(line.text) == "" {
 				continue
 			}
@@ -161,13 +169,19 @@ func matchWithoutDefaultStart(source string) int {
 	return -1
 }
 
-func standaloneCall(source string, call callSite) bool {
+func standaloneCall(facts *PyCweFacts, source string, call callSite) bool {
 	lineStart := strings.LastIndex(source[:call.Start], "\n") + 1
-	return strings.TrimSpace(pythonCodeMask(source[lineStart:call.Start])) == ""
+	prefix := source[lineStart:call.Start]
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(prefix, lineStart)
+	} else {
+		masked = pythonCodeMask(prefix)
+	}
+	return strings.TrimSpace(masked) == ""
 }
 
-func exceptPassStart(source string) int {
-	lines := maskedPythonLines(source)
+func exceptPassStart(lines []pyMaskedLine) int {
 	for i, except := range lines {
 		if !pyExceptStartRE.MatchString(except.text) {
 			continue
@@ -189,8 +203,7 @@ func exceptPassStart(source string) int {
 	return -1
 }
 
-func finallyReturnStart(source string) int {
-	lines := maskedPythonLines(source)
+func finallyReturnStart(lines []pyMaskedLine) int {
 	for i, finally := range lines {
 		if !pyFinallyStartRE.MatchString(finally.text) {
 			continue

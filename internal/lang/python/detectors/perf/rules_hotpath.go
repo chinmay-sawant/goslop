@@ -24,7 +24,7 @@ var (
 		`\b(encode_value|encode_dict|encode_object|serialize|to_json|json\.dumps)\s*\(`,
 	)
 	measureHelpers = []string{"wrap_text", "text_width", "measure_", "compute_height", "line_count", "row_height"}
-	decodeHotRE = regexp.MustCompile(
+	decodeHotRE    = regexp.MustCompile(
 		`\b(decode_[A-Za-z0-9_]+|parse_[A-Za-z0-9_]+|Image\.open|zlib\.decompress)\s*\(`,
 	)
 	fromFileRE = regexp.MustCompile(
@@ -47,7 +47,7 @@ func detectPYPERF23(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if !encodeInLoopRE.MatchString(line.text) {
 			continue
 		}
-		if !inLoop(facts.lines, i) {
+		if !facts.lineInLoop(i) {
 			continue
 		}
 		if strings.Contains(line.text, "encode_record") || strings.Contains(line.text, "encode_cell") ||
@@ -64,7 +64,7 @@ func detectPYPERF24(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		return
 	}
 	for i, line := range facts.lines {
-		trimmed := strings.TrimSpace(line.text)
+		trimmed := line.trim
 		if !strings.HasPrefix(trimmed, "def ") && !strings.HasPrefix(trimmed, "async def ") {
 			continue
 		}
@@ -108,9 +108,6 @@ func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		return
 	}
 	for i, line := range facts.lines {
-		if !inLoop(facts.lines, i) {
-			continue
-		}
 		text := line.text
 		hasLambda := strings.Contains(text, "lambda:") || strings.Contains(text, "lambda ")
 		ctor := ""
@@ -120,7 +117,11 @@ func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if ctor != "" && perfLightweightCtor(ctor) {
 			ctor = ""
 		}
+		// Ctor/lambda needle before inLoop so non-matching lines skip membership.
 		if ctor == "" && !hasLambda {
+			continue
+		}
+		if !facts.lineInLoop(i) {
 			continue
 		}
 		if strings.Contains(text, "encode_cell") || strings.Contains(text, "encode_record") {
@@ -171,7 +172,7 @@ func detectPYPERF26(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if windowHas(facts.lines, start, end, "_CACHE", "lru_cache", "cache.get", "cached =") {
 			continue
 		}
-		if windowHas(facts.lines, start, end, "handle_job", "handle_request", "render", "build_", "process") || inLoop(facts.lines, i) {
+		if windowHas(facts.lines, start, end, "handle_job", "handle_request", "render", "build_", "process") || facts.lineInLoop(i) {
 			pushLine(unit, "PERF-PY-26", line, "decode", "expensive decode/parse runs on a hot path without a visible cache", out)
 		}
 	}
@@ -199,17 +200,18 @@ func detectPYPERF27(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 			strings.Contains(line.text, "from_file") || windowHas(facts.lines, start, end, "CONFIG_PATH", "Path(")) {
 			continue
 		}
-		if inLoop(facts.lines, i) || functionCalledFromLoop(facts.lines, start) {
+		if facts.lineInLoop(i) || functionCalledFromLoop(facts, start) {
 			pushLine(unit, "PERF-PY-27", line, "load", "same path is loaded/parsed without a visible cache; reuse immutable parse results", out)
 		}
 	}
 }
 
-func functionCalledFromLoop(lines []codeLine, defLineIdx int) bool {
-	if defLineIdx < 0 || defLineIdx >= len(lines) {
+func functionCalledFromLoop(facts *pyPerfFacts, defLineIdx int) bool {
+	if facts == nil || defLineIdx < 0 || defLineIdx >= len(facts.lines) {
 		return false
 	}
-	header := strings.TrimSpace(lines[defLineIdx].text)
+	lines := facts.lines
+	header := lines[defLineIdx].trim
 	name := ""
 	switch {
 	case strings.HasPrefix(header, "async def "):
@@ -231,7 +233,7 @@ func functionCalledFromLoop(lines []codeLine, defLineIdx int) bool {
 		if i == defLineIdx {
 			continue
 		}
-		if strings.Contains(line.text, needle) && inLoop(lines, i) {
+		if strings.Contains(line.text, needle) && facts.lineInLoop(i) {
 			return true
 		}
 	}
@@ -251,7 +253,7 @@ func detectPYPERF28(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 			continue
 		}
 		start, _ := functionWindow(facts.lines, i)
-		trimmed := strings.TrimSpace(facts.lines[start].text)
+		trimmed := facts.lines[start].trim
 		if (strings.HasPrefix(trimmed, "def ") || strings.HasPrefix(trimmed, "async def ")) && i > start {
 			pushLine(unit, "PERF-PY-28", line, "Executor", "executor/pool is created per unit of work; reuse a process-lifetime pool", out)
 		}
@@ -287,7 +289,7 @@ func detectPYPERF30(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		return
 	}
 	for i, line := range facts.lines {
-		text := strings.TrimSpace(line.text)
+		text := line.trim
 		isConcat := strings.Contains(text, "+=") ||
 			(strings.Contains(text, " = ") && strings.Contains(text, " + "))
 		if !isConcat {
@@ -310,7 +312,7 @@ func nestedForDepth(lines []codeLine, idx int) int {
 	targetIndent := indentWidth(lines[idx].raw)
 	depth := 0
 	for i := idx - 1; i >= 0; i-- {
-		trimmed := strings.TrimSpace(lines[i].text)
+		trimmed := lines[i].trim
 		if trimmed == "" {
 			continue
 		}

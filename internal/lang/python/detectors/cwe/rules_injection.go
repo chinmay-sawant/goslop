@@ -8,21 +8,27 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-90", detectCWE90, &MetaCWE90)
-	RegisterRule("CWE-91", detectCWE91, &MetaCWE91)
-	RegisterRule("CWE-93", detectCWE93, &MetaCWE93)
-	RegisterRule("CWE-94", detectCWE94, &MetaCWE94)
-	RegisterRule("CWE-88", detectCWE88, &MetaCWE88)
-	RegisterRule("CWE-117", detectCWE117, &MetaCWE117)
+	RegisterRule("CWE-90", detectCWE90, &MetaCWE90,
+		"ldap3", "ldap.initialize", ".search(", ".search_s(")
+	RegisterRule("CWE-91", detectCWE91, &MetaCWE91,
+		".xpath(", "XPath(", ".fromstring(")
+	RegisterRule("CWE-93", detectCWE93, &MetaCWE93,
+		"response.headers[", ".headers[", ".set_header(", ".add_header(", "HttpResponseRedirect(")
+	RegisterRule("CWE-94", detectCWE94, &MetaCWE94,
+		"eval(", "exec(", "compile(", "__import__(", "importlib.import_module")
+	RegisterRule("CWE-88", detectCWE88, &MetaCWE88,
+		"subprocess.")
+	RegisterRule("CWE-117", detectCWE117, &MetaCWE117,
+		"logging.", "logger.", "log.")
 }
 
 // CWE-90: only dynamic LDAP filter expressions reach LDAP search APIs. Filter
 // values escaped through the standard ldap3 helper are intentionally suppressed.
-func detectCWE90(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE90(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, ".search", ".search_s") {
+	for _, call := range findCalls(facts, unit.Source, ".search", ".search_s") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !isDynamicExpr(args[0]) || ldapFilterLooksEscaped(args[0]) {
 			continue
@@ -39,11 +45,11 @@ func ldapFilterLooksEscaped(expr string) bool {
 
 // CWE-91: flag dynamic XML/XPath expression construction only at parser and
 // XPath APIs. Literal XPath with bound variables remains a supported safe form.
-func detectCWE91(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE91(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, ".xpath", "etree.XPath", "ElementTree.XPath", "ET.XPath", "etree.fromstring", "ElementTree.fromstring", "ET.fromstring") {
+	for _, call := range findCalls(facts, unit.Source, ".xpath", "etree.XPath", "ElementTree.XPath", "ET.XPath", "etree.fromstring", "ElementTree.fromstring", "ET.fromstring") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !isDynamicExpr(args[0]) {
 			continue
@@ -56,11 +62,11 @@ func detectCWE91(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-93: header sinks are limited to explicit header mutation APIs. Values
 // that visibly remove both CR and LF are not reported by this source heuristic.
-func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, ".set_header", ".add_header", "HttpResponseRedirect") {
+	for _, call := range findCalls(facts, unit.Source, ".set_header", ".add_header", "HttpResponseRedirect") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) < 2 || !isDynamicExpr(args[len(args)-1]) || headerValueLooksSanitized(args[len(args)-1]) {
 			continue
@@ -69,7 +75,13 @@ func detectCWE93(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			"dynamic value is written to an HTTP response header without CRLF neutralization", confidence72, out)
 		return
 	}
-	masked := pythonCodeMask(unit.Source)
+	masked := ""
+	if facts != nil {
+		masked = facts.Masked
+	}
+	if masked == "" {
+		masked = pythonCodeMask(unit.Source)
+	}
 	originalLines := strings.Split(unit.Source, "\n")
 	maskedLines := strings.Split(masked, "\n")
 	lineOffset := 0
@@ -105,11 +117,11 @@ func headerValueIsInternalNumeric(expr string) bool {
 // CWE-94: code-generation and dynamic-import APIs are only findings when the
 // code/module argument is non-literal. Literal developer-owned expressions are
 // out of scope for this same-file heuristic.
-func detectCWE94(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE94(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "eval", "exec", "compile", "__import__", "importlib.import_module") {
+	for _, call := range findCalls(facts, unit.Source, "eval", "exec", "compile", "__import__", "importlib.import_module") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !isDynamicExpr(args[0]) {
 			continue
@@ -123,11 +135,11 @@ func detectCWE94(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-88: shell=False is not sufficient when an untrusted argument can become
 // a tool option. Detect only explicit argv literals with a dynamic segment; a
 // pre-built argv variable has insufficient same-file evidence to report.
-func detectCWE88(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source,
+	for _, call := range findCalls(facts, unit.Source,
 		"subprocess.run", "subprocess.call", "subprocess.Popen", "subprocess.check_call", "subprocess.check_output") {
 		if hasKwargTrue(call.ArgsText, "shell") {
 			continue
@@ -165,11 +177,11 @@ func looksDynamicArgv(expr string) bool {
 // CWE-117: keep the signal to dynamically formatted messages passed to known
 // Python logging APIs. Structured literal messages with separate arguments are
 // intentionally excluded.
-func detectCWE117(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE117(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source,
+	for _, call := range findCalls(facts, unit.Source,
 		"logging.debug", "logging.info", "logging.warning", "logging.error", "logging.critical",
 		"logger.debug", "logger.info", "logger.warning", "logger.error", "logger.critical",
 		"log.debug", "log.info", "log.warning", "log.error", "log.critical") {

@@ -24,6 +24,29 @@ func TestBuildCodeLinesKeepsOrdinaryStringKeywords(t *testing.T) {
 	}
 }
 
+func TestComputeInLoopMatchesScan(t *testing.T) {
+	t.Parallel()
+	src := "" +
+		"for x in xs:\n" +
+		"    if True:\n" +
+		"        y = 1\n" +
+		"    z = 2\n" +
+		"a = 3\n" +
+		"for i in range(2):\n" +
+		"    for j in range(2):\n" +
+		"        k = i + j\n"
+	lines := buildCodeLines(src)
+	got := computeInLoop(lines)
+	if len(got) != len(lines) {
+		t.Fatalf("len mismatch: got %d want %d", len(got), len(lines))
+	}
+	for i := range lines {
+		if got[i] != inLoop(lines, i) {
+			t.Fatalf("inLoop[%d]=%v want %v\nline=%q", i, got[i], inLoop(lines, i), lines[i].raw)
+		}
+	}
+}
+
 func containsFold(s, needle string) bool {
 	return len(s) >= len(needle) && (func() bool {
 		// simple contains; case-sensitive is fine for these needles

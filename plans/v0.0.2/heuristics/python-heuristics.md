@@ -14,6 +14,7 @@
 | CWE heuristics | #52 | [python-heuristics-cwe.md](./python-heuristics-cwe.md) + **[cwe-plans/](./cwe-plans/)** | priority 5 shipped; **154** implement-owned + **185** deferred |
 | Bad-practice heuristics | #53 | [python-heuristics-bp.md](./python-heuristics-bp.md) + [bp-plans/](./bp-plans/) | **complete** 50/50 on main (PR #65) |
 | PERF catalogue + heuristics | #54 | [python-heuristics-perf.md](./python-heuristics-perf.md) | **complete** — experimental detectors + canary ([PERF-PY-CANARY-2026-08-01.md](./pref-plans/PERF-PY-CANARY-2026-08-01.md)) |
+| Python scan perf (pprof) | — | **[python-perf-pprof-optimization-checklist.md](./python-perf-pprof-optimization-checklist.md)** + [measurement](./python-perf-pprof-measurement.md) | **baseline** — `make run-python` ~1.1s / bench ~729ms; target &lt;100ms |
 
 **Foundation already shipped** (do not re-plan): epic #39 / PR #50 — `languages` config, Python plugin stub, `ruleset/python/` CWE + BP catalogues. See [python-support.md](./python-support.md).
 

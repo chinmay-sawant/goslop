@@ -18,7 +18,7 @@ func init() {
 
 func detectPERFPY5SequentialDelivery(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	for i, line := range facts.lines {
-		if !inLoop(facts.lines, i) || !runtimeDeliveryCall(line.text) {
+		if !runtimeDeliveryCall(line.text) || !facts.lineInLoop(i) {
 			continue
 		}
 		loop, ok := enclosingLoopHeader(facts.lines, i)

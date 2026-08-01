@@ -1,6 +1,7 @@
 package perf
 
 import (
+	"math"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -10,10 +11,14 @@ import (
 type pyPerfFacts struct {
 	Source string
 	lines  []codeLine
+	// inLoop[i] is true when line i sits under a prior for/while header
+	// with strictly smaller indent (same heuristic as the old O(n) scan).
+	inLoop []bool
 }
 
 type codeLine struct {
 	text string
+	trim string // strings.TrimSpace(text), cached once in buildCodeLines
 	raw  string
 	byte int
 }
@@ -22,7 +27,12 @@ func buildFacts(unit *core.ParsedUnit) *pyPerfFacts {
 	if unit == nil {
 		return &pyPerfFacts{}
 	}
-	return &pyPerfFacts{Source: unit.Source, lines: buildCodeLines(unit.Source)}
+	lines := buildCodeLines(unit.Source)
+	return &pyPerfFacts{
+		Source: unit.Source,
+		lines:  lines,
+		inLoop: computeInLoop(lines),
+	}
 }
 
 func buildCodeLines(source string) []codeLine {
@@ -37,7 +47,12 @@ func buildCodeLines(source string) []codeLine {
 		raw := strings.TrimSuffix(rawWithNL, "\n")
 		text, nextTriple := stripPyLineForFacts(raw, inTriple)
 		inTriple = nextTriple
-		out = append(out, codeLine{text: text, raw: raw, byte: offset})
+		out = append(out, codeLine{
+			text: text,
+			trim: strings.TrimSpace(text),
+			raw:  raw,
+			byte: offset,
+		})
 		offset += len(rawWithNL)
 	}
 	return out
@@ -99,22 +114,58 @@ func stripPyComment(line string) string {
 
 func indentWidth(line string) int { return len(line) - len(strings.TrimLeft(line, " \t")) }
 
-func isLoopLine(line string) bool {
-	t := strings.TrimSpace(line)
+func isLoopTrim(t string) bool {
 	return strings.HasPrefix(t, "for ") || strings.HasPrefix(t, "while ")
 }
 
+func isLoopLine(line string) bool {
+	return isLoopTrim(strings.TrimSpace(line))
+}
+
+// computeInLoop precomputes the same membership predicate as the former
+// backward scan: a line is "in a loop" iff some earlier non-empty for/while
+// header has strictly smaller indent. Using the running minimum loop indent
+// yields an O(n) pass with identical results.
+func computeInLoop(lines []codeLine) []bool {
+	out := make([]bool, len(lines))
+	minLoopIndent := math.MaxInt
+	seenLoop := false
+	for i, line := range lines {
+		indent := indentWidth(line.raw)
+		if seenLoop && minLoopIndent < indent {
+			out[i] = true
+		}
+		if line.trim != "" && isLoopTrim(line.trim) {
+			if !seenLoop || indent < minLoopIndent {
+				minLoopIndent = indent
+			}
+			seenLoop = true
+		}
+	}
+	return out
+}
+
+// lineInLoop is an O(1) lookup into the per-file membership bitset.
+func (f *pyPerfFacts) lineInLoop(idx int) bool {
+	if f == nil || idx < 0 || idx >= len(f.inLoop) {
+		return false
+	}
+	return f.inLoop[idx]
+}
+
+// inLoop reports whether lines[idx] sits under a prior for/while header with
+// smaller indent. Prefer facts.lineInLoop when a pyPerfFacts is available.
 func inLoop(lines []codeLine, idx int) bool {
 	if idx < 0 || idx >= len(lines) {
 		return false
 	}
 	indent := indentWidth(lines[idx].raw)
 	for i := idx - 1; i >= 0; i-- {
-		t := strings.TrimSpace(lines[i].text)
+		t := lines[i].trim
 		if t == "" {
 			continue
 		}
-		if indentWidth(lines[i].raw) < indent && isLoopLine(t) {
+		if indentWidth(lines[i].raw) < indent && isLoopTrim(t) {
 			return true
 		}
 	}
@@ -124,12 +175,12 @@ func inLoop(lines []codeLine, idx int) bool {
 func functionWindow(lines []codeLine, at int) (int, int) {
 	start, end := 0, len(lines)
 	for i := at; i >= 0; i-- {
-		t := strings.TrimSpace(lines[i].text)
+		t := lines[i].trim
 		if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") {
 			start = i
 			base := indentWidth(lines[i].raw)
 			for j := i + 1; j < len(lines); j++ {
-				if strings.TrimSpace(lines[j].text) != "" && indentWidth(lines[j].raw) <= base {
+				if lines[j].trim != "" && indentWidth(lines[j].raw) <= base {
 					end = j
 					break
 				}

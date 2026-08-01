@@ -20,7 +20,7 @@ func init() {
 // PERF-PY-2 finds terminal Django ORM lookups that run for each item.
 func detectPERFPY2(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	for i, line := range facts.lines {
-		if !inLoop(facts.lines, i) || !strings.Contains(line.text, ".objects.") {
+		if !strings.Contains(line.text, ".objects.") || !facts.lineInLoop(i) {
 			continue
 		}
 		loop, ok := enclosingLoopHeader(facts.lines, i)
@@ -122,7 +122,7 @@ func detectPERFPY19(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		}
 		start, end := functionWindow(facts.lines, i)
 		decoratorStart := start
-		for decoratorStart > 0 && strings.HasPrefix(strings.TrimSpace(facts.lines[decoratorStart-1].text), "@") {
+		for decoratorStart > 0 && strings.HasPrefix(facts.lines[decoratorStart-1].trim, "@") {
 			decoratorStart--
 		}
 		body := linesText(facts.lines, decoratorStart, end)
@@ -187,7 +187,7 @@ func perfSQLAlchemyIterable(lines []codeLine, loopAt int, iterable string) bool 
 		return false
 	}
 	for i := loopAt - 1; i >= 0; i-- {
-		line := strings.TrimSpace(lines[i].text)
+		line := lines[i].trim
 		if indentWidth(lines[i].raw) < indentWidth(lines[loopAt].raw) {
 			break
 		}

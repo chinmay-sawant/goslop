@@ -26,7 +26,7 @@ func init() {
 // for Python platform CWE). For yaml.load, flag unless Loader is SafeLoader /
 // CSafeLoader / FullLoader-safe pattern or call is yaml.safe_load.
 
-func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE502(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
@@ -34,7 +34,7 @@ func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 	// pickle sinks — any call is treated as unsafe deserialization of potentially
 	// untrusted data (conservative; matches priority-batch museum style).
-	for _, call := range findCalls(src, "pickle.loads", "pickle.load", "pickle.Unpickler") {
+	for _, call := range findCalls(facts, src, "pickle.loads", "pickle.load", "pickle.Unpickler") {
 		line, col := unit.LineCol(call.Start)
 		rules.PushFindingWithConfidence(
 			&MetaCWE502,
@@ -48,7 +48,7 @@ func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 
 	// yaml.unsafe_load always unsafe
-	for _, call := range findCalls(src, "yaml.unsafe_load") {
+	for _, call := range findCalls(facts, src, "yaml.unsafe_load") {
 		line, col := unit.LineCol(call.Start)
 		rules.PushFindingWithConfidence(
 			&MetaCWE502,
@@ -62,7 +62,7 @@ func detectCWE502(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 
 	// yaml.load without SafeLoader / CSafeLoader
-	for _, call := range findCalls(src, "yaml.load") {
+	for _, call := range findCalls(facts, src, "yaml.load") {
 		// Do not treat yaml.safe_load as yaml.load (boundary check already prevents prefix match of safe_load when searching "yaml.load" — verify)
 		// "yaml.load" is not a prefix of "yaml.safe_load" in reverse; but "yaml.load" could match inside nothing else.
 		if yamlLoadLooksSafe(call.ArgsText) {
@@ -96,7 +96,7 @@ func yamlLoadLooksSafe(args string) bool {
 
 // --- CWE-78 OS command injection ---
 
-func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE78(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
@@ -104,7 +104,7 @@ func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 	// os.system / os.popen with dynamic command
 	for _, name := range []string{"os.system", "os.popen"} {
-		for _, call := range findCalls(src, name) {
+		for _, call := range findCalls(facts, src, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) == 0 {
 				continue
@@ -130,7 +130,7 @@ func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 		"subprocess.run", "subprocess.call", "subprocess.Popen",
 		"subprocess.check_call", "subprocess.check_output",
 	} {
-		for _, call := range findCalls(src, name) {
+		for _, call := range findCalls(facts, src, name) {
 			if !hasKwargTrue(call.ArgsText, "shell") {
 				continue
 			}
@@ -162,7 +162,7 @@ func detectCWE78(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // --- CWE-89 SQL injection ---
 
-func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE89(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
@@ -170,16 +170,16 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 	// Prefer method-style .execute( / .executemany( and bare execute(
 	// Scan for ".execute(" and "execute(" carefully.
-	for _, call := range findExecuteCalls(src) {
+	for _, call := range findExecuteCalls(facts, src) {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
 		}
-		if isExecuteCallbackPassthrough(src, call.Start, args) {
+		if isExecuteCallbackPassthrough(facts, src, call.Start, args) {
 			continue
 		}
 		sqlArg := args[0]
-		if isBoundQueryBuilderExpression(src, call.Start, sqlArg) {
+		if isBoundQueryBuilderExpression(facts, src, call.Start, sqlArg) {
 			continue
 		}
 		// Parameterized: first arg is pure string with placeholders AND second arg is present (bound params)
@@ -213,7 +213,7 @@ func detectCWE89(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // isBoundQueryBuilderExpression recognizes a local SQLAlchemy-style statement
 // variable. These objects carry bound values into execute and are not dynamic
 // SQL strings merely because their variable name is non-literal.
-func isBoundQueryBuilderExpression(source string, callStart int, arg string) bool {
+func isBoundQueryBuilderExpression(facts *PyCweFacts, source string, callStart int, arg string) bool {
 	name := strings.TrimSpace(arg)
 	if isQueryBuilderConstructor(name) {
 		return true
@@ -221,7 +221,8 @@ func isBoundQueryBuilderExpression(source string, callStart int, arg string) boo
 	if !isIdentOnly(name) || callStart < 0 || callStart > len(source) {
 		return false
 	}
-	lines := strings.Split(pythonCodeMask(source[:callStart]), "\n")
+	prefix := source[:callStart]
+	lines := strings.Split(facts.codeMask(prefix, 0), "\n")
 	for i := len(lines) - 1; i >= 0; i-- {
 		line := strings.TrimSpace(lines[i])
 		if line == "" {
@@ -260,14 +261,15 @@ func isQueryBuilderConstructor(expression string) bool {
 // bound arguments, then forwards them unchanged; this is not SQL construction.
 // Keep the guard exact so a wrapper that rewrites sql before forwarding still
 // reaches the dynamic-SQL check.
-func isExecuteCallbackPassthrough(source string, callStart int, args []string) bool {
+func isExecuteCallbackPassthrough(facts *PyCweFacts, source string, callStart int, args []string) bool {
 	if len(args) != 4 || strings.TrimSpace(args[0]) != "sql" ||
 		strings.TrimSpace(args[1]) != "params" || strings.TrimSpace(args[2]) != "many" ||
 		strings.TrimSpace(args[3]) != "context" || callStart <= 0 || callStart > len(source) {
 		return false
 	}
 
-	lines := strings.Split(pythonCodeMask(source[:callStart]), "\n")
+	prefix := source[:callStart]
+	lines := strings.Split(facts.codeMask(prefix, 0), "\n")
 	for i := len(lines) - 1; i >= 0; i-- {
 		line := strings.TrimSpace(lines[i])
 		if !strings.HasPrefix(line, "def __call__(") && !strings.HasPrefix(line, "async def __call__(") {
@@ -291,13 +293,13 @@ func isExecuteCallbackPassthrough(source string, callStart int, args []string) b
 	return false
 }
 
-func findExecuteCalls(src string) []callSite {
+func findExecuteCalls(facts *PyCweFacts, src string) []callSite {
 	// Match .execute( / .executemany( and also bare execute( / executemany(
-	out := findCalls(src, ".execute", ".executemany")
+	out := findCalls(facts, src, ".execute", ".executemany")
 	// bare names — findCalls with "execute" would match .execute too if boundary allows '.'
 	// Our boundary treats '.' on left as failure for "execute", so bare works; but ".execute" already matched method form.
 	// findCalls("execute") won't match ".execute" because left boundary sees '.'.
-	out = append(out, findCalls(src, "execute", "executemany")...)
+	out = append(out, findCalls(facts, src, "execute", "executemany")...)
 	return out
 }
 
@@ -322,7 +324,7 @@ func isIdentOnly(s string) bool {
 
 // --- CWE-22 Path traversal ---
 
-func detectCWE22(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE22(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
@@ -334,7 +336,7 @@ func detectCWE22(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 
 	// open(os.path.join(...)) style — join of non-all-literals into open
-	for _, call := range findCalls(src, "open") {
+	for _, call := range findCalls(facts, src, "open") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
@@ -441,14 +443,14 @@ func hasDynamicPathDiv(src string) bool {
 
 // --- CWE-79 XSS ---
 
-func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE79(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	src := unit.Source
 
 	// mark_safe(...) with dynamic arg
-	for _, call := range findCalls(src, "mark_safe") {
+	for _, call := range findCalls(facts, src, "mark_safe") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
@@ -469,7 +471,7 @@ func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 
 	// Markup(...) dynamic
-	for _, call := range findCalls(src, "Markup") {
+	for _, call := range findCalls(facts, src, "Markup") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
@@ -490,7 +492,7 @@ func detectCWE79(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 
 	// render_template_string with dynamic template
-	for _, call := range findCalls(src, "render_template_string") {
+	for _, call := range findCalls(facts, src, "render_template_string") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue

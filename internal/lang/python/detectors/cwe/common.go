@@ -100,25 +100,40 @@ type callSite struct {
 	ArgsText string // interior of top-level argument list
 }
 
-// findCalls finds call-like sites for each name in names (exact callee strings).
-func findCalls(source string, names ...string) []callSite {
+// findCalls finds call-like sites using facts.Masked when source is the full
+// file. Prefer findCallsMasked with facts.codeMask for known fragment offsets.
+func findCalls(facts *PyCweFacts, source string, names ...string) []callSite {
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	return findCallsMasked(source, masked, names...)
+}
+
+// findCallsMasked finds call-like sites for each name using pre-masked text
+// (byte-aligned with source). Does not remask.
+func findCallsMasked(source, masked string, names ...string) []callSite {
 	var out []callSite
-	code := pythonCodeMask(source)
+	if masked == "" {
+		masked = pythonCodeMask(source)
+	}
 	for _, name := range names {
 		start := 0
 		for {
-			idx := strings.Index(code[start:], name)
+			idx := strings.Index(masked[start:], name)
 			if idx < 0 {
 				break
 			}
 			abs := start + idx
-			if !identBoundaryOK(code, abs, abs+len(name)) {
+			if !identBoundaryOK(masked, abs, abs+len(name)) {
 				start = abs + len(name)
 				continue
 			}
 			after := abs + len(name)
-			j := skipWS(code, after)
-			if j >= len(code) || code[j] != '(' {
+			j := skipWS(masked, after)
+			if j >= len(masked) || masked[j] != '(' {
 				start = after
 				continue
 			}
@@ -139,21 +154,66 @@ func findCalls(source string, names ...string) []callSite {
 	return out
 }
 
+// fragStartHint returns 0 when source is the full facts.Source, else -1
+// (unknown offset → codeMask may remask the fragment).
+func fragStartHint(facts *PyCweFacts, source string) int {
+	if facts != nil && source == facts.Source {
+		return 0
+	}
+	return -1
+}
+
 // pythonCodeMask keeps byte offsets stable while blanking comments and string
-// literals. Delegates to the shared pytext helper used by PERF facts as well.
+// literals. Prefer facts.Masked / facts.codeMask; this remasks and is the
+// fallback when no facts or fragment offset is available.
 func pythonCodeMask(source string) string {
 	return pytext.Mask(source)
 }
 
-func firstCodeMatchStart(source string, pattern *regexp.Regexp) int {
-	if pattern == nil {
+// firstCodeMatchStart returns the start of the first pattern match in source
+// whose corresponding masked span is non-blank (skips comment/string-only hits).
+// Uses iterative FindStringIndex — never FindAllStringIndex.
+func firstCodeMatchStart(facts *PyCweFacts, source string, pattern *regexp.Regexp) int {
+	if pattern == nil || source == "" {
 		return -1
 	}
-	masked := pythonCodeMask(source)
-	for _, match := range pattern.FindAllStringIndex(source, -1) {
-		if strings.TrimSpace(masked[match[0]:match[1]]) != "" {
-			return match[0]
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	return firstCodeMatchStartMasked(source, masked, pattern)
+}
+
+// firstCodeMatchStartMasked scans source with pattern, filtering hits whose
+// masked span is blank. masked must be byte-aligned with source.
+func firstCodeMatchStartMasked(source, masked string, pattern *regexp.Regexp) int {
+	if pattern == nil || source == "" {
+		return -1
+	}
+	if masked == "" {
+		masked = pythonCodeMask(source)
+	}
+	search := 0
+	for search <= len(source) {
+		loc := pattern.FindStringIndex(source[search:])
+		if loc == nil {
+			return -1
 		}
+		start := search + loc[0]
+		end := search + loc[1]
+		if end > len(masked) {
+			end = len(masked)
+		}
+		if start < end && strings.TrimSpace(masked[start:end]) != "" {
+			return start
+		}
+		if end <= search {
+			search++
+			continue
+		}
+		search = end
 	}
 	return -1
 }

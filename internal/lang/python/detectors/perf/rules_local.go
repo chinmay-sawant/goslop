@@ -16,8 +16,11 @@ func init() {
 }
 
 var (
-	materializedAssignRE = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:await\s+)?[^\n]*\.(?:scalars\s*\(\s*\)\s*\.)?all\s*\(\s*\)`)
-	jsonParseAssignRE    = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:await\s+)?(?:request\.(?:get_json|json)\s*\(|json\.loads\s*\(\s*request\.(?:body|data))`)
+	materializedAssignRE   = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:await\s+)?[^\n]*\.(?:scalars\s*\(\s*\)\s*\.)?all\s*\(\s*\)`)
+	jsonParseAssignRE      = regexp.MustCompile(`\b([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:await\s+)?(?:request\.(?:get_json|json)\s*\(|json\.loads\s*\(\s*request\.(?:body|data))`)
+	idempotencyKeyAssignRE = regexp.MustCompile(`(?i)(?:idempotency_key|event_key|request_key)\s*=\s*([A-Za-z_][A-Za-z0-9_\.]*)`)
+	ormObjectsModelRE      = regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\.objects\.`)
+	ormCtorModelRE         = regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\s*\(`)
 )
 
 // PERF-PY-1: materializing an ORM result and sorting it in Python turns an
@@ -167,17 +170,17 @@ func idempotencyKeyTokens(line string) []string {
 		}
 	}
 	// Also capture a simple RHS name: filter(idempotency_key=key) → key
-	if m := regexp.MustCompile(`(?i)(?:idempotency_key|event_key|request_key)\s*=\s*([A-Za-z_][A-Za-z0-9_\.]*)`).FindStringSubmatch(line); len(m) == 2 {
+	if m := idempotencyKeyAssignRE.FindStringSubmatch(line); len(m) == 2 {
 		keys = append(keys, m[1])
 	}
 	return keys
 }
 
 func ormModelToken(line string) string {
-	if m := regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\.objects\.`).FindStringSubmatch(line); len(m) == 2 {
+	if m := ormObjectsModelRE.FindStringSubmatch(line); len(m) == 2 {
 		return m[1]
 	}
-	if m := regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\s*\(`).FindStringSubmatch(line); len(m) == 2 {
+	if m := ormCtorModelRE.FindStringSubmatch(line); len(m) == 2 {
 		return m[1]
 	}
 	return ""

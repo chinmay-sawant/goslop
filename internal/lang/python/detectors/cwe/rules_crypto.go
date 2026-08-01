@@ -9,9 +9,8 @@ import (
 )
 
 func init() {
-	// These rules intentionally have no SourceIndex gates. Several findings
-	// depend on argument values or assignment targets, so a smaller token gate
-	// could silently skip a valid source pattern.
+	// Most crypto rules stay ungated (argument-value evidence). CWE-1392 only
+	// fires on password/passwd/pwd assignment tokens.
 	RegisterRule("CWE-295", detectCWE295, &MetaCWE295)
 	RegisterRule("CWE-328", detectCWE328, &MetaCWE328)
 	RegisterRule("CWE-335", detectCWE335, &MetaCWE335)
@@ -20,7 +19,8 @@ func init() {
 	RegisterRule("CWE-1204", detectCWE1204, &MetaCWE1204)
 	RegisterRule("CWE-1240", detectCWE1240, &MetaCWE1240)
 	RegisterRule("CWE-1241", detectCWE1241, &MetaCWE1241)
-	RegisterRule("CWE-1392", detectCWE1392, &MetaCWE1392)
+	RegisterRule("CWE-1392", detectCWE1392, &MetaCWE1392,
+		"password", "passwd", "pwd")
 }
 
 var (
@@ -32,43 +32,43 @@ var (
 
 // CWE-295 covers explicit certificate or hostname validation bypasses. Calls
 // are located through findCalls, which masks comments and docstrings first.
-func detectCWE295(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE295(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.request", "httpx.get", "httpx.post", "httpx.request"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if hasKwargFalse(call.ArgsText, "verify") {
 				emitCryptoFinding(unit, &MetaCWE295, call.Start, "TLS certificate verification is disabled for a network request", confidence86, out)
 				return
 			}
 		}
 	}
-	masked := pythonCodeMask(unit.Source)
+	masked := facts.Masked
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
 			emitCryptoFinding(unit, &MetaCWE295, start, "TLS certificate validation is explicitly disabled", confidence84, out)
 			return
 		}
 	}
-	if match := regexp.MustCompile(`(?m)check_hostname\s*=\s*False\b`).FindStringIndex(masked); match != nil {
+	if match := pyCheckHostnameFalseRE.FindStringIndex(masked); match != nil {
 		emitCryptoFinding(unit, &MetaCWE295, match[0], "TLS hostname verification is explicitly disabled", confidence84, out)
 	}
 }
 
 // CWE-328 reports legacy MD5 and SHA-1 hash construction. It does not report
 // uses of their names in comments, docstrings, or arbitrary string data.
-func detectCWE328(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE328(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"hashlib.md5", "hashlib.sha1", "Crypto.Hash.MD5.new", "Crypto.Hash.SHA1.new"} {
-		if calls := findCalls(unit.Source, name); len(calls) > 0 {
+		if calls := findCalls(facts, unit.Source, name); len(calls) > 0 {
 			emitCryptoFinding(unit, &MetaCWE328, calls[0].Start, "weak MD5 or SHA-1 hash algorithm is used", confidence84, out)
 			return
 		}
 	}
-	for _, call := range findCalls(unit.Source, "hashlib.new") {
+	for _, call := range findCalls(facts, unit.Source, "hashlib.new") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) > 0 && weakHashName(args[0]) {
 			emitCryptoFinding(unit, &MetaCWE328, call.Start, "weak MD5 or SHA-1 hash algorithm is selected dynamically", confidence84, out)
@@ -84,12 +84,12 @@ func weakHashName(expr string) bool {
 
 // CWE-335 limits reports to an explicitly constant seed. A seed drawn from
 // the runtime or omitted entirely is not reported by this same-file rule.
-func detectCWE335(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE335(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"random.seed", "numpy.random.seed", "np.random.seed"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			args := splitTopLevelArgs(call.ArgsText)
 			if len(args) > 0 && pyFixedSeedRE.MatchString(args[0]) {
 				emitCryptoFinding(unit, &MetaCWE335, call.Start, "pseudo-random generator is seeded with a fixed value", confidence78, out)
@@ -102,21 +102,21 @@ func detectCWE335(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-338 and CWE-1241 require a security-shaped identifier on the same
 // executable line as a non-cryptographic random API. This avoids flagging
 // ordinary sampling, games, and simulations.
-func detectCWE338(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	detectWeakSecurityRandom(unit, &MetaCWE338, "cryptographically weak random API produces a security-sensitive value", confidence82, out)
+func detectCWE338(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	detectWeakSecurityRandom(unit, facts, &MetaCWE338, "cryptographically weak random API produces a security-sensitive value", confidence82, out)
 }
 
-func detectCWE1241(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	detectWeakSecurityRandom(unit, &MetaCWE1241, "predictable random algorithm produces a security-sensitive value", confidence80, out)
+func detectCWE1241(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	detectWeakSecurityRandom(unit, facts, &MetaCWE1241, "predictable random algorithm produces a security-sensitive value", confidence80, out)
 }
 
-func detectWeakSecurityRandom(unit *core.ParsedUnit, meta *rules.RuleMetadata, message string, confidence float32, out *[]rules.Finding) {
+func detectWeakSecurityRandom(unit *core.ParsedUnit, facts *PyCweFacts, meta *rules.RuleMetadata, message string, confidence float32, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"random.random", "random.randint", "random.randrange", "random.choice", "random.getrandbits", "numpy.random.randint", "numpy.random.choice", "np.random.randint", "np.random.choice"} {
-		for _, call := range findCalls(unit.Source, name) {
-			if securityRandomContext(unit.Source, call.Start) {
+		for _, call := range findCalls(facts, unit.Source, name) {
+			if securityRandomContext(facts, unit.Source, call.Start) {
 				emitCryptoFinding(unit, meta, call.Start, message, confidence, out)
 				return
 			}
@@ -124,7 +124,7 @@ func detectWeakSecurityRandom(unit *core.ParsedUnit, meta *rules.RuleMetadata, m
 	}
 }
 
-func securityRandomContext(source string, offset int) bool {
+func securityRandomContext(facts *PyCweFacts, source string, offset int) bool {
 	if offset < 0 || offset > len(source) {
 		return false
 	}
@@ -133,7 +133,13 @@ func securityRandomContext(source string, offset int) bool {
 	if next := strings.Index(source[offset:], "\n"); next >= 0 {
 		end = offset + next
 	}
-	line := strings.ToLower(pythonCodeMask(source[start:end]))
+	lineSrc := source[start:end]
+	var line string
+	if facts != nil {
+		line = strings.ToLower(facts.codeMask(lineSrc, start))
+	} else {
+		line = strings.ToLower(pythonCodeMask(lineSrc))
+	}
 	for _, ident := range []string{"token", "secret", "password", "session", "nonce", "otp", "csrf", "api_key", "auth"} {
 		if containsIdent(line, ident) {
 			return true
@@ -145,12 +151,12 @@ func securityRandomContext(source string, offset int) bool {
 // CWE-347 recognizes the explicit PyJWT signature-verification bypasses. A
 // decode call with ordinary defaults remains safe because verification policy
 // can otherwise be established outside this source file.
-func detectCWE347(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE347(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"jwt.decode", "jwt.api_jwt.decode"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			compact := strings.ToLower(compactWhitespace(call.ArgsText))
 			if strings.Contains(compact, "verify=false") || strings.Contains(compact, "'verify_signature':false") || strings.Contains(compact, `"verify_signature":false`) {
 				emitCryptoFinding(unit, &MetaCWE347, call.Start, "JWT signature verification is explicitly disabled", confidence86, out)
@@ -162,11 +168,11 @@ func detectCWE347(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-1204 detects literal IV material only when passed to a cipher mode that
 // takes an IV. IVs obtained from secrets.token_bytes are intentionally safe.
-func detectCWE1204(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1204(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "AES.new") {
+	for _, call := range findCalls(facts, unit.Source, "AES.new") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if fixedIVArguments(args) {
 			emitCryptoFinding(unit, &MetaCWE1204, call.Start, "cipher uses a fixed literal initialization vector", confidence82, out)
@@ -190,12 +196,12 @@ func fixedIVArguments(args []string) bool {
 
 // CWE-1240 reports only an overt hand-written XOR cipher implementation. A
 // generic XOR operation is common in Python and is deliberately not enough.
-func detectCWE1240(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1240(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
-		if pyRiskyCryptoNameRE.MatchString(fn.name) && strings.Contains(pythonCodeMask(fn.body), "^") {
+	for _, fn := range facts.Functions() {
+		if pyRiskyCryptoNameRE.MatchString(fn.name) && strings.Contains(facts.codeMask(fn.body, fn.bodyStart), "^") {
 			emitCryptoFinding(unit, &MetaCWE1240, fn.start, "hand-written XOR cipher is a risky cryptographic primitive implementation", confidence76, out)
 			return
 		}
@@ -205,8 +211,8 @@ func detectCWE1240(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // CWE-1392 reports an explicit common default password assignment. It is kept
 // separate from CWE-256 because non-default literal passwords have different
 // remediation and are already covered by that storage rule.
-func detectCWE1392(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(unit, pyDefaultCredentialRE); start >= 0 {
+func detectCWE1392(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstMatchStart(facts, unit, pyDefaultCredentialRE); start >= 0 {
 		emitCryptoFinding(unit, &MetaCWE1392, start, "common default password is assigned in Python source", confidence82, out)
 	}
 }

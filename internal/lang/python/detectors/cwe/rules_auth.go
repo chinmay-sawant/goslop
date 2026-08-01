@@ -9,14 +9,14 @@ import (
 )
 
 func init() {
-	// These rules intentionally have no SourceIndex gates: individual routes
-	// and framework calls are detected from combinations of source evidence,
-	// and a smaller gate could incorrectly skip a valid combination.
+	// Most auth rules stay ungated: route+decorator combinations are FN-prone
+	// to narrow prefilters. CWE-613 only needs the session-lifetime tokens.
 	RegisterRule("CWE-306", detectCWE306, &MetaCWE306)
 	RegisterRule("CWE-307", detectCWE307, &MetaCWE307)
 	RegisterRule("CWE-346", detectCWE346, &MetaCWE346)
 	RegisterRule("CWE-359", detectCWE359, &MetaCWE359)
-	RegisterRule("CWE-613", detectCWE613, &MetaCWE613)
+	RegisterRule("CWE-613", detectCWE613, &MetaCWE613,
+		"SESSION_COOKIE_AGE", "PERMANENT_SESSION_LIFETIME")
 	RegisterRule("CWE-565", detectCWE565, &MetaCWE565)
 	RegisterRule("CWE-807", detectCWE807, &MetaCWE807)
 	RegisterRule("CWE-698", detectCWE698, &MetaCWE698)
@@ -34,15 +34,15 @@ var (
 // CWE-306 limits itself to framework route decorators on explicitly critical
 // paths. Public routes and routes that use a recognizable protection decorator
 // are intentionally outside this same-file heuristic.
-func detectCWE306(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE306(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, match := range pyCriticalRouteRE.FindAllStringIndex(unit.Source, -1) {
-		if !codeRangeHasContent(unit.Source, match[0], match[1]) {
+		if !codeRangeHasContent(facts, unit.Source, match[0], match[1]) {
 			continue
 		}
-		fn, ok := firstPythonFunctionAfter(unit.Source, match[1])
+		fn, ok := firstPythonFunctionAfter(facts.Functions(), match[1])
 		if !ok || protectedRouteDecorators(unit.Source[match[0]:fn.start]) {
 			continue
 		}
@@ -53,20 +53,20 @@ func detectCWE306(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-307 reports only a login-shaped route that performs an explicit
 // password-authentication operation and has no recognized throttle decorator.
-func detectCWE307(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE307(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, match := range pyLoginRouteRE.FindAllStringIndex(unit.Source, -1) {
-		if !codeRangeHasContent(unit.Source, match[0], match[1]) {
+		if !codeRangeHasContent(facts, unit.Source, match[0], match[1]) {
 			continue
 		}
-		fn, ok := firstPythonFunctionAfter(unit.Source, match[1])
+		fn, ok := firstPythonFunctionAfter(facts.Functions(), match[1])
 		if !ok {
 			continue
 		}
 		decorators := strings.ToLower(unit.Source[match[0]:fn.start])
-		body := strings.ToLower(pythonCodeMask(fn.body))
+		body := strings.ToLower(facts.codeMask(fn.body, fn.bodyStart))
 		if rateLimitedDecorators(decorators) || !strings.Contains(body, "check_password_hash(") && !strings.Contains(body, "authenticate(") {
 			continue
 		}
@@ -75,12 +75,12 @@ func detectCWE307(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE346(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE346(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"CORS", "app.add_middleware"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			args := strings.ToLower(compactWhitespace(call.ArgsText))
 			if allowsWildcardOrigin(args) && (strings.Contains(args, "supports_credentials=true") || strings.Contains(args, "allow_credentials=true")) {
 				emitAuthFinding(unit, &MetaCWE346, call.Start, "CORS allows every origin while credentialed requests are enabled", confidence86, out)
@@ -90,12 +90,12 @@ func detectCWE346(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE359(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE359(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"print", "logging.debug", "logging.info", "logging.warning", "logging.error", "logger.debug", "logger.info", "logger.warning", "logger.error"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if pyPersonalFieldRE.MatchString(call.ArgsText) {
 				emitAuthFinding(unit, &MetaCWE359, call.Start, "personal data field is written directly to a log or console sink", confidence80, out)
 				return
@@ -104,22 +104,22 @@ func detectCWE359(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE613(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(unit, pySessionNeverExpiresRE); start >= 0 {
+func detectCWE613(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstMatchStart(facts, unit, pySessionNeverExpiresRE); start >= 0 {
 		emitAuthFinding(unit, &MetaCWE613, start, "session lifetime is explicitly configured to never expire", confidence80, out)
 	}
 }
 
-func detectCWE565(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE565(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
-		code := strings.ToLower(pythonCodeMask(fn.body))
+	for _, fn := range facts.Functions() {
+		code := strings.ToLower(facts.codeMask(fn.body, fn.bodyStart))
 		if hasCookieValidation(code) || !strings.Contains(code, "request.cookies") {
 			continue
 		}
-		for _, call := range findCalls(fn.body, "request.cookies.get", "request.COOKIES.get") {
+		for _, call := range findCallsMasked(fn.body, code, "request.cookies.get", "request.COOKIES.get") {
 			if !cookieLooksSecuritySensitive(call.ArgsText) {
 				continue
 			}
@@ -132,16 +132,16 @@ func detectCWE565(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE807(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE807(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, match := range pyDirectSecurityDecisionRE.FindAllStringIndex(unit.Source, -1) {
-		if !codeRangeHasContent(unit.Source, match[0], match[1]) {
+		if !codeRangeHasContent(facts, unit.Source, match[0], match[1]) {
 			continue
 		}
-		fn, ok := containingPythonFunction(unit.Source, match[0])
-		if ok && hasCookieValidation(strings.ToLower(pythonCodeMask(fn.body))) {
+		fn, ok := containingPythonFunction(facts.Functions(), match[0])
+		if ok && hasCookieValidation(strings.ToLower(facts.codeMask(fn.body, fn.bodyStart))) {
 			continue
 		}
 		emitAuthFinding(unit, &MetaCWE807, match[0], "client-controlled request value directly controls an authorization decision", confidence82, out)
@@ -149,16 +149,17 @@ func detectCWE807(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE698(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE698(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
+	for _, fn := range facts.Functions() {
+		masked := facts.codeMask(fn.body, fn.bodyStart)
 		for _, match := range pyStandaloneRedirectRE.FindAllStringIndex(fn.body, -1) {
-			if !codeRangeHasContent(fn.body, match[0], match[1]) {
+			if !codeRangeHasContentMasked(masked, match[0], match[1]) {
 				continue
 			}
-			if next := nextExecutableLine(pythonCodeMask(fn.body), match[1]); next >= 0 {
+			if next := nextExecutableLine(masked, match[1]); next >= 0 {
 				emitAuthFinding(unit, &MetaCWE698, fn.bodyStart+match[0], "redirect response is not returned before later code executes", confidence82, out)
 				return
 			}
@@ -166,8 +167,8 @@ func detectCWE698(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func firstPythonFunctionAfter(source string, offset int) (pythonFunction, bool) {
-	for _, fn := range pythonFunctions(source) {
+func firstPythonFunctionAfter(funcs []pythonFunction, offset int) (pythonFunction, bool) {
+	for _, fn := range funcs {
 		if fn.start >= offset {
 			return fn, true
 		}
@@ -175,8 +176,8 @@ func firstPythonFunctionAfter(source string, offset int) (pythonFunction, bool) 
 	return pythonFunction{}, false
 }
 
-func containingPythonFunction(source string, offset int) (pythonFunction, bool) {
-	for _, fn := range pythonFunctions(source) {
+func containingPythonFunction(funcs []pythonFunction, offset int) (pythonFunction, bool) {
+	for _, fn := range funcs {
 		if offset >= fn.bodyStart && offset < fn.bodyStart+len(fn.body) {
 			return fn, true
 		}
@@ -184,11 +185,26 @@ func containingPythonFunction(source string, offset int) (pythonFunction, bool) 
 	return pythonFunction{}, false
 }
 
-func codeRangeHasContent(source string, start, end int) bool {
+func codeRangeHasContent(facts *PyCweFacts, source string, start, end int) bool {
 	if start < 0 || end > len(source) || start >= end {
 		return false
 	}
-	return strings.TrimSpace(pythonCodeMask(source)[start:end]) != ""
+	var masked string
+	if facts != nil && source == facts.Source {
+		masked = facts.Masked
+	} else if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	return codeRangeHasContentMasked(masked, start, end)
+}
+
+func codeRangeHasContentMasked(masked string, start, end int) bool {
+	if start < 0 || end > len(masked) || start >= end {
+		return false
+	}
+	return strings.TrimSpace(masked[start:end]) != ""
 }
 
 func protectedRouteDecorators(decorators string) bool {
