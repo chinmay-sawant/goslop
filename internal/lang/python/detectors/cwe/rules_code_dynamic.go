@@ -137,33 +137,53 @@ func detectCWE215(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 }
 
-type routeHandlerBody struct {
-	start int
-	body  string
-}
-
 func routeHandlerBodies(facts *PyCweFacts, src string) []routeHandlerBody {
-	var code string
 	if facts != nil && src == facts.Source {
-		code = facts.Masked
-	} else if facts != nil {
+		return facts.RouteHandlers()
+	}
+	var code string
+	if facts != nil {
 		code = facts.codeMask(src, fragStartHint(facts, src))
 	} else {
 		code = pythonCodeMask(src)
 	}
-	locs := pythonRouteDecoratorRE.FindAllStringIndex(code, -1)
-	bodies := make([]routeHandlerBody, 0, len(locs))
-	for _, loc := range locs {
-		defAt := strings.Index(code[loc[1]:], "\ndef ")
+	return buildRouteHandlerBodies(src, code)
+}
+
+// buildRouteHandlerBodies finds @route/@get/… handlers via iterative FindStringIndex
+// on masked text (never FindAllStringIndex).
+func buildRouteHandlerBodies(src, code string) []routeHandlerBody {
+	if code == "" {
+		code = pythonCodeMask(src)
+	}
+	var bodies []routeHandlerBody
+	search := 0
+	for search <= len(code) {
+		loc := pythonRouteDecoratorRE.FindStringIndex(code[search:])
+		if loc == nil {
+			break
+		}
+		decStart := search + loc[0]
+		decEnd := search + loc[1]
+		defAt := strings.Index(code[decEnd:], "\ndef ")
 		if defAt < 0 {
+			search = decEnd
 			continue
 		}
-		start := loc[1] + defAt + 1
+		start := decEnd + defAt + 1
 		end := len(src)
 		if next := strings.Index(code[start+4:], "\ndef "); next >= 0 {
 			end = start + 4 + next
 		}
-		bodies = append(bodies, routeHandlerBody{start: start, body: src[start:end]})
+		if end > len(src) {
+			end = len(src)
+		}
+		bodies = append(bodies, routeHandlerBody{
+			decoratorStart: decStart,
+			start:          start,
+			body:           src[start:end],
+		})
+		search = decEnd
 	}
 	return bodies
 }

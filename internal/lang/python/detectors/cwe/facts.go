@@ -17,9 +17,18 @@ type PyCweFacts struct {
 	Source string
 	Masked string
 	Funcs  []pythonFunction
+	Routes []routeHandlerBody
 
-	lines      []pyMaskedLine
-	linesReady bool
+	lines       []pyMaskedLine
+	linesReady  bool
+	routesReady bool
+}
+
+// routeHandlerBody is a route-decorated handler span in Source.
+type routeHandlerBody struct {
+	decoratorStart int // byte offset of the matching @route / @get / … decorator
+	start          int // byte offset of the def line
+	body           string
 }
 
 var pyFunctionDefRE = regexp.MustCompile(`(?m)^([ \t]*)def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\([^\n]*\)\s*:`)
@@ -55,6 +64,19 @@ func (f *PyCweFacts) Functions() []pythonFunction {
 		return nil
 	}
 	return f.Funcs
+}
+
+// RouteHandlers returns memoized route-decorated handler spans (lazy).
+func (f *PyCweFacts) RouteHandlers() []routeHandlerBody {
+	if f == nil {
+		return nil
+	}
+	if f.routesReady {
+		return f.Routes
+	}
+	f.Routes = buildRouteHandlerBodies(f.Source, f.Masked)
+	f.routesReady = true
+	return f.Routes
 }
 
 // codeMask returns a masked view of fragment aligned with Source when possible.

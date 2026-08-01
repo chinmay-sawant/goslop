@@ -9,16 +9,25 @@ import (
 )
 
 func init() {
-	// Most crypto rules stay ungated (argument-value evidence). CWE-1392 only
-	// fires on password/passwd/pwd assignment tokens.
-	RegisterRule("CWE-295", detectCWE295, &MetaCWE295)
-	RegisterRule("CWE-328", detectCWE328, &MetaCWE328)
-	RegisterRule("CWE-335", detectCWE335, &MetaCWE335)
-	RegisterRule("CWE-338", detectCWE338, &MetaCWE338)
-	RegisterRule("CWE-347", detectCWE347, &MetaCWE347)
-	RegisterRule("CWE-1204", detectCWE1204, &MetaCWE1204)
-	RegisterRule("CWE-1240", detectCWE1240, &MetaCWE1240)
-	RegisterRule("CWE-1241", detectCWE1241, &MetaCWE1241)
+	// Argument-value evidence stays FN-safe when gated on the call/API tokens
+	// that must appear before a finding can fire.
+	RegisterRule("CWE-295", detectCWE295, &MetaCWE295,
+		"verify=False", "CERT_NONE", "_create_unverified_context", "check_hostname",
+		"requests.", "httpx.")
+	RegisterRule("CWE-328", detectCWE328, &MetaCWE328,
+		"hashlib.md5", "hashlib.sha1", "hashlib.new", "Crypto.Hash.MD5", "Crypto.Hash.SHA1")
+	RegisterRule("CWE-335", detectCWE335, &MetaCWE335,
+		"random.seed", "numpy.random.seed", "np.random.seed")
+	RegisterRule("CWE-338", detectCWE338, &MetaCWE338,
+		"random.", "numpy.random", "np.random")
+	RegisterRule("CWE-347", detectCWE347, &MetaCWE347,
+		"jwt.decode", "verify=False", "verify_signature")
+	RegisterRule("CWE-1204", detectCWE1204, &MetaCWE1204,
+		"AES.new")
+	RegisterRule("CWE-1240", detectCWE1240, &MetaCWE1240,
+		"xor")
+	RegisterRule("CWE-1241", detectCWE1241, &MetaCWE1241,
+		"random.", "numpy.random", "np.random")
 	RegisterRule("CWE-1392", detectCWE1392, &MetaCWE1392,
 		"password", "passwd", "pwd")
 }
@@ -212,7 +221,8 @@ func detectCWE1240(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 // separate from CWE-256 because non-default literal passwords have different
 // remediation and are already covered by that storage rule.
 func detectCWE1392(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyDefaultCredentialRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyDefaultCredentialRE,
+		"='", "=\"", "= '", "= \""); start >= 0 {
 		emitCryptoFinding(unit, &MetaCWE1392, start, "common default password is assigned in Python source", confidence82, out)
 	}
 }

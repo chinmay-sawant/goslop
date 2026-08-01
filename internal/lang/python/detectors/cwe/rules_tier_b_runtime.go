@@ -9,28 +9,36 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-908", detectCWE908, &MetaCWE908)
-	RegisterRule("CWE-909", detectCWE909, &MetaCWE909)
-	RegisterRule("CWE-910", detectCWE910, &MetaCWE910)
-	RegisterRule("CWE-911", detectCWE911, &MetaCWE911)
+	RegisterRule("CWE-908", detectCWE908, &MetaCWE908,
+		"= None", "=None")
+	RegisterRule("CWE-909", detectCWE909, &MetaCWE909,
+		"db.execute(")
+	RegisterRule("CWE-910", detectCWE910, &MetaCWE910,
+		".close()")
+	RegisterRule("CWE-911", detectCWE911, &MetaCWE911,
+		"ctypes.pythonapi", "Py_IncRef", "Py_DecRef")
 	RegisterRule("CWE-920", detectCWE920, &MetaCWE920,
 		"while True", "hashlib", "sha256", "calculate", "compute")
-	RegisterRule("CWE-939", detectCWE939, &MetaCWE939)
+	RegisterRule("CWE-939", detectCWE939, &MetaCWE939,
+		"webbrowser.open")
 	RegisterRule("CWE-1007", detectCWE1007, &MetaCWE1007,
 		"render_template", "request.args", "request.form")
 	RegisterRule("CWE-1021", detectCWE1021, &MetaCWE1021,
 		"make_response", "render_template")
-	RegisterRule("CWE-1046", detectCWE1046, &MetaCWE1046)
+	RegisterRule("CWE-1046", detectCWE1046, &MetaCWE1046,
+		"+=")
 	RegisterRule("CWE-1050", detectCWE1050, &MetaCWE1050,
 		"open(", "for ", "while ")
 	RegisterRule("CWE-1060", detectCWE1060, &MetaCWE1060,
 		".objects.all", ".objects.filter")
-	RegisterRule("CWE-1067", detectCWE1067, &MetaCWE1067)
+	RegisterRule("CWE-1067", detectCWE1067, &MetaCWE1067,
+		"__contains=", "__icontains=", ".filter")
 	RegisterRule("CWE-1071", detectCWE1071, &MetaCWE1071,
 		"except")
 	RegisterRule("CWE-1072", detectCWE1072, &MetaCWE1072,
 		"psycopg2.connect", ".route")
-	RegisterRule("CWE-1084", detectCWE1084, &MetaCWE1084)
+	RegisterRule("CWE-1084", detectCWE1084, &MetaCWE1084,
+		"open(", ".execute(")
 }
 
 var (
@@ -49,16 +57,34 @@ var (
 
 func detectCWE908(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	code := facts.Masked
-	for _, match := range pyTierBNoneAssignRE.FindAllStringSubmatchIndex(code, -1) {
-		name := code[match[2]:match[3]]
-		if resourceUseStart(unit.Source, code, name, match[1], uninitializedResourceWindow, "read", "write", "execute", "connect") >= 0 {
-			emitTierBFinding(unit, &MetaCWE908, match[0], "resource initialized to None is used without initialization", confidence78, out)
+	if !strings.Contains(code, "= None") && !strings.Contains(code, "=None") {
+		return
+	}
+	search := 0
+	for search <= len(code) {
+		match := pyTierBNoneAssignRE.FindStringSubmatchIndex(code[search:])
+		if match == nil {
 			return
 		}
+		abs0 := search + match[0]
+		abs1 := search + match[1]
+		name := code[search+match[2] : search+match[3]]
+		if resourceUseStart(unit.Source, code, name, abs1, uninitializedResourceWindow, "read", "write", "execute", "connect") >= 0 {
+			emitTierBFinding(unit, &MetaCWE908, abs0, "resource initialized to None is used without initialization", confidence78, out)
+			return
+		}
+		if abs1 <= search {
+			search++
+			continue
+		}
+		search = abs1
 	}
 }
 
 func detectCWE909(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if !strings.Contains(facts.Masked, "db.execute(") {
+		return
+	}
 	for _, fn := range facts.Functions() {
 		code := facts.codeMask(fn.body, fn.bodyStart)
 		if strings.Contains(code, "db.execute(") && !strings.Contains(code, "db =") && !strings.Contains(code, "get_db(") {
@@ -70,12 +96,27 @@ func detectCWE909(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 
 func detectCWE910(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	code := facts.Masked
-	for _, match := range pyTierBCloseCallRE.FindAllStringSubmatchIndex(code, -1) {
-		name := code[match[2]:match[3]]
-		if resourceUseStart(unit.Source, code, name, match[1], closedResourceWindow, "read", "write", "flush") >= 0 {
-			emitTierBFinding(unit, &MetaCWE910, match[0], "closed file descriptor is used again", confidence86, out)
+	if !strings.Contains(code, ".close(") {
+		return
+	}
+	search := 0
+	for search <= len(code) {
+		match := pyTierBCloseCallRE.FindStringSubmatchIndex(code[search:])
+		if match == nil {
 			return
 		}
+		abs0 := search + match[0]
+		abs1 := search + match[1]
+		name := code[search+match[2] : search+match[3]]
+		if resourceUseStart(unit.Source, code, name, abs1, closedResourceWindow, "read", "write", "flush") >= 0 {
+			emitTierBFinding(unit, &MetaCWE910, abs0, "closed file descriptor is used again", confidence86, out)
+			return
+		}
+		if abs1 <= search {
+			search++
+			continue
+		}
+		search = abs1
 	}
 }
 
@@ -119,7 +160,8 @@ func detectCWE939(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE1007(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBHomoglyphRE); start >= 0 && !strings.Contains(unit.Source, "normalize(") {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBHomoglyphRE,
+		"username", "render_template"); start >= 0 && !strings.Contains(unit.Source, "normalize(") {
 		emitTierBFinding(unit, &MetaCWE1007, start, "request username is rendered without Unicode normalization", confidence70, out)
 	}
 }
@@ -132,6 +174,9 @@ func detectCWE1021(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 
 func detectCWE1046(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if !strings.Contains(facts.Masked, "+=") {
 		return
 	}
 	maskedLines := strings.Split(facts.Masked, "\n")
@@ -153,8 +198,12 @@ func detectCWE1046(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 			offset += len(masked) + 1
 			continue
 		}
+		if len(loopIndents) == 0 || !strings.Contains(trimmed, "+=") {
+			offset += len(masked) + 1
+			continue
+		}
 		match := pyTierBAugAssignRE.FindStringSubmatch(trimmed)
-		if len(loopIndents) > 0 && len(match) == 3 && textAccumulatorEvidence(originalLines[:i], match[1], match[2]) {
+		if len(match) == 3 && textAccumulatorEvidence(originalLines[:i], match[1], match[2]) {
 			emitTierBFinding(unit, &MetaCWE1046, offset, "immutable text is repeatedly concatenated inside a loop", confidence76, out)
 			return
 		}
@@ -188,12 +237,23 @@ func detectCWE1050(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 }
 
 func detectCWE1060(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	code := facts.Masked
+	if !strings.Contains(code, ".objects.") {
+		return
+	}
 	if start := firstCodeMatchStart(facts, unit.Source, pyTierBNPlusOneRE); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE1060, start, "ORM relation is loaded once per query result", confidence76, out)
 	}
 }
 
 func detectCWE1067(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	code := facts.Masked
+	if !strings.Contains(code, ".filter") {
+		return
+	}
+	if !strings.Contains(code, "__contains=") && !strings.Contains(code, "__icontains=") {
+		return
+	}
 	for _, call := range findCalls(facts, unit.Source, ".filter") {
 		if strings.Contains(call.ArgsText, "__contains=") || strings.Contains(call.ArgsText, "__icontains=") {
 			emitTierBFinding(unit, &MetaCWE1067, call.Start, "data-resource search uses an unanchored contains lookup", confidence72, out)

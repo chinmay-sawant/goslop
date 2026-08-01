@@ -14,23 +14,32 @@ func init() {
 		`"CON"`, `'CON'`, `"NUL"`, `'NUL'`, `"COM1"`, `'COM1'`)
 	RegisterRule("CWE-76", detectCWE76, &MetaCWE76,
 		`.replace("<"`, `.replace('<'`)
-	RegisterRule("CWE-178", detectCWE178, &MetaCWE178)
+	RegisterRule("CWE-178", detectCWE178, &MetaCWE178,
+		"request.args", "username")
 	RegisterRule("CWE-179", detectCWE179, &MetaCWE179,
 		"validate_", "unquote", "unescape", "decode(")
 	RegisterRule("CWE-182", detectCWE182, &MetaCWE182,
 		"re.sub", "request.args", "request.form", "request.data")
 	RegisterRule("CWE-184", detectCWE184, &MetaCWE184,
 		"deny", "blocked", "request.")
-	RegisterRule("CWE-186", detectCWE186, &MetaCWE186)
-	RegisterRule("CWE-257", detectCWE257, &MetaCWE257)
-	RegisterRule("CWE-272", detectCWE272, &MetaCWE272)
-	RegisterRule("CWE-279", detectCWE279, &MetaCWE279)
-	RegisterRule("CWE-289", detectCWE289, &MetaCWE289)
-	RegisterRule("CWE-290", detectCWE290, &MetaCWE290)
+	RegisterRule("CWE-186", detectCWE186, &MetaCWE186,
+		"re.compile")
+	RegisterRule("CWE-257", detectCWE257, &MetaCWE257,
+		".encrypt", "password", "passwd", "pwd")
+	RegisterRule("CWE-272", detectCWE272, &MetaCWE272,
+		"os.setuid", "os.seteuid", "os.setgid")
+	RegisterRule("CWE-279", detectCWE279, &MetaCWE279,
+		"os.chmod")
+	RegisterRule("CWE-289", detectCWE289, &MetaCWE289,
+		"request.headers", "host")
+	RegisterRule("CWE-290", detectCWE290, &MetaCWE290,
+		"request.headers", "X-Forwarded-For", "x-forwarded-for")
 	RegisterRule("CWE-323", detectCWE323, &MetaCWE323,
 		"nonce", "AESGCM")
-	RegisterRule("CWE-331", detectCWE331, &MetaCWE331)
-	RegisterRule("CWE-334", detectCWE334, &MetaCWE334)
+	RegisterRule("CWE-331", detectCWE331, &MetaCWE331,
+		"secrets.token_bytes", "secrets.token_urlsafe")
+	RegisterRule("CWE-334", detectCWE334, &MetaCWE334,
+		"random.randint")
 }
 
 var (
@@ -44,13 +53,15 @@ var (
 )
 
 func detectCWE66(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBVirtualNameRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBVirtualNameRE,
+		`"CON"`, `'CON'`, `"NUL"`, `'NUL'`, `"COM1"`, `'COM1'`); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE66, start, "Windows virtual resource name is used as a file path", confidence78, out)
 	}
 }
 
 func detectCWE76(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBStripTagRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBStripTagRE,
+		`.replace("<"`, `.replace('<'`); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE76, start, "manual removal of one markup delimiter is used as neutralization", confidence76, out)
 	}
 }
@@ -141,7 +152,8 @@ func detectCWE290(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE323(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBNonceRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBNonceRE,
+		"nonce", "AESGCM"); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE323, start, "fixed nonce is reused for AES-GCM encryption", confidence90, out)
 	}
 }

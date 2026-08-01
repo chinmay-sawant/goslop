@@ -1,7 +1,7 @@
 # v0.0.2 — Python scan pprof baseline + after (2026-08-02)
 
 > **Parent:** [`python-perf-pprof-optimization-checklist.md`](./python-perf-pprof-optimization-checklist.md)  
-> **Status:** pre + after captured (P0 Mask/firstMatch/Funcs · P1 gates/MustCompile · P2 inLoop + BP-PY-13)  
+> **Status:** pre + after + **r2 + after-r2** captured (Phase 5.1–5.4 verified: bench **78.5 ms**, product mean **93.3 ms**)  
 > **Artifacts:** `/tmp/goslop-python-pprof/*`  
 > **Corpus:** `PYTHON_SCAN_PATH=/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/pythoncoreengine` (63 files / 20945 lines)  
 > **Compare:** Go `SCAN_PATH=gopdfsuit` (78 files / 28042 lines)
@@ -157,3 +157,82 @@ go1.26.4 build -o bin/goslop ./cmd/goslop
 ```
 
 Harness: `internal/bench/make_run_python_bench_test.go`.
+
+---
+
+## Round-2 dump (2026-08-02) — path to ~90 ms
+
+> **Checklist:** Phase 5 in [`python-perf-pprof-optimization-checklist.md`](./python-perf-pprof-optimization-checklist.md)  
+> **Artifacts:** `bench-scan-r2-5s.txt`, `scan-cpu-r2.prof`, `scan-mem-r2.prof`, `product-run-python-r2-10x.txt`, focus tops
+
+### Product / bench
+
+| Metric | Phase-4 after | r2 |
+|--------|---------------:|---:|
+| Engine `BenchmarkPythonScanProfileAll` | 146.3 ms · 24.5 MB · 70.5k | **132.9 ms · 24.7 MB · 70.6k** |
+| Product mean / best (10×) | 157.5 / 133.4 ms | **147.9 / 139.0 ms** |
+| Findings | 102 | **102** |
+
+Gap to **~90 ms** engine: ~**43 ms** (~32%). Gap to **&lt;100 ms** product mean: ~**48 ms**.
+
+### r2 CPU (named)
+
+| Symbol | cum% |
+|--------|-----:|
+| `regexp.doExecute` | 77.9% |
+| `PyCweScan.Run` | 71.0% |
+| `firstCodeMatchStart*` | 24.5% |
+| `regexp.backtrack` | 21.0% |
+| `FindAllStringIndex` | 15.0% |
+| `firstMatchStart` | 12.7% |
+| `PythonPerfScan.Run` | 16.6% |
+| `debugEnabledStart` | 9.8% |
+| `routeHandlerBodies` | 8.7% |
+| `detectCWE1050` / `915` / `756` / `489` | 5.8 / 5.7 / 5.1 / 4.8% |
+
+### r2 mem (alloc_space flat)
+
+Mask **7.2%** (was 86% pre). Top: `MakeNoZero` 23%, `bitState.reset` 12%, `genSplit` 10%, `regexp.get` 9%.
+
+---
+
+## Round-2 after (2026-08-02) — Phase 5.1–5.4 verified
+
+> **Checklist:** Phase 5 in [`python-perf-pprof-optimization-checklist.md`](./python-perf-pprof-optimization-checklist.md)  
+> **Artifacts:** `bench-scan-r2-after-5s.txt`, `scan-cpu-r2-after.prof`, `scan-mem-r2-after.prof`, `product-run-python-r2-after-10x.txt`, `scan-cpu-r2-after-top-cum.txt`, `scan-mem-r2-after-alloc-space.txt`, `test-python-r2-after.txt`
+
+### Product / bench (r2 → after-r2)
+
+| Metric | r2 | after-r2 |
+|--------|---:|---------:|
+| Engine `BenchmarkPythonScanProfileAll` | 132.9 ms · 24.7 MB · 70.6k | **78.5 ms · 22.8 MB · 54.2k** |
+| Product mean / median / best / worst (10×) | 147.9 / 141.8 / 139.0 / 171.5 | **93.3 / 88.3 / 81.0 / 116.7** |
+| Findings | 102 | **102** (38h/56i/0l/8m; same top rules) |
+
+Gap to **≤90 ms** engine: **met** (78.5). Gap to **≤100 ms** product mean: **met** (93.3). Stretch product ~90: close.
+
+### after-r2 CPU (named, `-top -cum`)
+
+| Symbol | r2 cum% | after cum% |
+|--------|--------:|-----------:|
+| `regexp.doExecute` | 77.9% | **65.7%** |
+| `PyCweScan.Run` | 71.0% | **51.5%** |
+| `firstCodeMatchStart*` | 24.5% | **18.2%** |
+| `regexp.backtrack` | 21.0% | **30.9%** (share ↑; absolute ~28→~24 ms) |
+| `FindAllStringIndex` | 15.0% | **0%** (no samples) |
+| `routeHandlerBodies` | 8.7% | **4.6%** |
+| `PythonPerfScan.Run` | 16.6% | **29.0%** |
+| `PythonBadPracticeScan.Run` | 7.4% | **12.8%** |
+| `detectCWE1050` | 5.8% | **8.8%** |
+| `debugEnabledStart` | 9.8% | *(off top)* |
+| `firstMatchStart` | 12.7% | replaced by `firstLiteralMatch*` **~4.4%** |
+
+### after-r2 mem (alloc_space flat)
+
+Similar shape to r2: `MakeNoZero` **22.2%**, `bitState.reset` **11.7%**, `regexp.get` **9.0%**, `genSplit` **8.4%**, `pytext.Mask` **7.0%**, `perf.buildCodeLines` **5.8%**, `bp.buildCodeLines` **4.8%**.
+
+### Correctness / lint
+
+- `go1.26.4 test ./internal/lang/python/... ./ruleset/python/ ./tests/integration/python/ -count=1` — green
+- `go1.26.4 vet ./internal/lang/python/...` — clean
+- `gofmt -l internal/lang/python/detectors/cwe` — empty

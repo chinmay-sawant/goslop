@@ -9,17 +9,21 @@ import (
 )
 
 func init() {
-	// Most auth rules stay ungated: route+decorator combinations are FN-prone
-	// to narrow prefilters. CWE-613 only needs the session-lifetime tokens.
-	RegisterRule("CWE-306", detectCWE306, &MetaCWE306)
-	RegisterRule("CWE-307", detectCWE307, &MetaCWE307)
+	// Auth route+decorator rules use FN-safe any-of gates; CWE-346/359/565 stay
+	// ungated (varied CORS / personal-field / cookie shapes).
+	RegisterRule("CWE-306", detectCWE306, &MetaCWE306,
+		"/admin", "/manage", "/internal")
+	RegisterRule("CWE-307", detectCWE307, &MetaCWE307,
+		"login", "sign-in", "signin")
 	RegisterRule("CWE-346", detectCWE346, &MetaCWE346)
 	RegisterRule("CWE-359", detectCWE359, &MetaCWE359)
 	RegisterRule("CWE-613", detectCWE613, &MetaCWE613,
 		"SESSION_COOKIE_AGE", "PERMANENT_SESSION_LIFETIME")
 	RegisterRule("CWE-565", detectCWE565, &MetaCWE565)
-	RegisterRule("CWE-807", detectCWE807, &MetaCWE807)
-	RegisterRule("CWE-698", detectCWE698, &MetaCWE698)
+	RegisterRule("CWE-807", detectCWE807, &MetaCWE807,
+		"request.headers", "request.cookies", "request.args")
+	RegisterRule("CWE-698", detectCWE698, &MetaCWE698,
+		"redirect(", "HttpResponseRedirect(")
 }
 
 var (
@@ -38,15 +42,19 @@ func detectCWE306(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
-	for _, match := range pyCriticalRouteRE.FindAllStringIndex(unit.Source, -1) {
-		if !codeRangeHasContent(facts, unit.Source, match[0], match[1]) {
+	src := unit.Source
+	if !containsAnyNeedle(src, "/admin", "/manage", "/internal") {
+		return
+	}
+	for _, handler := range routeHandlerBodies(facts, src) {
+		if handler.decoratorStart < 0 || handler.decoratorStart >= handler.start {
 			continue
 		}
-		fn, ok := firstPythonFunctionAfter(facts.Functions(), match[1])
-		if !ok || protectedRouteDecorators(unit.Source[match[0]:fn.start]) {
+		decorators := src[handler.decoratorStart:handler.start]
+		if !pyCriticalRouteRE.MatchString(decorators) || protectedRouteDecorators(decorators) {
 			continue
 		}
-		emitAuthFinding(unit, &MetaCWE306, match[0], "critical route lacks a same-route authentication or authorization decorator", confidence76, out)
+		emitAuthFinding(unit, &MetaCWE306, handler.decoratorStart, "critical route lacks a same-route authentication or authorization decorator", confidence76, out)
 		return
 	}
 }
@@ -57,20 +65,24 @@ func detectCWE307(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
-	for _, match := range pyLoginRouteRE.FindAllStringIndex(unit.Source, -1) {
-		if !codeRangeHasContent(facts, unit.Source, match[0], match[1]) {
+	src := unit.Source
+	if !containsAnyNeedle(src, "login", "sign-in", "signin") {
+		return
+	}
+	for _, handler := range routeHandlerBodies(facts, src) {
+		if handler.decoratorStart < 0 || handler.decoratorStart >= handler.start {
 			continue
 		}
-		fn, ok := firstPythonFunctionAfter(facts.Functions(), match[1])
-		if !ok {
+		decorators := src[handler.decoratorStart:handler.start]
+		if !pyLoginRouteRE.MatchString(decorators) {
 			continue
 		}
-		decorators := strings.ToLower(unit.Source[match[0]:fn.start])
-		body := strings.ToLower(facts.codeMask(fn.body, fn.bodyStart))
-		if rateLimitedDecorators(decorators) || !strings.Contains(body, "check_password_hash(") && !strings.Contains(body, "authenticate(") {
+		decLower := strings.ToLower(decorators)
+		body := strings.ToLower(facts.codeMask(handler.body, handler.start))
+		if rateLimitedDecorators(decLower) || !strings.Contains(body, "check_password_hash(") && !strings.Contains(body, "authenticate(") {
 			continue
 		}
-		emitAuthFinding(unit, &MetaCWE307, match[0], "password-authentication route lacks a same-route rate-limit or throttle decorator", confidence74, out)
+		emitAuthFinding(unit, &MetaCWE307, handler.decoratorStart, "password-authentication route lacks a same-route rate-limit or throttle decorator", confidence74, out)
 		return
 	}
 }
@@ -105,7 +117,8 @@ func detectCWE359(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE613(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pySessionNeverExpiresRE); start >= 0 {
+	if start := firstMatchStartIfContains(facts, unit, pySessionNeverExpiresRE,
+		"SESSION_COOKIE_AGE", "PERMANENT_SESSION_LIFETIME"); start >= 0 {
 		emitAuthFinding(unit, &MetaCWE613, start, "session lifetime is explicitly configured to never expire", confidence80, out)
 	}
 }
@@ -136,17 +149,18 @@ func detectCWE807(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
-	for _, match := range pyDirectSecurityDecisionRE.FindAllStringIndex(unit.Source, -1) {
-		if !codeRangeHasContent(facts, unit.Source, match[0], match[1]) {
-			continue
-		}
-		fn, ok := containingPythonFunction(facts.Functions(), match[0])
-		if ok && hasCookieValidation(strings.ToLower(facts.codeMask(fn.body, fn.bodyStart))) {
-			continue
-		}
-		emitAuthFinding(unit, &MetaCWE807, match[0], "client-controlled request value directly controls an authorization decision", confidence82, out)
+	src := unit.Source
+	if !containsAnyNeedle(src, "request.headers", "request.cookies", "request.args") {
 		return
 	}
+	eachLiteralMatch(facts, src, pyDirectSecurityDecisionRE, func(start, end int) bool {
+		fn, ok := containingPythonFunction(facts.Functions(), start)
+		if ok && hasCookieValidation(strings.ToLower(facts.codeMask(fn.body, fn.bodyStart))) {
+			return true
+		}
+		emitAuthFinding(unit, &MetaCWE807, start, "client-controlled request value directly controls an authorization decision", confidence82, out)
+		return false
+	})
 }
 
 func detectCWE698(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
@@ -155,14 +169,17 @@ func detectCWE698(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 	for _, fn := range facts.Functions() {
 		masked := facts.codeMask(fn.body, fn.bodyStart)
-		for _, match := range pyStandaloneRedirectRE.FindAllStringIndex(fn.body, -1) {
-			if !codeRangeHasContentMasked(masked, match[0], match[1]) {
-				continue
+		found := false
+		eachCodeMatch(masked, pyStandaloneRedirectRE, func(start, end int) bool {
+			if next := nextExecutableLine(masked, end); next >= 0 {
+				emitAuthFinding(unit, &MetaCWE698, fn.bodyStart+start, "redirect response is not returned before later code executes", confidence82, out)
+				found = true
+				return false
 			}
-			if next := nextExecutableLine(masked, match[1]); next >= 0 {
-				emitAuthFinding(unit, &MetaCWE698, fn.bodyStart+match[0], "redirect response is not returned before later code executes", confidence82, out)
-				return
-			}
+			return true
+		})
+		if found {
+			return
 		}
 	}
 }

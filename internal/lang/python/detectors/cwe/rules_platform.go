@@ -9,16 +9,20 @@ import (
 )
 
 func init() {
-	// CWE-396/397 are gated on the exact exception tokens they match. Remaining
-	// platform rules stay ungated: match/process-call spellings are too varied.
+	// CWE-396/397 are gated on the exact exception tokens they match.
+	// Remaining platform rules use FN-safe structural tokens.
 	RegisterRule("CWE-396", detectCWE396, &MetaCWE396,
 		"except Exception", "except BaseException")
 	RegisterRule("CWE-397", detectCWE397, &MetaCWE397,
 		"raise Exception", "raise BaseException")
-	RegisterRule("CWE-478", detectCWE478, &MetaCWE478)
-	RegisterRule("CWE-252", detectCWE252, &MetaCWE252)
-	RegisterRule("CWE-390", detectCWE390, &MetaCWE390)
-	RegisterRule("CWE-584", detectCWE584, &MetaCWE584)
+	RegisterRule("CWE-478", detectCWE478, &MetaCWE478,
+		"match ")
+	RegisterRule("CWE-252", detectCWE252, &MetaCWE252,
+		"subprocess.run", "subprocess.call", "os.system")
+	RegisterRule("CWE-390", detectCWE390, &MetaCWE390,
+		"except")
+	RegisterRule("CWE-584", detectCWE584, &MetaCWE584,
+		"finally")
 }
 
 var (
@@ -38,7 +42,8 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if isPythonTestModule(unit) {
 		return
 	}
-	if start := firstMatchStart(facts, unit, pyGenericExceptRE); start >= 0 {
+	if start := firstMatchStartIfContains(facts, unit, pyGenericExceptRE,
+		"except Exception", "except BaseException"); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE396, start, "generic Exception or BaseException handler can hide distinct failure conditions", confidence84, out)
 	}
 }
@@ -46,7 +51,8 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 // CWE-397 recognizes direct construction or re-raising of Python's generic
 // root exception classes. Raising an application-specific exception is safe.
 func detectCWE397(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyGenericRaiseRE); start >= 0 {
+	if start := firstMatchStartIfContains(facts, unit, pyGenericRaiseRE,
+		"raise Exception", "raise BaseException"); start >= 0 {
 		emitPlatformFinding(unit, &MetaCWE397, start, "generic Exception or BaseException is raised directly", confidence82, out)
 	}
 }

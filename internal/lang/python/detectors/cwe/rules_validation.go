@@ -9,17 +9,23 @@ import (
 )
 
 func init() {
-	// Most validation rules stay ungated (varied framework spellings).
-	// CWE-1230 only needs Content-Disposition plus a request token.
-	RegisterRule("CWE-1173", detectCWE1173, &MetaCWE1173)
+	// CWE-1289 stays ungated (deny-list + request + FS combo). Others use
+	// FN-safe call/token gates.
+	RegisterRule("CWE-1173", detectCWE1173, &MetaCWE1173,
+		"request.get_json", "request.json", ".save(")
 	RegisterRule("CWE-1230", detectCWE1230, &MetaCWE1230,
 		"Content-Disposition")
-	RegisterRule("CWE-1236", detectCWE1236, &MetaCWE1236)
-	RegisterRule("CWE-1286", detectCWE1286, &MetaCWE1286)
+	RegisterRule("CWE-1236", detectCWE1236, &MetaCWE1236,
+		".writerow")
+	RegisterRule("CWE-1286", detectCWE1286, &MetaCWE1286,
+		"json.loads", "requests.", "httpx.", "urlopen")
 	RegisterRule("CWE-1289", detectCWE1289, &MetaCWE1289)
-	RegisterRule("CWE-1333", detectCWE1333, &MetaCWE1333)
-	RegisterRule("CWE-1389", detectCWE1389, &MetaCWE1389)
-	RegisterRule("CWE-140", detectCWE140, &MetaCWE140)
+	RegisterRule("CWE-1333", detectCWE1333, &MetaCWE1333,
+		"re.compile", "regex.compile")
+	RegisterRule("CWE-1389", detectCWE1389, &MetaCWE1389,
+		"request.args", "request.form", "request.GET", "request.POST", "request.query_params")
+	RegisterRule("CWE-140", detectCWE140, &MetaCWE140,
+		".join", "request.")
 }
 
 var (
@@ -67,7 +73,8 @@ func detectCWE1230(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 	if unit == nil || out == nil {
 		return
 	}
-	if start := firstCodeMatchStart(facts, unit.Source, pyContentDispositionRequestRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyContentDispositionRequestRE,
+		"Content-Disposition"); start >= 0 {
 		emitValidationFinding(unit, &MetaCWE1230, start, "response exposes a request-controlled filename through Content-Disposition metadata", confidence80, out)
 	}
 }

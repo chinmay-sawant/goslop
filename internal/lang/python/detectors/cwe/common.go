@@ -170,9 +170,9 @@ func pythonCodeMask(source string) string {
 	return pytext.Mask(source)
 }
 
-// firstCodeMatchStart returns the start of the first pattern match in source
-// whose corresponding masked span is non-blank (skips comment/string-only hits).
-// Uses iterative FindStringIndex — never FindAllStringIndex.
+// firstCodeMatchStart returns the start of the first pattern match on masked
+// code text (comments/strings already blanked). Prefer this for code-oriented
+// patterns; use firstLiteralMatchStart when the pattern must see string quotes.
 func firstCodeMatchStart(facts *PyCweFacts, source string, pattern *regexp.Regexp) int {
 	if pattern == nil || source == "" {
 		return -1
@@ -186,9 +186,43 @@ func firstCodeMatchStart(facts *PyCweFacts, source string, pattern *regexp.Regex
 	return firstCodeMatchStartMasked(source, masked, pattern)
 }
 
-// firstCodeMatchStartMasked scans source with pattern, filtering hits whose
-// masked span is blank. masked must be byte-aligned with source.
+// firstCodeMatchStartMasked runs a single FindStringIndex on masked text.
+// masked must be byte-aligned with source. Hits are already "code" hits.
 func firstCodeMatchStartMasked(source, masked string, pattern *regexp.Regexp) int {
+	if pattern == nil {
+		return -1
+	}
+	if masked == "" {
+		if source == "" {
+			return -1
+		}
+		masked = pythonCodeMask(source)
+	}
+	loc := pattern.FindStringIndex(masked)
+	if loc == nil {
+		return -1
+	}
+	return loc[0]
+}
+
+// firstLiteralMatchStart scans unmasked source with pattern and keeps the first
+// hit whose masked span is non-blank. Use when the RE must see string-literal
+// quotes or contents (hard-coded credentials, quoted config keys, etc.).
+func firstLiteralMatchStart(facts *PyCweFacts, source string, pattern *regexp.Regexp) int {
+	if pattern == nil || source == "" {
+		return -1
+	}
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	return firstLiteralMatchStartMasked(source, masked, pattern)
+}
+
+// firstLiteralMatchStartMasked is the source-then-filter path for literal REs.
+func firstLiteralMatchStartMasked(source, masked string, pattern *regexp.Regexp) int {
 	if pattern == nil || source == "" {
 		return -1
 	}
@@ -216,6 +250,81 @@ func firstCodeMatchStartMasked(source, masked string, pattern *regexp.Regexp) in
 		search = end
 	}
 	return -1
+}
+
+// containsAnyNeedle reports whether any non-empty needle appears in s.
+func containsAnyNeedle(s string, needles ...string) bool {
+	for _, n := range needles {
+		if n != "" && strings.Contains(s, n) {
+			return true
+		}
+	}
+	return false
+}
+
+// eachLiteralMatch invokes fn for each source match whose masked span is
+// non-blank. fn returns false to stop. Prefer over FindAllStringIndex.
+func eachLiteralMatch(facts *PyCweFacts, source string, pattern *regexp.Regexp, fn func(start, end int) bool) {
+	if pattern == nil || source == "" || fn == nil {
+		return
+	}
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	if masked == "" {
+		masked = pythonCodeMask(source)
+	}
+	search := 0
+	for search <= len(source) {
+		loc := pattern.FindStringIndex(source[search:])
+		if loc == nil {
+			return
+		}
+		start := search + loc[0]
+		end := search + loc[1]
+		maskedEnd := end
+		if maskedEnd > len(masked) {
+			maskedEnd = len(masked)
+		}
+		if start < maskedEnd && strings.TrimSpace(masked[start:maskedEnd]) != "" {
+			if !fn(start, end) {
+				return
+			}
+		}
+		if end <= search {
+			search++
+			continue
+		}
+		search = end
+	}
+}
+
+// eachCodeMatch invokes fn for each FindStringIndex hit on masked text.
+// fn returns false to stop. Prefer over FindAllStringIndex on masked.
+func eachCodeMatch(masked string, pattern *regexp.Regexp, fn func(start, end int) bool) {
+	if pattern == nil || masked == "" || fn == nil {
+		return
+	}
+	search := 0
+	for search <= len(masked) {
+		loc := pattern.FindStringIndex(masked[search:])
+		if loc == nil {
+			return
+		}
+		start := search + loc[0]
+		end := search + loc[1]
+		if !fn(start, end) {
+			return
+		}
+		if end <= search {
+			search++
+			continue
+		}
+		search = end
+	}
 }
 
 func identBoundaryOK(source string, start, end int) bool {

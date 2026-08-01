@@ -46,7 +46,8 @@ func detectCWE798(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
 		return
 	}
-	if start := firstMatchStart(facts, unit, pyHardcodedCredentialRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyHardcodedCredentialRE,
+		"='", "=\"", "= '", "= \""); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE798, start, "credential is hard-coded in Python source", confidence82, out)
 	}
 }
@@ -54,7 +55,8 @@ func detectCWE798(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 // CWE-256 is deliberately narrower than CWE-798: it recognizes direct
 // password assignments, not tokens and API keys covered by the other rules.
 func detectCWE256(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyPlaintextPasswordRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyPlaintextPasswordRE,
+		"='", "=\"", "= '", "= \""); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE256, start, "password is stored as a plaintext source literal", confidence80, out)
 	}
 }
@@ -62,7 +64,8 @@ func detectCWE256(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 // CWE-260 recognizes literal password values in common Python configuration
 // maps. It intentionally excludes os.environ and secret-provider lookups.
 func detectCWE260(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyConfigPasswordRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyConfigPasswordRE,
+		"password", "PASSWORD"); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE260, start, "configuration contains a literal password", confidence80, out)
 	}
 }
@@ -85,7 +88,8 @@ func detectCWE312(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
 		return
 	}
-	if start := firstMatchStart(facts, unit, pyCleartextSecretRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyCleartextSecretRE,
+		"='", "=\"", "= '", "= \""); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE312, start, "sensitive key or token is stored as a cleartext source literal", confidence80, out)
 	}
 }
@@ -118,7 +122,10 @@ func detectCWE319(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE547(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyWeakSecuritySettingRE); start >= 0 {
+	// Weak settings may include quoted wildcards (ALLOWED_HOSTS=['*']) → literal path.
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyWeakSecuritySettingRE,
+		"SECURE_SSL_REDIRECT", "SESSION_COOKIE_SECURE", "CSRF_COOKIE_SECURE",
+		"SESSION_COOKIE_HTTPONLY", "SECURE_HSTS_SECONDS", "ALLOWED_HOSTS"); start >= 0 {
 		pushSecretFinding(unit, &MetaCWE547, start, "security-relevant setting is hard-coded to an insecure value", confidence80, out)
 	}
 }
@@ -147,11 +154,35 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 }
 
+// firstMatchStart finds the first code-oriented pattern hit on masked text.
 func firstMatchStart(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp) int {
 	if unit == nil || pattern == nil {
 		return -1
 	}
 	return firstCodeMatchStart(facts, unit.Source, pattern)
+}
+
+// firstMatchStartIfContains is firstMatchStart with a cheap Source Contains gate.
+func firstMatchStartIfContains(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp, needles ...string) int {
+	if unit == nil || pattern == nil {
+		return -1
+	}
+	if len(needles) > 0 && !containsAnyNeedle(unit.Source, needles...) {
+		return -1
+	}
+	return firstCodeMatchStart(facts, unit.Source, pattern)
+}
+
+// firstLiteralMatchStartIfContains runs the literal (source+filter) path after
+// a cheap Contains prefilter — for REs that must see string quotes/contents.
+func firstLiteralMatchStartIfContains(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp, needles ...string) int {
+	if unit == nil || pattern == nil {
+		return -1
+	}
+	if len(needles) > 0 && !containsAnyNeedle(unit.Source, needles...) {
+		return -1
+	}
+	return firstLiteralMatchStart(facts, unit.Source, pattern)
 }
 
 func passwordArgument(args string) bool {

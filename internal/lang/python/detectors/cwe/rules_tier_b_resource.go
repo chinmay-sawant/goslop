@@ -11,9 +11,12 @@ import (
 func init() {
 	RegisterRule("CWE-367", detectCWE367, &MetaCWE367,
 		"os.path.exists", "os.path.lexists")
-	RegisterRule("CWE-403", detectCWE403, &MetaCWE403)
-	RegisterRule("CWE-409", detectCWE409, &MetaCWE409)
-	RegisterRule("CWE-454", detectCWE454, &MetaCWE454)
+	RegisterRule("CWE-403", detectCWE403, &MetaCWE403,
+		"subprocess.", "close_fds")
+	RegisterRule("CWE-409", detectCWE409, &MetaCWE409,
+		".extractall")
+	RegisterRule("CWE-454", detectCWE454, &MetaCWE454,
+		"pickle.load", "pickle.loads", "runpy.run_path")
 	RegisterRule("CWE-472", detectCWE472, &MetaCWE472,
 		"**request.data", "**request.POST", "request.data", "request.POST")
 	RegisterRule("CWE-521", detectCWE521, &MetaCWE521,
@@ -22,16 +25,20 @@ func init() {
 		"cache.set")
 	RegisterRule("CWE-538", detectCWE538, &MetaCWE538,
 		"open(", "/tmp/", "static/", "media/")
-	RegisterRule("CWE-552", detectCWE552, &MetaCWE552)
+	RegisterRule("CWE-552", detectCWE552, &MetaCWE552,
+		"send_file", "send_from_directory", "FileResponse")
 	RegisterRule("CWE-617", detectCWE617, &MetaCWE617,
 		"assert", "request.args", "request.user", "request.headers", "request.cookies")
 	RegisterRule("CWE-641", detectCWE641, &MetaCWE641,
 		"os.path.join", "request.files", "request.args", "request.form")
-	RegisterRule("CWE-648", detectCWE648, &MetaCWE648)
+	RegisterRule("CWE-648", detectCWE648, &MetaCWE648,
+		"ctypes.CDLL", "os.setuid", "os.seteuid")
 	RegisterRule("CWE-779", detectCWE779, &MetaCWE779,
 		"password", "secret", "token", "api_key", "credit_card", "logging.", "logger.", "log.")
-	RegisterRule("CWE-836", detectCWE836, &MetaCWE836)
-	RegisterRule("CWE-838", detectCWE838, &MetaCWE838)
+	RegisterRule("CWE-836", detectCWE836, &MetaCWE836,
+		"authenticate")
+	RegisterRule("CWE-838", detectCWE838, &MetaCWE838,
+		"Markup")
 }
 
 var (
@@ -94,7 +101,8 @@ func detectCWE524(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE538(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBWriteSecretRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBWriteSecretRE,
+		"/tmp/", "static/", "media/", "secret", "token", "password"); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE538, start, "secret-named file is written in an externally accessible directory", confidence84, out)
 	}
 }

@@ -1,7 +1,7 @@
 # v0.0.2 — Python performance optimization checklist (from pprof)
 
 > **Parent:** [`python-heuristics.md`](./python-heuristics.md) — Python heuristic detectors  
-> **Status:** **P0–P2 implemented + verified** — engine ~**146 ms**/op (**~5.0×** vs 728.5 ms); product wall mean **~157 ms** / best **133 ms** — still **&gt;100 ms** closure target  
+> **Status:** **P0–P2 implemented + verified**; **Phase 5 verified (r2→after)** — engine **132.9 → 78.5 ms**/op · product mean **147.9 → 93.3 ms** / best **81.0** — closure **≤90 bench / ≤100 product met**; residual: backtrack share, CWE-1050, PERF/BP (see Phase 5)  
 > **Branch:** `feat/python-perf-ruleset-plan`  
 > **Evidence:** `/tmp/goslop-python-pprof/*` · [`python-perf-pprof-measurement.md`](./python-perf-pprof-measurement.md)  
 > **Analysis:** [CWE hotspots](e668df02-2031-4b0d-8a90-c00390c64e81) · [PERF/BP secondary](4d88f7be-b6eb-4879-a9d0-d996b5540c54)  
@@ -223,3 +223,174 @@ Package: `internal/export` + `BenchmarkPythonScanAndExport`
 - Bench harness: `internal/bench/make_run_python_bench_test.go`
 - Hot code: `internal/lang/python/detectors/cwe/{common.go,facts.go,scan.go,rules_*.go}`
 - Mask helper: `internal/lang/python/pytext/mask.go`
+
+---
+
+## Phase 5 — Round-2 pprof → target ~90 ms (2026-08-02 r2 dump)
+
+> **Parent phases:** 0–4 above remain the history; **do not remove**. This phase is the next execution ledger toward **&lt;100 ms / ~90 ms**.  
+> **Status:** **verified after 5.1–5.4** — bench **132.9 → 78.5 ms**/op · product mean **147.9 → 93.3 ms** / best **81.0** / worst **116.7** · findings **102** parity · `FindAllStringIndex` **gone**; residual: `backtrack` **~31%** cum, `firstCodeMatchStart` **~18%**, `detectCWE1050` **~8.8%**, PERF/BP share  
+> **Goal:** `BenchmarkPythonScanProfileAll` **~90 ms**/op · product `make run-python` mean **~90–100 ms** · findings parity **102** — **bench + product-mean gates met**  
+> **Need (met):** ~**32%** further engine cut from r2 (133 → 90) — achieved **~41%** (133 → 78.5); product mean ≤100 — **93.3 ms**
+
+### 5.0 Round-2 measurement (captured)
+
+Artifacts under `/tmp/goslop-python-pprof/`:
+
+| Artifact | Content |
+|----------|---------|
+| `bench-scan-r2-5s.txt` | `BenchmarkPythonScanProfileAll` **132.9 ms**/op · **24.7 MB** · **70.6k** allocs |
+| `scan-cpu-r2.prof` / `scan-cpu-r2-top-cum.txt` | CPU tops |
+| `scan-mem-r2.prof` / `scan-mem-r2-alloc-space.txt` | alloc_space tops |
+| `scan-cpu-r2-focus.txt` / `scan-cpu-r2-detectCWE.txt` | focused tops |
+| `product-run-python-r2-10x.txt` | 10× product wall |
+| `bench-scan-r2-after-5s.txt` | after 5.1–5.4: **78.5 ms**/op · **22.8 MB** · **54.2k** allocs |
+| `scan-cpu-r2-after.prof` / `scan-cpu-r2-after-top-cum.txt` | after CPU tops |
+| `scan-mem-r2-after.prof` / `scan-mem-r2-after-alloc-space.txt` | after alloc_space |
+| `product-run-python-r2-after-10x.txt` | after 10× product wall |
+
+**Product wall r2 (10×, export on, `--no-cache`):** mean **147.9 ms** · median **141.8** · best **139.0** · worst **171.5** · findings **102**.
+
+**Product wall after-r2 (10×):** mean **93.3 ms** · median **88.3** · best **81.0** · worst **116.7** · findings **102**.
+
+**vs Phase-4 verify:** bench **146.3 → 132.9 ms** (noise/warmup); product mean **157.5 → 147.9 ms**. Still **well above 100 ms** at r2 baseline.
+
+**vs after-r2:** bench **132.9 → 78.5 ms** (~**1.7×**); product mean **147.9 → 93.3 ms**.
+
+#### r2 CPU hotspots (`-top -cum`)
+
+| Symbol | cum% | Action theme |
+|--------|-----:|--------------|
+| `regexp.doExecute` | **77.9%** | still owns the scan |
+| `cwe.(*PyCweScan).Run` | **71.0%** | CWE pack |
+| `FindStringIndex` | **35.3%** | mostly via `firstCodeMatchStart*` |
+| `firstCodeMatchStart` / `…Masked` | **24.5%** | match on **unmasked** `source` then filter — backtrack-prone |
+| `regexp.backtrack` / `tryBacktrack` | **21.0% / 17.3%** | catastrophic / ambiguous REs |
+| `FindAllStringIndex` | **15.0%** | auth + `routeHandlerBodies` |
+| `firstMatchStart` | **12.7%** | secrets / web_config / platform wrappers |
+| `perf.(*PythonPerfScan).Run` | **16.6%** | secondary after CWE absolute drop |
+| `debugEnabledStart` | **9.8%** | heavy `(?im)` DEBUG=True RE (CWE-756/489) |
+| `routeHandlerBodies` | **8.7%** | `FindAllStringIndex` on decorator RE; **not memoized on facts** |
+| `bad_practices.Run` | **7.4%** | share rose; absolute still modest |
+| `BuildFacts` | **6.6%** | Mask + Funcs + Index once/file |
+| `detectCWE1050` | **5.8%** | Tier-B runtime |
+| `detectCWE915` | **5.7%** | mass assign |
+| `detectCWE756` | **5.1%** | via `debugEnabledStart` |
+| `detectCWE489` | **4.8%** | via `debugEnabledStart` |
+| `detectCWE914` / `detectCWE908` | **4.2% / 3.9%** | residual |
+
+#### r2 alloc_space (no longer Mask-dominated)
+
+| Symbol | flat% |
+|--------|------:|
+| `bytealg.MakeNoZero` | 23.1% |
+| `regexp.(*bitState).reset` | 11.8% |
+| `strings.genSplit` | 10.4% |
+| `regexp.get` | 9.1% |
+| `pytext.Mask` | **7.2%** (was 86% pre-P0) |
+| `perf.buildCodeLines` | 5.0% |
+| `bp.buildCodeLines` | 4.7% |
+
+**Gate coverage now:** **128 gated / 31 ungated** of 159 CWE rules (was 66/93 at r2; Phase 5.3–5.4).
+
+- [x] Capture r2 CPU + mem profiles + 10× product wall — artifacts above
+- [x] Record r2 tops in this section + [`python-perf-pprof-measurement.md`](./python-perf-pprof-measurement.md) (r2 appendix)
+
+---
+
+### 5.1 P0 — match on masked text + kill backtracking (~20–35% engine est.)
+
+Package: `internal/lang/python/detectors/cwe/common.go`, `rules_secrets.go` (`firstMatchStart` → `firstLiteralMatchStart*`)
+
+- [x] Change first-hit helpers to run `FindStringIndex` on **`masked`** (byte-aligned) when the pattern is code-oriented; keep source-based path only where string-literal evidence is required (`firstLiteralMatchStart*`)
+- [~] Soften / split worst backtracking REs used via first-match helpers — some prefilters landed; **`backtrack` still ~30.9% cum** (share rose vs r2 21% as CWE absolute fell; absolute ~28→~24 ms)
+- [x] Rewrite `debugEnabledStart`: Index gate + masked-line scan + `pyDebugLineRE` (off top; was ~10% via `pyDebugAssignmentRE`)
+- [~] Re-profile: `backtrack` cum **21% → 30.9%** (target &lt;5% **not met**); `firstCodeMatchStart` cum **24.5% → 18.2%** (target &lt;12% **not met**)
+- [x] Proof: `go1.26.4 test` python packages green + product findings **102**
+
+**Hypothesis:** largest remaining wall cut toward ~100 ms — **wall target met anyway** via 5.1–5.4 combo; backtrack share still the main residual lever.
+
+---
+
+### 5.2 P0 — memoize `routeHandlerBodies` + stop hot `FindAllStringIndex` (~8–15% est.)
+
+Package: `rules_code_dynamic.go`, `rules_auth.go`, consumers in info_exposure / validation / code_dynamic
+
+- [x] Compute route-handler spans **once** lazy on `PyCweFacts.RouteHandlers` (like `Funcs`); `routeHandlerBodies` returns cached slice
+- [x] Auth / related: replace `FindAllStringIndex` with masked iterative find / cached route index + needle gates — **`FindAllStringIndex` focus = 0 samples**
+- [~] Re-profile: `FindAllStringIndex` cum **15% → 0%** (**met**); `routeHandlerBodies` **8.7% → 4.6%** (target &lt;1% **not met**)
+- [x] Proof: auth / code-dynamic / info-exposure fixtures + parity **102**
+
+---
+
+### 5.3 P1 — hot single-rule passes (CWE-1050 / 915 / 756 / 489 / 914 / 908)
+
+Package: tier_b_runtime, mass_assign, web_config, related
+
+- [x] Profile each named detect after 5.1–5.2; rewrite top survivors with needle + linear / line scan
+  - CWE-1050: line-oriented `openInsideShortLoopStart` (no multi-line catastrophic RE)
+  - CWE-908/910: iterative `FindStringSubmatchIndex` + `= None` / `.close(` Contains
+  - CWE-915/914: Contains prefilters before REs; match on masked; RegisterRule gates
+  - CWE-756/489: gated (debugEnabledStart rewrite owned by 5.1)
+- [x] Ensure FN-safe gates present and tight enough that cold files skip these bodies
+- [~] Re-profile: `detectCWE1050` still **8.8%** cum; `detectCWE908` **3.5%** (target no single `detectCWE*` above **~2%** — **not met** for 1050/908)
+- [x] Proof: unit + integration matrices; findings **102** — `go1.26.4 test ./internal/lang/python/...` green
+
+---
+
+### 5.4 P1 — more SourceIndex gates on remaining 93 ungated rules
+
+Package: `needles.go` + `RegisterRule` sites still without gates
+
+- [x] Inventory ungated rules that still enter `firstCodeMatchStart` / `FindAll*` / heavy helpers on pythoncoreengine
+- [x] Add FN-safe any-of gates; expand `pyCweNeedles` only with required tokens
+  - Gate coverage: **65 → 128** gated / **31** intentionally ungated (of 159)
+- [x] Leave intentionally ungated only where multi-shape FN risk is documented (ssrf / path_fs / xml / info_exposure / auth CORS+cookie / quality structural 1108/1121/1124 / validation 1289)
+- [x] Re-profile: `PyCweScan.Run` cum **71.0% → 51.5%**; absolute ~**94 → ~40 ms**/op-equivalent (bench 133→78.5)
+- [x] Proof: fixtures + product parity — cwe + integration python green
+
+---
+
+### 5.5 P2 — PERF / BP share after CWE &lt;~100 ms engine
+
+Package: `perf/`, `bad_practices/`
+
+- [ ] After 5.1–5.4, if `PythonPerfScan` still ≥10% cum: domain needle skip for non-ORM/hotpath files (extends open **3.3**) — **still 29.0% cum** after-r2
+- [ ] If BP share still ≥5% absolute: audit `buildCodeLines` / BPPY4 alloc — **`PythonBadPracticeScan` 12.8% cum**; `detectBPPY4` still in alloc_space
+- [ ] Optional: avoid duplicate `strings.Split` across PERF+BP only if measured (still out of scope to share Mask)
+
+---
+
+### 5.6 Closure gates for ~90 ms
+
+- [x] `BenchmarkPythonScanProfileAll` **≤ 90 ms**/op — **78.5 ms**/op · 22.8 MB · 54.2k allocs (`bench-scan-r2-after-5s.txt`)
+- [~] Product `make run-python` mean **≤ 100 ms** over ≥10 runs — **mean 93.3 / median 88.3 / best 81.0 / worst 116.7** (`product-run-python-r2-after-10x.txt`); stretch mean **~90 ms** close but not quite
+- [x] Findings parity **102** — 38h/56i/0l/8m · BP-PY-46×32, BP-PY-41×24, CWE-328×14, CWE-90×12, CWE-22×6
+- [~] `go tool pprof -top -cum` on post profile: `FindAllStringIndex` **gone**; `firstCodeMatchStart` still **18.2%**; `backtrack` still **30.9%** (not cleared as top residual helpers)
+- [x] Tests + vet + gofmt: `go1.26.4 test` python packages green; `go1.26.4 vet ./internal/lang/python/...` clean; `gofmt -l …/cwe` empty
+- [x] Append after-r2 numbers to [`python-perf-pprof-measurement.md`](./python-perf-pprof-measurement.md); keep this Phase 5 history
+
+### Reproduce r2 dump / after-r2 verify
+
+```sh
+export CGO_ENABLED=0 PATH="$HOME/go/bin:$PATH"
+export GOSLOP_BENCH_PYTHON_SCAN_PATH=/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/pythoncoreengine
+mkdir -p /tmp/goslop-python-pprof
+
+go1.26.4 test -run='^$' -bench=BenchmarkPythonScanProfileAll -benchmem -benchtime=5s \
+  -cpuprofile=/tmp/goslop-python-pprof/scan-cpu-r2-after.prof \
+  -memprofile=/tmp/goslop-python-pprof/scan-mem-r2-after.prof \
+  ./internal/bench/ | tee /tmp/goslop-python-pprof/bench-scan-r2-after-5s.txt
+
+go1.26.4 tool pprof -top -cum /tmp/goslop-python-pprof/scan-cpu-r2-after.prof
+go1.26.4 tool pprof -top -sample_index=alloc_space /tmp/goslop-python-pprof/scan-mem-r2-after.prof
+```
+
+### Suggested next PR order (Phase 5)
+
+| PR | Items | Theme | Status |
+|----|-------|--------|--------|
+| 6 | 5.1 masked first-match + debugEnabled soften | kill backtrack | **implemented** (backtrack/firstCode targets **[~]**) |
+| 7 | 5.2 routeHandlerBodies memo + auth FindAll | FindAll collapse | **implemented** (`FindAll` **[x]**; route **[~]** 4.6%) |
+| 8 | 5.3–5.4 hot rules + more gates | catalogue polish | **implemented** (1050 still **8.8%** cum) |
+| 9 | 5.5–5.6 PERF/BP + closure ~90 ms | finish | **partial** — timing closure **[x]/; 5.5 PERF/BP **open** |

@@ -9,18 +9,21 @@ import (
 )
 
 func init() {
-	// CWE-756/489/1051/1125 stay ungated (varied assignment/call shapes).
-	// Inventory firstCodeMatchStart rules use broad any-of FN-safe gates.
-	RegisterRule("CWE-756", detectCWE756, &MetaCWE756)
-	RegisterRule("CWE-489", detectCWE489, &MetaCWE489)
+	// CWE-756/489 gated on debug needles (+ debugger sinks for 489).
+	RegisterRule("CWE-756", detectCWE756, &MetaCWE756,
+		"DEBUG", "debug")
+	RegisterRule("CWE-489", detectCWE489, &MetaCWE489,
+		"DEBUG", "debug", "pdb.set_trace", "breakpoint")
 	RegisterRule("CWE-15", detectCWE15, &MetaCWE15,
 		"request.args", "request.form", "request.values", "request.json", "request.data",
 		"request.GET", "request.POST", "request.query_params", "os.putenv", "os.environ[")
-	RegisterRule("CWE-1051", detectCWE1051, &MetaCWE1051)
+	RegisterRule("CWE-1051", detectCWE1051, &MetaCWE1051,
+		"requests.", "httpx.", "urllib.request.urlopen")
 	RegisterRule("CWE-1052", detectCWE1052, &MetaCWE1052,
 		"SECRET_KEY", "DATABASE_URL", "SQLALCHEMY_DATABASE_URI",
 		"create_engine", "psycopg2.connect")
-	RegisterRule("CWE-1125", detectCWE1125, &MetaCWE1125)
+	RegisterRule("CWE-1125", detectCWE1125, &MetaCWE1125,
+		".route", "add_url_rule", "/debug", "/_debug", "/__debug__")
 	RegisterRule("CWE-1188", detectCWE1188, &MetaCWE1188,
 		"ALLOWED_HOSTS", "verify=False", "requests.")
 	RegisterRule("CWE-921", detectCWE921, &MetaCWE921,
@@ -28,7 +31,8 @@ func init() {
 }
 
 var (
-	pyDebugAssignmentRE = regexp.MustCompile(`(?im)^\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*\s*\.\s*)?debug|DEBUG)\s*=\s*True\b|^\s*[A-Za-z_][A-Za-z0-9_]*\s*\.\s*config\s*\[\s*['"]DEBUG['"]\s*\]\s*=\s*True\b`)
+	// Per-line debug assignment check (applied only to candidate lines).
+	pyDebugLineRE       = regexp.MustCompile(`(?i)^\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*\s*\.\s*)?debug|DEBUG)\s*=\s*True\b|^\s*[A-Za-z_][A-Za-z0-9_]*\s*\.\s*config\s*\[\s*['"]DEBUG['"]\s*\]\s*=\s*True\b`)
 	pyExternalConfigRE  = regexp.MustCompile(`(?im)^\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*\s*\.\s*)?config\s*\[\s*['"][^'"]+['"]\s*\]|(?:settings|django\.conf\.settings)\s*\.\s*[A-Za-z_][A-Za-z0-9_]*)\s*=\s*request\.(?:args|form|values|json|data|GET|POST|query_params)\b|^\s*os\s*\.\s*environ\s*\[\s*['"][^'"]+['"]\s*\]\s*=\s*request\.(?:args|form|values|json|data|GET|POST|query_params)\b`)
 	pyHardcodedInitRE   = regexp.MustCompile(`(?im)^\s*(?:SECRET_KEY|DATABASE_URL|SQLALCHEMY_DATABASE_URI)\s*=\s*(?:[bruBRU]*)['"][^'"\r\n]{8,}['"]\s*$`)
 	pyWildcardHostsRE   = regexp.MustCompile(`(?im)^\s*ALLOWED_HOSTS\s*=\s*\[\s*['"]\*['"]\s*\]`)
@@ -64,7 +68,10 @@ func detectCWE489(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 // CWE-15 requires a direct request value to be assigned to an application or
 // process setting. Reading an environment variable is intentionally excluded.
 func detectCWE15(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyExternalConfigRE); start >= 0 {
+	// Quoted config keys → literal path; cheap request/environ prefilter first.
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyExternalConfigRE,
+		"request.args", "request.form", "request.values", "request.json", "request.data",
+		"request.GET", "request.POST", "request.query_params", "os.environ"); start >= 0 {
 		emitWebConfigFinding(unit, &MetaCWE15, start, "request-controlled data directly changes an application or process configuration setting", confidence82, out)
 		return
 	}
@@ -98,7 +105,8 @@ func detectCWE1051(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 // including credential-bearing DSNs. Ordinary constants are deliberately not
 // treated as excessive hard-coded initialization.
 func detectCWE1052(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyHardcodedInitRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyHardcodedInitRE,
+		"SECRET_KEY", "DATABASE_URL", "SQLALCHEMY_DATABASE_URI"); start >= 0 {
 		emitWebConfigFinding(unit, &MetaCWE1052, start, "security or database initialization uses a hard-coded literal", confidence78, out)
 		return
 	}
@@ -131,7 +139,7 @@ func detectCWE1125(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 // CWE-1188 reports a wildcard Django host policy or an explicit TLS
 // verification bypass, both of which select an insecure resource default.
 func detectCWE1188(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstMatchStart(facts, unit, pyWildcardHostsRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyWildcardHostsRE, "ALLOWED_HOSTS"); start >= 0 {
 		emitWebConfigFinding(unit, &MetaCWE1188, start, "host validation is initialized with a wildcard default", confidence80, out)
 		return
 	}
@@ -161,11 +169,33 @@ func detectCWE921(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func debugEnabledStart(unit *core.ParsedUnit, facts *PyCweFacts) int {
-	if start := firstMatchStart(facts, unit, pyDebugAssignmentRE); start >= 0 {
-		return start
-	}
-	if unit == nil {
+	if unit == nil || facts == nil {
 		return -1
+	}
+	// Cheap Index gate: assignment / .run(debug=True) always need these tokens.
+	if !facts.Index.HasAny([]string{"DEBUG", "debug"}) {
+		return -1
+	}
+	src := facts.Source
+	if src == "" {
+		src = unit.Source
+	}
+	for _, line := range facts.MaskedLines() {
+		end := line.start + len(line.text)
+		if end > len(src) {
+			end = len(src)
+		}
+		if line.start >= end {
+			continue
+		}
+		raw := src[line.start:end]
+		// Candidate filter: skip lines without debug/config needles.
+		if !strings.Contains(raw, "DEBUG") && !strings.Contains(raw, "debug") && !strings.Contains(raw, "config") {
+			continue
+		}
+		if loc := pyDebugLineRE.FindStringIndex(raw); loc != nil {
+			return line.start + loc[0]
+		}
 	}
 	for _, call := range findCalls(facts, unit.Source, ".run") {
 		if hasKwargTrue(call.ArgsText, "debug") {

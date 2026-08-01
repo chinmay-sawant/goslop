@@ -9,14 +9,22 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-434", detectCWE434, &MetaCWE434)
-	RegisterRule("CWE-427", detectCWE427, &MetaCWE427)
-	RegisterRule("CWE-379", detectCWE379, &MetaCWE379)
-	RegisterRule("CWE-459", detectCWE459, &MetaCWE459)
-	RegisterRule("CWE-772", detectCWE772, &MetaCWE772)
-	RegisterRule("CWE-770", detectCWE770, &MetaCWE770)
-	RegisterRule("CWE-708", detectCWE708, &MetaCWE708)
-	RegisterRule("CWE-477", detectCWE477, &MetaCWE477)
+	RegisterRule("CWE-434", detectCWE434, &MetaCWE434,
+		"request.files")
+	RegisterRule("CWE-427", detectCWE427, &MetaCWE427,
+		"os.putenv", "os.environ", "LD_LIBRARY_PATH", "PYTHONPATH")
+	RegisterRule("CWE-379", detectCWE379, &MetaCWE379,
+		"open(", "/tmp/", "/var/tmp/")
+	RegisterRule("CWE-459", detectCWE459, &MetaCWE459,
+		"tempfile.mkstemp", "NamedTemporaryFile")
+	RegisterRule("CWE-772", detectCWE772, &MetaCWE772,
+		"open(", "socket.socket", "urlopen")
+	RegisterRule("CWE-770", detectCWE770, &MetaCWE770,
+		"request.get_data")
+	RegisterRule("CWE-708", detectCWE708, &MetaCWE708,
+		"os.chown")
+	RegisterRule("CWE-477", detectCWE477, &MetaCWE477,
+		"tempfile.mktemp", "cgi.escape", "asyncore.loop", "imp.load_module", "imp.load_source")
 }
 
 var (
@@ -34,16 +42,26 @@ func detectCWE434(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 	for _, fn := range facts.Functions() {
 		masked := facts.codeMask(fn.body, fn.bodyStart)
-		matches := pyUploadAssignmentRE.FindAllStringSubmatchIndex(masked, -1)
-		if len(matches) == 0 {
+		if !strings.Contains(masked, "request.files") {
 			continue
 		}
-		if hasUploadTypeAllowlist(masked) {
-			continue
+		search := 0
+		uploads := map[string]struct{}{}
+		for search <= len(masked) {
+			match := pyUploadAssignmentRE.FindStringSubmatchIndex(masked[search:])
+			if match == nil {
+				break
+			}
+			uploads[masked[search+match[2]:search+match[3]]] = struct{}{}
+			next := search + match[1]
+			if next <= search {
+				search++
+			} else {
+				search = next
+			}
 		}
-		uploads := make(map[string]struct{}, len(matches))
-		for _, match := range matches {
-			uploads[masked[match[2]:match[3]]] = struct{}{}
+		if len(uploads) == 0 || hasUploadTypeAllowlist(masked) {
+			continue
 		}
 		for _, call := range findCallsMasked(fn.body, masked, ".save") {
 			if _, ok := uploads[methodReceiverBefore(masked, call.Start)]; ok {
@@ -166,13 +184,27 @@ func detectCWE772(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 	for _, fn := range facts.Functions() {
 		code := facts.codeMask(fn.body, fn.bodyStart)
-		for _, match := range pyResourceAssignmentRE.FindAllStringSubmatchIndex(code, -1) {
-			name := code[match[2]:match[3]]
-			if strings.Contains(code[match[1]:], name+".close(") {
-				continue
+		if !strings.Contains(code, "open(") && !strings.Contains(code, "socket.socket") && !strings.Contains(code, "urlopen") {
+			continue
+		}
+		search := 0
+		for search <= len(code) {
+			match := pyResourceAssignmentRE.FindStringSubmatchIndex(code[search:])
+			if match == nil {
+				break
 			}
-			emitResourceFinding(unit, &MetaCWE772, fn.bodyStart+match[0], "resource is assigned without a same-function close or context-manager release", confidence76, out)
-			return
+			abs0 := search + match[0]
+			abs1 := search + match[1]
+			name := code[search+match[2] : search+match[3]]
+			if !strings.Contains(code[abs1:], name+".close(") {
+				emitResourceFinding(unit, &MetaCWE772, fn.bodyStart+abs0, "resource is assigned without a same-function close or context-manager release", confidence76, out)
+				return
+			}
+			if abs1 <= search {
+				search++
+			} else {
+				search = abs1
+			}
 		}
 	}
 }

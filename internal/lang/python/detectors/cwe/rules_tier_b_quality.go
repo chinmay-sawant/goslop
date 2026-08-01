@@ -13,9 +13,12 @@ func init() {
 		"import imp", "from imp")
 	RegisterRule("CWE-1106", detectCWE1106, &MetaCWE1106,
 		"set_cookie")
+	// CWE-1108/1121/1124 stay ungated: structural/global-count heuristics fire
+	// without a reliable single-token prefilter.
 	RegisterRule("CWE-1108", detectCWE1108, &MetaCWE1108)
 	RegisterRule("CWE-1121", detectCWE1121, &MetaCWE1121)
-	RegisterRule("CWE-1123", detectCWE1123, &MetaCWE1123)
+	RegisterRule("CWE-1123", detectCWE1123, &MetaCWE1123,
+		"types.FunctionType")
 	RegisterRule("CWE-1124", detectCWE1124, &MetaCWE1124)
 	RegisterRule("CWE-1220", detectCWE1220, &MetaCWE1220,
 		".objects.get", "request.args", "request.view_args")
@@ -179,7 +182,8 @@ func detectCWE1322(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 }
 
 func detectCWE1339(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBFloatMoneyRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBFloatMoneyRE,
+		"price", "amount", "balance"); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE1339, start, "request monetary value is parsed as a binary floating-point number", confidence80, out)
 	}
 }
