@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsap
 branch: main
 commit: 815689e
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/whatsapp-wrapped/chunks
+function_context_path: scripts/whatsapp-wrapped/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `not recorded (pre-existing ./bin/goslop, built 2026-08-02 02:40)`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/<REPO_NAME>/scripts/chunks -context-dir real-repos/<REPO_NAME>/scripts/findings/functions real-repos/<REPO_NAME>`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/<REPO_NAME>/chunks -context-dir scripts/<REPO_NAME>/findings/functions real-repos/<REPO_NAME>`
 - Findings: `40`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_40.txt` (re-run of the scan reproduced identical chunks byte-for-byte)
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`–`40.txt`
+- Chunks reviewed: `scripts/whatsapp-wrapped/chunks/Chunk_1_25.txt`, `scripts/whatsapp-wrapped/chunks/Chunk_26_40.txt` (re-run of the scan reproduced identical chunks byte-for-byte)
+- Function contexts reviewed: `scripts/whatsapp-wrapped/findings/functions/1.txt`–`40.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/whatsapp-wrapped/chunks`.
+- [x] Read `scripts/whatsapp-wrapped/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/tests/test_parser.py:358:1`
 - Checklist pattern: rule condition is `hasCall && !hasAssert` — the test body must contain no assertion for the rule to fire.
 
@@ -62,7 +62,7 @@ Checklist evidence: `assert` statements exist in the same function body at body 
 
 ### [ ] Finding `2` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/tests/test_parser.py:409:1`
 - Checklist pattern: rule condition is `hasCall && !hasAssert` — the test body must contain no assertion for the rule to fire.
 
@@ -80,7 +80,7 @@ Checklist evidence: `assert` statements exist in the same function body at body 
 
 ### [ ] Finding `22` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:524:9`
 - Checklist pattern: rule flags `print(` in non-script modules but exempts prints inside `main()` when `if __name__ == "__main__":` invokes `main()` (`pythonCLIPrintSkipFunc`).
 
@@ -105,7 +105,7 @@ Checklist evidence: the finding line sits in the `main()` body; `pythonMainGuard
 
 ### [ ] Finding `23` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:528:9`
 - Checklist pattern: same as finding 22 — prints in `main()` invoked by the `__main__` guard are exempt.
 
@@ -123,7 +123,7 @@ Checklist evidence: the finding line is inside the `main()` body, which `pythonC
 
 ### [ ] Finding `24` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:529:9`
 - Checklist pattern: same as finding 22.
 
@@ -141,7 +141,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `25` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:530:9`
 - Checklist pattern: same as finding 22.
 
@@ -159,7 +159,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `26` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:531:9`
 - Checklist pattern: same as finding 22.
 
@@ -177,7 +177,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `27` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/27.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:532:9`
 - Checklist pattern: same as finding 22.
 
@@ -195,7 +195,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `28` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:547:13`
 - Checklist pattern: same as finding 22.
 
@@ -213,7 +213,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `29` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:548:13`
 - Checklist pattern: same as finding 22.
 
@@ -232,7 +232,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `30` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:549:13`
 - Checklist pattern: same as finding 22.
 
@@ -250,7 +250,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `31` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:550:13`
 - Checklist pattern: same as finding 22.
 
@@ -268,7 +268,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `32` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:551:13`
 - Checklist pattern: same as finding 22.
 
@@ -286,7 +286,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `33` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:552:13`
 - Checklist pattern: same as finding 22.
 
@@ -304,7 +304,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `34` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:554:17`
 - Checklist pattern: same as finding 22.
 
@@ -322,7 +322,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `35` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:555:13`
 - Checklist pattern: same as finding 22.
 
@@ -339,7 +339,7 @@ Checklist evidence: the finding line is inside the `main()` body; `mainInvoked` 
 
 ### [ ] Finding `37` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/whatsapp-wrapped/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/whatsapp-wrapped/whatsapp_wrapped/generator.py:558:9`
 - Checklist pattern: same as finding 22.
 
@@ -422,6 +422,6 @@ No findings classified as uncertain.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/whatsapp-wrapped/chunks`
+- Function evidence: `scripts/whatsapp-wrapped/findings/functions`
 - Validation: `git diff --check` — pass

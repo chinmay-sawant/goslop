@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-wi
 branch: main
 commit: 27f1d39
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/sync-with-uv/chunks
+function_context_path: scripts/sync-with-uv/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (goslop binary used: `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/sync-with-uv/scripts/chunks -context-dir real-repos/sync-with-uv/scripts/findings/functions real-repos/sync-with-uv`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/sync-with-uv/chunks -context-dir scripts/sync-with-uv/findings/functions real-repos/sync-with-uv`
 - Findings: `20`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_20.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/20.txt`
+- Chunks reviewed: `scripts/sync-with-uv/chunks/Chunk_1_20.txt`
+- Function contexts reviewed: `scripts/sync-with-uv/findings/functions/1.txt` .. `scripts/sync-with-uv/findings/functions/20.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/sync-with-uv/chunks`.
+- [x] Read `scripts/sync-with-uv/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/scripts/gen_ref_pages.py:30:9`
 - Checklist pattern: the flagged `print(` sits at module scope of a standalone docs-generation script whose whole body is top-level executable code (no `__main__` guard, no importable module API), and it writes generated content to a file handle — the "print used in non-script modules" condition is not satisfied.
 
@@ -61,7 +61,7 @@ Checklist evidence: the flagged line is a module-level `print(` with `file=` tar
 
 ### [ ] Finding `2` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:132:9`
 - Checklist pattern: the flagged `print(` is CLI presentation output (user-facing error text to stderr) in the cyclopts CLI command module, not operational logging in a non-script module.
 
@@ -79,7 +79,7 @@ Checklist evidence: the print is user-facing error output in the cyclopts-regist
 
 ### [ ] Finding `3` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:161:1`
 - Checklist pattern: the rule condition flags a broad `except Exception` that "hides failures"; this handler surfaces the failure instead of swallowing it.
 
@@ -97,7 +97,7 @@ Checklist evidence: the except suite prints the exception (`print("Error:", e, f
 
 ### [ ] Finding `5` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:162:9`
 - Checklist pattern: same construct as finding 2 — user-facing error output in the cyclopts CLI command body; distinct line, so kept as its own finding.
 
@@ -115,7 +115,7 @@ Checklist evidence: user-facing stderr output inside the cyclopts CLI command bo
 
 ### [ ] Finding `6` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:169:13`
 - Checklist pattern: `print(` in `_print_changes`, a CLI presentation helper producing the `--verbose` status report to stderr — not operational logging in a non-script module.
 
@@ -134,7 +134,7 @@ Checklist evidence: the print is user-facing status output from a CLI presentati
 
 ### [ ] Finding `7` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:171:13`
 - Checklist pattern: same construct as finding 6 — CLI verbose status output in `_print_changes`; distinct line, so kept as its own finding.
 
@@ -153,7 +153,7 @@ Checklist evidence: user-facing stderr status output from a CLI presentation hel
 
 ### [ ] Finding `8` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:173:13`
 - Checklist pattern: same construct as finding 6 — CLI verbose status output in `_print_changes`; distinct line, so kept as its own finding.
 
@@ -171,7 +171,7 @@ Checklist evidence: user-facing stderr status output from a CLI presentation hel
 
 ### [ ] Finding `9` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:177:13`
 - Checklist pattern: same construct as finding 6 — CLI verbose status output in `_print_changes`; distinct line, so kept as its own finding.
 
@@ -190,7 +190,7 @@ Checklist evidence: user-facing stderr status output from a CLI presentation hel
 
 ### [ ] Finding `10` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:182:13`
 - Checklist pattern: same construct as finding 6 — CLI verbose status output in `_print_changes`; distinct line, so kept as its own finding.
 
@@ -207,7 +207,7 @@ Checklist evidence: user-facing stderr status output from a CLI presentation hel
 
 ### [ ] Finding `11` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:183:5`
 - Checklist pattern: same construct as finding 6 — CLI verbose status output in `_print_changes`; distinct line, so kept as its own finding.
 
@@ -224,7 +224,7 @@ Checklist evidence: user-facing stderr formatting output in the CLI presentation
 
 ### [ ] Finding `12` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:199:5`
 - Checklist pattern: `print(` in `_print_diff`, the CLI's `--diff` presentation that writes the unified diff to stdout — the primary user output of the diff mode.
 
@@ -242,7 +242,7 @@ Checklist evidence: the print emits the requested `--diff` output to stdout from
 
 ### [ ] Finding `13` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:208:5`
 - Checklist pattern: `print(` in `_print_summary`, the CLI's completion summary to stderr — not operational logging in a non-script module.
 
@@ -260,7 +260,7 @@ Checklist evidence: user-facing stderr summary output in the CLI entry module wi
 
 ### [ ] Finding `14` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:212:5`
 - Checklist pattern: same construct as finding 13 — CLI completion summary in `_print_summary`; distinct line, so kept as its own finding.
 
@@ -279,7 +279,7 @@ Checklist evidence: user-facing stderr summary output from the CLI command path;
 
 ### [ ] Finding `15` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:222:9`
 - Checklist pattern: same construct as finding 13 — CLI completion summary in `_print_summary`; distinct line, so kept as its own finding.
 
@@ -298,7 +298,7 @@ Checklist evidence: user-facing stderr summary output from the CLI command path;
 
 ### [ ] Finding `20` — `CWE-252`
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/sync-with-uv/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/tests/test_precommit.py:54:9`
 - Checklist pattern: rule condition not satisfied — the call passes `check=True`, which is the rule's explicit exemption for `subprocess.run`.
 
@@ -352,6 +352,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_20.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` .. `20.txt`
+- Chunk evidence: `scripts/sync-with-uv/chunks/Chunk_1_20.txt`
+- Function evidence: `scripts/sync-with-uv/findings/functions/1.txt` .. `20.txt`
 - Validation: `git diff --check` — pass

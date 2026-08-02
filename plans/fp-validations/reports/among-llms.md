@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/among-l
 branch: develop
 commit: a6d4f57
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/among-llms
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/among-llms/chunks
+function_context_path: scripts/among-llms/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/among-llms/scripts/chunks -context-dir real-repos/among-llms/scripts/findings/functions real-repos/among-llms`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/among-llms/chunks -context-dir scripts/among-llms/findings/functions real-repos/among-llms`
 - Findings: `72`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_72.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` … `72.txt` (all 72 exist; sources re-read directly for every finding)
+- Chunks reviewed: `scripts/among-llms/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_72.txt`
+- Function contexts reviewed: `scripts/among-llms/findings/functions/1.txt` … `72.txt` (all 72 exist; sources re-read directly for every finding)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/among-llms/chunks`.
+- [x] Read `scripts/among-llms/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -201,6 +201,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_72.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` … `72.txt`
+- Chunk evidence: `scripts/among-llms/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_72.txt`
+- Function evidence: `scripts/among-llms/findings/functions/1.txt` … `72.txt`
 - Validation: `git diff --check` — pass

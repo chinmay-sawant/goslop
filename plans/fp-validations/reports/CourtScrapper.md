@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtSc
 branch: master
 commit: c1377ced4655f51eb59d685959080fd1a55f03af
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/CourtScrapper/chunks
+function_context_path: scripts/CourtScrapper/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (implied by `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/CourtScrapper/scripts/chunks -context-dir real-repos/CourtScrapper/scripts/findings/functions real-repos/CourtScrapper`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/CourtScrapper/chunks -context-dir scripts/CourtScrapper/findings/functions real-repos/CourtScrapper`
 - Findings: `340`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt` … `Chunk_326_340.txt` (14 files, all findings 1–340)
-- Function contexts reviewed: `./scripts/findings/functions/26.txt, 102.txt, 127.txt, 149.txt, 152.txt, 264.txt, 276.txt, 280.txt, 285.txt, 298.txt, 302.txt, 305.txt`
+- Chunks reviewed: `scripts/CourtScrapper/chunks/Chunk_1_25.txt` … `Chunk_326_340.txt` (14 files, all findings 1–340)
+- Function contexts reviewed: `scripts/CourtScrapper/findings/functions/26.txt, 102.txt, 127.txt, 149.txt, 152.txt, 264.txt, 276.txt, 280.txt, 285.txt, 298.txt, 302.txt, 305.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/CourtScrapper/chunks`.
+- [x] Read `scripts/CourtScrapper/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient (e.g. `scraper.py` cleanup block for CWE-1341, `utils.py` port/temp-dir derivation for CWE-88, `scraper.py:67-69` re-raise for CWE-396, `main.py` executor call site for PERF-PY-28).
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ Breakdown of true positives by rule: BP-PY-1 (74), BP-PY-2 (11), BP-PY-46 (26), 
 
 ### [ ] Finding `26` — `CWE-779`
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/captcha_handler.py:229:17`
 - Checklist pattern: sensitive value is **not** logged; only a non-sensitive derived quantity is.
 
@@ -61,7 +61,7 @@ Checklist evidence: the call's argument is `len(token)` (an integer length), so 
 
 ### [ ] Finding `102` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/inspect_website.py:14:5`
 - Checklist pattern: no dynamic value is interpolated at all.
 
@@ -78,7 +78,7 @@ Checklist evidence: the entire interpolated content is a constant (string multip
 
 ### [ ] Finding `127` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/127.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/127.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/main.py:30:9`
 - Checklist pattern: interpolated value is a numeric length of a static config constant.
 
@@ -94,7 +94,7 @@ Checklist evidence: the dynamic segment is a `len()` call over a developer-owned
 
 ### [ ] Finding `149` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/149.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/149.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper.py:67:1`
 - Checklist pattern: handler does not hide failures — it logs and re-raises.
 
@@ -112,7 +112,7 @@ Checklist evidence: the handler body ends in a bare `raise` (scraper.py:69), pro
 
 ### [ ] Finding `152` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/152.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/152.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper.py:82:13`
 - Checklist pattern: interpolated values are a numeric delay and an internal literal description.
 
@@ -130,7 +130,7 @@ Checklist evidence: both interpolated segments are internal scalar values; there
 
 ### [ ] Finding `264` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/264.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/264.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper.py:881:26`
 - Checklist pattern: distinct handles, each released exactly once.
 
@@ -157,7 +157,7 @@ Checklist evidence: the adjacent `\w+\.close()` pairs are `self.page.close()` vs
 
 ### [ ] Finding `276` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/276.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/276.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper_pool.py:51:5`
 - Checklist pattern: interpolated values are an internally generated thread name and a static config constant.
 
@@ -173,7 +173,7 @@ Checklist evidence: all interpolated segments trace to internal configuration or
 
 ### [ ] Finding `280` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/280.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/280.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper_pool.py:74:1`
 - Checklist pattern: handler surfaces the failure — logs with traceback and returns the exception to the caller.
 
@@ -191,7 +191,7 @@ Checklist evidence: the exception value is propagated in the return tuple (`(…
 
 ### [ ] Finding `285` — `PERF-PY-28`
 
-- Function context: `./scripts/findings/functions/285.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/285.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper_pool.py:112:24`
 - Checklist pattern: the executor is created once for the entire batch, not per unit of work.
 
@@ -213,7 +213,7 @@ Checklist evidence: the executor is created once per program run and handles the
 
 ### [ ] Finding `298` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/298.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/298.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/utils.py:90:13`
 - Checklist pattern: interpolated values are numeric counters.
 
@@ -230,7 +230,7 @@ Checklist evidence: both dynamic segments are numeric (float/int) values; no str
 
 ### [ ] Finding `302` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/302.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/302.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/utils.py:136:1`
 - Checklist pattern: handler does not hide failures — it logs and re-raises as a chained error.
 
@@ -250,7 +250,7 @@ Checklist evidence: the handler ends with `raise RuntimeError(...) from e`, expl
 
 ### [ ] Finding `305` — `CWE-88`
 
-- Function context: `./scripts/findings/functions/305.txt`
+- Function context: `scripts/CourtScrapper/findings/functions/305.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/utils.py:148:24`
 - Checklist pattern: interpolated argv segments are OS-generated or config values, not attacker-controlled.
 
@@ -672,8 +672,8 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/CourtScrapper/chunks`
+- Function evidence: `scripts/CourtScrapper/findings/functions`
 - Validation: `git diff --check` — `pass` (see below)
 
 ```

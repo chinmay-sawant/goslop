@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebr
 branch: main
 commit: 476c3e6
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/calgebra/chunks
+function_context_path: scripts/calgebra/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `bin/goslop` prebuilt (`make build`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/calgebra/scripts/chunks -context-dir real-repos/calgebra/scripts/findings/functions real-repos/calgebra`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/calgebra/chunks -context-dir scripts/calgebra/findings/functions real-repos/calgebra`
 - Findings: `42`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_42.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` … `42.txt` (all 42 exist; the enclosing source was re-read directly for every finding)
+- Chunks reviewed: `scripts/calgebra/chunks/Chunk_1_25.txt`, `Chunk_26_42.txt`
+- Function contexts reviewed: `scripts/calgebra/findings/functions/1.txt` … `42.txt` (all 42 exist; the enclosing source was re-read directly for every finding)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/calgebra/chunks`.
+- [x] Read `scripts/calgebra/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `7` — `BP-PY-13`
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/calgebra/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:14:5`
 - Checklist pattern: secret-like assignment token inside a module docstring example, not executable code
 
@@ -64,7 +64,7 @@ Checklist evidence: the flagged line is docstring example text (`>>>` prompt), n
 
 ### [ ] Finding `8` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/calgebra/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:210:12`
 - Checklist pattern: `open(` token is an XMLHttpRequest method call, not the file-opening builtin
 
@@ -82,7 +82,7 @@ Checklist evidence: BP-PY-7's condition (a file opened without a `with` statemen
 
 ### [ ] Finding `9` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/calgebra/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:221:1`
 - Checklist pattern: handler's failure is immediately re-raised, so it is not hidden
 
@@ -104,7 +104,7 @@ Checklist evidence: the shown source's immediate flow re-raises the failure (lin
 
 ### [ ] Finding `10` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/calgebra/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:221:1`
 - Checklist pattern: generic handler cannot hide failures because the flow re-raises immediately after
 
@@ -125,7 +125,7 @@ Checklist evidence: the generic catch at line 221 is followed by `raise RuntimeE
 
 ### [ ] Finding `11` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/calgebra/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:245:1`
 - Checklist pattern: handler's failure is re-raised (`from e`) immediately after the handler
 
@@ -147,7 +147,7 @@ Checklist evidence: the shown source re-raises the failure at line 247 with `fro
 
 ### [ ] Finding `12` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/calgebra/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:533:1`
 - Checklist pattern: exception object is returned to the caller as an error result, not discarded
 
@@ -171,7 +171,7 @@ Checklist evidence: the exception is preserved and returned as the error payload
 
 ### [ ] Finding `13` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/calgebra/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:616:1`
 - Checklist pattern: handler reports the failure to the logging system with `exc_info=True`
 
@@ -200,7 +200,7 @@ Checklist evidence: the suite calls `logging.getLogger(...).warning(..., exc_inf
 
 ### [ ] Finding `14` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/calgebra/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:838:1`
 - Checklist pattern: failure detail is returned to the caller as an error result
 
@@ -222,7 +222,7 @@ Checklist evidence: the handler returns `_error_result(ValueError(...))` carryin
 
 ### [ ] Finding `15` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/calgebra/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:870:1`
 - Checklist pattern: failure detail is returned to the caller as an error result
 
@@ -242,7 +242,7 @@ Checklist evidence: the handler returns `_error_result(ValueError(...))` with th
 
 ### [ ] Finding `16` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/calgebra/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcsa.py:440:1`
 - Checklist pattern: exception object is returned to the caller as an error result, not discarded
 
@@ -263,7 +263,7 @@ Checklist evidence: the exception object is preserved and returned as the error 
 
 ### [ ] Finding `17` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/calgebra/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcsa.py:440:1`
 - Checklist pattern: generic catch's failure is returned to the caller as an error result, so it cannot hide failure conditions
 
@@ -283,7 +283,7 @@ Checklist evidence: the handler returns the exception `e` to the caller, so the 
 
 ### [ ] Finding `22` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/calgebra/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcsa.py:1010:1`
 - Checklist pattern: failure detail is returned to the caller as an error result
 
@@ -307,7 +307,7 @@ Checklist evidence: the handler returns `_error_result(ValueError(...))` embeddi
 
 ### [ ] Finding `23` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/calgebra/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcsa.py:1040:1`
 - Checklist pattern: failure detail is returned to the caller as an error result
 
@@ -326,7 +326,7 @@ Checklist evidence: the handler returns `_error_result(ValueError(...))` embeddi
 
 ### [ ] Finding `24` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/calgebra/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcsa.py:1117:1`
 - Checklist pattern: failure detail is returned to the caller as per-event error results
 
@@ -348,7 +348,7 @@ Checklist evidence: the handler returns the exception to the caller in every res
 
 ### [ ] Finding `30` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/calgebra/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/ical.py:384:1`
 - Checklist pattern: handler reports the failure to stderr with the exception detail and deliberately skips the item
 
@@ -371,7 +371,7 @@ Checklist evidence: the suite prints the warning with the exception text to stde
 
 ### [ ] Finding `32` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/calgebra/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/interval.py:134:9`
 - Checklist pattern: `print` produces the function's documented output, not operational logging
 
@@ -400,7 +400,7 @@ Checklist evidence: the flagged `print` implements the documented purpose of `pp
 
 ### [ ] Finding `33` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/calgebra/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/recurrence.py:437:1`
 - Checklist pattern: `pass` is a control-flow fall-through to an explicit raise of the same error
 
@@ -434,7 +434,7 @@ Checklist evidence: the pass immediately precedes an unconditional `raise ValueE
 
 ### [ ] Finding `34` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/calgebra/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/recurrence.py:437:1`
 - Checklist pattern: the pass path falls through to an explicit raise, so the error condition is acted on
 
@@ -462,7 +462,7 @@ Checklist evidence: the pass is a fall-through to a raise that reports the inval
 
 ### [ ] Finding `35` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/calgebra/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/recurrence.py:437:25`
 - Checklist pattern: the pass is a fall-through to an explicit raise; the handler is not an empty dead block
 
@@ -490,7 +490,7 @@ Checklist evidence: the pass is the control-flow route to the explicit raise, so
 
 ### [ ] Finding `37` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/calgebra/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/tests/test_gcsa.py:1062:1`
 - Checklist pattern: the pass is the test's expected-exception assertion, not a discarded failure
 
@@ -513,7 +513,7 @@ Checklist evidence: the pass is the verification branch of a pytest test (`asser
 
 ### [ ] Finding `38` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/38.txt`
+- Function context: `scripts/calgebra/findings/functions/38.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/tests/test_gcsa.py:1062:1`
 - Checklist pattern: the handler's "no action" is the test's expected-exception assertion
 
@@ -533,7 +533,7 @@ Checklist evidence: the pass is the expected-exception assertion of the test, so
 
 ### [ ] Finding `39` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/calgebra/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/tests/test_gcsa.py:1062:5`
 - Checklist pattern: the pass is the test's expected-exception assertion; the handler is not an empty dead block
 
@@ -553,7 +553,7 @@ Checklist evidence: the pass is the test's assertion mechanism (guarded by `asse
 
 ### [ ] Finding `42` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/calgebra/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/tests/test_recurrence_fuzz.py:17:70`
 - Checklist pattern: the 12-branch threshold is reached only by counting `if `/`for ` tokens inside comments
 
@@ -647,6 +647,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/calgebra/chunks`
+- Function evidence: `scripts/calgebra/findings/functions`
 - Validation: `git diff --check` — pass

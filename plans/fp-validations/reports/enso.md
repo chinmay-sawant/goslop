@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso
 branch: master
 commit: 516c06caa712e2e454e8673ef5f365616362a9a9
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/enso/chunks
+function_context_path: scripts/enso/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/enso/scripts/chunks -context-dir real-repos/enso/scripts/findings/functions real-repos/enso`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/enso/chunks -context-dir scripts/enso/findings/functions real-repos/enso`
 - Findings: `138`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_75.txt`, `./scripts/chunks/Chunk_76_100.txt`, `./scripts/chunks/Chunk_101_125.txt`, `./scripts/chunks/Chunk_126_138.txt`
-- Function contexts reviewed: `./scripts/findings/functions/11.txt`, `14.txt`, `25.txt`, `85.txt`, `95.txt`, `96.txt`, `97.txt`, `98.txt`, `99.txt`, `100.txt`, `101.txt`
+- Chunks reviewed: `scripts/enso/chunks/Chunk_1_25.txt`, `scripts/enso/chunks/Chunk_26_50.txt`, `scripts/enso/chunks/Chunk_51_75.txt`, `scripts/enso/chunks/Chunk_76_100.txt`, `scripts/enso/chunks/Chunk_101_125.txt`, `scripts/enso/chunks/Chunk_126_138.txt`
+- Function contexts reviewed: `scripts/enso/findings/functions/11.txt`, `14.txt`, `25.txt`, `85.txt`, `95.txt`, `96.txt`, `97.txt`, `98.txt`, `99.txt`, `100.txt`, `101.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/enso/chunks`.
+- [x] Read `scripts/enso/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `11` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/enso/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Base.py:210:5`
 - Checklist pattern: flagged construct is a `def` statement, not a call
 
@@ -60,7 +60,7 @@ Checklist evidence: the flagged token appears in a `def` header; there is no cal
 
 ### [ ] Finding `14` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/enso/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Builtin.py:537:5`
 - Checklist pattern: flagged construct is a `def` statement, not a print call
 
@@ -76,7 +76,7 @@ Checklist evidence: the token `print(` matched by `printCallOutsideString` is in
 
 ### [ ] Finding `25` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/enso/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Callables.py:895:12`
 - Checklist pattern: call target is the repository's own interpreter exec function, not a DB-API execute sink
 
@@ -94,7 +94,7 @@ Checklist evidence: the callee is a local import (`from base import execute`) wh
 
 ### [ ] Finding `85` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/enso/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Test.py:4:1`
 - Checklist pattern: print in a test file — the rule's own condition excludes test files
 
@@ -112,7 +112,7 @@ Checklist evidence: the file is a test script (its own output declares "i am a t
 
 ### [ ] Finding `95` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/enso/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:12:5`
 - Checklist pattern: print in the test harness (Tests/ directory) — the rule's own condition excludes tests
 
@@ -130,7 +130,7 @@ Checklist evidence: the file lives in a `Tests/` directory and implements test s
 
 ### [ ] Finding `96` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/enso/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:14:5`
 - Checklist pattern: print in the test harness (same construct family as finding 95)
 
@@ -148,7 +148,7 @@ Checklist evidence: file is the repo's test framework under `Tests/`; the print 
 
 ### [ ] Finding `97` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/enso/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:25:9`
 - Checklist pattern: print in the test harness
 
@@ -165,7 +165,7 @@ Checklist evidence: the print renders a test result report inside the repo's tes
 
 ### [ ] Finding `98` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/enso/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:28:9`
 - Checklist pattern: print in the test harness
 
@@ -183,7 +183,7 @@ Checklist evidence: the print emits a test-result line inside the repo's test fr
 
 ### [ ] Finding `99` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/enso/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:33:9`
 - Checklist pattern: print in the test harness
 
@@ -202,7 +202,7 @@ Checklist evidence: the print is part of `final_report` in the repo's test frame
 
 ### [ ] Finding `100` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/enso/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:36:9`
 - Checklist pattern: print in the test harness
 
@@ -219,7 +219,7 @@ Checklist evidence: the print is part of `final_report` in the repo's test frame
 
 ### [ ] Finding `101` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/enso/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:38:13`
 - Checklist pattern: print in the test harness
 
@@ -267,6 +267,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/enso/chunks`
+- Function evidence: `scripts/enso/findings/functions`
 - Validation: `git diff --check` — pass

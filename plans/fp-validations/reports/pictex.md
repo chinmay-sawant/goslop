@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex
 branch: main
 commit: 07072311d51917679fe41a827c7136195fb0dcf5
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pictex/chunks
+function_context_path: scripts/pictex/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pictex/scripts/chunks -context-dir real-repos/pictex/scripts/findings/functions real-repos/pictex`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pictex/chunks -context-dir scripts/pictex/findings/functions real-repos/pictex`
 - Findings: `208`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_175.txt`, `Chunk_176_200.txt`, `Chunk_201_208.txt`
-- Function contexts reviewed: `./scripts/findings/functions/<id>.txt` for every proposed false positive (2, 3, 19, 23, 39, 41-208 excluding 56, 57, 70, 77, 94, 113, 150, 167); enclosing source read when the exported context was insufficient
+- Chunks reviewed: `scripts/pictex/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_175.txt`, `Chunk_176_200.txt`, `Chunk_201_208.txt`
+- Function contexts reviewed: `scripts/pictex/findings/functions/<id>.txt` for every proposed false positive (2, 3, 19, 23, 39, 41-208 excluding 56, 57, 70, 77, 94, 113, 150, 167); enclosing source read when the exported context was insufficient
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pictex/chunks`.
+- [x] Read `scripts/pictex/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `2` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/pictex/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/examples/code_to_image/code_to_image.py:32:16`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -59,7 +59,7 @@ Checklist evidence: the `open` result is consumed inline by `.read()` in the sam
 
 ### [ ] Finding `3` — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/pictex/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/examples/code_to_image/code_to_image.py:69:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -77,7 +77,7 @@ Checklist evidence: the decode is executed once per script run on distinct input
 
 ### [ ] Finding `19` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/pictex/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/src/pictex/__skia_init.py:27:24`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -97,7 +97,7 @@ Checklist evidence: the callee is `os.open`, which is neither `open` nor `Path.o
 
 ### [ ] Finding `23` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/pictex/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/src/pictex/models/public/background.py:22:46`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -113,7 +113,7 @@ Checklist evidence: the callee is `skia.Image.open`, which the rule's condition 
 
 ### [ ] Finding `39` — BP-PY-46
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/pictex/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/src/pictex/vector_image.py:109:13`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -137,7 +137,7 @@ Checklist evidence: the `print(` token occurs inside a multi-line string literal
 
 ### [ ] Finding `167` — CWE-367
 
-- Function context: `./scripts/findings/functions/167.txt`
+- Function context: `scripts/pictex/findings/functions/167.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_svg.py:51:16`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -160,7 +160,7 @@ Checklist evidence: the checked path and the used path are distinct (`copied_fon
 
 ### [ ] Finding `41` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/pictex/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -178,7 +178,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `42` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/pictex/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:18:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -196,7 +196,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `43` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/pictex/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:32:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -214,7 +214,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `44` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/pictex/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:47:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -232,7 +232,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `45` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/pictex/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:61:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -250,7 +250,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `46` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/pictex/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:77:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -268,7 +268,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `47` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/pictex/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_aspect_ratio.py:91:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -286,7 +286,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `48` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/pictex/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_background.py:4:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -304,7 +304,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `49` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/pictex/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_background.py:21:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -322,7 +322,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `50` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/pictex/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_background.py:44:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -340,7 +340,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `51` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/pictex/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_background.py:61:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -358,7 +358,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `52` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/pictex/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_background.py:79:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -376,7 +376,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `53` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/53.txt`
+- Function context: `scripts/pictex/findings/functions/53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_border.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -394,7 +394,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `54` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/pictex/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_border.py:22:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -412,7 +412,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `55` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/pictex/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_border.py:41:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -430,7 +430,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `58` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/pictex/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_decorations.py:5:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -448,7 +448,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `59` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/pictex/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_decorations.py:20:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -466,7 +466,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `60` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/pictex/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_decorations.py:35:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -484,7 +484,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `61` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/pictex/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_decorations.py:51:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -502,7 +502,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `62` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/pictex/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -520,7 +520,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `63` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/pictex/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:19:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -538,7 +538,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `64` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/pictex/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:34:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -556,7 +556,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `65` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/pictex/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:54:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -574,7 +574,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `66` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/pictex/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:76:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -592,7 +592,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `67` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/pictex/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:96:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -610,7 +610,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `68` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/pictex/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:110:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -628,7 +628,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `69` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/pictex/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_direction.py:124:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -646,7 +646,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `71` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/pictex/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_flex_properties.py:4:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -664,7 +664,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `72` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/pictex/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_flex_properties.py:18:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -682,7 +682,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `73` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/pictex/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_flex_properties.py:31:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -700,7 +700,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `74` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/pictex/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_flex_properties.py:46:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -718,7 +718,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `75` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/pictex/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_flex_properties.py:61:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -736,7 +736,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `76` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/pictex/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_flex_properties.py:79:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -754,7 +754,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `78` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/pictex/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:5:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -772,7 +772,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `79` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/pictex/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:18:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -790,7 +790,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `80` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/pictex/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:31:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -808,7 +808,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `81` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/pictex/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:46:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -826,7 +826,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `82` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/pictex/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:66:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -844,7 +844,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `83` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/pictex/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:73:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -862,7 +862,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `84` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/pictex/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_fonts.py:86:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -880,7 +880,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `85` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/pictex/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -898,7 +898,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `86` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/pictex/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:23:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -916,7 +916,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `87` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/pictex/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:43:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -934,7 +934,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `88` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/pictex/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:65:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -952,7 +952,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `89` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/pictex/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:87:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -970,7 +970,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `90` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/pictex/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:110:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -988,7 +988,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `91` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/pictex/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:131:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1006,7 +1006,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `92` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/pictex/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:153:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1024,7 +1024,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `93` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/pictex/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_gradients.py:178:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1042,7 +1042,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `95` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/pictex/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_integration.py:4:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1060,7 +1060,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `96` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/pictex/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:16:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1078,7 +1078,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `97` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/pictex/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:25:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1096,7 +1096,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `98` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/pictex/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:37:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1114,7 +1114,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `99` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/pictex/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:48:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1132,7 +1132,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `100` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/pictex/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:54:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1150,7 +1150,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `101` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/pictex/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:66:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1168,7 +1168,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `102` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/pictex/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:75:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1186,7 +1186,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `103` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/pictex/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:87:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1204,7 +1204,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `104` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/pictex/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:98:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1222,7 +1222,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `105` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/pictex/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_layout.py:104:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1240,7 +1240,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `106` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/106.txt`
+- Function context: `scripts/pictex/findings/functions/106.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:79:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1258,7 +1258,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `107` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/107.txt`
+- Function context: `scripts/pictex/findings/functions/107.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:93:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1276,7 +1276,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `108` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/108.txt`
+- Function context: `scripts/pictex/findings/functions/108.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:116:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1294,7 +1294,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `109` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/109.txt`
+- Function context: `scripts/pictex/findings/functions/109.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:138:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1312,7 +1312,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `110` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/110.txt`
+- Function context: `scripts/pictex/findings/functions/110.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:152:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1330,7 +1330,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `111` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/pictex/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:170:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1348,7 +1348,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `112` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/112.txt`
+- Function context: `scripts/pictex/findings/functions/112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_letter_spacing.py:192:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1366,7 +1366,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `114` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/pictex/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_line_height.py:4:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1384,7 +1384,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `115` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/115.txt`
+- Function context: `scripts/pictex/findings/functions/115.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_line_height.py:21:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1402,7 +1402,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `116` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/116.txt`
+- Function context: `scripts/pictex/findings/functions/116.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_outline.py:4:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1420,7 +1420,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `117` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/117.txt`
+- Function context: `scripts/pictex/findings/functions/117.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_outline.py:20:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1438,7 +1438,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `118` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/118.txt`
+- Function context: `scripts/pictex/findings/functions/118.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_outline.py:38:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1456,7 +1456,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `119` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/119.txt`
+- Function context: `scripts/pictex/findings/functions/119.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_outline.py:54:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1474,7 +1474,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `120` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/120.txt`
+- Function context: `scripts/pictex/findings/functions/120.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_outline.py:70:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1492,7 +1492,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `121` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/121.txt`
+- Function context: `scripts/pictex/findings/functions/121.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_outline.py:86:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1510,7 +1510,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `122` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/122.txt`
+- Function context: `scripts/pictex/findings/functions/122.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:14:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1528,7 +1528,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `123` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/123.txt`
+- Function context: `scripts/pictex/findings/functions/123.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:32:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1546,7 +1546,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `124` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/124.txt`
+- Function context: `scripts/pictex/findings/functions/124.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:50:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1564,7 +1564,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `125` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/125.txt`
+- Function context: `scripts/pictex/findings/functions/125.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:72:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1582,7 +1582,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `126` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/126.txt`
+- Function context: `scripts/pictex/findings/functions/126.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:87:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1600,7 +1600,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `127` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/127.txt`
+- Function context: `scripts/pictex/findings/functions/127.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:106:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1618,7 +1618,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `128` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/128.txt`
+- Function context: `scripts/pictex/findings/functions/128.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_overflow.py:123:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1636,7 +1636,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `129` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/129.txt`
+- Function context: `scripts/pictex/findings/functions/129.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:4:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1654,7 +1654,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `130` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/130.txt`
+- Function context: `scripts/pictex/findings/functions/130.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:27:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1672,7 +1672,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `131` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/131.txt`
+- Function context: `scripts/pictex/findings/functions/131.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:50:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1690,7 +1690,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `132` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/132.txt`
+- Function context: `scripts/pictex/findings/functions/132.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:76:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1708,7 +1708,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `133` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/133.txt`
+- Function context: `scripts/pictex/findings/functions/133.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:95:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1726,7 +1726,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `134` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/134.txt`
+- Function context: `scripts/pictex/findings/functions/134.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:118:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1744,7 +1744,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `135` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/135.txt`
+- Function context: `scripts/pictex/findings/functions/135.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:138:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1762,7 +1762,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `136` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/136.txt`
+- Function context: `scripts/pictex/findings/functions/136.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:147:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1780,7 +1780,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `137` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/137.txt`
+- Function context: `scripts/pictex/findings/functions/137.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:162:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1798,7 +1798,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `138` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/138.txt`
+- Function context: `scripts/pictex/findings/functions/138.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:179:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1816,7 +1816,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `139` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/139.txt`
+- Function context: `scripts/pictex/findings/functions/139.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:197:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1834,7 +1834,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `140` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/140.txt`
+- Function context: `scripts/pictex/findings/functions/140.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:214:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1852,7 +1852,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `141` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/141.txt`
+- Function context: `scripts/pictex/findings/functions/141.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:227:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1870,7 +1870,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `142` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/142.txt`
+- Function context: `scripts/pictex/findings/functions/142.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:244:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1888,7 +1888,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `143` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/143.txt`
+- Function context: `scripts/pictex/findings/functions/143.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_positioning.py:264:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1906,7 +1906,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `144` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/144.txt`
+- Function context: `scripts/pictex/findings/functions/144.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_shadows.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1924,7 +1924,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `145` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/145.txt`
+- Function context: `scripts/pictex/findings/functions/145.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_shadows.py:19:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1942,7 +1942,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `146` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/146.txt`
+- Function context: `scripts/pictex/findings/functions/146.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_shadows.py:37:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1960,7 +1960,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `147` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/147.txt`
+- Function context: `scripts/pictex/findings/functions/147.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_shadows.py:58:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1978,7 +1978,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `148` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/148.txt`
+- Function context: `scripts/pictex/findings/functions/148.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_shadows.py:79:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -1996,7 +1996,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `149` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/149.txt`
+- Function context: `scripts/pictex/findings/functions/149.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_shadows.py:99:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2014,7 +2014,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `151` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/151.txt`
+- Function context: `scripts/pictex/findings/functions/151.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2032,7 +2032,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `152` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/152.txt`
+- Function context: `scripts/pictex/findings/functions/152.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:24:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2050,7 +2050,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `153` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/153.txt`
+- Function context: `scripts/pictex/findings/functions/153.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:40:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2068,7 +2068,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `154` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/154.txt`
+- Function context: `scripts/pictex/findings/functions/154.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:59:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2086,7 +2086,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `155` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/155.txt`
+- Function context: `scripts/pictex/findings/functions/155.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:76:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2104,7 +2104,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `156` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/156.txt`
+- Function context: `scripts/pictex/findings/functions/156.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:102:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2122,7 +2122,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `157` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/157.txt`
+- Function context: `scripts/pictex/findings/functions/157.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_size_constraints.py:129:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2140,7 +2140,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `158` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/158.txt`
+- Function context: `scripts/pictex/findings/functions/158.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:5:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2158,7 +2158,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `159` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/159.txt`
+- Function context: `scripts/pictex/findings/functions/159.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:18:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2176,7 +2176,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `160` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/160.txt`
+- Function context: `scripts/pictex/findings/functions/160.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:32:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2194,7 +2194,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `161` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/161.txt`
+- Function context: `scripts/pictex/findings/functions/161.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:48:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2212,7 +2212,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `162` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/162.txt`
+- Function context: `scripts/pictex/findings/functions/162.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:65:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2230,7 +2230,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `163` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/163.txt`
+- Function context: `scripts/pictex/findings/functions/163.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:84:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2248,7 +2248,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `164` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/164.txt`
+- Function context: `scripts/pictex/findings/functions/164.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:102:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2266,7 +2266,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `165` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/165.txt`
+- Function context: `scripts/pictex/findings/functions/165.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:124:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2284,7 +2284,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `166` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/166.txt`
+- Function context: `scripts/pictex/findings/functions/166.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_sizing.py:148:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2302,7 +2302,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `168` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/168.txt`
+- Function context: `scripts/pictex/findings/functions/168.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_box_edge.py:43:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2320,7 +2320,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `169` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/169.txt`
+- Function context: `scripts/pictex/findings/functions/169.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_box_edge.py:68:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2338,7 +2338,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `170` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/170.txt`
+- Function context: `scripts/pictex/findings/functions/170.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_box_edge.py:89:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2356,7 +2356,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `171` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/171.txt`
+- Function context: `scripts/pictex/findings/functions/171.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:5:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2374,7 +2374,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `172` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/172.txt`
+- Function context: `scripts/pictex/findings/functions/172.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:22:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2392,7 +2392,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `173` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/173.txt`
+- Function context: `scripts/pictex/findings/functions/173.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:40:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2410,7 +2410,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `174` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/174.txt`
+- Function context: `scripts/pictex/findings/functions/174.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:56:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2428,7 +2428,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `175` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/175.txt`
+- Function context: `scripts/pictex/findings/functions/175.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:72:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2446,7 +2446,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `176` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/176.txt`
+- Function context: `scripts/pictex/findings/functions/176.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:89:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2464,7 +2464,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `177` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/177.txt`
+- Function context: `scripts/pictex/findings/functions/177.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:115:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2482,7 +2482,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `178` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/178.txt`
+- Function context: `scripts/pictex/findings/functions/178.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:135:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2500,7 +2500,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `179` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/179.txt`
+- Function context: `scripts/pictex/findings/functions/179.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_shaping.py:156:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2518,7 +2518,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `180` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/180.txt`
+- Function context: `scripts/pictex/findings/functions/180.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:3:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2536,7 +2536,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `181` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/181.txt`
+- Function context: `scripts/pictex/findings/functions/181.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:16:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2554,7 +2554,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `182` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/182.txt`
+- Function context: `scripts/pictex/findings/functions/182.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:30:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2572,7 +2572,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `183` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/183.txt`
+- Function context: `scripts/pictex/findings/functions/183.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:46:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2590,7 +2590,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `184` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/184.txt`
+- Function context: `scripts/pictex/findings/functions/184.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:60:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2608,7 +2608,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `185` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/185.txt`
+- Function context: `scripts/pictex/findings/functions/185.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:76:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2626,7 +2626,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `186` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/186.txt`
+- Function context: `scripts/pictex/findings/functions/186.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:92:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2644,7 +2644,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `187` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/187.txt`
+- Function context: `scripts/pictex/findings/functions/187.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:104:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2662,7 +2662,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `188` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/188.txt`
+- Function context: `scripts/pictex/findings/functions/188.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:121:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2680,7 +2680,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `189` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/189.txt`
+- Function context: `scripts/pictex/findings/functions/189.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:143:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2698,7 +2698,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `190` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/190.txt`
+- Function context: `scripts/pictex/findings/functions/190.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:156:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2716,7 +2716,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `191` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/191.txt`
+- Function context: `scripts/pictex/findings/functions/191.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:170:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2734,7 +2734,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `192` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/192.txt`
+- Function context: `scripts/pictex/findings/functions/192.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:191:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2752,7 +2752,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `193` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/193.txt`
+- Function context: `scripts/pictex/findings/functions/193.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:209:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2770,7 +2770,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `194` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/194.txt`
+- Function context: `scripts/pictex/findings/functions/194.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:228:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2788,7 +2788,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `195` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/195.txt`
+- Function context: `scripts/pictex/findings/functions/195.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:244:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2806,7 +2806,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `196` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/196.txt`
+- Function context: `scripts/pictex/findings/functions/196.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_spans.py:263:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2824,7 +2824,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `197` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/pictex/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:8:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2842,7 +2842,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `198` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/198.txt`
+- Function context: `scripts/pictex/findings/functions/198.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:26:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2860,7 +2860,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `199` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/199.txt`
+- Function context: `scripts/pictex/findings/functions/199.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:51:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2878,7 +2878,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `200` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/200.txt`
+- Function context: `scripts/pictex/findings/functions/200.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:69:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2896,7 +2896,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `201` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/201.txt`
+- Function context: `scripts/pictex/findings/functions/201.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:81:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2914,7 +2914,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `202` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/202.txt`
+- Function context: `scripts/pictex/findings/functions/202.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:101:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2932,7 +2932,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `203` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/203.txt`
+- Function context: `scripts/pictex/findings/functions/203.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:115:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2950,7 +2950,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `204` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/204.txt`
+- Function context: `scripts/pictex/findings/functions/204.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:132:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2968,7 +2968,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `205` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/205.txt`
+- Function context: `scripts/pictex/findings/functions/205.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:150:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -2986,7 +2986,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `206` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/206.txt`
+- Function context: `scripts/pictex/findings/functions/206.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:172:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -3004,7 +3004,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `207` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/207.txt`
+- Function context: `scripts/pictex/findings/functions/207.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:193:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -3022,7 +3022,7 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ### [ ] Finding `208` — BP-PY-41
 
-- Function context: `./scripts/findings/functions/208.txt`
+- Function context: `scripts/pictex/findings/functions/208.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/tests/test_text_wrap.py:209:1`
 - Checklist pattern: based the decision on the rule condition and the shown source
 
@@ -3145,6 +3145,6 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/pictex/chunks`
+- Function evidence: `scripts/pictex/findings/functions`
 - Validation: `git diff --check` — `pass`

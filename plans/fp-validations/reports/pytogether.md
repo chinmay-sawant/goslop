@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytoget
 branch: main
 commit: 2004decbafddca7342699318a2d8e50ba788177a
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytogether
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pytogether/chunks
+function_context_path: scripts/pytogether/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pytogether/scripts/chunks -context-dir real-repos/pytogether/scripts/findings/functions real-repos/pytogether`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pytogether/chunks -context-dir scripts/pytogether/findings/functions real-repos/pytogether`
 - Findings: `71`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_71.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` … `./scripts/findings/functions/71.txt` (all 71)
+- Chunks reviewed: `scripts/pytogether/chunks/Chunk_1_25.txt`, `scripts/pytogether/chunks/Chunk_26_50.txt`, `scripts/pytogether/chunks/Chunk_51_71.txt`
+- Function contexts reviewed: `scripts/pytogether/findings/functions/1.txt` … `scripts/pytogether/findings/functions/71.txt` (all 71)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pytogether/chunks`.
+- [x] Read `scripts/pytogether/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [x] Finding `12` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/pytogether/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytogether/backend/backend/settings/base.py:224:1`
 - Checklist pattern: trigger token is inside a string literal, not executable code.
 
@@ -229,6 +229,6 @@ None. Every finding was resolvable from the rule condition and the shown source;
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_71.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` … `./scripts/findings/functions/71.txt`
+- Chunk evidence: `scripts/pytogether/chunks/Chunk_1_25.txt`, `scripts/pytogether/chunks/Chunk_26_50.txt`, `scripts/pytogether/chunks/Chunk_51_71.txt`
+- Function evidence: `scripts/pytogether/findings/functions/1.txt` … `scripts/pytogether/findings/functions/71.txt`
 - Validation: `git diff --check` — pass

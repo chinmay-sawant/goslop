@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso
 branch: main
 commit: ee5d6eb7baba8aca90b1d63a5a176b0a7d37692e
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/tenso/chunks
+function_context_path: scripts/tenso/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (local `./bin/goslop` binary, see `Makefile`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/tenso/scripts/chunks -context-dir real-repos/tenso/scripts/findings/functions real-repos/tenso`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/tenso/chunks -context-dir scripts/tenso/findings/functions real-repos/tenso`
 - Findings: `125`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `8.txt`, `9.txt`, `23.txt`, `29.txt`, `61.txt`, `80.txt`, `84.txt`, `92.txt`, `93.txt`, `98.txt`, `114.txt`, `115.txt`, `117.txt`, `118.txt`, `120.txt`, `125.txt`, plus the enclosing sources for all other findings
+- Chunks reviewed: `scripts/tenso/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`
+- Function contexts reviewed: `scripts/tenso/findings/functions/1.txt`, `8.txt`, `9.txt`, `23.txt`, `29.txt`, `61.txt`, `80.txt`, `84.txt`, `92.txt`, `93.txt`, `98.txt`, `114.txt`, `115.txt`, `117.txt`, `118.txt`, `120.txt`, `125.txt`, plus the enclosing sources for all other findings
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/tenso/chunks`.
+- [x] Read `scripts/tenso/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/tenso/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/benchmark.py:111:21`
 - Checklist pattern: rule condition not met — no untrusted-data sink
 
@@ -63,7 +63,7 @@ Checklist evidence: the source is a benchmark of serialization formats; `dec` ha
 
 ### [ ] Finding `2` — `CWE-502`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/tenso/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/benchmark.py:111:21`
 - Checklist pattern: rule condition not met — data is not untrusted
 
@@ -83,7 +83,7 @@ Checklist evidence: the deserialized value flows from `enc` only; no trust bound
 
 ### [ ] Finding `8` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/tenso/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/benchmark.py:409:13`
 - Checklist pattern: rule condition not met — self-written temp file, not user input
 
@@ -105,7 +105,7 @@ Checklist evidence: the file handle passed to `pickle.load` is opened from a pat
 
 ### [ ] Finding `17` — `BP-PY-45`
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/tenso/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/docs/source/conf.py:7:1`
 - Checklist pattern: excluded construct — packaging/docs bootstrap
 
@@ -123,7 +123,7 @@ Checklist evidence: the mutation is the standard docs-build path setup, not appl
 
 ### [ ] Findings `18`, `19`, `20`, `21`, `22` — `BP-PY-46` (examples/client.py)
 
-- Function context: `./scripts/findings/functions/18.txt` … `22.txt`
+- Function context: `scripts/tenso/findings/functions/18.txt` … `22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/client.py:13:1` (and 21, 26, 27, 29)
 - Checklist pattern: rule condition not met — script module, not library code
 
@@ -151,7 +151,7 @@ Checklist evidence: module is a runnable example script, not an importable libra
 
 ### [ ] Finding `23` — `PERF-PY-28`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/tenso/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/bench_server.py:29:44`
 - Checklist pattern: rule condition not met — executor is process-lifetime
 
@@ -173,7 +173,7 @@ Checklist evidence: the construction site is the top-level `serve()` bootstrap, 
 
 ### [ ] Findings `24`, `25`, `26`, `27` — `BP-PY-46` (examples/grpc/client_grpc.py)
 
-- Function context: `./scripts/findings/functions/24.txt` … `27.txt`
+- Function context: `scripts/tenso/findings/functions/24.txt` … `27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/client_grpc.py:21:9` (and 37, 38, 39)
 - Checklist pattern: rule condition not met — example script CLI
 
@@ -198,7 +198,7 @@ Checklist evidence: the file is an example script whose prints are user-facing o
 
 ### [ ] Finding `28` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/tenso/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/server_grpc.py:13:9`
 - Checklist pattern: rule condition not met — example script
 
@@ -217,7 +217,7 @@ Checklist evidence: file lives under `examples/` and is executed as a demo serve
 
 ### [ ] Finding `29` — `PERF-PY-28`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/tenso/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/server_grpc.py:37:44`
 - Checklist pattern: rule condition not met — executor is process-lifetime
 
@@ -241,7 +241,7 @@ Checklist evidence: construction site is the server bootstrap executed once; the
 
 ### [ ] Finding `30` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/tenso/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/server_grpc.py:43:5`
 - Checklist pattern: rule condition not met — example script
 
@@ -260,7 +260,7 @@ Checklist evidence: same script module as finding 28; prints are the demo progra
 
 ### [ ] Findings `31`, `32`, `33`, `34`, `35`, `36`, `37`, `38`, `39`, `40`, `41`, `42`, `43`, `44`, `45`, `46` — `BP-PY-46` (examples/ray_example.py)
 
-- Function context: `./scripts/findings/functions/31.txt` … `46.txt`
+- Function context: `scripts/tenso/findings/functions/31.txt` … `46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/ray_example.py:22:1` (and 26, 34, 35, 36, 37, 41, 65, 66, 67, 71, 99, 103, 135, 136, 139)
 - Checklist pattern: rule condition not met — script module
 
@@ -286,7 +286,7 @@ Checklist evidence: module-level executable script; prints are the demo's report
 
 ### [ ] Findings `47`, `48`, `49`, `50`, `53` — `BP-PY-46` (examples/server.py)
 
-- Function context: `./scripts/findings/functions/47.txt` … `50.txt`, `53.txt`
+- Function context: `scripts/tenso/findings/functions/47.txt` … `50.txt`, `53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/server.py:9:1` (and 12, 23, 29, 33)
 - Checklist pattern: rule condition not met — script module
 
@@ -311,7 +311,7 @@ Checklist evidence: top-level script with module-level socket setup; no classes 
 
 ### [ ] Finding `54` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/tenso/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/pyfuzz/_make_seeds.py:28:5`
 - Checklist pattern: rule condition not met — dev-tool script
 
@@ -331,7 +331,7 @@ Checklist evidence: script module invoked directly; the rule targets non-script 
 
 ### [ ] Finding `59` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/tenso/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/cache.py:242:13`
 - Checklist pattern: detector over-match — print inside docstring
 
@@ -357,7 +357,7 @@ Checklist evidence: the shown lines are docstring content, not executable code.
 
 ### [ ] Finding `60` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/tenso/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/cache.py:243:13`
 - Checklist pattern: detector over-match — print inside docstring
 
@@ -376,7 +376,7 @@ Checklist evidence: `print(cache.stats)` sits between the docstring opening `Exa
 
 ### [ ] Finding `61` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/tenso/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/cache.py:393:27`
 - Checklist pattern: detector over-match — `os.open` is not builtin `open`
 
@@ -394,7 +394,7 @@ Checklist evidence: no `with`-able builtin `open`/`Path.open` call exists on thi
 
 ### [ ] Finding `80` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/tenso/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/cache.py:1385:9`
 - Checklist pattern: detector over-match — idempotent guarded close, not double release
 
@@ -419,7 +419,7 @@ Checklist evidence: both calls are on the same object, but the guard makes the s
 
 ### [ ] Finding `83` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/tenso/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/client.py:26:9`
 - Checklist pattern: detector over-match — print inside docstring
 
@@ -443,7 +443,7 @@ Checklist evidence: line 26 sits between `Example::` and the closing `"""`; line
 
 ### [ ] Finding `84` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/tenso/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/client.py:168:9`
 - Checklist pattern: detector over-match — distinct lifecycle methods, idempotent close
 
@@ -464,7 +464,7 @@ Checklist evidence: two `.close()` calls within 180 characters, but they are gua
 
 ### [ ] Finding `92` — `CWE-695`
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/tenso/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/core.py:692:14`
 - Checklist pattern: rule condition not met — mmap is the product's intended API, not prohibited low-level functionality
 
@@ -482,7 +482,7 @@ Checklist evidence: the call is the opt-in `mmap_mode` branch of the library's o
 
 ### [ ] Finding `93` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/tenso/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/fastapi.py:54:17`
 - Checklist pattern: rule condition not met — value cannot contain CRLF
 
@@ -501,7 +501,7 @@ Checklist evidence: the header value is the string form of an integer tuple — 
 
 ### [ ] Finding `98` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/tenso/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/gpu.py:315:21`
 - Checklist pattern: detector over-match — two distinct handles
 
@@ -525,7 +525,7 @@ Checklist evidence: the two `.close()` calls within 180 characters target distin
 
 ### [ ] Finding `104` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/tenso/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/shm.py:39:13`
 - Checklist pattern: detector over-match — print inside docstring
 
@@ -547,7 +547,7 @@ Checklist evidence: line 39 sits between `Example::` and the closing `"""`.
 
 ### [ ] Finding `105` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/tenso/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/shm.py:45:13`
 - Checklist pattern: detector over-match — print inside docstring
 
@@ -567,7 +567,7 @@ Checklist evidence: line 45 precedes the docstring closing `"""` at line 46.
 
 ### [ ] Finding `114` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/tenso/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/tests/test_cache.py:61:5`
 - Checklist pattern: detector over-match — distinct cache instances
 
@@ -590,7 +590,7 @@ Checklist evidence: the matched `.close()` calls are in separate fixtures on sep
 
 ### [ ] Finding `118` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/118.txt`
+- Function context: `scripts/tenso/findings/functions/118.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/tests/test_fastapi.py:29:20`
 - Checklist pattern: detector over-match — header read in assertion, not a write
 
@@ -608,7 +608,7 @@ Checklist evidence: `==` comparison of an existing header against a string liter
 
 ### [ ] Finding `125` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/125.txt`
+- Function context: `scripts/tenso/findings/functions/125.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/tests/test_shm.py:56:9`
 - Checklist pattern: detector over-match — distinct handles
 
@@ -768,6 +768,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/tenso/chunks`
+- Function evidence: `scripts/tenso/findings/functions`
 - Validation: `git diff --check` — `pass`

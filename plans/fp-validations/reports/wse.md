@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse
 branch: main
 commit: 90ebca1d1dfb9b9ae9efc03f55738bb6a3b42444
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/wse/chunks
+function_context_path: scripts/wse/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (goslop binary at `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/wse/scripts/chunks -context-dir real-repos/wse/scripts/findings/functions real-repos/wse`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/wse/chunks -context-dir scripts/wse/findings/functions real-repos/wse`
 - Findings: `206`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_175.txt`, `Chunk_176_200.txt`, `Chunk_201_206.txt`
-- Function contexts reviewed: `./scripts/findings/functions/<id>.txt` for every finding; source files read at the `Source:` path for every proposed false positive.
+- Chunks reviewed: `scripts/wse/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_175.txt`, `Chunk_176_200.txt`, `Chunk_201_206.txt`
+- Function contexts reviewed: `scripts/wse/findings/functions/<id>.txt` for every finding; source files read at the `Source:` path for every proposed false positive.
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/wse/chunks`.
+- [x] Read `scripts/wse/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ Rule conditions were taken from `ruleset/python/bad-practices.json` (detection n
 
 ### [ ] Finding 1 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/wse/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_battle_server.py:55:1`
 - Checklist pattern: rule excludes test fixtures and obvious placeholders (BP-PY-13 detection notes)
 
@@ -62,7 +62,7 @@ Checklist evidence: the assignment is a pure string literal to `JWT_SECRET`, but
 
 ### [ ] Finding 2 — CWE-88
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/wse/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_battle_server.py:86:5`
 - Checklist pattern: interpolated argv segments derive from a module constant, not from any input
 
@@ -85,7 +85,7 @@ Checklist evidence: every argv element is a literal or an f-string of a fixed mo
 
 ### [ ] Finding 3 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/wse/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_battle_server.py:129:6`
 - Checklist pattern: rule is a heuristic for non-daemon workers; thread is daemon
 
@@ -102,7 +102,7 @@ Checklist evidence: the `Thread` construction immediately above the flagged `.st
 
 ### [ ] Finding 19 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/wse/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_brutal.py:224:1`
 - Checklist pattern: not a failure-expectation test; benchmark measurement helper
 
@@ -125,7 +125,7 @@ Checklist evidence: the exception path returns a sentinel that the caller tallie
 
 ### [ ] Finding 41 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/wse/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_fanout_server.py:42:1`
 - Checklist pattern: rule excludes test fixtures and obvious placeholders
 
@@ -142,7 +142,7 @@ Checklist evidence: assignment to a secret-named variable whose literal is an ex
 
 ### [ ] Finding 42 — CWE-88
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/wse/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_fanout_server.py:60:5`
 - Checklist pattern: interpolated argv segments derive from a module constant, not from any input
 
@@ -165,7 +165,7 @@ Checklist evidence: no runtime/input-derived value appears in the argv; all dyna
 
 ### [ ] Finding 43 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/wse/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_fanout_server.py:113:6`
 - Checklist pattern: rule is a heuristic for non-daemon workers; thread is daemon
 
@@ -182,7 +182,7 @@ Checklist evidence: the `Thread` construction immediately above the flagged `.st
 
 ### [ ] Finding 48 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/wse/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_server.py:21:1`
 - Checklist pattern: rule excludes test fixtures and obvious placeholders
 
@@ -200,7 +200,7 @@ Checklist evidence: secret-named assignment whose literal is an explicit testing
 
 ### [ ] Finding 72 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/wse/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_basic.py:20:1`
 - Checklist pattern: rule excludes obvious placeholders (`changeme` family)
 
@@ -217,7 +217,7 @@ Checklist evidence: the value starts with the documented placeholder token "chan
 
 ### [ ] Finding 73 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/wse/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_basic.py:67:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -243,7 +243,7 @@ Checklist evidence: the module is a `__main__`-guarded script (fix text: "keep p
 
 ### [ ] Finding 74 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/wse/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_basic.py:74:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -262,7 +262,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 75 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/wse/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_basic.py:80:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -280,7 +280,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 77 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/wse/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_basic.py:111:11`
 - Checklist pattern: rule is a heuristic for non-daemon workers; thread is daemon
 
@@ -297,7 +297,7 @@ Checklist evidence: the `Thread` construction immediately above the flagged `.st
 
 ### [ ] Finding 78 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/wse/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_broadcast.py:24:1`
 - Checklist pattern: rule excludes obvious placeholders (`changeme` family)
 
@@ -314,7 +314,7 @@ Checklist evidence: the value starts with the documented placeholder token "chan
 
 ### [ ] Finding 79 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/wse/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_broadcast.py:52:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -332,7 +332,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 80 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/wse/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_broadcast.py:63:25`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -350,7 +350,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 81 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/wse/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_broadcast.py:66:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -367,7 +367,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 82 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/wse/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_broadcast.py:95:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -385,7 +385,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 84 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/wse/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_broadcast.py:123:7`
 - Checklist pattern: rule is a heuristic for non-daemon workers; threads are daemon
 
@@ -404,7 +404,7 @@ Checklist evidence: every `Thread` construction in the file declares `daemon=Tru
 
 ### [ ] Finding 85 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/wse/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_cluster.py:25:1`
 - Checklist pattern: rule excludes obvious placeholders (`changeme` family)
 
@@ -421,7 +421,7 @@ Checklist evidence: the value starts with the documented placeholder token "chan
 
 ### [ ] Finding 86 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/wse/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_cluster.py:52:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -440,7 +440,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 87 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/wse/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_cluster.py:56:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -457,7 +457,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 91 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/wse/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_cluster.py:110:7`
 - Checklist pattern: rule is a heuristic for non-daemon workers; threads are daemon
 
@@ -476,7 +476,7 @@ Checklist evidence: every `Thread` construction in the file declares `daemon=Tru
 
 ### [ ] Finding 92 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/wse/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:20:1`
 - Checklist pattern: rule excludes obvious placeholders (`changeme` family)
 
@@ -493,7 +493,7 @@ Checklist evidence: the value starts with the documented placeholder token "chan
 
 ### [ ] Finding 94 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/wse/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:61:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -511,7 +511,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 95 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/wse/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:75:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -528,7 +528,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 96 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/wse/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:82:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -545,7 +545,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 97 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/wse/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:84:21`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -562,7 +562,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 98 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/wse/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:88:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -579,7 +579,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 99 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/wse/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:95:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -596,7 +596,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 100 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/wse/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:104:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -614,7 +614,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 101 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/wse/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:110:21`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -631,7 +631,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 102 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/wse/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:115:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -648,7 +648,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 104 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/wse/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_presence.py:145:11`
 - Checklist pattern: rule is a heuristic for non-daemon workers; thread is daemon
 
@@ -665,7 +665,7 @@ Checklist evidence: the `Thread` construction immediately above the flagged `.st
 
 ### [ ] Finding 105 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/wse/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:26:1`
 - Checklist pattern: rule excludes obvious placeholders (`changeme` family)
 
@@ -682,7 +682,7 @@ Checklist evidence: the value starts with the documented placeholder token "chan
 
 ### [ ] Finding 107 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/107.txt`
+- Function context: `scripts/wse/findings/functions/107.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:54:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -700,7 +700,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 108 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/108.txt`
+- Function context: `scripts/wse/findings/functions/108.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:59:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -716,7 +716,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 110 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/110.txt`
+- Function context: `scripts/wse/findings/functions/110.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:117:29`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -733,7 +733,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 111 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/wse/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:120:17`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -750,7 +750,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 112 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/112.txt`
+- Function context: `scripts/wse/findings/functions/112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:146:13`
 - Checklist pattern: script (CLI) output, not library logging
 
@@ -767,7 +767,7 @@ Checklist evidence: module is a `__main__`-guarded example script; print is on t
 
 ### [ ] Finding 114 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/wse/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_recovery.py:190:7`
 - Checklist pattern: rule is a heuristic for non-daemon workers; threads are daemon
 
@@ -786,7 +786,7 @@ Checklist evidence: every `Thread` construction in the file declares `daemon=Tru
 
 ### [ ] Finding 118 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/118.txt`
+- Function context: `scripts/wse/findings/functions/118.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/python-client/wse_client/__init__.py:10:13`
 - Checklist pattern: print is inside a docstring, not executable code
 
@@ -805,7 +805,7 @@ Checklist evidence: the flagged line is inside a triple-quoted module docstring;
 
 ### [ ] Finding 119 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/119.txt`
+- Function context: `scripts/wse/findings/functions/119.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/python-client/wse_client/__init__.py:80:17`
 - Checklist pattern: print is inside a docstring, not executable code
 
@@ -827,7 +827,7 @@ Checklist evidence: the flagged line is inside a triple-quoted docstring of a li
 
 ### [ ] Finding 120 — CWE-89
 
-- Function context: `./scripts/findings/functions/120.txt`
+- Function context: `scripts/wse/findings/functions/120.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/python-client/wse_client/circuit_breaker.py:77:15`
 - Checklist pattern: no SQL exists; the trigger is a method named `execute`
 
@@ -852,7 +852,7 @@ Checklist evidence: the first "argument" of the matched call is `self` (a method
 
 ### [ ] Finding 122 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/122.txt`
+- Function context: `scripts/wse/findings/functions/122.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/python-client/wse_client/client.py:90:17`
 - Checklist pattern: print is inside a docstring, not executable code
 
@@ -874,7 +874,7 @@ Checklist evidence: the flagged line is inside a triple-quoted docstring of a li
 
 ### [ ] Finding 128 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/128.txt`
+- Function context: `scripts/wse/findings/functions/128.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/python-client/wse_client/client.py:663:17`
 - Checklist pattern: print is inside a docstring, not executable code
 
@@ -895,7 +895,7 @@ Checklist evidence: the flagged line is inside a triple-quoted docstring of a li
 
 ### [ ] Finding 172 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/172.txt`
+- Function context: `scripts/wse/findings/functions/172.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/python-client/wse_client/sync_client.py:53:13`
 - Checklist pattern: print is inside a docstring, not executable code
 
@@ -918,7 +918,7 @@ Checklist evidence: the flagged line is inside a triple-quoted docstring of a li
 
 ### [ ] Finding 197 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/wse/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/tests/conftest.py:13:1`
 - Checklist pattern: rule excludes test fixtures
 
@@ -936,7 +936,7 @@ Checklist evidence: the value is an explicit test fixture literal (`test-...-for
 
 ### [ ] Finding 198 — CWE-1341
 
-- Function context: `./scripts/findings/functions/198.txt`
+- Function context: `scripts/wse/findings/functions/198.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/tests/test_integration.py:134:15`
 - Checklist pattern: two distinct handles, each closed once
 
@@ -1174,6 +1174,6 @@ None — every finding could be classified from the rule condition and the shown
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/wse/chunks`
+- Function evidence: `scripts/wse/findings/functions`
 - Validation: `git diff --check` — pass

@@ -9,24 +9,24 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePe
 branch: main
 commit: 6acbd5b2a67d4499ed17a05ea48cf9aebd3d1da0
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/WeThePeople/chunks
+function_context_path: scripts/WeThePeople/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (binary present as `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/WeThePeople/scripts/chunks -context-dir real-repos/WeThePeople/scripts/findings/functions real-repos/WeThePeople`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/WeThePeople/chunks -context-dir scripts/WeThePeople/findings/functions real-repos/WeThePeople`
 - Findings: `1492`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt` … `./scripts/chunks/Chunk_1476_1492.txt` (60 files)
-- Function contexts reviewed: `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive
+- Chunks reviewed: `scripts/WeThePeople/chunks/Chunk_1_25.txt` … `scripts/WeThePeople/chunks/Chunk_1476_1492.txt` (60 files)
+- Function contexts reviewed: `scripts/WeThePeople/findings/functions/<finding-id>.txt` for every proposed false positive
 
 Note: several rule IDs emitted by the scan (BP-PY-*, CWE-1084, CWE-1121, CWE-1124, CWE-117, CWE-396, CWE-390, CWE-1071, CWE-1341, CWE-93, CWE-94, CWE-88, CWE-1046, CWE-186, CWE-260, CWE-215, CWE-359, CWE-290, CWE-829) are not present in the `-explain` catalogue of the checked-out `./bin/goslop` build (the scan was produced by a newer build). For those rules the decision is based on the rule title/message and the shown source excerpt, as documented per finding.
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/WeThePeople/chunks`.
+- [x] Read `scripts/WeThePeople/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -47,7 +47,7 @@ One subsection per finding (or per exact-same-construct group). All 70 false pos
 
 ### [ ] Finding 2 — CWE-89
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/WeThePeople/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/alembic/versions/20260505_anomaly_dedupe_index.py:52:7`
 - Checklist pattern: `Static SQL literal (no interpolation) reaching execute`
 
@@ -63,7 +63,7 @@ Checklist evidence: Static SQL literal (no interpolation) reaching execute — v
 
 ### [ ] Finding 193 — CWE-1341
 
-- Function context: `./scripts/findings/functions/193.txt`
+- Function context: `scripts/WeThePeople/findings/functions/193.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_company_logos.py:270:13`
 - Checklist pattern: `Single close per control-flow path`
 
@@ -82,7 +82,7 @@ Checklist evidence: Single close per control-flow path — verified against the 
 
 ### [ ] Finding 197 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/WeThePeople/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_company_logos.py:346:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -98,7 +98,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 206 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/206.txt`
+- Function context: `scripts/WeThePeople/findings/functions/206.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_logos_wikidata.py:237:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -114,7 +114,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 216 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/216.txt`
+- Function context: `scripts/WeThePeople/findings/functions/216.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_logos_wikipedia.py:221:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -130,7 +130,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 235 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/WeThePeople/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_sanctions_status.py:380:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -146,7 +146,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 237 — CWE-89
 
-- Function context: `./scripts/findings/functions/237.txt`
+- Function context: `scripts/WeThePeople/findings/functions/237.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_stock_fundamentals.py:68:15`
 - Checklist pattern: `Static SQL with bound parameters reaching execute`
 
@@ -162,7 +162,7 @@ Checklist evidence: Static SQL with bound parameters reaching execute — verifi
 
 ### [ ] Finding 248 — CWE-89
 
-- Function context: `./scripts/findings/functions/248.txt`
+- Function context: `scripts/WeThePeople/findings/functions/248.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/backfill_verification_tier.py:70:19`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -178,7 +178,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 252 — CWE-89
 
-- Function context: `./scripts/findings/functions/252.txt`
+- Function context: `scripts/WeThePeople/findings/functions/252.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/correct_lobby_double_count_stories.py:149:13`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -194,7 +194,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 258 — CWE-909
 
-- Function context: `./scripts/findings/functions/258.txt`
+- Function context: `scripts/WeThePeople/findings/functions/258.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/detect_stories.py:175:38`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -210,7 +210,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 259 — CWE-89
 
-- Function context: `./scripts/findings/functions/259.txt`
+- Function context: `scripts/WeThePeople/findings/functions/259.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/detect_stories.py:198:25`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -226,7 +226,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 378 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/378.txt`
+- Function context: `scripts/WeThePeople/findings/functions/378.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/dump_public_snapshot.py:152:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -242,7 +242,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 386 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/386.txt`
+- Function context: `scripts/WeThePeople/findings/functions/386.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/evaluate_legislative_claims.py:224:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -258,7 +258,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 400 — CWE-186
 
-- Function context: `./scripts/findings/functions/400.txt`
+- Function context: `scripts/WeThePeople/findings/functions/400.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/generate_under_standards.py:314:19`
 - Checklist pattern: `Extraction regex, not a validation regex`
 
@@ -275,7 +275,7 @@ Checklist evidence: Extraction regex, not a validation regex — verified agains
 
 ### [ ] Finding 436 — CWE-89
 
-- Function context: `./scripts/findings/functions/436.txt`
+- Function context: `scripts/WeThePeople/findings/functions/436.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/migrate_add_indexes.py:131:17`
 - Checklist pattern: `Static SQL list executed verbatim`
 
@@ -292,7 +292,7 @@ Checklist evidence: Static SQL list executed verbatim — verified against the s
 
 ### [ ] Finding 484 — CWE-829
 
-- Function context: `./scripts/findings/functions/484.txt`
+- Function context: `scripts/WeThePeople/findings/functions/484.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/rebuild_search_index.py:124:19`
 - Checklist pattern: `Dynamic import fed from a static allowlist`
 
@@ -309,7 +309,7 @@ Checklist evidence: Dynamic import fed from a static allowlist — verified agai
 
 ### [ ] Finding 485 — CWE-94
 
-- Function context: `./scripts/findings/functions/485.txt`
+- Function context: `scripts/WeThePeople/findings/functions/485.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/rebuild_search_index.py:124:19`
 - Checklist pattern: `Dynamic-import sink fed from a static allowlist`
 
@@ -326,7 +326,7 @@ Checklist evidence: Dynamic-import sink fed from a static allowlist — verified
 
 ### [ ] Finding 489 — CWE-89
 
-- Function context: `./scripts/findings/functions/489.txt`
+- Function context: `scripts/WeThePeople/findings/functions/489.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/rebuild_search_index.py:159:15`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -342,7 +342,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 490 — CWE-909
 
-- Function context: `./scripts/findings/functions/490.txt`
+- Function context: `scripts/WeThePeople/findings/functions/490.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/rebuild_search_index.py:163:37`
 - Checklist pattern: `DB resource initialized in enclosing scope`
 
@@ -358,7 +358,7 @@ Checklist evidence: DB resource initialized in enclosing scope — verified agai
 
 ### [ ] Finding 493 — CWE-89
 
-- Function context: `./scripts/findings/functions/493.txt`
+- Function context: `scripts/WeThePeople/findings/functions/493.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/repair_correction_notice_substitution.py:101:13`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -374,7 +374,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 495 — CWE-909
 
-- Function context: `./scripts/findings/functions/495.txt`
+- Function context: `scripts/WeThePeople/findings/functions/495.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/retract_misattributed_stories.py:105:23`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -390,7 +390,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 496 — CWE-89
 
-- Function context: `./scripts/findings/functions/496.txt`
+- Function context: `scripts/WeThePeople/findings/functions/496.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/retract_misattributed_stories.py:108:11`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -406,7 +406,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 511 — CWE-89
 
-- Function context: `./scripts/findings/functions/511.txt`
+- Function context: `scripts/WeThePeople/findings/functions/511.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/run_pipeline.py:77:17`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -422,7 +422,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 515 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/515.txt`
+- Function context: `scripts/WeThePeople/findings/functions/515.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/scheduler.py:731:22`
 - Checklist pattern: `os.open() with explicit fd close, not builtin open()`
 
@@ -438,7 +438,7 @@ Checklist evidence: os.open() with explicit fd close, not builtin open() — ver
 
 ### [ ] Finding 563 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/563.txt`
+- Function context: `scripts/WeThePeople/findings/functions/563.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_agriculture_enforcement.py:246:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -456,7 +456,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 577 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/577.txt`
+- Function context: `scripts/WeThePeople/findings/functions/577.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_chemicals_enforcement.py:246:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -474,7 +474,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 599 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/599.txt`
+- Function context: `scripts/WeThePeople/findings/functions/599.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_defense_enforcement.py:310:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -492,7 +492,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 619 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/619.txt`
+- Function context: `scripts/WeThePeople/findings/functions/619.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_education_enforcement.py:265:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -510,7 +510,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 638 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/638.txt`
+- Function context: `scripts/WeThePeople/findings/functions/638.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_energy_enforcement.py:246:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -528,7 +528,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 648 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/648.txt`
+- Function context: `scripts/WeThePeople/findings/functions/648.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_finance_enforcement.py:249:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -546,7 +546,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 670 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/670.txt`
+- Function context: `scripts/WeThePeople/findings/functions/670.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_health_enforcement.py:246:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -564,7 +564,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 685 — CWE-89
 
-- Function context: `./scripts/findings/functions/685.txt`
+- Function context: `scripts/WeThePeople/findings/functions/685.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_insider_trades.py:284:24`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -580,7 +580,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 762 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/762.txt`
+- Function context: `scripts/WeThePeople/findings/functions/762.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_telecom_enforcement.py:265:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -598,7 +598,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 764 — CWE-186
 
-- Function context: `./scripts/findings/functions/764.txt`
+- Function context: `scripts/WeThePeople/findings/functions/764.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_trades_from_disclosures.py:71:17`
 - Checklist pattern: `Extraction regex, not a validation regex`
 
@@ -614,7 +614,7 @@ Checklist evidence: Extraction regex, not a validation regex — verified agains
 
 ### [ ] Finding 790 — BP-PY-36
 
-- Function context: `./scripts/findings/functions/790.txt`
+- Function context: `scripts/WeThePeople/findings/functions/790.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/sync_transportation_enforcement.py:318:1`
 - Checklist pattern: `Session explicitly closed before exit`
 
@@ -632,7 +632,7 @@ Checklist evidence: Session explicitly closed before exit — verified against t
 
 ### [ ] Finding 872 — CWE-93
 
-- Function context: `./scripts/findings/functions/872.txt`
+- Function context: `scripts/WeThePeople/findings/functions/872.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/middleware/rate_limit_headers.py:71:17`
 - Checklist pattern: `Static header value (no dynamic input)`
 
@@ -648,7 +648,7 @@ Checklist evidence: Static header value (no dynamic input) — verified against 
 
 ### [ ] Finding 873 — CWE-93
 
-- Function context: `./scripts/findings/functions/873.txt`
+- Function context: `scripts/WeThePeople/findings/functions/873.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/middleware/security.py:121:17`
 - Checklist pattern: `Static header value (no dynamic input)`
 
@@ -664,7 +664,7 @@ Checklist evidence: Static header value (no dynamic input) — verified against 
 
 ### [ ] Finding 895 — BP-PY-14
 
-- Function context: `./scripts/findings/functions/895.txt`
+- Function context: `scripts/WeThePeople/findings/functions/895.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/auth.py:1314:23`
 - Checklist pattern: `No requests call at the flagged site`
 
@@ -680,7 +680,7 @@ Checklist evidence: No requests call at the flagged site — verified against th
 
 ### [ ] Finding 896 — BP-PY-14
 
-- Function context: `./scripts/findings/functions/896.txt`
+- Function context: `scripts/WeThePeople/findings/functions/896.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/auth.py:1314:61`
 - Checklist pattern: `No requests call at the flagged site`
 
@@ -696,7 +696,7 @@ Checklist evidence: No requests call at the flagged site — verified against th
 
 ### [ ] Finding 897 — BP-PY-14
 
-- Function context: `./scripts/findings/functions/897.txt`
+- Function context: `scripts/WeThePeople/findings/functions/897.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/auth.py:1320:17`
 - Checklist pattern: `No requests call at the flagged site`
 
@@ -714,7 +714,7 @@ Checklist evidence: No requests call at the flagged site — verified against th
 
 ### [ ] Finding 899 — BP-PY-14
 
-- Function context: `./scripts/findings/functions/899.txt`
+- Function context: `scripts/WeThePeople/findings/functions/899.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/auth.py:1333:50`
 - Checklist pattern: `No requests call at the flagged site`
 
@@ -731,7 +731,7 @@ Checklist evidence: No requests call at the flagged site — verified against th
 
 ### [ ] Finding 905 — CWE-909
 
-- Function context: `./scripts/findings/functions/905.txt`
+- Function context: `scripts/WeThePeople/findings/functions/905.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/civic.py:121:67`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -747,7 +747,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 906 — CWE-89
 
-- Function context: `./scripts/findings/functions/906.txt`
+- Function context: `scripts/WeThePeople/findings/functions/906.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/civic.py:149:15`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -763,7 +763,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 912 — CWE-1121
 
-- Function context: `./scripts/findings/functions/912.txt`
+- Function context: `scripts/WeThePeople/findings/functions/912.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/civic.py:188:67`
 - Checklist pattern: `Branch count below the ≥12 threshold`
 
@@ -785,7 +785,7 @@ Checklist evidence: Branch count below the ≥12 threshold — verified against 
 
 ### [ ] Finding 924 — CWE-909
 
-- Function context: `./scripts/findings/functions/924.txt`
+- Function context: `scripts/WeThePeople/findings/functions/924.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/common.py:54:49`
 - Checklist pattern: `DB resource provided by dependency injection`
 
@@ -801,7 +801,7 @@ Checklist evidence: DB resource provided by dependency injection — verified ag
 
 ### [ ] Finding 925 — CWE-89
 
-- Function context: `./scripts/findings/functions/925.txt`
+- Function context: `scripts/WeThePeople/findings/functions/925.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/common.py:67:11`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -817,7 +817,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 969 — CWE-88
 
-- Function context: `./scripts/findings/functions/969.txt`
+- Function context: `scripts/WeThePeople/findings/functions/969.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/ops.py:325:20`
 - Checklist pattern: `Subprocess argv from static registry with existence check`
 
@@ -834,7 +834,7 @@ Checklist evidence: Subprocess argv from static registry with existence check �
 
 ### [ ] Finding 974 — CWE-909
 
-- Function context: `./scripts/findings/functions/974.txt`
+- Function context: `scripts/WeThePeople/findings/functions/974.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/ops.py:379:53`
 - Checklist pattern: `DB resource provided by dependency injection`
 
@@ -850,7 +850,7 @@ Checklist evidence: DB resource provided by dependency injection — verified ag
 
 ### [ ] Finding 1033 — CWE-89
 
-- Function context: `./scripts/findings/functions/1033.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1033.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/search.py:84:18`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -866,7 +866,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 1059 — CWE-186
 
-- Function context: `./scripts/findings/functions/1059.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1059.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/audit_published_stories.py:96:9`
 - Checklist pattern: `Extraction regex, not a validation regex`
 
@@ -882,7 +882,7 @@ Checklist evidence: Extraction regex, not a validation regex — verified agains
 
 ### [ ] Finding 1071 — CWE-215
 
-- Function context: `./scripts/findings/functions/1071.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1071.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/diagnose_uspto_odp.py:87:5`
 - Checklist pattern: `Sensitive value already masked before logging`
 
@@ -899,7 +899,7 @@ Checklist evidence: Sensitive value already masked before logging — verified a
 
 ### [ ] Finding 1076 — CWE-909
 
-- Function context: `./scripts/findings/functions/1076.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1076.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/enrich_stories_with_lobbying_issues.py:71:49`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -915,7 +915,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 1093 — PERF-PY-28
 
-- Function context: `./scripts/findings/functions/1093.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1093.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/exhaustive_profile_audit.py:291:28`
 - Checklist pattern: `Executor created once per run, not per unit of work`
 
@@ -932,7 +932,7 @@ Checklist evidence: Executor created once per run, not per unit of work — veri
 
 ### [ ] Finding 1094 — PERF-PY-28
 
-- Function context: `./scripts/findings/functions/1094.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1094.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/exhaustive_profile_audit.py:301:28`
 - Checklist pattern: `Executor created once per run, not per unit of work`
 
@@ -949,7 +949,7 @@ Checklist evidence: Executor created once per run, not per unit of work — veri
 
 ### [ ] Finding 1096 — CWE-909
 
-- Function context: `./scripts/findings/functions/1096.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1096.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/fix_finance_audit_20260417.py:115:25`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -965,7 +965,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 1097 — CWE-89
 
-- Function context: `./scripts/findings/functions/1097.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1097.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/fix_finance_audit_20260417.py:116:14`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -981,7 +981,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 1112 — CWE-909
 
-- Function context: `./scripts/findings/functions/1112.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/generate_lobbying_breakdown_stories.py:163:52`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -997,7 +997,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 1160 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/1160.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1160.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/generate_retraction_patches.py:174:1`
 - Checklist pattern: `No expensive decode/parse at the flagged site`
 
@@ -1013,7 +1013,7 @@ Checklist evidence: No expensive decode/parse at the flagged site — verified a
 
 ### [ ] Finding 1164 — CWE-909
 
-- Function context: `./scripts/findings/functions/1164.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1164.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/generate_tech_stories.py:68:26`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -1029,7 +1029,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 1165 — CWE-89
 
-- Function context: `./scripts/findings/functions/1165.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1165.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/generate_tech_stories.py:73:23`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -1046,7 +1046,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 1206 — CWE-909
 
-- Function context: `./scripts/findings/functions/1206.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1206.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/remediate_published_stories.py:107:63`
 - Checklist pattern: `DB resource injected as a parameter`
 
@@ -1062,7 +1062,7 @@ Checklist evidence: DB resource injected as a parameter — verified against the
 
 ### [ ] Finding 1279 — CWE-290
 
-- Function context: `./scripts/findings/functions/1279.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1279.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/services/auth.py:81:21`
 - Checklist pattern: `Header gated behind trusted-proxy network check`
 
@@ -1080,7 +1080,7 @@ Checklist evidence: Header gated behind trusted-proxy network check — verified
 
 ### [ ] Finding 1359 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/1359.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1359.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/services/privacy.py:340:6`
 - Checklist pattern: `Sentinel literal, not a real secret`
 
@@ -1096,7 +1096,7 @@ Checklist evidence: Sentinel literal, not a real secret — verified against the
 
 ### [ ] Finding 1377 — CWE-89
 
-- Function context: `./scripts/findings/functions/1377.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1377.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/services/research_pipeline/dedup_gate.py:81:14`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -1112,7 +1112,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 1413 — CWE-89
 
-- Function context: `./scripts/findings/functions/1413.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1413.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/services/research_pipeline/rotating_selector.py:71:14`
 - Checklist pattern: `Static SQL with bind parameters reaching execute`
 
@@ -1128,7 +1128,7 @@ Checklist evidence: Static SQL with bind parameters reaching execute — verifie
 
 ### [ ] Finding 1455 — CWE-186
 
-- Function context: `./scripts/findings/functions/1455.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1455.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/services/story_validators.py:136:11`
 - Checklist pattern: `Extraction regex, not a validation regex`
 
@@ -1144,7 +1144,7 @@ Checklist evidence: Extraction regex, not a validation regex — verified agains
 
 ### [ ] Finding 1460 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/1460.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1460.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/tests/chaos/test_db_resilience.py:43:1`
 - Checklist pattern: `Fixture, not a test function`
 
@@ -1161,7 +1161,7 @@ Checklist evidence: Fixture, not a test function — verified against the shown 
 
 ### [ ] Finding 1470 — CWE-89
 
-- Function context: `./scripts/findings/functions/1470.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1470.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/tests/performance/query_analysis.py:264:17`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -1177,7 +1177,7 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ### [ ] Finding 1473 — CWE-260
 
-- Function context: `./scripts/findings/functions/1473.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1473.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/tests/test_auth.py:8:9`
 - Checklist pattern: `Test fixture literal, not a configuration credential`
 
@@ -1195,7 +1195,7 @@ Checklist evidence: Test fixture literal, not a configuration credential — ver
 
 ### [ ] Finding 1474 — CWE-89
 
-- Function context: `./scripts/findings/functions/1474.txt`
+- Function context: `scripts/WeThePeople/findings/functions/1474.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/utils/db_compat.py:158:19`
 - Checklist pattern: `Static SQL literal reaching execute`
 
@@ -2801,6 +2801,6 @@ None. Former uncertain CWE-1084 findings (174, 285, 440, 451, 977, 1110, 1174, 1
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks` (60 chunk files, findings 1–1492)
-- Function evidence: `./scripts/findings/functions` (1492 context files)
+- Chunk evidence: `scripts/WeThePeople/chunks` (60 chunk files, findings 1–1492)
+- Function evidence: `scripts/WeThePeople/findings/functions` (1492 context files)
 - Validation: `git diff --check` — pass

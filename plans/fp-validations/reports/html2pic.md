@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pi
 branch: main
 commit: 27c292f1f2afd8975b9cb58470b9e7469df52dad
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/html2pic/chunks
+function_context_path: scripts/html2pic/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `(pre-built) ./bin/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/html2pic/scripts/chunks -context-dir real-repos/html2pic/scripts/findings/functions real-repos/html2pic`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/html2pic/chunks -context-dir scripts/html2pic/findings/functions real-repos/html2pic`
 - Findings: `36`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_36.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/36.txt` (all 36)
+- Chunks reviewed: `scripts/html2pic/chunks/Chunk_1_25.txt`, `scripts/html2pic/chunks/Chunk_26_36.txt`
+- Function contexts reviewed: `scripts/html2pic/findings/functions/1.txt` .. `scripts/html2pic/findings/functions/36.txt` (all 36)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/html2pic/chunks`.
+- [x] Read `scripts/html2pic/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -48,7 +48,7 @@ hidden — the weakness the rule describes does not occur.
 
 ### [ ] Finding `6` — CWE-396
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/html2pic/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic/src/html2pic/html2pic.py:87:1`
 - Checklist pattern: generic handler suite propagates the exception (wrapped, `from e`), so no failure condition is hidden
 
@@ -71,7 +71,7 @@ Checklist evidence: The rule's message is "generic Exception or BaseException ha
 
 ### [ ] Finding `7` — CWE-396
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/html2pic/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic/src/html2pic/parsing/css_parser.py:56:1`
 - Checklist pattern: generic handler suite re-raises as a domain error with the original exception chained, so no failure condition is hidden
 
@@ -93,7 +93,7 @@ Checklist evidence: CWE-396's condition is that the generic handler "can hide di
 
 ### [ ] Finding `10` — CWE-396
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/html2pic/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic/src/html2pic/parsing/html_parser.py:24:1`
 - Checklist pattern: generic handler suite re-raises as a domain error with the original exception chained, so no failure condition is hidden
 
@@ -113,7 +113,7 @@ Checklist evidence: Same as finding 7 — the suite re-raises with `from e`, so 
 
 ### [ ] Finding `32` — CWE-396
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/html2pic/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic/src/html2pic/translation/translator.py:49:1`
 - Checklist pattern: generic handler suite re-raises as a domain error with the original exception chained, so no failure condition is hidden
 
@@ -208,6 +208,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/html2pic/chunks`
+- Function evidence: `scripts/html2pic/findings/functions`
 - Validation: `git diff --check` — pass

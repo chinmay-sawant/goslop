@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz
 branch: main
 commit: d558933ec3a9c9ee826eb8de665b6e5d229ebecb
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/astroz/chunks
+function_context_path: scripts/astroz/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/astroz/scripts/chunks -context-dir real-repos/astroz/scripts/findings/functions real-repos/astroz`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/astroz/chunks -context-dir scripts/astroz/findings/functions real-repos/astroz`
 - Findings: `21`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_21.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/21.txt` (all 21)
+- Chunks reviewed: `scripts/astroz/chunks/Chunk_1_21.txt`
+- Function contexts reviewed: `scripts/astroz/findings/functions/1.txt` .. `scripts/astroz/findings/functions/21.txt` (all 21)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/astroz/chunks`.
+- [x] Read `scripts/astroz/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `5` — `CWE-772`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/astroz/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/benchmarks/sgp4_compat_test.py:81:1`
 - Checklist pattern: the URL response is not assigned to a variable — the assignment binds a string, so no unclosed resource handle exists
 
@@ -61,7 +61,7 @@ Checklist evidence: the regex trigger `\w+ = urllib\.request\.urlopen(` matched 
 
 ### [ ] Finding `6` — `BP-PY-42`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/astroz/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/benchmarks/sgp4_compat_test.py:103:1`
 - Checklist pattern: rule condition not satisfied — the try/except is tolerant data filtering, not an expect-failure assertion
 
@@ -85,7 +85,7 @@ Checklist evidence: the except suite is `pass` inside a data-loading loop — th
 
 ### [ ] Finding `13` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/astroz/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/bindings/python/astroz/__init__.py:598:9`
 - Checklist pattern: `print(` token inside a docstring doctest example, not executable code
 
@@ -112,7 +112,7 @@ Checklist evidence: BP-PY-46's condition is `print` in executable non-script cod
 
 ### [ ] Finding `14` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/astroz/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/bindings/python/setup.py:49:9`
 - Checklist pattern: `print` in a packaging script, not in a library module
 
@@ -131,7 +131,7 @@ Checklist evidence: `setup.py` is a setup/packaging script whose prints are its 
 
 ### [ ] Finding `15` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/astroz/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/bindings/python/setup.py:90:9`
 - Checklist pattern: `print` in a packaging script, not in a library module
 
@@ -152,7 +152,7 @@ Checklist evidence: `setup.py` is a packaging script (not library code), so the 
 
 ### [ ] Finding `21` — `PERF-PY-25`
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/astroz/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/examples/conjunction_screening.py:56:1`
 - Checklist pattern: the lambda is constructed once per `sorted()` call, not once per loop element
 
@@ -231,6 +231,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/astroz/chunks`
+- Function evidence: `scripts/astroz/findings/functions`
 - Validation: `git diff --check` — pass

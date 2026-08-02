@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer
 branch: main
 commit: eae83f7df824752540ad1e67d50099e13c86a647
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/safer/chunks
+function_context_path: scripts/safer/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/safer/scripts/chunks -context-dir real-repos/safer/scripts/findings/functions real-repos/safer`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/safer/chunks -context-dir scripts/safer/findings/functions real-repos/safer`
 - Findings: `40`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_40.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/40.txt` (all 40)
+- Chunks reviewed: `scripts/safer/chunks/Chunk_1_25.txt`, `scripts/safer/chunks/Chunk_26_40.txt`
+- Function contexts reviewed: `scripts/safer/findings/functions/1.txt` .. `scripts/safer/findings/functions/40.txt` (all 40)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/safer/chunks`.
+- [x] Read `scripts/safer/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding 1 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/safer/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:6:30`
 - Checklist pattern: `open(` token inside module docstring prose, not a call
 
@@ -62,7 +62,7 @@ Checklist evidence: The rule fires on the substring `open(` on a line without `w
 
 ### [ ] Finding 2 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/safer/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:16:9`
 - Checklist pattern: `print(` token inside module docstring example code, not executable
 
@@ -83,7 +83,7 @@ Checklist evidence: The `print(` occurs in a code sample embedded in the module 
 
 ### [ ] Finding 3 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/safer/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:51:9`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -103,7 +103,7 @@ Checklist evidence: `open(` appears in docstring prose; the rule requires an `op
 
 ### [ ] Finding 4 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/safer/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:61:30`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -122,7 +122,7 @@ Checklist evidence: Same as finding 3 — the `open(` token is inside the module
 
 ### [ ] Finding 5 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/safer/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:67:29`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -141,7 +141,7 @@ Checklist evidence: `open(` is inside the module docstring; no executable `open(
 
 ### [ ] Finding 6 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/safer/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:87:1`
 - Checklist pattern: `except Exception:` token inside module docstring example, not code
 
@@ -164,7 +164,7 @@ Checklist evidence: The flagged `except Exception:` line is text inside the modu
 
 ### [ ] Finding 7 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/safer/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:97:1`
 - Checklist pattern: `except Exception:` token inside module docstring example, not code
 
@@ -186,7 +186,7 @@ Checklist evidence: Same as finding 6 — the `except Exception:` line is docstr
 
 ### [ ] Finding 8 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/safer/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:102:7`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -205,7 +205,7 @@ Checklist evidence: `open(` appears in the module docstring; the rule's call con
 
 ### [ ] Finding 9 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/safer/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:117:7`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -224,7 +224,7 @@ Checklist evidence: `open(` is inside the module docstring; no executable `open`
 
 ### [ ] Finding 10 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/safer/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:129:39`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -243,7 +243,7 @@ Checklist evidence: `open(` occurs inside the module docstring; the rule's call 
 
 ### [ ] Finding 11 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/safer/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:132:12`
 - Checklist pattern: `open(` token inside module docstring prose
 
@@ -262,7 +262,7 @@ Checklist evidence: `open(` is inside the module docstring; no executable `open`
 
 ### [ ] Finding 12 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/safer/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:139:13`
 - Checklist pattern: `print(` token inside module docstring example, not code
 
@@ -283,7 +283,7 @@ Checklist evidence: `print(` occurs in docstring example text (module docstring 
 
 ### [ ] Finding 13 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/safer/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:146:13`
 - Checklist pattern: `print(` token inside module docstring example, not code
 
@@ -304,7 +304,7 @@ Checklist evidence: Same as finding 12 — the `print(` is docstring example tex
 
 ### [ ] Finding 14 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/safer/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:225:16`
 - Checklist pattern: the flagged `open(` call targets the module's own `open` (proven by non-builtin kwargs) and its return value is returned to the caller
 
@@ -327,7 +327,7 @@ Checklist evidence: The rule flags any `open(` outside `with`, but the shown sou
 
 ### [ ] Finding 15 — CWE-396
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/safer/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:312:1`
 - Checklist pattern: generic handler suite re-raises, so no failure condition is hidden
 
@@ -346,7 +346,7 @@ Checklist evidence: CWE-396's message is "generic Exception handler can hide dis
 
 ### [ ] Finding 16 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/safer/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:323:5`
 - Checklist pattern: `open(` token is a `def` statement, not a call
 
@@ -365,7 +365,7 @@ Checklist evidence: BP-PY-7 flags `open(` outside `with`, but the token is a fun
 
 ### [ ] Finding 17 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/safer/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:358:20`
 - Checklist pattern: `open(` token inside `safer.open` docstring prose
 
@@ -384,7 +384,7 @@ Checklist evidence: `open(` is inside a docstring; no executable `open` call exi
 
 ### [ ] Finding 18 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/safer/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:360:59`
 - Checklist pattern: `open(` token inside `safer.open` docstring prose
 
@@ -403,7 +403,7 @@ Checklist evidence: `open(` is inside a docstring; no executable call exists.
 
 ### [ ] Finding 19 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/safer/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:362:11`
 - Checklist pattern: `open(` token inside `safer.open` docstring prose
 
@@ -422,7 +422,7 @@ Checklist evidence: `open(` is inside a docstring; no executable `open` call exi
 
 ### [ ] Finding 20 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/safer/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:368:40`
 - Checklist pattern: `open(` token inside `safer.open` docstring prose
 
@@ -441,7 +441,7 @@ Checklist evidence: `open(` is inside a docstring; no executable `open` call exi
 
 ### [ ] Finding 21 — CWE-367
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/safer/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:402:12`
 - Checklist pattern: benign directory pre-check; the matched "use" token is a substring artifact, not a use of the checked path
 
@@ -465,7 +465,7 @@ Checklist evidence: CWE-367's regex requires a path existence check followed by 
 
 ### [ ] Finding 24 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/safer/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:554:25`
 - Checklist pattern: `open(` token inside `printer` docstring prose
 
@@ -484,7 +484,7 @@ Checklist evidence: `open(` is inside a docstring; no executable `open` call exi
 
 ### [ ] Finding 26 — CWE-459
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/safer/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:621:29`
 - Checklist pattern: temp-file cleanup exists in the owning class's lifecycle methods, so the file does not persist
 
@@ -516,7 +516,7 @@ Checklist evidence: CWE-459's condition is "persistent temporary file has no sam
 
 ### [ ] Finding 28 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/safer/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_dump.py:25:1`
 - Checklist pattern: the test delegates to a same-file helper that performs assertions
 
@@ -541,7 +541,7 @@ Checklist evidence: BP-PY-41's condition is "test function performs side effects
 
 ### [ ] Finding 29 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/safer/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_dump.py:28:1`
 - Checklist pattern: the test delegates to a same-file helper that performs assertions
 
@@ -564,7 +564,7 @@ Checklist evidence: Same as finding 28 — the delegated helper performs the ass
 
 ### [ ] Finding 30 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/safer/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_dump.py:34:1`
 - Checklist pattern: the test delegates to a same-file helper that performs assertions
 
@@ -588,7 +588,7 @@ Checklist evidence: Same as finding 28 — the delegated helper performs the ass
 
 ### [ ] Finding 32 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/safer/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_files.py:28:19`
 - Checklist pattern: the opened stream is explicitly closed in the same function
 
@@ -608,7 +608,7 @@ Checklist evidence: The rule's condition is "open without `with` risks resource 
 
 ### [ ] Finding 33 — CWE-367
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/safer/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_files.py:47:20`
 - Checklist pattern: test assertion on a local fixture path; the later "use" operates on a different path
 
@@ -629,7 +629,7 @@ Checklist evidence: CWE-367's condition requires a check followed by a use of th
 
 ### [ ] Finding 34 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/safer/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_files.py:97:18`
 - Checklist pattern: the call always raises before creating any stream, so no resource exists
 
@@ -646,7 +646,7 @@ Checklist evidence: The rule's leak condition requires an opened resource; the s
 
 ### [ ] Finding 35 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/safer/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_files.py:109:18`
 - Checklist pattern: the call always raises before creating any stream, so no resource exists
 
@@ -665,7 +665,7 @@ Checklist evidence: The rule's leak condition requires an opened resource; the s
 
 ### [ ] Finding 37 — CWE-367
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/safer/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_open.py:193:16`
 - Checklist pattern: test assertion after a completed write; no trust boundary
 
@@ -683,7 +683,7 @@ Checklist evidence: CWE-367's condition requires a trust-boundary check followed
 
 ### [ ] Finding 39 — CWE-772
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/safer/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_writer.py:191:1`
 - Checklist pattern: the assigned resource is released by a context-manager in the same function
 
@@ -701,7 +701,7 @@ Checklist evidence: CWE-772's condition is "resource assigned without a same-fun
 
 ### [ ] Finding 40 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/40.txt`
+- Function context: `scripts/safer/findings/functions/40.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_writer.py:192:10`
 - Checklist pattern: the opened stream is released by the writer wrapper in the next line
 
@@ -763,6 +763,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/safer/chunks`
+- Function evidence: `scripts/safer/findings/functions`
 - Validation: `git diff --check` — pass

@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxi
 branch: main
 commit: 10b87f153200cd5c4d4a4defee471757091e6559
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pdf_oxide/chunks
+function_context_path: scripts/pdf_oxide/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `cargo build --release` (prebuilt `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pdf_oxide/scripts/chunks -context-dir real-repos/pdf_oxide/scripts/findings/functions real-repos/pdf_oxide`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pdf_oxide/chunks -context-dir scripts/pdf_oxide/findings/functions real-repos/pdf_oxide`
 - Findings: `636`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt .. Chunk_626_636.txt` (all 26 chunk files)
-- Function contexts reviewed: `./scripts/findings/functions/<finding-id>.txt` for every false positive and for the uncertain finding; enclosing source read where the exported context was insufficient (findings 19, 20, 141, 142, 144, 150, 276, 291, 403, 464, 488, 510, 562, 572, 592, 601, 604, 607, 632)
+- Chunks reviewed: `scripts/pdf_oxide/chunks/Chunk_1_25.txt .. Chunk_626_636.txt` (all 26 chunk files)
+- Function contexts reviewed: `scripts/pdf_oxide/findings/functions/<finding-id>.txt` for every false positive and for the uncertain finding; enclosing source read where the exported context was insufficient (findings 19, 20, 141, 142, 144, 150, 276, 291, 403, 464, 488, 510, 562, 572, 592, 601, 604, 607, 632)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pdf_oxide/chunks`.
+- [x] Read `scripts/pdf_oxide/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ One subsection per finding. Each excerpt is the smallest source excerpt proving 
 
 ### [ ] Finding 6 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/03-create-pdf/main.py:23:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -62,7 +62,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 7 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/03-create-pdf/main.py:34:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -79,7 +79,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 8 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/03-create-pdf/main.py:40:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -96,7 +96,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 9 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/03-create-pdf/main.py:42:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -113,7 +113,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 10 — PERF-PY-28
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/08-batch-processing/main.py:31:21`
 - Checklist pattern: `not per unit of work — executor created once per batch/object lifetime`
 
@@ -130,7 +130,7 @@ Checklist evidence: not per unit of work — executor created once per batch/obj
 
 ### [ ] Finding 13 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/image_embedding/main.py:196:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -147,7 +147,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 14 — BP-PY-6
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/image_embedding/main.py:197:1`
 - Checklist pattern: `not input/security validation — assert on own-output sanity check in an example`
 
@@ -164,7 +164,7 @@ Checklist evidence: not input/security validation — assert on own-output sanit
 
 ### [ ] Finding 15 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/image_embedding/main.py:198:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -181,7 +181,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 16 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/ocr_scanned_pdf/main.py:76:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -198,7 +198,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 17 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/ocr_scanned_pdf/main.py:78:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -215,7 +215,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 18 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/ocr_scanned_pdf/main.py:79:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -232,7 +232,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 19 — CWE-22
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/office_conversion/main.py:37:10`
 - Checklist pattern: `constant path — no external input reaches the open() sink`
 
@@ -249,7 +249,7 @@ Checklist evidence: constant path — no external input reaches the open() sink 
 
 ### [ ] Finding 28 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/python/pdf_oxide/_async.py:23:37`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -266,7 +266,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 29 — PERF-PY-28
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/python/pdf_oxide/_async.py:118:36`
 - Checklist pattern: `not per unit of work — executor created once per batch/object lifetime`
 
@@ -283,7 +283,7 @@ Checklist evidence: not per unit of work — executor created once per batch/obj
 
 ### [ ] Finding 30 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/python/pdf_oxide/_async.py:123:15`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -300,7 +300,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 44 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:18:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -317,7 +317,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 45 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:19:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -334,7 +334,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 46 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:20:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -351,7 +351,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 47 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:29:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -368,7 +368,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 48 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:39:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -385,7 +385,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 49 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:40:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -402,7 +402,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 50 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:41:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -419,7 +419,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 51 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:42:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -436,7 +436,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 52 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:44:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -453,7 +453,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 53 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/53.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:45:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -470,7 +470,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 54 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:48:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -487,7 +487,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 55 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:51:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -504,7 +504,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 56 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:56:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -521,7 +521,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 57 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:57:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -538,7 +538,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 58 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:58:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -555,7 +555,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 59 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:77:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -572,7 +572,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 60 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:78:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -589,7 +589,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 61 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:79:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -606,7 +606,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 62 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:80:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -623,7 +623,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 63 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:96:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -640,7 +640,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 64 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:97:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -657,7 +657,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 65 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:98:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -674,7 +674,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 66 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:99:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -691,7 +691,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 67 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:103:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -708,7 +708,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 68 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:118:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -725,7 +725,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 69 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:125:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -742,7 +742,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 70 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/70.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/70.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:126:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -759,7 +759,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 71 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:151:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -776,7 +776,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 72 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:153:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -793,7 +793,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 73 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:154:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -810,7 +810,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 74 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:157:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -827,7 +827,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 75 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:158:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -844,7 +844,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 76 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:159:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -861,7 +861,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 77 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:164:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -878,7 +878,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 78 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:165:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -895,7 +895,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 79 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:166:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -912,7 +912,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 80 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:167:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -929,7 +929,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 81 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:169:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -946,7 +946,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 82 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:170:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -963,7 +963,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 83 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:171:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -980,7 +980,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 84 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:172:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -997,7 +997,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 85 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:173:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1014,7 +1014,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 86 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:175:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1031,7 +1031,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 87 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:176:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1048,7 +1048,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 88 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:177:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1065,7 +1065,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 89 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:178:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1082,7 +1082,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 90 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_layout.py:179:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1099,7 +1099,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 91 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:23:15`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -1116,7 +1116,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 92 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:27:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1133,7 +1133,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 93 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:28:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1150,7 +1150,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 94 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:29:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1167,7 +1167,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 95 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:34:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1184,7 +1184,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 96 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:38:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1201,7 +1201,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 97 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:39:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1218,7 +1218,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 98 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:40:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1235,7 +1235,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 99 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:41:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1252,7 +1252,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 100 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:44:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1269,7 +1269,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 101 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:45:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1286,7 +1286,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 102 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:46:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1303,7 +1303,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 103 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:49:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1320,7 +1320,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 104 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:50:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1337,7 +1337,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 105 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:51:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1354,7 +1354,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 106 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/106.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/106.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:52:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1371,7 +1371,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 107 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/107.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/107.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:53:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1388,7 +1388,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 108 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/108.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/108.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:54:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1405,7 +1405,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 109 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/109.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/109.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:63:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1422,7 +1422,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 110 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/110.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/110.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:64:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1439,7 +1439,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 111 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:65:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1456,7 +1456,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 112 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/112.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:71:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1473,7 +1473,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 114 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:75:29`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1490,7 +1490,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 115 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/115.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/115.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:78:33`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1507,7 +1507,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 116 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/116.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/116.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:80:33`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1524,7 +1524,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 117 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/117.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/117.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:87:15`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -1541,7 +1541,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 118 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/118.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/118.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:90:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1558,7 +1558,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 119 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/119.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/119.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:91:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1575,7 +1575,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 120 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/120.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/120.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:92:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1592,7 +1592,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 121 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/121.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/121.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:99:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1609,7 +1609,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 122 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/122.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/122.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:101:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1626,7 +1626,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 123 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/123.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/123.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:104:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1643,7 +1643,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 124 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/124.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/124.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:112:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1660,7 +1660,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 125 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/125.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/125.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:117:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1677,7 +1677,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 126 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/126.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/126.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:121:29`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1694,7 +1694,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 127 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/127.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/127.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:122:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1711,7 +1711,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 130 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/130.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/130.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/analyze_pdf_spacing.py:155:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1728,7 +1728,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 137 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/137.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/137.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/bench_pymupdf.py:47:18`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -1745,7 +1745,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 138 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/138.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/138.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/bench_pymupdf.py:65:1`
 - Checklist pattern: `not a hot path — one-time CLI parse at startup`
 
@@ -1762,7 +1762,7 @@ Checklist evidence: not a hot path — one-time CLI parse at startup — `parser
 
 ### [ ] Finding 141 — CWE-829
 
-- Function context: `./scripts/findings/functions/141.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/141.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/benchmark_all_libraries.py:50:13`
 - Checklist pattern: `no untrusted source — module names are hardcoded literals in the source`
 
@@ -1779,7 +1779,7 @@ Checklist evidence: no untrusted source — module names are hardcoded literals 
 
 ### [ ] Finding 142 — CWE-94
 
-- Function context: `./scripts/findings/functions/142.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/142.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/benchmark_all_libraries.py:50:13`
 - Checklist pattern: `no untrusted source — module names are hardcoded literals in the source`
 
@@ -1796,7 +1796,7 @@ Checklist evidence: no untrusted source — module names are hardcoded literals 
 
 ### [ ] Finding 143 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/143.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/143.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/benchmark_all_libraries.py:87:15`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -1813,7 +1813,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 144 — CWE-1341
 
-- Function context: `./scripts/findings/functions/144.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/144.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/benchmark_all_libraries.py:239:9`
 - Checklist pattern: `distinct handles — two different objects are closed, no double release`
 
@@ -1830,7 +1830,7 @@ Checklist evidence: distinct handles — two different objects are closed, no do
 
 ### [ ] Finding 149 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/149.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/149.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:25:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1847,7 +1847,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 150 — CWE-88
 
-- Function context: `./scripts/findings/functions/150.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/150.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:26:5`
 - Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
 
@@ -1864,7 +1864,7 @@ Checklist evidence: no externally influenced input — fixed literals / internal
 
 ### [ ] Finding 151 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/151.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/151.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:33:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1881,7 +1881,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 152 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/152.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/152.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:54:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1898,7 +1898,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 153 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/153.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/153.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:75:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1915,7 +1915,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 155 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/155.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/155.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:85:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1932,7 +1932,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 158 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/158.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/158.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:88:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1949,7 +1949,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 160 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/160.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/160.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:91:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1966,7 +1966,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 161 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/161.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/161.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:99:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -1983,7 +1983,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 162 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/162.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/162.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:125:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2000,7 +2000,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 163 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/163.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/163.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:156:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2017,7 +2017,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 164 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/164.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/164.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:165:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2034,7 +2034,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 166 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/166.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/166.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:168:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2051,7 +2051,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 168 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/168.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/168.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:172:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2068,7 +2068,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 169 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/169.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/169.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:180:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2085,7 +2085,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 170 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/170.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/170.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:201:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2102,7 +2102,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 171 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/171.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/171.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:226:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2119,7 +2119,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 172 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/172.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/172.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:235:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2136,7 +2136,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 174 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/174.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/174.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:238:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2153,7 +2153,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 176 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/176.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/176.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/browser_download_pdfs.py:242:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2170,7 +2170,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 177 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/177.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/177.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:14:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2187,7 +2187,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 178 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/178.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/178.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:15:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2204,7 +2204,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 179 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/179.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/179.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:16:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2221,7 +2221,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 180 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/180.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/180.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:24:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2238,7 +2238,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 181 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/181.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/181.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:32:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2255,7 +2255,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 182 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/182.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/182.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:36:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2272,7 +2272,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 183 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/183.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/183.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:38:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2289,7 +2289,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 184 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/184.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/184.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:40:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2306,7 +2306,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 185 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/185.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/185.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:44:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2323,7 +2323,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 186 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/186.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/186.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:46:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2340,7 +2340,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 187 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/187.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/187.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:52:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2357,7 +2357,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 188 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/188.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/188.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:54:25`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2374,7 +2374,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 189 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/189.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/189.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:58:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2391,7 +2391,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 190 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/190.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/190.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:62:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2408,7 +2408,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 193 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/193.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/193.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_pdf_structure.py:66:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2425,7 +2425,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 195 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/195.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/195.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:8:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2442,7 +2442,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 196 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/196.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/196.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:9:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2459,7 +2459,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 197 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:10:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2476,7 +2476,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 198 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/198.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/198.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:17:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2493,7 +2493,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 199 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/199.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/199.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:21:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2510,7 +2510,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 200 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/200.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/200.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:22:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2527,7 +2527,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 201 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/201.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/201.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:23:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2544,7 +2544,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 202 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/202.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/202.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:24:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2561,7 +2561,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 203 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/203.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/203.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:28:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2578,7 +2578,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 204 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/204.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/204.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:29:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2595,7 +2595,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 205 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/205.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/205.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:31:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2612,7 +2612,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 206 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/206.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/206.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:32:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2629,7 +2629,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 207 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/207.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/207.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:34:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2646,7 +2646,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 208 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/208.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/208.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:35:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2663,7 +2663,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 209 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/209.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/209.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/check_span_spacing.py:37:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2680,7 +2680,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 213 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/213.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/213.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:112:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2697,7 +2697,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 214 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/214.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/214.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:116:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2714,7 +2714,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 215 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/215.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/215.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:125:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2731,7 +2731,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 217 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/217.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/217.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:216:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2748,7 +2748,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 218 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/218.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/218.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:222:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2765,7 +2765,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 219 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/219.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/219.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:223:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2782,7 +2782,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 220 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/220.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/220.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:224:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2799,7 +2799,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 221 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/221.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/221.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:225:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2816,7 +2816,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 222 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/222.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/222.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:226:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2833,7 +2833,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 223 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/223.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/223.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:227:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2850,7 +2850,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 224 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/224.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/224.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:228:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2867,7 +2867,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 225 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/225.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/225.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:229:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2884,7 +2884,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 226 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/226.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/226.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:230:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2901,7 +2901,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 227 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/227.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/227.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:231:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2918,7 +2918,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 228 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/228.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/228.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:232:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2935,7 +2935,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 229 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/229.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/229.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:234:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2952,7 +2952,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 230 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/230.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/230.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:235:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2969,7 +2969,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 231 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/231.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/231.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:238:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -2986,7 +2986,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 232 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/232.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/232.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:241:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3003,7 +3003,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 233 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/233.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/233.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:243:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3020,7 +3020,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 234 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/234.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/234.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:244:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3037,7 +3037,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 235 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:245:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3054,7 +3054,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 236 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/236.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/236.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:246:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3071,7 +3071,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 237 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/237.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/237.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:247:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3088,7 +3088,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 238 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/238.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/238.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:248:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3105,7 +3105,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 239 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/239.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/239.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:249:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3122,7 +3122,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 240 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/240.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/240.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:250:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3139,7 +3139,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 241 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/241.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/241.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:251:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3156,7 +3156,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 242 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/242.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/242.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:252:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3173,7 +3173,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 243 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/243.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/243.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:253:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3190,7 +3190,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 244 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/244.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/244.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:255:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3207,7 +3207,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 245 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/245.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/245.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:256:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3224,7 +3224,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 246 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/246.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/246.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:257:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3241,7 +3241,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 247 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/247.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/247.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:258:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3258,7 +3258,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 248 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/248.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/248.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:260:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3275,7 +3275,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 249 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/249.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/249.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:262:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3292,7 +3292,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 250 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/250.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/250.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:263:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3309,7 +3309,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 251 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/251.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/251.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:264:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3326,7 +3326,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 252 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/252.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/252.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:265:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3343,7 +3343,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 253 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/253.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/253.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_all_outputs.py:267:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3360,7 +3360,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 258 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/258.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/258.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/compare_extractors.py:45:19`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -3377,7 +3377,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 268 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/268.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/268.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:26:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3394,7 +3394,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 269 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/269.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/269.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:27:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3411,7 +3411,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 270 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/270.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/270.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:31:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3428,7 +3428,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 273 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/273.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/273.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:37:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3445,7 +3445,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 274 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/274.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/274.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:38:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3462,7 +3462,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 275 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/275.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/275.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:39:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3479,7 +3479,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 276 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/276.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/276.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:43:11`
 - Checklist pattern: `wrong-construct match — zero-argument method call named eval, not builtin eval on dynamic input`
 
@@ -3496,7 +3496,7 @@ Checklist evidence: wrong-construct match — zero-argument method call named ev
 
 ### [ ] Finding 277 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/277.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/277.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:56:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3513,7 +3513,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 278 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/278.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/278.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:72:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3530,7 +3530,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 279 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/279.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/279.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:73:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3547,7 +3547,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 280 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/280.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/280.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:76:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3564,7 +3564,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 281 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/281.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/281.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:80:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3581,7 +3581,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 282 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/282.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/282.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:81:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3598,7 +3598,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 283 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/283.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/283.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:85:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3615,7 +3615,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 284 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/284.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/284.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:92:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3632,7 +3632,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 285 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/285.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/285.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:93:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3649,7 +3649,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 286 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/286.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/286.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:98:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3666,7 +3666,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 288 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/288.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/288.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:107:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3683,7 +3683,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 289 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/289.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/289.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:108:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3700,7 +3700,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 290 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/290.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/290.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:109:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3717,7 +3717,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 291 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/291.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/291.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:112:11`
 - Checklist pattern: `wrong-construct match — zero-argument method call named eval, not builtin eval on dynamic input`
 
@@ -3734,7 +3734,7 @@ Checklist evidence: wrong-construct match — zero-argument method call named ev
 
 ### [ ] Finding 292 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/292.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/292.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:119:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3751,7 +3751,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 293 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/293.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/293.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:133:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3768,7 +3768,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 294 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/294.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/294.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:134:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3785,7 +3785,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 295 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/295.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/295.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:137:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3802,7 +3802,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 296 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/296.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/296.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:141:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3819,7 +3819,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 297 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/297.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/297.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:142:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3836,7 +3836,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 298 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/298.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/298.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:145:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3853,7 +3853,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 299 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/299.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/299.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:152:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3870,7 +3870,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 300 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/300.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/300.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:153:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3887,7 +3887,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 301 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/301.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/301.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:164:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3904,7 +3904,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 302 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/302.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/302.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:165:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3921,7 +3921,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 303 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/303.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/303.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:166:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3938,7 +3938,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 305 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/305.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/305.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:168:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3955,7 +3955,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 306 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/306.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/306.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:171:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3972,7 +3972,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 307 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/307.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/307.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:204:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -3989,7 +3989,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 308 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/308.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/308.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:205:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4006,7 +4006,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 309 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/309.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/309.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:206:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4023,7 +4023,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 310 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/310.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/310.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:219:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4040,7 +4040,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 311 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/311.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/311.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:221:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4057,7 +4057,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 312 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/312.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/312.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:222:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4074,7 +4074,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 313 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/313.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/313.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:223:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4091,7 +4091,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 314 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/314.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/314.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:224:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4108,7 +4108,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 315 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/315.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/315.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:225:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4125,7 +4125,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 316 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/316.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/316.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:227:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4142,7 +4142,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 317 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/317.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/317.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:228:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4159,7 +4159,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 318 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/318.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/318.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:229:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4176,7 +4176,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 319 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/319.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/319.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:230:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4193,7 +4193,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 320 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/320.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/320.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:231:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4210,7 +4210,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 321 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/321.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/321.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:232:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4227,7 +4227,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 322 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/322.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/322.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_models.py:233:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4244,7 +4244,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 323 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/323.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/323.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_pdf_spec.py:7:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4261,7 +4261,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 324 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/324.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/324.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_pdf_spec.py:8:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4278,7 +4278,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 325 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/325.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/325.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_pdf_spec.py:19:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4295,7 +4295,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 326 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/326.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/326.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_pdf_spec.py:20:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4312,7 +4312,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 327 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/327.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/327.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_pdf_spec.py:21:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4329,7 +4329,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 330 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/330.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/330.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/convert_pdf_spec.py:24:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4346,7 +4346,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 331 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/331.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/331.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:11:11`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -4363,7 +4363,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 332 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/332.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/332.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:14:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4380,7 +4380,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 333 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/333.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/333.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:15:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4397,7 +4397,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 334 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/334.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/334.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:16:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4414,7 +4414,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 335 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/335.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/335.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:20:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4431,7 +4431,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 336 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/336.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/336.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:22:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4448,7 +4448,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 337 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/337.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/337.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:23:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4465,7 +4465,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 338 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/338.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/338.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:24:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4482,7 +4482,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 339 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/339.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/339.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:25:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4499,7 +4499,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 340 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/340.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/340.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:26:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4516,7 +4516,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 341 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/341.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/341.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:34:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4533,7 +4533,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 342 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/342.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/342.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:35:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4550,7 +4550,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 343 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/343.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/343.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:36:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4567,7 +4567,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 344 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/344.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/344.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:45:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4584,7 +4584,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 345 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/345.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/345.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:50:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4601,7 +4601,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 346 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/346.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/346.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:51:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4618,7 +4618,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 347 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/347.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/347.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:52:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4635,7 +4635,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 348 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/348.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/348.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:58:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4652,7 +4652,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 349 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/349.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/349.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:60:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4669,7 +4669,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 350 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/350.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/350.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:64:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4686,7 +4686,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 351 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/351.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/351.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:68:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4703,7 +4703,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 357 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/357.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/357.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:74:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4720,7 +4720,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 362 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/362.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/362.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:84:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4737,7 +4737,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 363 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/363.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/363.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/debug_font_encoding.py:86:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4754,7 +4754,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 365 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/365.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/365.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:25:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4771,7 +4771,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 366 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/366.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/366.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:26:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4788,7 +4788,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 367 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/367.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/367.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:27:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4805,7 +4805,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 368 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/368.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/368.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:28:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4822,7 +4822,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 369 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/369.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/369.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:34:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4839,7 +4839,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 370 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/370.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/370.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:35:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4856,7 +4856,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 371 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/371.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/371.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:38:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4873,7 +4873,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 372 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/372.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/372.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:39:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4890,7 +4890,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 373 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/373.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/373.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:40:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4907,7 +4907,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 374 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/374.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/374.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:49:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4924,7 +4924,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 375 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/375.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/375.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:51:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4941,7 +4941,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 376 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/376.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/376.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:57:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4958,7 +4958,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 377 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/377.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/377.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:58:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4975,7 +4975,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 378 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/378.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/378.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:59:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -4992,7 +4992,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 379 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/379.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/379.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:66:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5009,7 +5009,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 380 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/380.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/380.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:68:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5026,7 +5026,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 381 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/381.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/381.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:74:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5043,7 +5043,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 382 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/382.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/382.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:75:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5060,7 +5060,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 383 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/383.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/383.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:76:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5077,7 +5077,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 384 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/384.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/384.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:77:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5094,7 +5094,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 385 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/385.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/385.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:78:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5111,7 +5111,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 386 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/386.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/386.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:79:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5128,7 +5128,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 387 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/387.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/387.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:80:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5145,7 +5145,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 388 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/388.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/388.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:81:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5162,7 +5162,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 389 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/389.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/389.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:82:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5179,7 +5179,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 390 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/390.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/390.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:86:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5196,7 +5196,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 391 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/391.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/391.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:87:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5213,7 +5213,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 392 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/392.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/392.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:88:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5230,7 +5230,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 393 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/393.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/393.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:93:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5247,7 +5247,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 394 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/394.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/394.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:94:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5264,7 +5264,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 395 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/395.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/395.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:95:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5281,7 +5281,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 396 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/396.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/396.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:98:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5298,7 +5298,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 397 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/397.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/397.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:100:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5315,7 +5315,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 398 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/398.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/398.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:103:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5332,7 +5332,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 399 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/399.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/399.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:104:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5349,7 +5349,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 400 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/400.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/400.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:105:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5366,7 +5366,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 401 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/401.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/401.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:122:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5383,7 +5383,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 402 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/402.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/402.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:123:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5400,7 +5400,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 404 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/404.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/404.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:133:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5417,7 +5417,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 405 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/405.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/405.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/diagnose_character_order.py:134:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5434,7 +5434,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 406 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/406.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/406.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_arxiv.py:30:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5451,7 +5451,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 407 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/407.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/407.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_arxiv.py:59:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5468,7 +5468,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 408 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/408.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/408.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_arxiv.py:68:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5485,7 +5485,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 409 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/409.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/409.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_arxiv.py:72:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5502,7 +5502,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 412 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/412.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/412.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_arxiv.py:76:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5519,7 +5519,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 413 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/413.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/413.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:67:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5536,7 +5536,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 414 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/414.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/414.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:71:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5553,7 +5553,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 415 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/415.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/415.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:80:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5570,7 +5570,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 416 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/416.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/416.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:86:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5587,7 +5587,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 417 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/417.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/417.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:91:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5604,7 +5604,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 418 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/418.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/418.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:93:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5621,7 +5621,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 421 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/421.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/421.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_cfr_regulations.py:96:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5638,7 +5638,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 425 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/425.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/425.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_chronicling_america.py:81:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5655,7 +5655,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 427 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/427.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/427.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_diverse_pdfs.py:106:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5672,7 +5672,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 428 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/428.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/428.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_diverse_pdfs.py:110:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5689,7 +5689,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 429 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/429.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/429.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_diverse_pdfs.py:119:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5706,7 +5706,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 430 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/430.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/430.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_diverse_pdfs.py:125:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5723,7 +5723,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 433 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/433.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/433.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_diverse_pdfs.py:129:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5740,7 +5740,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 434 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/434.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/434.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:148:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5757,7 +5757,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 435 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/435.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/435.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:152:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5774,7 +5774,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 436 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/436.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/436.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:161:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5791,7 +5791,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 437 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/437.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/437.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:167:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5808,7 +5808,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 438 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/438.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/438.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:171:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5825,7 +5825,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 439 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/439.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/439.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:173:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5842,7 +5842,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 442 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/442.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/442.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_financial.py:176:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5859,7 +5859,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 443 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/443.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/443.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_government.py:77:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5876,7 +5876,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 444 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/444.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/444.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_government.py:81:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5893,7 +5893,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 445 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/445.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/445.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_government.py:93:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5910,7 +5910,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 446 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/446.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/446.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_government.py:97:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5927,7 +5927,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 449 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/449.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/449.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_government.py:101:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5944,7 +5944,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 453 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/453.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/453.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_govinfo_policies.py:71:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5961,7 +5961,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 456 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/456.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/456.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_govinfo_policies.py:134:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5978,7 +5978,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 457 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/457.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/457.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_govinfo_policies.py:170:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -5995,7 +5995,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 462 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/462.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/462.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_govinfo_policies.py:177:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6012,7 +6012,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 463 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/463.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/463.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:21:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6029,7 +6029,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 464 — CWE-88
 
-- Function context: `./scripts/findings/functions/464.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/464.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:24:5`
 - Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
 
@@ -6046,7 +6046,7 @@ Checklist evidence: no externally influenced input — fixed literals / internal
 
 ### [ ] Finding 465 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/465.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/465.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:39:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6063,7 +6063,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 466 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/466.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/466.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:52:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6080,7 +6080,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 467 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/467.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/467.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:65:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6097,7 +6097,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 468 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/468.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/468.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:77:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6114,7 +6114,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 469 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/469.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/469.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:80:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6131,7 +6131,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 470 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/470.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/470.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:91:21`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6148,7 +6148,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 473 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/473.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/473.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:94:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6165,7 +6165,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 475 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/475.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/475.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_internet_archive_newspapers.py:100:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6182,7 +6182,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 476 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/476.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/476.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:95:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6199,7 +6199,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 477 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/477.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/477.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:99:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6216,7 +6216,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 478 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/478.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/478.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:108:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6233,7 +6233,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 479 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/479.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/479.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:114:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6250,7 +6250,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 480 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/480.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/480.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:119:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6267,7 +6267,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 481 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/481.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/481.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:121:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6284,7 +6284,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 484 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/484.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/484.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_irs_forms.py:124:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6301,7 +6301,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 487 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/487.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/487.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_edgar_bulk.py:21:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6318,7 +6318,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 488 — CWE-88
 
-- Function context: `./scripts/findings/functions/488.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/488.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_edgar_bulk.py:24:5`
 - Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
 
@@ -6335,7 +6335,7 @@ Checklist evidence: no externally influenced input — fixed literals / internal
 
 ### [ ] Finding 489 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/489.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/489.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_edgar_bulk.py:83:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6352,7 +6352,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 490 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/490.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/490.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_edgar_bulk.py:92:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6369,7 +6369,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 491 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/491.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/491.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_edgar_bulk.py:96:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6386,7 +6386,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 494 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/494.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/494.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_edgar_bulk.py:98:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6403,7 +6403,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 497 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/497.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/497.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_filings.py:85:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6420,7 +6420,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 498 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/498.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/498.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_filings.py:97:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6437,7 +6437,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 499 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/499.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/499.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_filings.py:101:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6454,7 +6454,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 501 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/501.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/501.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/download_sec_filings.py:114:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6471,7 +6471,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 504 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/504.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/504.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/export_text_comparison.py:48:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6488,7 +6488,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 505 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/505.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/505.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/export_text_comparison.py:78:18`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -6505,7 +6505,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 510 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/510.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/510.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/fetch_real_fixtures.py:33:1`
 - Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
 
@@ -6522,7 +6522,7 @@ Checklist evidence: distinct paths per iteration — same path is not loaded rep
 
 ### [ ] Finding 511 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/511.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/511.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/fetch_real_fixtures.py:34:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6539,7 +6539,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 512 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/512.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/512.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/fetch_real_fixtures.py:37:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6556,7 +6556,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 513 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/513.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/513.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:13:11`
 - Checklist pattern: `wrong-construct match — library method/module function or a definition, not builtin open()`
 
@@ -6573,7 +6573,7 @@ Checklist evidence: wrong-construct match — library method/module function or 
 
 ### [ ] Finding 516 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/516.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/516.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:34:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6590,7 +6590,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 517 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/517.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/517.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:35:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6607,7 +6607,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 518 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/518.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/518.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:36:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6624,7 +6624,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 519 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/519.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/519.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:42:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6641,7 +6641,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 520 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/520.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/520.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:46:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6658,7 +6658,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 521 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/521.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/521.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:47:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6675,7 +6675,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 522 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/522.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/522.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:54:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6692,7 +6692,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 523 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/523.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/523.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:56:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6709,7 +6709,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 524 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/524.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/524.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:57:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6726,7 +6726,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 525 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/525.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/525.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:59:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6743,7 +6743,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 526 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/526.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/526.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/inspect_tj_array.py:60:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6760,7 +6760,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 527 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/527.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/527.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/move_large_pdfs.py:61:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6777,7 +6777,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 528 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/528.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/528.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/move_large_pdfs.py:67:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6794,7 +6794,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 529 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/529.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/529.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/move_large_pdfs.py:70:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6811,7 +6811,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 530 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/530.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/530.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/move_large_pdfs.py:72:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6828,7 +6828,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 531 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/531.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/531.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/move_large_pdfs.py:76:1`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6845,7 +6845,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 532 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/532.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/532.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:27:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6862,7 +6862,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 533 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/533.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/533.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:37:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6879,7 +6879,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 534 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/534.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/534.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:40:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6896,7 +6896,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 535 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/535.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/535.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:43:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6913,7 +6913,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 536 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/536.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/536.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:61:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6930,7 +6930,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 537 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/537.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/537.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:62:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6947,7 +6947,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 538 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/538.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/538.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:63:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6964,7 +6964,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 539 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/539.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/539.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:102:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6981,7 +6981,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 542 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/542.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/542.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:110:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -6998,7 +6998,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 543 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/543.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/543.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:122:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7015,7 +7015,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 544 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/544.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/544.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:123:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7032,7 +7032,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 545 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/545.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/545.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:126:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7049,7 +7049,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 546 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/546.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/546.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:127:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7066,7 +7066,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 547 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/547.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/547.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:128:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7083,7 +7083,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 548 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/548.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/548.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:136:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7100,7 +7100,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 549 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/549.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/549.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:145:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7117,7 +7117,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 550 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/550.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/550.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:147:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7134,7 +7134,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 551 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/551.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/551.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:163:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7151,7 +7151,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 552 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/552.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/552.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:166:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7168,7 +7168,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 553 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/553.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/553.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:167:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7185,7 +7185,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 554 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/554.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/554.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:168:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7202,7 +7202,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 555 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/555.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/555.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:173:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7219,7 +7219,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 556 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/556.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/556.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:174:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7236,7 +7236,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 557 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/557.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/557.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:181:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7253,7 +7253,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 558 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/558.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/558.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:192:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7270,7 +7270,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 559 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/559.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/559.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:193:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7287,7 +7287,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 560 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/560.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/560.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:194:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7304,7 +7304,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 561 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/561.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/561.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/rebenchmark_pdf_library.py:202:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7321,7 +7321,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 562 — CWE-88
 
-- Function context: `./scripts/findings/functions/562.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/562.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regression_harness.py:111:16`
 - Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
 
@@ -7338,7 +7338,7 @@ Checklist evidence: no externally influenced input — fixed literals / internal
 
 ### [ ] Finding 572 — CWE-1341
 
-- Function context: `./scripts/findings/functions/572.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/572.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regression_harness.py:250:21`
 - Checklist pattern: `distinct handles — two different objects are closed, no double release`
 
@@ -7355,7 +7355,7 @@ Checklist evidence: distinct handles — two different objects are closed, no do
 
 ### [ ] Finding 586 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/586.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/586.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regression_harness.py:657:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7372,7 +7372,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 587 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/587.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/587.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regression_harness.py:662:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7389,7 +7389,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 590 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/590.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/590.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regression_harness.py:761:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7406,7 +7406,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 592 — CWE-88
 
-- Function context: `./scripts/findings/functions/592.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/592.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:193:13`
 - Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
 
@@ -7423,7 +7423,7 @@ Checklist evidence: no externally influenced input — fixed literals / internal
 
 ### [ ] Finding 600 — PERF-PY-28
 
-- Function context: `./scripts/findings/functions/600.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/600.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:270:53`
 - Checklist pattern: `not per unit of work — executor created once per batch/object lifetime`
 
@@ -7440,7 +7440,7 @@ Checklist evidence: not per unit of work — executor created once per batch/obj
 
 ### [ ] Finding 601 — PERF-PY-23
 
-- Function context: `./scripts/findings/functions/601.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/601.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:284:1`
 - Checklist pattern: `unavoidable per-item encode — data produced inside the loop`
 
@@ -7457,7 +7457,7 @@ Checklist evidence: unavoidable per-item encode — data produced inside the loo
 
 ### [ ] Finding 603 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/603.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/603.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:404:1`
 - Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
 
@@ -7474,7 +7474,7 @@ Checklist evidence: distinct paths per iteration — same path is not loaded rep
 
 ### [ ] Finding 604 — CWE-1046
 
-- Function context: `./scripts/findings/functions/604.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/604.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:473:1`
 - Checklist pattern: `no accumulating concatenation — accumulator re-initialized per iteration`
 
@@ -7491,7 +7491,7 @@ Checklist evidence: no accumulating concatenation — accumulator re-initialized
 
 ### [ ] Finding 606 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/606.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/606.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:568:1`
 - Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
 
@@ -7508,7 +7508,7 @@ Checklist evidence: distinct paths per iteration — same path is not loaded rep
 
 ### [ ] Finding 607 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/607.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/607.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:120:1`
 - Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
 
@@ -7525,7 +7525,7 @@ Checklist evidence: distinct paths per iteration — same path is not loaded rep
 
 ### [ ] Finding 608 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/608.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/608.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:144:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7542,7 +7542,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 609 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/609.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/609.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:146:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7559,7 +7559,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 610 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/610.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/610.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:149:13`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7576,7 +7576,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 611 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/611.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/611.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:151:17`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7593,7 +7593,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 612 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/612.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/612.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:153:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7610,7 +7610,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 613 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/613.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/613.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:156:9`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7627,7 +7627,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 614 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/614.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/614.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:157:5`
 - Checklist pattern: `CLI script output — print in a standalone script, not a non-script module`
 
@@ -7644,7 +7644,7 @@ Checklist evidence: CLI script output — print in a standalone script, not a no
 
 ### [ ] Finding 632 — CWE-88
 
-- Function context: `./scripts/findings/functions/632.txt`
+- Function context: `scripts/pdf_oxide/findings/functions/632.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/tools/benchmark-harness/olmocr/run_olmocr_bench.py:49:13`
 - Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
 
@@ -7926,6 +7926,6 @@ Findings whose shown source satisfies the rule condition; listed compactly per r
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks` (26 chunk files, findings 1-636)
-- Function evidence: `./scripts/findings/functions` (per-finding context files)
+- Chunk evidence: `scripts/pdf_oxide/chunks` (26 chunk files, findings 1-636)
+- Function evidence: `scripts/pdf_oxide/findings/functions` (per-finding context files)
 - Validation: `git diff --check` — pass

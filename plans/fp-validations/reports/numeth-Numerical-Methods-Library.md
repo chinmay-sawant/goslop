@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/numeth-
 branch: main
 commit: 14f2ae3df5201465d319c2874cfac9462e30c20b
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/numeth-Numerical-Methods-Library
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/numeth-Numerical-Methods-Library/chunks
+function_context_path: scripts/numeth-Numerical-Methods-Library/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (bin/goslop prebuilt)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/numeth-Numerical-Methods-Library/scripts/chunks -context-dir real-repos/numeth-Numerical-Methods-Library/scripts/findings/functions real-repos/numeth-Numerical-Methods-Library`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/numeth-Numerical-Methods-Library/chunks -context-dir scripts/numeth-Numerical-Methods-Library/findings/functions real-repos/numeth-Numerical-Methods-Library`
 - Findings: `5`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_5.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`
+- Chunks reviewed: `scripts/numeth-Numerical-Methods-Library/chunks/Chunk_1_5.txt`
+- Function contexts reviewed: `scripts/numeth-Numerical-Methods-Library/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/numeth-Numerical-Methods-Library/chunks`.
+- [x] Read `scripts/numeth-Numerical-Methods-Library/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `PERF-PY-25`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/numeth-Numerical-Methods-Library/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/numeth-Numerical-Methods-Library/src/numeth/interpolation.py:37:1`
 - Checklist pattern: lambda is constructed at most once per function invocation, not once per loop element — the enclosing loop returns unconditionally immediately after the construction.
 
@@ -84,6 +84,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_5.txt`
-- Function evidence: `./scripts/findings/functions/1.txt`–`5.txt`
+- Chunk evidence: `scripts/numeth-Numerical-Methods-Library/chunks/Chunk_1_5.txt`
+- Function evidence: `scripts/numeth-Numerical-Methods-Library/findings/functions/1.txt`–`5.txt`
 - Validation: `git diff --check` — pass

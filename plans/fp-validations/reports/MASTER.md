@@ -6,7 +6,7 @@
 timestamp: 2026-08-02
 audit_corpus: r/Python top showcase projects (2025-2026)
 repositories: 42 clones under real-repos/ (41 GitHub + 1 GitLab: enso)
-evidence_root: real-repos/<name>/scripts/chunks + scripts/findings/functions
+evidence_root: scripts/<name>/chunks + scripts/findings/functions
 reports: plans/skills/false-positive-audit/reports/<name>.md
 ```
 
@@ -18,13 +18,13 @@ reports: plans/skills/false-positive-audit/reports/<name>.md
 ```
 ./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml \
   --export-context --export-chunks --no-cache \
-  -chunks-dir real-repos/<name>/scripts/chunks \
-  -context-dir real-repos/<name>/scripts/findings/functions real-repos/<name>
+  -chunks-dir scripts/<name>/chunks \
+  -context-dir scripts/<name>/findings/functions real-repos/<name>
 ```
 
 - Config: `templates/goslop-python.toml` (languages = ["python"], fail_on = "none")
 - Findings: **6,964** across 41 repos (1 repo, polygon-screenshot-tool, has 0 findings — its only code file is `.pyw` which the scanner skips)
-- Chunks + function contexts: per-repo under `real-repos/<name>/scripts/`
+- Chunks + function contexts: per-project under `scripts/<name>/`
 - Audit method: 41 parallel sub-agent audits, each reading every chunk, every function context for classified false positives, and the enclosing source; rule conditions verified via `./bin/goslop -explain <rule>` and detector sources.
 
 ## Classification summary (all 41 repos)
@@ -181,7 +181,7 @@ All 12 former uncertains reclassified after verifying detector thresholds / rule
 ## Final evidence
 
 - Delegated reviewers: 41 parallel audit agents (one per repo), instructed per `plans/skills/false-positive-audit/AUDIT_PROMPT.md`
-- Chunk evidence: `real-repos/<name>/scripts/chunks/`
-- Function evidence: `real-repos/<name>/scripts/findings/functions/`
+- Chunk evidence: `scripts/<name>/chunks/`
+- Function evidence: `scripts/<name>/findings/functions/`
 - Per-repo reports: `plans/skills/false-positive-audit/reports/<name>.md` (41 files, ~59,400 lines)
 - Validation: `git diff --check` — **pass** (all reports + this master)

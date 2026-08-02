@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-La
 branch: main
 commit: f9bf78d49c16c36d4eb98d5abd305a65f3252e32
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/WHEN-Language/chunks
+function_context_path: scripts/WHEN-Language/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (bin/goslop already present)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/WHEN-Language/scripts/chunks -context-dir real-repos/WHEN-Language/scripts/findings/functions real-repos/WHEN-Language`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/WHEN-Language/chunks -context-dir scripts/WHEN-Language/findings/functions real-repos/WHEN-Language`
 - Findings: `104`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_104.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `104.txt` (read via chunks for all findings; context files spot-checked for 6, 24, 46, 48, 86, 89)
+- Chunks reviewed: `scripts/WHEN-Language/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_104.txt`
+- Function contexts reviewed: `scripts/WHEN-Language/findings/functions/1.txt` .. `104.txt` (read via chunks for all findings; context files spot-checked for 6, 24, 46, 48, 86, 89)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/WHEN-Language/chunks`.
+- [x] Read `scripts/WHEN-Language/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient (full `when.py`, `hot_reload.py`, `parser.py`, `lexer.py`, `interpreter.py` read).
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ Exact FP list: 6, 22, 29, 41, 42, 85 (BP-PY-44); 24 (BP-PY-12); 46 (CWE-208); 48
 
 ### [ ] Finding `6` — `BP-PY-44`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/hot_reload.py:91:1`
 - Checklist pattern: imported module is a first-party module, not the deprecated stdlib module the rule targets.
 
@@ -63,7 +63,7 @@ Checklist evidence: the import is `from parser import Parser` where `parser.py` 
 
 ### [ ] Finding `22` — `BP-PY-44`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/interpreter.py:316:1`
 - Checklist pattern: imported module is a first-party module, not the deprecated stdlib module the rule targets.
 
@@ -80,7 +80,7 @@ Checklist evidence: the import names the repository's own `parser` module, which
 
 ### [ ] Finding `29` — `BP-PY-44`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/interpreter.py:971:1`
 - Checklist pattern: imported module is a first-party module, not the deprecated stdlib module the rule targets.
 
@@ -97,7 +97,7 @@ Checklist evidence: the module `parser` is the repository's local module, verifi
 
 ### [ ] Finding `41` — `BP-PY-44`
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/interpreter.py:1492:1`
 - Checklist pattern: imported module is a first-party module, not the deprecated stdlib module the rule targets.
 
@@ -114,7 +114,7 @@ Checklist evidence: the imported `parser` module is the local `parser.py` of thi
 
 ### [ ] Finding `42` — `BP-PY-44`
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/interpreter.py:1636:1`
 - Checklist pattern: imported module is a first-party module, not the deprecated stdlib module the rule targets.
 
@@ -131,7 +131,7 @@ Checklist evidence: the imported `parser` module is the local `parser.py` of thi
 
 ### [ ] Finding `85` — `BP-PY-44`
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:23:1`
 - Checklist pattern: imported module is a first-party module, not the deprecated stdlib module the rule targets.
 
@@ -149,7 +149,7 @@ Checklist evidence: `when.py` imports three sibling first-party modules; the dep
 
 ### [ ] Finding `24` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/interpreter.py:330:40`
 - Checklist pattern: the trigger token `exec(` occurs inside a string literal, not as a call.
 
@@ -167,7 +167,7 @@ Checklist evidence: the matched identifier is string content inside a `NotImplem
 
 ### [ ] Finding `46` — `CWE-208`
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/lexer.py:714:20`
 - Checklist pattern: compared operands are lexer token-type enums, not security-sensitive values.
 
@@ -185,7 +185,7 @@ Checklist evidence: both operands are the lexer's own token-type enum; the resul
 
 ### [ ] Finding `48` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:52:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -204,7 +204,7 @@ Checklist evidence: the call's argument is implicit `self` state that moves forw
 
 ### [ ] Finding `49` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:55:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -221,7 +221,7 @@ Checklist evidence: the parse call is a one-time descent over fresh tokens; ther
 
 ### [ ] Finding `50` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:58:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -238,7 +238,7 @@ Checklist evidence: single-pass descent; the enclosing loop iterates over distin
 
 ### [ ] Finding `51` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:61:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -255,7 +255,7 @@ Checklist evidence: distinct input consumed per call; no cache-relevant reuse ex
 
 ### [ ] Finding `52` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:64:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -272,7 +272,7 @@ Checklist evidence: single-pass recursive descent over distinct tokens; the rule
 
 ### [ ] Finding `53` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/53.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:66:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -289,7 +289,7 @@ Checklist evidence: distinct input consumed per call; no repeated decode/parse o
 
 ### [ ] Finding `54` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:74:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -305,7 +305,7 @@ Checklist evidence: single-pass descent; the statement being parsed is the curre
 
 ### [ ] Finding `55` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:78:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -322,7 +322,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `56` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:166:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -341,7 +341,7 @@ Checklist evidence: per-iteration input is the next distinct expression; the rul
 
 ### [ ] Finding `57` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:208:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -359,7 +359,7 @@ Checklist evidence: single-pass descent over distinct method declarations.
 
 ### [ ] Finding `58` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:214:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -377,7 +377,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of a reu
 
 ### [ ] Finding `59` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:295:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -395,7 +395,7 @@ Checklist evidence: single-pass descent over distinct statements; no reuse oppor
 
 ### [ ] Finding `60` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:326:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -413,7 +413,7 @@ Checklist evidence: loop iterations consume distinct expressions; the rule's rep
 
 ### [ ] Finding `61` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:358:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -430,7 +430,7 @@ Checklist evidence: distinct inputs per call; no repeated re-parse of the same p
 
 ### [ ] Finding `62` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:475:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -447,7 +447,7 @@ Checklist evidence: each call descends into a fresh token range; no payload is r
 
 ### [ ] Finding `63` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:482:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -464,7 +464,7 @@ Checklist evidence: distinct operand parsed once per call.
 
 ### [ ] Finding `64` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:488:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -481,7 +481,7 @@ Checklist evidence: distinct operand parsed once per call.
 
 ### [ ] Finding `65` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:493:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -499,7 +499,7 @@ Checklist evidence: distinct input consumed per call; no reuse of a parsed paylo
 
 ### [ ] Finding `66` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:503:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -517,7 +517,7 @@ Checklist evidence: single-pass descent; rule's hot-path re-parse condition not 
 
 ### [ ] Finding `67` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:513:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -535,7 +535,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `68` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:523:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -553,7 +553,7 @@ Checklist evidence: distinct input consumed per call; no reuse.
 
 ### [ ] Finding `69` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:533:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -571,7 +571,7 @@ Checklist evidence: distinct input consumed per call; no repeated re-parse of a 
 
 ### [ ] Finding `70` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/70.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/70.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:570:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -589,7 +589,7 @@ Checklist evidence: single-pass descent; no payload is parsed more than once.
 
 ### [ ] Finding `71` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:579:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -607,7 +607,7 @@ Checklist evidence: distinct input consumed per call.
 
 ### [ ] Finding `72` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:585:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -625,7 +625,7 @@ Checklist evidence: distinct input consumed per call; no reuse.
 
 ### [ ] Finding `73` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:650:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -643,7 +643,7 @@ Checklist evidence: per-call input is the next distinct expression; no repeated 
 
 ### [ ] Finding `75` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:654:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -661,7 +661,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `76` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:718:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -678,7 +678,7 @@ Checklist evidence: distinct input consumed per call; no reuse.
 
 ### [ ] Finding `77` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:755:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -696,7 +696,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `78` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:759:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -714,7 +714,7 @@ Checklist evidence: distinct input consumed per call; no reuse.
 
 ### [ ] Finding `79` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:825:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -732,7 +732,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `80` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:829:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -750,7 +750,7 @@ Checklist evidence: distinct input consumed per call; no reuse.
 
 ### [ ] Finding `81` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:866:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -769,7 +769,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `82` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:901:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -786,7 +786,7 @@ Checklist evidence: distinct input consumed per call; no reuse.
 
 ### [ ] Finding `83` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/parser.py:905:1`
 - Checklist pattern: recursive-descent step consuming distinct tokens once, not a repeated re-parse of the same payload.
 
@@ -804,7 +804,7 @@ Checklist evidence: distinct input consumed per call; no repeated parse of the s
 
 ### [ ] Finding `86` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:29:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -821,7 +821,7 @@ Checklist evidence: the module has a `__main__` guard invoking `main()`; the pri
 
 ### [ ] Finding `87` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:32:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -838,7 +838,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `88` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:33:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -855,7 +855,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `90` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:39:13`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -874,7 +874,7 @@ Checklist evidence: user-facing error output in the `__main__`-guarded entry scr
 
 ### [ ] Finding `91` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:43:13`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -891,7 +891,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `92` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:61:9`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -909,7 +909,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `93` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:64:9`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -927,7 +927,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `94` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:67:9`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -945,7 +945,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `97` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:70:9`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -963,7 +963,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `98` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:77:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -981,7 +981,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `99` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:78:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -998,7 +998,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `100` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:79:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -1015,7 +1015,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `102` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:108:17`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -1032,7 +1032,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `103` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:111:13`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -1049,7 +1049,7 @@ Checklist evidence: user-facing CLI output in the `__main__`-guarded entry scrip
 
 ### [ ] Finding `104` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/WHEN-Language/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language/when.py:115:5`
 - Checklist pattern: CLI entry script (`__main__` guard present) whose prints are user-facing output, not library logging.
 
@@ -1168,6 +1168,6 @@ None — every finding could be decided from the rule condition and the shown so
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/WHEN-Language/chunks`
+- Function evidence: `scripts/WHEN-Language/findings/functions`
 - Validation: `git diff --check` — pass

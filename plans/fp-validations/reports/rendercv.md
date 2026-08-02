@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/renderc
 branch: main
 commit: 1d4b87bc427e4cf61c0ef49623c971b0e2224708
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/rendercv/chunks
+function_context_path: scripts/rendercv/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `(pre-built) ./bin/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/rendercv/scripts/chunks -context-dir real-repos/rendercv/scripts/findings/functions real-repos/rendercv`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/rendercv/chunks -context-dir scripts/rendercv/findings/functions real-repos/rendercv`
 - Findings: `73`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_73.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/73.txt`
+- Chunks reviewed: `scripts/rendercv/chunks/Chunk_1_25.txt`, `scripts/rendercv/chunks/Chunk_26_50.txt`, `scripts/rendercv/chunks/Chunk_51_73.txt`
+- Function contexts reviewed: `scripts/rendercv/findings/functions/1.txt` .. `scripts/rendercv/findings/functions/73.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/rendercv/chunks`.
+- [x] Read `scripts/rendercv/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `3` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/rendercv/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/analyze_pdfs.py:46:15`
 - Checklist pattern: the flagged call is a third-party library method (`fitz.open`), not the builtin `open()` file-handle API the rule targets
 
@@ -64,7 +64,7 @@ Checklist evidence: the "open without `with` risks resource leaks" condition tar
 
 ### [ ] Finding `5` — `BP-PY-11`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/rendercv/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/analyze_pdfs.py:106:20`
 - Checklist pattern: the receiver is a `ruamel.yaml.YAML()` instance (import at line 25), whose `load()` is safe by default and cannot construct arbitrary Python objects
 
@@ -84,7 +84,7 @@ Checklist evidence: `detectBPPY11` fires on the text `yaml.load(` without a `Saf
 
 ### [ ] Finding `6` — `CWE-502`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/rendercv/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/analyze_pdfs.py:106:20`
 - Checklist pattern: same construct as finding 5 — ruamel `YAML()` instance, no untrusted-deserialization surface
 
@@ -104,7 +104,7 @@ Checklist evidence: `detectCWE502` exempts only explicit SafeLoader arguments; t
 
 ### [ ] Finding `7` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/rendercv/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/analyze_pdfs.py:143:1`
 - Checklist pattern: the exception is recorded into the structured result, so it is handled, not swallowed
 
@@ -121,7 +121,7 @@ Checklist evidence: rule condition is a broad except "without handling or re-rai
 
 ### [ ] Finding `9` — `BP-PY-11`
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/rendercv/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/common.py:102:16`
 - Checklist pattern: ruamel `YAML()` instance (import at line 6), safe `load()`
 
@@ -141,7 +141,7 @@ Checklist evidence: `detectBPPY11`'s `yaml.load(` needle matches the ruamel inst
 
 ### [ ] Finding `10` — `CWE-502`
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/rendercv/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/common.py:102:16`
 - Checklist pattern: same construct as finding 9 — ruamel `YAML()` instance
 
@@ -161,7 +161,7 @@ Checklist evidence: CWE-502's "yaml.load without a SafeLoader" condition presupp
 
 ### [ ] Finding `11` — `BP-PY-11`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/rendercv/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/common.py:207:16`
 - Checklist pattern: same construct as findings 5/9 — ruamel `YAML()` instance, distinct line
 
@@ -179,7 +179,7 @@ Checklist evidence: the flagged `yaml` is a ruamel `YAML()` instance, not PyYAML
 
 ### [ ] Finding `12` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/rendercv/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/run_all.py:33:5`
 - Checklist pattern: print in a standalone CLI script (argparse + `if __name__ == "__main__": main()`), user-facing step output, not library logging
 
@@ -198,7 +198,7 @@ Checklist evidence: the module is a script whose only execution path is `python 
 
 ### [ ] Finding `13` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/rendercv/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/run_all.py:34:5`
 - Checklist pattern: same construct as finding 12, distinct line
 
@@ -216,7 +216,7 @@ Checklist evidence: script module, CLI presentation output, not library debug lo
 
 ### [ ] Finding `14` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/rendercv/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/run_all.py:35:5`
 - Checklist pattern: same construct as finding 12, distinct line
 
@@ -234,7 +234,7 @@ Checklist evidence: script module, CLI presentation output, not library debug lo
 
 ### [ ] Finding `15` — `CWE-88`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/rendercv/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/run_all.py:36:14`
 - Checklist pattern: the dynamic argv segment comes from fixed developer-maintained constant tuples, not externally influenced input
 
@@ -258,7 +258,7 @@ Checklist evidence: rule condition requires "externally influenced input"; the a
 
 ### [ ] Finding `16` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/rendercv/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/run_all.py:41:9`
 - Checklist pattern: same construct as finding 12 — failure message output of a standalone script
 
@@ -276,7 +276,7 @@ Checklist evidence: script module, CLI presentation output, not library debug lo
 
 ### [ ] Finding `17` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/rendercv/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/submit_commercial.py:86:1`
 - Checklist pattern: the exception is reported (printed with its message) and counted, so it is handled, not swallowed
 
@@ -294,7 +294,7 @@ Checklist evidence: rule condition is a broad except "without handling or re-rai
 
 ### [ ] Finding `19` — `CWE-88`
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/rendercv/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/create_executable.py:35:5`
 - Checklist pattern: all argv segments are developer/environment constants (sys.executable, in-process temp path), no external input
 
@@ -321,7 +321,7 @@ Checklist evidence: `argvSegmentLooksDynamic` treats any non-literal as dynamic,
 
 ### [ ] Finding `20` — `BP-PY-11`
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/rendercv/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:245:12`
 - Checklist pattern: explicit `ruamel.yaml.YAML()` instance — safe constructor
 
@@ -339,7 +339,7 @@ Checklist evidence: `detectBPPY11`'s `yaml.load(` needle matches the ruamel inst
 
 ### [ ] Finding `21` — `CWE-502`
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/rendercv/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:245:12`
 - Checklist pattern: same construct as finding 20 — ruamel `YAML()` instance
 
@@ -357,7 +357,7 @@ Checklist evidence: CWE-502's "yaml.load without a SafeLoader" premise does not 
 
 ### [ ] Finding `22` — `BP-PY-11`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/rendercv/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:283:20`
 - Checklist pattern: same construct as finding 20 — ruamel `YAML()` instance, distinct line
 
@@ -375,7 +375,7 @@ Checklist evidence: `detectBPPY11`'s needle matches the ruamel instance method; 
 
 ### [ ] Finding `23` — `PERF-PY-27`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/rendercv/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:283:25`
 - Checklist pattern: the load is inside a `for theme in SKILL_THEMES` loop, each iteration loading a distinct per-theme path — the rule's own "once-per-distinct-path" exemption
 
@@ -397,7 +397,7 @@ Checklist evidence: the rule requires "repeated load of the same filesystem path
 
 ### [ ] Finding `24` — `PERF-PY-27`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/rendercv/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:293:1`
 - Checklist pattern: the load line uses the loop binding `path` (a distinct filesystem path per iteration)
 
@@ -416,7 +416,7 @@ Checklist evidence: `enclosingForLoopVar` returns only the first binding of `for
 
 ### [ ] Finding `25` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/rendercv/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/update_entry_figures.py:30:15`
 - Checklist pattern: third-party library method (`fitz.open`), not the builtin `open()`
 
@@ -435,7 +435,7 @@ Checklist evidence: BP-PY-7's condition targets builtin `open()` file handles; t
 
 ### [ ] Finding `26` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/rendercv/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/update_entry_figures.py:115:1`
 - Checklist pattern: completion print at the end of a standalone maintenance script
 
@@ -451,7 +451,7 @@ Checklist evidence: rule condition is "print used for operational logging in non
 
 ### [ ] Finding `27` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/27.txt`
+- Function context: `scripts/rendercv/findings/functions/27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/update_examples.py:59:1`
 - Checklist pattern: same construct as finding 26 — standalone maintenance script completion print
 
@@ -467,7 +467,7 @@ Checklist evidence: script module, not a non-script module.
 
 ### [ ] Finding `28` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/rendercv/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/update_schema.py:7:1`
 - Checklist pattern: same construct as finding 26 — standalone maintenance script completion print
 
@@ -485,7 +485,7 @@ Checklist evidence: rule condition is "non-script modules"; the shown module is 
 
 ### [ ] Finding `29` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/rendercv/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:40:9`
 - Checklist pattern: user-facing version output of the typer CLI callback, not library debug logging
 
@@ -511,7 +511,7 @@ Checklist evidence: CLI presentation output in a typer CLI callback (the module 
 
 ### [ ] Finding `30` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/rendercv/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:43:9`
 - Checklist pattern: same construct as finding 29 — CLI help output
 
@@ -530,7 +530,7 @@ Checklist evidence: CLI presentation output, not operational logging in library 
 
 ### [ ] Finding `35` — `BP-PY-40`
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/rendercv/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:123:15`
 - Checklist pattern: the thread is constructed with `daemon=True` — the shutdown protocol the rule's fix demands
 
@@ -548,7 +548,7 @@ Checklist evidence: rule condition is a thread started without join or a clear s
 
 ### [ ] Finding `36` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/36.txt`
+- Function context: `scripts/rendercv/findings/functions/36.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:130:17`
 - Checklist pattern: same construct as finding 29 — user-facing update notice in the CLI
 
@@ -566,7 +566,7 @@ Checklist evidence: CLI presentation output, not operational logging in a non-sc
 
 ### [ ] Finding `38` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/38.txt`
+- Function context: `scripts/rendercv/findings/functions/38.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:149:14`
 - Checklist pattern: the dynamically imported modules are discovered by globbing the package's own `cli/` directory — package-controlled selection, not an untrusted control sphere
 
@@ -592,7 +592,7 @@ Checklist evidence: rule condition requires "a dynamically selected module or fi
 
 ### [ ] Finding `39` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/rendercv/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:149:14`
 - Checklist pattern: same construct as finding 38 — the imported module names are not externally influenced
 
@@ -613,7 +613,7 @@ Checklist evidence: rule condition requires externally influenced text; the sink
 
 ### [ ] Finding `40` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/40.txt`
+- Function context: `scripts/rendercv/findings/functions/40.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/create_theme_command/create_theme_command.py:59:5`
 - Checklist pattern: CLI command presentation (rich panel), not library logging
 
@@ -630,7 +630,7 @@ Checklist evidence: CLI presentation output in the CLI command layer.
 
 ### [ ] Finding `41` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/rendercv/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/error_handler.py:41:17`
 - Checklist pattern: CLI error display to the user, not library logging
 
@@ -649,7 +649,7 @@ Checklist evidence: CLI presentation output, not operational logging in a non-sc
 
 ### [ ] Finding `42` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/rendercv/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/new_command/new_command.py:121:5`
 - Checklist pattern: CLI command presentation panel, not library logging
 
@@ -665,7 +665,7 @@ Checklist evidence: CLI presentation output in the CLI command layer.
 
 ### [ ] Finding `43` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/rendercv/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/new_command/print_welcome.py:14:5`
 - Checklist pattern: welcome banner — the module is a CLI presentation helper
 
@@ -681,7 +681,7 @@ Checklist evidence: CLI presentation output in a presentation-only module.
 
 ### [ ] Finding `44` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/rendercv/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/new_command/print_welcome.py:32:5`
 - Checklist pattern: same construct as finding 43 — welcome links panel
 
@@ -697,7 +697,7 @@ Checklist evidence: CLI presentation output in a presentation-only module.
 
 ### [ ] Finding `45` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/rendercv/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/render_command/render_command.py:227:1`
 - Checklist pattern: the "hot path" trigger is the substring `render` inside identifiers (`run_rendercv`), and the call is a one-time CLI argument parse
 
@@ -718,7 +718,7 @@ Checklist evidence: the "expensive decode/parse on a hot path" condition require
 
 ### [ ] Finding `46` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/rendercv/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/renderer/templater/connections.py:62:1`
 - Checklist pattern: the hot-path marker is the substring `render` inside the parameter name `rendercv_model`; the function performs no decode/parse and is not in a loop
 
@@ -739,7 +739,7 @@ Checklist evidence: rule condition requires "expensive decode/parse on a hot pat
 
 ### [ ] Finding `49` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/rendercv/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/renderer/templater/connections.py:200:1`
 - Checklist pattern: same substring artifact as finding 46 — call site of `parse_connections`
 
@@ -757,7 +757,7 @@ Checklist evidence: no decode/parse of serialized data and no hot path; the mark
 
 ### [ ] Finding `50` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/rendercv/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/renderer/templater/connections.py:235:1`
 - Checklist pattern: same substring artifact as finding 49 — markdown call site
 
@@ -775,7 +775,7 @@ Checklist evidence: no decode/parse of serialized data and no hot path; the mark
 
 ### [ ] Finding `55` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/rendercv/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/schema/rendercv_model_builder.py:186:1`
 - Checklist pattern: the hot-path marker is the substring `render` inside `RenderCVModel`; the call runs once in the validation-error path
 
@@ -794,7 +794,7 @@ Checklist evidence: no loop and no service/render handler; the marker match is a
 
 ### [ ] Finding `56` — `BP-PY-11`
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/rendercv/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/schema/yaml_reader.py:52:40`
 - Checklist pattern: module-level `yaml = ruamel.yaml.YAML()` instance — safe constructor
 
@@ -813,7 +813,7 @@ Checklist evidence: `detectBPPY11`'s `yaml.load(` needle matches the ruamel inst
 
 ### [ ] Finding `57` — `CWE-502`
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/rendercv/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/schema/yaml_reader.py:52:40`
 - Checklist pattern: same construct as finding 56 — ruamel `YAML()` instance
 
@@ -832,7 +832,7 @@ Checklist evidence: the load is performed by ruamel's safe YAML class, not PyYAM
 
 ### [ ] Finding `64` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/rendercv/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/cli/render_command/test_run_rendercv.py:110:1`
 - Checklist pattern: the test body contains both `pytest.raises` and an `assert`; the detector's line-based body scan terminates early at a dedented line inside a multi-line triple-quoted string
 
@@ -863,7 +863,7 @@ Checklist evidence: the rule's condition "side effects without assertions" is fa
 
 ### [ ] Finding `65` — `BP-PY-40`
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/rendercv/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/cli/render_command/test_watcher.py:41:23`
 - Checklist pattern: the thread is constructed with `daemon=True` (line 39) — clear shutdown protocol
 
@@ -884,7 +884,7 @@ Checklist evidence: rule condition is a thread started without join or a clear s
 
 ### [ ] Finding `71` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/rendercv/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/schema/models/cv/test_section.py:59:17`
 - Checklist pattern: the eval argument is built from `@pytest.mark.parametrize` literal values in a test — not externally influenced text
 
@@ -912,7 +912,7 @@ Checklist evidence: rule condition requires externally influenced text; the eval
 
 ### [ ] Finding `72` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/rendercv/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/schema/models/design/test_design.py:85:1`
 - Checklist pattern: the test body ends with two `assert` statements; the body scan terminates at a dedented line inside the triple-quoted `__init__.py` content
 
@@ -943,7 +943,7 @@ Checklist evidence: the rule's condition "side effects without assertions" is fa
 
 ### [ ] Finding `73` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/rendercv/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/test_pyodide.py:72:1`
 - Checklist pattern: the test ends with `assert result.returncode == 0`; the body scan terminates at dedented lines inside the triple-quoted JS script
 
@@ -1074,6 +1074,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_73.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/73.txt`
+- Chunk evidence: `scripts/rendercv/chunks/Chunk_1_25.txt`, `scripts/rendercv/chunks/Chunk_26_50.txt`, `scripts/rendercv/chunks/Chunk_51_73.txt`
+- Function evidence: `scripts/rendercv/findings/functions/1.txt` .. `scripts/rendercv/findings/functions/73.txt`
 - Validation: `git diff --check` — `pass`

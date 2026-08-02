@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap
 branch: main
 commit: 58dc6816ec71a7685b87823a0793b4d0d7cff933
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/httptap/chunks
+function_context_path: scripts/httptap/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (goslop binary used: `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/httptap/scripts/chunks -context-dir real-repos/httptap/scripts/findings/functions real-repos/httptap`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/httptap/chunks -context-dir scripts/httptap/findings/functions real-repos/httptap`
 - Findings: `103`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_75.txt`, `./scripts/chunks/Chunk_76_100.txt`, `./scripts/chunks/Chunk_101_103.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/103.txt` (all 103; plus the enclosing source file for every distinct construct)
+- Chunks reviewed: `scripts/httptap/chunks/Chunk_1_25.txt`, `scripts/httptap/chunks/Chunk_26_50.txt`, `scripts/httptap/chunks/Chunk_51_75.txt`, `scripts/httptap/chunks/Chunk_76_100.txt`, `scripts/httptap/chunks/Chunk_101_103.txt`
+- Function contexts reviewed: `scripts/httptap/findings/functions/1.txt` .. `scripts/httptap/findings/functions/103.txt` (all 103; plus the enclosing source file for every distinct construct)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/httptap/chunks`.
+- [x] Read `scripts/httptap/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/httptap/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/_pkgmeta.py:54:13`
 - Checklist pattern: `print(` token inside a docstring doctest example (`>>> print(...)`)
 
@@ -62,7 +62,7 @@ Checklist evidence: BP-PY-46's condition is "`print` is used for operational log
 
 ### [ ] Finding `2` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/httptap/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/analyzer.py:144:21`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -83,7 +83,7 @@ Checklist evidence: no executable `print` call exists at the flagged location; t
 
 ### [ ] Finding `3` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/httptap/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/analyzer.py:151:25`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -105,7 +105,7 @@ Checklist evidence: the flagged line is documentation inside a triple-quoted doc
 
 ### [ ] Finding `4` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/httptap/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/analyzer.py:249:52`
 - Checklist pattern: `.execute(...)` is an HTTP request executor method, not a DB-API cursor call
 
@@ -121,7 +121,7 @@ Checklist evidence: CWE-89's condition is that `execute/executemany` build SQL v
 
 ### [ ] Finding `5` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/httptap/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/analyzer.py:262:1`
 - Checklist pattern: broad except whose suite records the failure into the per-step result instead of swallowing it
 
@@ -140,7 +140,7 @@ Checklist evidence: BP-PY-1's condition is "without handling or re-raise swallow
 
 ### [ ] Finding `6` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/httptap/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/analyzer.py:262:1`
 - Checklist pattern: same handler as finding 5 — the generic catch records the failure into the step result
 
@@ -159,7 +159,7 @@ Checklist evidence: CWE-396's condition is that a generic handler "can hide fail
 
 ### [ ] Finding `7` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/httptap/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:85:17`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -178,7 +178,7 @@ Checklist evidence: BP-PY-46's condition is "`print` is used for operational log
 
 ### [ ] Finding `8` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/httptap/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:305:17`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -195,7 +195,7 @@ Checklist evidence: same as finding 7 — script module, user-facing `Console.pr
 
 ### [ ] Finding `9` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/httptap/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:349:17`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -213,7 +213,7 @@ Checklist evidence: the call is a Rich `Console.print` warning inside the CLI sc
 
 ### [ ] Finding `10` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/httptap/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:405:17`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -232,7 +232,7 @@ Checklist evidence: user-facing `Console.print` panel in the CLI script module.
 
 ### [ ] Finding `11` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/httptap/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:422:17`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -251,7 +251,7 @@ Checklist evidence: same as finding 7.
 
 ### [ ] Finding `12` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/httptap/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:435:17`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -271,7 +271,7 @@ Checklist evidence: same as finding 7.
 
 ### [ ] Finding `13` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/httptap/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:447:21`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -289,7 +289,7 @@ Checklist evidence: same as finding 7.
 
 ### [ ] Finding `14` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/httptap/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:467:21`
 - Checklist pattern: Rich `Console.print` user-facing output in the CLI entry-point module
 
@@ -307,7 +307,7 @@ Checklist evidence: same as finding 7.
 
 ### [ ] Finding `15` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/httptap/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:589:1`
 - Checklist pattern: top-level CLI `main()` catch-all that logs the traceback, displays the error and returns a fatal exit code
 
@@ -333,7 +333,7 @@ Checklist evidence: BP-PY-1's condition is that the handler "swallows failures a
 
 ### [ ] Finding `16` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/httptap/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/cli.py:589:1`
 - Checklist pattern: same handler as finding 15 — generic catch at the CLI process boundary that logs and reports
 
@@ -350,7 +350,7 @@ Checklist evidence: CWE-396's condition ("can hide failures that require distinc
 
 ### [ ] Finding `17` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/httptap/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/exporter.py:171:22`
 - Checklist pattern: Rich `Console.print` user-facing success message of the CLI output layer
 
@@ -370,7 +370,7 @@ Checklist evidence: the flagged call is user-facing product output, not debug/op
 
 ### [ ] Finding `18` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/httptap/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:41:13`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -394,7 +394,7 @@ Checklist evidence: same as finding 1 — no executable `print` call exists at t
 
 ### [ ] Finding `19` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/httptap/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:122:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -415,7 +415,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `20` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/httptap/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:461:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -435,7 +435,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `21` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/httptap/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:463:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -454,7 +454,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `22` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/httptap/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:465:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -473,7 +473,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `23` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/httptap/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:576:19`
 - Checklist pattern: assignment to an outgoing client request header with a constant value
 
@@ -489,7 +489,7 @@ Checklist evidence: CWE-93's condition is writing an externally influenced value
 
 ### [ ] Finding `24` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/httptap/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:616:1`
 - Checklist pattern: exception handler deliberately documented as non-fatal best-effort enrichment
 
@@ -507,7 +507,7 @@ Checklist evidence: BP-PY-2's condition targets silently discarding failures; th
 
 ### [ ] Finding `25` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/httptap/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:616:1`
 - Checklist pattern: same handler as finding 24 — documented non-fatal best-effort enrichment
 
@@ -525,7 +525,7 @@ Checklist evidence: CWE-390's condition assumes the program "continues without a
 
 ### [ ] Finding `26` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/httptap/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:616:13`
 - Checklist pattern: same handler as findings 24-25 — empty block is documented non-fatal control flow
 
@@ -543,7 +543,7 @@ Checklist evidence: CWE-1071's empty-block heuristic does not apply because the 
 
 ### [ ] Finding `27` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/27.txt`
+- Function context: `scripts/httptap/findings/functions/27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:628:1`
 - Checklist pattern: generic catch that wraps and re-raises as the module's own exception type
 
@@ -563,7 +563,7 @@ Checklist evidence: CWE-396's condition ("can hide failures") is not met because
 
 ### [ ] Finding `28` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/httptap/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:655:1`
 - Checklist pattern: documented defensive fallback for optional certificate metadata
 
@@ -582,7 +582,7 @@ Checklist evidence: BP-PY-1's condition ("swallows failures and hides bugs") is 
 
 ### [ ] Finding `29` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/httptap/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:697:1`
 - Checklist pattern: documented defensive fallback returning `None`
 
@@ -601,7 +601,7 @@ Checklist evidence: same as finding 28 — defined fallback handling, not silent
 
 ### [ ] Finding `30` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/httptap/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/dns.py:83:1`
 - Checklist pattern: worker-thread handler that collects the exception and re-raises it after `join`
 
@@ -618,7 +618,7 @@ Checklist evidence: BP-PY-1's condition is that failures are swallowed; the show
 
 ### [ ] Finding `31` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/httptap/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/dns.py:83:1`
 - Checklist pattern: same handler as finding 30 — exception collected and re-raised after thread join
 
@@ -635,7 +635,7 @@ Checklist evidence: CWE-396's condition is unmet because the collected exception
 
 ### [ ] Finding `32` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/httptap/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/tls.py:59:1`
 - Checklist pattern: generic catch that wraps and re-raises as a typed exception
 
@@ -655,7 +655,7 @@ Checklist evidence: CWE-396's condition is unmet because the exception is re-rai
 
 ### [ ] Finding `33` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/httptap/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/tls.py:79:1`
 - Checklist pattern: documented best-effort socket-info probe
 
@@ -672,7 +672,7 @@ Checklist evidence: BP-PY-2's condition targets silently discarding real failure
 
 ### [ ] Finding `34` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/httptap/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/tls.py:79:1`
 - Checklist pattern: same handler as finding 33 — documented best-effort probe
 
@@ -689,7 +689,7 @@ Checklist evidence: CWE-390's condition is unmet because the "error condition" i
 
 ### [ ] Finding `35` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/httptap/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/tls.py:79:9`
 - Checklist pattern: same handler as findings 33-34 — empty block is documented best-effort control flow
 
@@ -706,7 +706,7 @@ Checklist evidence: CWE-1071's empty-block heuristic does not apply to a deliber
 
 ### [ ] Finding `36` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/36.txt`
+- Function context: `scripts/httptap/findings/functions/36.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/interfaces.py:40:21`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -725,7 +725,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `37` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/httptap/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/models.py:24:13`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -746,7 +746,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `38` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/38.txt`
+- Function context: `scripts/httptap/findings/functions/38.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/models.py:93:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -764,7 +764,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `39` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/httptap/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:123:30`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -784,7 +784,7 @@ Checklist evidence: BP-PY-46's condition is "`print` used for operational loggin
 
 ### [ ] Finding `40` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/40.txt`
+- Function context: `scripts/httptap/findings/functions/40.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:124:30`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -802,7 +802,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `41` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/httptap/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:135:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -821,7 +821,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `42` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/httptap/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:136:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -838,7 +838,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `43` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/httptap/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:150:30`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -858,7 +858,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `44` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/httptap/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:152:30`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -875,7 +875,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `45` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/httptap/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:195:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -895,7 +895,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `46` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/httptap/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:196:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -913,7 +913,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `47` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/httptap/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:197:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -930,7 +930,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `48` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/httptap/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:212:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -948,7 +948,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `49` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/httptap/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:217:26`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -967,7 +967,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `50` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/httptap/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:223:26`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -985,7 +985,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `51` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/httptap/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:228:26`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -1003,7 +1003,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `52` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/httptap/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:254:30`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -1022,7 +1022,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `53` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/53.txt`
+- Function context: `scripts/httptap/findings/functions/53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:258:26`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -1039,7 +1039,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `54` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/httptap/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:268:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -1057,7 +1057,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `55` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/httptap/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:269:22`
 - Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
 
@@ -1074,7 +1074,7 @@ Checklist evidence: same as finding 39.
 
 ### [ ] Finding `56` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/httptap/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/request_executor.py:63:9`
 - Checklist pattern: `execute` is a protocol method performing HTTP requests, not SQL
 
@@ -1091,7 +1091,7 @@ Checklist evidence: CWE-89's condition requires SQL construction reaching a DB-A
 
 ### [ ] Finding `57` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/httptap/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/slo.py:18:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -1112,7 +1112,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `58` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/httptap/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/tls_inspector.py:159:1`
 - Checklist pattern: generic catch that wraps and re-raises as a typed exception
 
@@ -1130,7 +1130,7 @@ Checklist evidence: CWE-396's condition is unmet because the exception is re-rai
 
 ### [ ] Finding `59` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/httptap/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/tls_inspector.py:178:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -1149,7 +1149,7 @@ Checklist evidence: same as finding 1.
 
 ### [ ] Finding `60` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/httptap/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/utils.py:185:23`
 - Checklist pattern: TLS verification disabled only in the explicit, operator-chosen legacy mode
 
@@ -1174,7 +1174,7 @@ Checklist evidence: BP-PY-49's condition ("HTTP clients disable TLS verification
 
 ### [ ] Finding `61` — `CWE-295`
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/httptap/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/utils.py:185:27`
 - Checklist pattern: same construct as finding 60 — verification disabled only in the explicit legacy mode
 
@@ -1191,7 +1191,7 @@ Checklist evidence: CWE-295's condition is met only in the explicitly requested 
 
 ### [ ] Finding `62` — `CWE-523`
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/httptap/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/utils.py:185:27`
 - Checklist pattern: same construct as findings 60-61 — opt-in legacy mode; no tool-owned credential flow
 
@@ -1208,7 +1208,7 @@ Checklist evidence: CWE-523's condition requires a credential-bearing transport;
 
 ### [ ] Finding `63` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/httptap/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/visualizer.py:39:22`
 - Checklist pattern: Rich `Console.print` timeline output of the CLI visualizer
 
@@ -1226,7 +1226,7 @@ Checklist evidence: BP-PY-46's condition is "`print` used for operational loggin
 
 ### [ ] Finding `64` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/httptap/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/visualizer.py:88:22`
 - Checklist pattern: Rich `Console.print` timeline output of the CLI visualizer
 
@@ -1243,7 +1243,7 @@ Checklist evidence: same as finding 63.
 
 ### [ ] Finding `65` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/httptap/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/visualizer.py:152:22`
 - Checklist pattern: Rich `Console.print` timeline output of the CLI visualizer
 
@@ -1260,7 +1260,7 @@ Checklist evidence: same as finding 63.
 
 ### [ ] Finding `66` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/httptap/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_analyzer.py:20:9`
 - Checklist pattern: `execute` stub mimicking the HTTP request-executor protocol
 
@@ -1282,7 +1282,7 @@ Checklist evidence: CWE-89's condition requires SQL construction in `execute`; t
 
 ### [ ] Finding `67` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/httptap/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:112:1`
 - Checklist pattern: pytest-benchmark micro-benchmark whose `benchmark(...)` fixture call is the test's purpose
 
@@ -1300,7 +1300,7 @@ Checklist evidence: BP-PY-41's condition targets side-effect-only tests without 
 
 ### [ ] Finding `68` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/httptap/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:117:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(sample_timing.to_dict)`
 
@@ -1318,7 +1318,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `69` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/httptap/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:122:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(sample_network.to_dict)`
 
@@ -1336,7 +1336,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `70` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/70.txt`
+- Function context: `scripts/httptap/findings/functions/70.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:127:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(sample_response.to_dict)`
 
@@ -1354,7 +1354,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `71` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/httptap/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:132:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(sample_step.to_dict)`
 
@@ -1372,7 +1372,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `72` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/httptap/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:137:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(lambda: sample_step.is_redirect)`
 
@@ -1390,7 +1390,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `73` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/httptap/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:142:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(lambda: sample_step.has_error)`
 
@@ -1408,7 +1408,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `74` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/httptap/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:147:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_bytes_human, 512)`
 
@@ -1426,7 +1426,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `75` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/httptap/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:152:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_bytes_human, 1_048_576)`
 
@@ -1444,7 +1444,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `76` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/httptap/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:157:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_metrics_line, sample_step)`
 
@@ -1462,7 +1462,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `77` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/httptap/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:162:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_network_info, sample_step)`
 
@@ -1480,7 +1480,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `78` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/httptap/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:167:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_response_info, sample_step)`
 
@@ -1498,7 +1498,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `79` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/httptap/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:172:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_step_header, sample_step)`
 
@@ -1516,7 +1516,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `80` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/httptap/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:177:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(format_error, sample_error_step)`
 
@@ -1534,7 +1534,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `81` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/httptap/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:182:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(mask_sensitive_value, "Bearer …")`
 
@@ -1552,7 +1552,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `82` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/httptap/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:187:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(sanitize_headers, headers)`
 
@@ -1570,7 +1570,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `83` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/httptap/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:199:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(parse_http_date, "Mon, …")`
 
@@ -1588,7 +1588,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `84` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/httptap/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:204:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(parse_certificate_date, "Oct 22 …")`
 
@@ -1606,7 +1606,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `85` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/httptap/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:209:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(validate_url, "https://…")`
 
@@ -1624,7 +1624,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `86` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/httptap/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:214:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(validate_url, "ftp://…")`
 
@@ -1642,7 +1642,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `87` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/httptap/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:219:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(calculate_days_until, target)`
 
@@ -1660,7 +1660,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `88` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/httptap/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:225:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(build_summary, steps)`
 
@@ -1678,7 +1678,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `89` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/httptap/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:231:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(lambda: json.dumps(sample_step.to_dict()))`
 
@@ -1696,7 +1696,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `90` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/httptap/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:236:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(WaterfallVisualizer._get_phases, sample_step)`
 
@@ -1714,7 +1714,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `91` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/httptap/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_benchmarks.py:241:1`
 - Checklist pattern: same as finding 67 — benchmark test calling `benchmark(visualizer._compute_phase_widths, …)`
 
@@ -1732,7 +1732,7 @@ Checklist evidence: same as finding 67.
 
 ### [ ] Finding `92` — `BP-PY-13`
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/httptap/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:90:1`
 - Checklist pattern: token value generated by `faker` at runtime, not a literal secret
 
@@ -1750,7 +1750,7 @@ Checklist evidence: BP-PY-13's condition is "a secret-like name is assigned a no
 
 ### [ ] Finding `93` — `CWE-617`
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/httptap/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:93:1`
 - Checklist pattern: assertion inside a test mock handler that verifies the test's own expectation
 
@@ -1768,7 +1768,7 @@ Checklist evidence: CWE-617's condition is a reachable assertion on request-cont
 
 ### [ ] Finding `94` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/httptap/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:93:23`
 - Checklist pattern: assertion *reading* a request header, not writing a response header
 
@@ -1785,7 +1785,7 @@ Checklist evidence: CWE-93's condition requires writing a value into an HTTP res
 
 ### [ ] Finding `95` — `CWE-295`
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/httptap/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:1073:42`
 - Checklist pattern: test assertion verifying the documented `verify_ssl=False` behavior
 
@@ -1804,7 +1804,7 @@ Checklist evidence: CWE-295's condition is an explicit production bypass; the sh
 
 ### [ ] Finding `96` — `CWE-523`
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/httptap/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:1073:42`
 - Checklist pattern: same line as finding 95 — test assertion, no credential-bearing transport established by the test
 
@@ -1820,7 +1820,7 @@ Checklist evidence: CWE-523's condition requires disabling validation over a cre
 
 ### [ ] Finding `97` — `CWE-208`
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/httptap/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_pkgmeta.py:60:12`
 - Checklist pattern: equality comparison of package metadata (author string), not a secret
 
@@ -1838,7 +1838,7 @@ Checklist evidence: CWE-208's condition is comparing security-sensitive values w
 
 ### [ ] Finding `98` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/httptap/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_property_based.py:117:1`
 - Checklist pattern: test that raises `AssertionError` explicitly on failure
 
@@ -1860,7 +1860,7 @@ Checklist evidence: BP-PY-41's condition is "tests call production code without 
 
 ### [ ] Finding `99` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/httptap/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_property_based.py:126:1`
 - Checklist pattern: same as finding 98 — explicit `raise AssertionError` on failure
 
@@ -1882,7 +1882,7 @@ Checklist evidence: same as finding 98.
 
 ### [ ] Finding `100` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/httptap/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_property_based.py:142:1`
 - Checklist pattern: same as finding 98 — explicit `raise AssertionError` on failure
 
@@ -1905,7 +1905,7 @@ Checklist evidence: same as finding 98.
 
 ### [ ] Finding `101` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/httptap/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_request_executor.py:44:23`
 - Checklist pattern: `.execute` is the HTTP request executor, not a DB cursor
 
@@ -1922,7 +1922,7 @@ Checklist evidence: CWE-89's condition requires SQL command construction at a DB
 
 ### [ ] Finding `102` — `CWE-295`
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/httptap/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_utils.py:341:35`
 - Checklist pattern: test assertion verifying the documented `verify_ssl=False` behavior
 
@@ -1944,7 +1944,7 @@ Checklist evidence: CWE-295's condition is an explicit production bypass; the sh
 
 ### [ ] Finding `103` — `CWE-523`
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/httptap/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_utils.py:341:35`
 - Checklist pattern: same line as finding 102 — test assertion, no credential transport
 
@@ -1970,6 +1970,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/httptap/chunks`
+- Function evidence: `scripts/httptap/findings/functions`
 - Validation: `git diff --check` — `pass`

@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyhash-
 branch: main
 commit: 16dfd3d31673ff8399da51bfdb9844036f8785fb
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyhash-complete
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pyhash-complete/chunks
+function_context_path: scripts/pyhash-complete/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `(pre-built) ./bin/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pyhash-complete/scripts/chunks -context-dir real-repos/pyhash-complete/scripts/findings/functions real-repos/pyhash-complete`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pyhash-complete/chunks -context-dir scripts/pyhash-complete/findings/functions real-repos/pyhash-complete`
 - Findings: `11`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_11.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt … 11.txt`
+- Chunks reviewed: `scripts/pyhash-complete/chunks/Chunk_1_11.txt`
+- Function contexts reviewed: `scripts/pyhash-complete/findings/functions/1.txt … 11.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pyhash-complete/chunks`.
+- [x] Read `scripts/pyhash-complete/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding 11 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/pyhash-complete/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyhash-complete/simpleui.py:145:18`
 - Checklist pattern: `exec` is a Qt (PySide6 `QApplication`) event-loop method, not Python's `exec` builtin; the identifier match fires on attribute access.
 
@@ -99,6 +99,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_11.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` … `11.txt`
+- Chunk evidence: `scripts/pyhash-complete/chunks/Chunk_1_11.txt`
+- Function evidence: `scripts/pyhash-complete/findings/functions/1.txt` … `11.txt`
 - Validation: `git diff --check` — `pass`

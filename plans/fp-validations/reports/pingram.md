@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pingram
 branch: main
 commit: e06eed8e008c79afa56970b9a576757df20630ed
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pingram
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pingram/chunks
+function_context_path: scripts/pingram/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pingram/scripts/chunks -context-dir real-repos/pingram/scripts/findings/functions real-repos/pingram`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pingram/chunks -context-dir scripts/pingram/findings/functions real-repos/pingram`
 - Findings: `6`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_6.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`, `6.txt`
+- Chunks reviewed: `scripts/pingram/chunks/Chunk_1_6.txt`
+- Function contexts reviewed: `scripts/pingram/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`, `6.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pingram/chunks`.
+- [x] Read `scripts/pingram/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -78,6 +78,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_6.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` … `6.txt`
+- Chunk evidence: `scripts/pingram/chunks/Chunk_1_6.txt`
+- Function evidence: `scripts/pingram/findings/functions/1.txt` … `6.txt`
 - Validation: `git diff --check` — pass

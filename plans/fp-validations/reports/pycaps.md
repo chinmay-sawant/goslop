@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps
 branch: main
 commit: 68a6843bbd3f7d0ea33047ffb1045d978a7671c4
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pycaps/chunks
+function_context_path: scripts/pycaps/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `(pre-built) ./bin/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pycaps/scripts/chunks -context-dir real-repos/pycaps/scripts/findings/functions real-repos/pycaps`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pycaps/chunks -context-dir scripts/pycaps/findings/functions real-repos/pycaps`
 - Findings: `51`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_51.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt … 51.txt`
+- Chunks reviewed: `scripts/pycaps/chunks/Chunk_1_25.txt`, `scripts/pycaps/chunks/Chunk_26_50.txt`, `scripts/pycaps/chunks/Chunk_51_51.txt`
+- Function contexts reviewed: `scripts/pycaps/findings/functions/1.txt … 51.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pycaps/chunks`.
+- [x] Read `scripts/pycaps/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding 1 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/pycaps/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/ai/gpt.py:6:1`
 - Checklist pattern: the flagged string is an environment-variable *name* used as the lookup key for `os.getenv`, not a credential value.
 
@@ -65,7 +65,7 @@ Checklist evidence: the rule condition "secret-like name assigned a string liter
 
 ### [ ] Finding 10 — CWE-409
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/pycaps/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/effect/clip/animate_segment_emojis_effect.py:71:18`
 - Checklist pattern: the archive is fetched from a hardcoded, version-pinned URL constant of the project's own release, so no untrusted party supplies the compressed data.
 
@@ -86,7 +86,7 @@ Checklist evidence: the zip bomb trust boundary (untrusted compressed data) is a
 
 ### [ ] Finding 13 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/pycaps/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/caps_pipeline.py:78:23`
 - Checklist pattern: `.open(` is a method call on the `SubtitleRenderer` object, not Python's builtin `open()`.
 
@@ -103,7 +103,7 @@ Checklist evidence: the detector's `.open(` heuristic matches method calls; the 
 
 ### [ ] Finding 15 — CWE-1341
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/pycaps/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/caps_pipeline.py:237:14`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -121,7 +121,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding 16 — CWE-367
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/pycaps/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/caps_pipeline_builder.py:49:16`
 - Checklist pattern: the `exists` check only feeds a user-facing `ValueError`; the subsequent use fails benignly.
 
@@ -140,7 +140,7 @@ Checklist evidence: rule condition "path checked before later separate use" is m
 
 ### [ ] Finding 20 — CWE-478
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/pycaps/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/json_config_loader.py:93:1`
 - Checklist pattern: the match domain is a pydantic-validated `Literal` union whose every member has a case branch.
 
@@ -166,7 +166,7 @@ Checklist evidence: rule condition "match with two or more cases lacks a wildcar
 
 ### [ ] Finding 23 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/pycaps/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/renderer/css_subtitle_renderer.py:54:9`
 - Checklist pattern: `def open(self, ...)` is a method *definition*, not an `open()` call.
 
@@ -183,7 +183,7 @@ Checklist evidence: rule condition "a file is opened without a `with` statement"
 
 ### [ ] Finding 25 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/pycaps/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/renderer/pictex_subtitle_renderer.py:39:9`
 - Checklist pattern: `def open(self, ...)` is a method *definition*, not an `open()` call.
 
@@ -200,7 +200,7 @@ Checklist evidence: rule condition "a file is opened without a `with` statement"
 
 ### [ ] Finding 28 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/pycaps/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/renderer/playwright_screenshot_capturer.py:37:22`
 - Checklist pattern: `Image.open` is a Pillow library method on an in-memory `BytesIO`, not the builtin `open()`.
 
@@ -217,7 +217,7 @@ Checklist evidence: rule condition "file opened without context manager" targets
 
 ### [ ] Finding 30 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/pycaps/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/renderer/subtitle_renderer.py:15:9`
 - Checklist pattern: an `@abstractmethod def open(self, ...)` declaration, not an `open()` call.
 
@@ -235,7 +235,7 @@ Checklist evidence: rule condition "a file is opened without a `with` statement"
 
 ### [ ] Finding 31 — CWE-478
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/pycaps/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/selector/time_event_selector.py:28:1`
 - Checklist pattern: the matched value is a Python `Enum` whose members are all covered by the case branches.
 
@@ -257,7 +257,7 @@ Checklist evidence: rule condition "match with multiple cases and no wildcard" i
 
 ### [ ] Finding 35 — CWE-186
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/pycaps/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/transcriber/transcript_loader.py:14:23`
 - Checklist pattern: the regex parses a fixed standard format (VTT inline timestamp), not a validator that rejects valid identifiers.
 
@@ -274,7 +274,7 @@ Checklist evidence: rule condition "validation regex accepts only a fixed narrow
 
 ### [ ] Finding 39 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/pycaps/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:27:1`
 - Checklist pattern: the lambda closes over per-iteration state and cannot be hoisted out of the loop.
 
@@ -299,7 +299,7 @@ Checklist evidence: rule condition "heavy object or lambda is constructed per ho
 
 ### [ ] Finding 40 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/40.txt`
+- Function context: `scripts/pycaps/findings/functions/40.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:28:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -322,7 +322,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 41 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/pycaps/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:36:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -345,7 +345,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 42 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/pycaps/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:37:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -368,7 +368,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 43 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/pycaps/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:45:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -391,7 +391,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 44 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/pycaps/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:46:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -414,7 +414,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 45 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/pycaps/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:54:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -437,7 +437,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 46 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/pycaps/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:55:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -460,7 +460,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 47 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/pycaps/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:63:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -483,7 +483,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 48 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/pycaps/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/video/subtitle_clips_generator.py:64:1`
 - Checklist pattern: same per-iteration closure as Finding 39.
 
@@ -506,7 +506,7 @@ Checklist evidence: rule condition "lambda constructed per homogeneous loop elem
 
 ### [ ] Finding 51 — CWE-367
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/pycaps/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/tests/test_transcript_loader.py:69:33`
 - Checklist pattern: the exists-check is a teardown guard inside a single-threaded test; the race has no security consequence.
 
@@ -596,6 +596,6 @@ None. Finding 22 (CWE-22) reclassified as a true positive: `open(os.path.join(se
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/pycaps/chunks`
+- Function evidence: `scripts/pycaps/findings/functions`
 - Validation: `git diff --check` — pass

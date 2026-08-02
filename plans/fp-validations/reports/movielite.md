@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movieli
 branch: main
 commit: b7cd21f75a7102fa3578f6f568cd7d344aa0f958
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/movielite/chunks
+function_context_path: scripts/movielite/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/movielite/scripts/chunks -context-dir real-repos/movielite/scripts/findings/functions real-repos/movielite`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/movielite/chunks -context-dir scripts/movielite/findings/functions real-repos/movielite`
 - Findings: `154`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_154.txt`
-- Function contexts reviewed: `./scripts/findings/functions/<id>.txt` for every false positive (11, 26, 43, 49–138, 139, 143, 150, 154) plus the enclosing source files (benchmarks/compare_moviepy.py, examples/*.py, src/movielite/core/video_writer.py, tests/e2e/helpers.py, tests/e2e/test_core_video.py, docs/icon/movielite_gif.py)
+- Chunks reviewed: `scripts/movielite/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_154.txt`
+- Function contexts reviewed: `scripts/movielite/findings/functions/<id>.txt` for every false positive (11, 26, 43, 49–138, 139, 143, 150, 154) plus the enclosing source files (benchmarks/compare_moviepy.py, examples/*.py, src/movielite/core/video_writer.py, tests/e2e/helpers.py, tests/e2e/test_core_video.py, docs/icon/movielite_gif.py)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/movielite/chunks`.
+- [x] Read `scripts/movielite/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ Rule conditions verified with `./bin/goslop -explain <RULE-ID> --config template
 
 ### [ ] Finding `11` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/movielite/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/benchmarks/compare_moviepy.py:167:5`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -62,7 +62,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding `26` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/movielite/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/benchmarks/compare_moviepy_v1.py:171:5`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -79,7 +79,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding `43` — `CWE-1046`
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/movielite/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/docs/icon/movielite_gif.py:55:1`
 - Checklist pattern: the `+=` accumulator is a numeric pixel-width sum, not immutable text.
 
@@ -99,7 +99,7 @@ Checklist evidence: `textAccumulatorEvidence` returns true on the name heuristic
 
 ### [ ] Finding `49` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/movielite/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:12:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -117,7 +117,7 @@ Checklist evidence: the file is a standalone runnable example script, not an imp
 
 ### [ ] Finding `50` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/movielite/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:22:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -134,7 +134,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `51` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/movielite/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:27:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -152,7 +152,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `52` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/movielite/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:44:5`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -169,7 +169,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding `53` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/53.txt`
+- Function context: `scripts/movielite/findings/functions/53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:47:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -185,7 +185,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `54` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/movielite/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:52:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -203,7 +203,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `55` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/movielite/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:62:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -219,7 +219,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `56` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/movielite/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:67:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -237,7 +237,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `57` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/movielite/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:81:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -253,7 +253,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `58` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/movielite/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:86:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -271,7 +271,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `59` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/movielite/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:100:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -287,7 +287,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `60` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/movielite/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:105:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -305,7 +305,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `61` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/movielite/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/basic_editing.py:115:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -321,7 +321,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `62` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/movielite/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:16:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -337,7 +337,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `63` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/movielite/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:47:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -353,7 +353,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `64` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/movielite/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:54:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -369,7 +369,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `65` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/movielite/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:87:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -385,7 +385,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `66` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/movielite/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:94:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -401,7 +401,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `67` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/movielite/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:125:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -417,7 +417,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `68` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/movielite/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:132:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -433,7 +433,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `69` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/movielite/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:163:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -449,7 +449,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `70` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/70.txt`
+- Function context: `scripts/movielite/findings/functions/70.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:172:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -465,7 +465,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `71` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/movielite/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:175:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -481,7 +481,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `72` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/movielite/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:186:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -497,7 +497,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `73` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/movielite/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:193:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -513,7 +513,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `74` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/movielite/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/composite_clips.py:194:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -529,7 +529,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `75` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/movielite/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:12:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -547,7 +547,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `76` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/movielite/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:23:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -563,7 +563,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `77` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/movielite/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:28:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -581,7 +581,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `78` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/movielite/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:57:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -597,7 +597,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `79` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/movielite/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:62:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -615,7 +615,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `80` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/movielite/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:109:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -631,7 +631,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `81` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/movielite/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:114:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -649,7 +649,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `82` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/movielite/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:148:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -665,7 +665,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `83` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/movielite/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:153:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -683,7 +683,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `84` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/movielite/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:187:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -699,7 +699,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `85` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/movielite/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:192:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -717,7 +717,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `86` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/movielite/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:202:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -733,7 +733,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `87` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/movielite/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:207:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -751,7 +751,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `88` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/movielite/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:223:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -767,7 +767,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `89` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/movielite/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:228:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -785,7 +785,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `90` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/movielite/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/effects_showcase.py:247:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -801,7 +801,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `91` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/movielite/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:14:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -819,7 +819,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `92` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/movielite/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:26:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -835,7 +835,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `93` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/movielite/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:31:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -853,7 +853,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `94` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/movielite/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:48:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -869,7 +869,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `95` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/movielite/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:53:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -887,7 +887,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `96` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/movielite/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:79:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -903,7 +903,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `97` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/movielite/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:84:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -921,7 +921,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `98` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/movielite/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/masking_effects.py:117:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -937,7 +937,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `99` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/movielite/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:14:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -955,7 +955,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `100` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/movielite/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:27:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -971,7 +971,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `101` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/movielite/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:32:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -989,7 +989,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `102` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/movielite/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:55:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1005,7 +1005,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `103` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/movielite/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:60:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1023,7 +1023,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `104` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/movielite/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:75:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1039,7 +1039,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `105` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/movielite/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:80:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1057,7 +1057,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `106` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/106.txt`
+- Function context: `scripts/movielite/findings/functions/106.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:106:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1073,7 +1073,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `107` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/107.txt`
+- Function context: `scripts/movielite/findings/functions/107.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:111:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1091,7 +1091,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `108` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/108.txt`
+- Function context: `scripts/movielite/findings/functions/108.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:136:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1107,7 +1107,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `109` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/109.txt`
+- Function context: `scripts/movielite/findings/functions/109.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:141:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1125,7 +1125,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `110` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/110.txt`
+- Function context: `scripts/movielite/findings/functions/110.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:157:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1141,7 +1141,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `111` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/movielite/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:162:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1159,7 +1159,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `112` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/112.txt`
+- Function context: `scripts/movielite/findings/functions/112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:192:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1175,7 +1175,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `113` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/113.txt`
+- Function context: `scripts/movielite/findings/functions/113.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:197:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1193,7 +1193,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `114` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/movielite/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/text_animations.py:230:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1209,7 +1209,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `115` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/115.txt`
+- Function context: `scripts/movielite/findings/functions/115.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:12:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1227,7 +1227,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `116` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/116.txt`
+- Function context: `scripts/movielite/findings/functions/116.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:27:5`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -1244,7 +1244,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding `117` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/117.txt`
+- Function context: `scripts/movielite/findings/functions/117.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:29:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1260,7 +1260,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `118` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/118.txt`
+- Function context: `scripts/movielite/findings/functions/118.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:34:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1278,7 +1278,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `119` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/119.txt`
+- Function context: `scripts/movielite/findings/functions/119.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:50:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1294,7 +1294,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `120` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/120.txt`
+- Function context: `scripts/movielite/findings/functions/120.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:55:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1312,7 +1312,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `121` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/121.txt`
+- Function context: `scripts/movielite/findings/functions/121.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:75:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1328,7 +1328,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `122` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/122.txt`
+- Function context: `scripts/movielite/findings/functions/122.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:80:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1346,7 +1346,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `123` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/123.txt`
+- Function context: `scripts/movielite/findings/functions/123.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:96:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1362,7 +1362,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `124` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/124.txt`
+- Function context: `scripts/movielite/findings/functions/124.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:101:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1380,7 +1380,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `125` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/125.txt`
+- Function context: `scripts/movielite/findings/functions/125.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:123:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1396,7 +1396,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `126` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/126.txt`
+- Function context: `scripts/movielite/findings/functions/126.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:128:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1414,7 +1414,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `127` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/127.txt`
+- Function context: `scripts/movielite/findings/functions/127.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/transitions.py:150:5`
 - Checklist pattern: print in a runnable example script; the file is not a non-script library module.
 
@@ -1430,7 +1430,7 @@ Checklist evidence: the file is a standalone runnable example script; the "non-s
 
 ### [ ] Finding `129` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/129.txt`
+- Function context: `scripts/movielite/findings/functions/129.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:12:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1447,7 +1447,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `130` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/130.txt`
+- Function context: `scripts/movielite/findings/functions/130.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:23:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1463,7 +1463,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `131` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/131.txt`
+- Function context: `scripts/movielite/findings/functions/131.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:34:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1479,7 +1479,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `132` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/132.txt`
+- Function context: `scripts/movielite/findings/functions/132.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:50:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1495,7 +1495,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `133` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/133.txt`
+- Function context: `scripts/movielite/findings/functions/133.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:63:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1511,7 +1511,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `134` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/134.txt`
+- Function context: `scripts/movielite/findings/functions/134.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:64:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1527,7 +1527,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `135` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/135.txt`
+- Function context: `scripts/movielite/findings/functions/135.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:65:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1543,7 +1543,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `136` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/136.txt`
+- Function context: `scripts/movielite/findings/functions/136.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:66:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1559,7 +1559,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `137` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/137.txt`
+- Function context: `scripts/movielite/findings/functions/137.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:67:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1575,7 +1575,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `138` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/138.txt`
+- Function context: `scripts/movielite/findings/functions/138.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/examples/video_audio_control.py:68:1`
 - Checklist pattern: module-scope print in a standalone straight-line demo script.
 
@@ -1591,7 +1591,7 @@ Checklist evidence: zero-indent, module-level `print(` in a standalone script; t
 
 ### [ ] Finding `139` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/139.txt`
+- Function context: `scripts/movielite/findings/functions/139.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/src/movielite/core/video_writer.py:253:17`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -1612,7 +1612,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding `143` — `CWE-367`
 
-- Function context: `./scripts/findings/functions/143.txt`
+- Function context: `scripts/movielite/findings/functions/143.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/src/movielite/core/video_writer.py:403:20`
 - Checklist pattern: the exists-check is a teardown guard on the function's own temp file; the race has no consequence.
 
@@ -1630,7 +1630,7 @@ Checklist evidence: the checked path is a locally created temp file in a `finall
 
 ### [ ] Finding `150` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/150.txt`
+- Function context: `scripts/movielite/findings/functions/150.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/tests/e2e/helpers.py:64:18`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -1650,7 +1650,7 @@ Checklist evidence: rule condition "same resource handle is released twice" — 
 
 ### [ ] Finding `154` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/154.txt`
+- Function context: `scripts/movielite/findings/functions/154.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/tests/e2e/test_core_video.py:29:5`
 - Checklist pattern: two `.close()` calls target two *different* objects, each released once.
 
@@ -1815,6 +1815,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/movielite/chunks`
+- Function evidence: `scripts/movielite/findings/functions`
 - Validation: `git diff --check` — pass

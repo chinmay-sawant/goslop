@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinde
 branch: main
 commit: 7592dfac8c3c8141770f449ab3e65973b84268fc
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/cylinder/chunks
+function_context_path: scripts/cylinder/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (`go build -o bin/goslop ./cmd/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/cylinder/scripts/chunks -context-dir real-repos/cylinder/scripts/findings/functions real-repos/cylinder`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/cylinder/chunks -context-dir scripts/cylinder/findings/functions real-repos/cylinder`
 - Findings: `17`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_17.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` … `./scripts/findings/functions/17.txt`
+- Chunks reviewed: `scripts/cylinder/chunks/Chunk_1_17.txt`
+- Function contexts reviewed: `scripts/cylinder/findings/functions/1.txt` … `scripts/cylinder/findings/functions/17.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/cylinder/chunks`.
+- [x] Read `scripts/cylinder/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `2` — CWE-396
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/cylinder/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/src/cylinder.py:268:1`
 
 Source excerpt:
@@ -64,7 +64,7 @@ Checklist evidence: the except suite unconditionally re-raises (`raise e` / `rai
 
 ### [ ] Finding `4` — CWE-93
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/cylinder/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/src/cylinder.py:369:17`
 
 Source excerpt:
@@ -81,7 +81,7 @@ Checklist evidence: the value written to the header is an integer (file size) wi
 
 ### [ ] Finding `7` — BP-PY-6
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/cylinder/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/test_sites/foo_site.500.py:5:1`
 
 Source excerpt:
@@ -101,7 +101,7 @@ Checklist evidence: the asserted value is an internal framework flag set by `pro
 
 ### [ ] Finding `8` — BP-PY-6
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/cylinder/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/test_sites/foo_site.eh.default.py:13:1`
 
 Source excerpt:
@@ -123,7 +123,7 @@ Checklist evidence: the asserted value is an internal framework flag, not reques
 
 ### [ ] Finding `11` — BP-PY-6
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/cylinder/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/test_sites/foo_site.lh.default.py:3:1`
 
 Source excerpt:
@@ -141,7 +141,7 @@ Checklist evidence: the asserted value is an internal framework flag, not reques
 
 ### [ ] Finding `12` — CWE-93
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/cylinder/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:15:20`
 
 Source excerpt:
@@ -159,7 +159,7 @@ Checklist evidence: the line is a read/comparison (`assert ... == "good"`), not 
 
 ### [ ] Finding `13` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/cylinder/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:47:31`
 
 Source excerpt:
@@ -176,7 +176,7 @@ Checklist evidence: the trigger is a method call on a test client object perform
 
 ### [ ] Finding `14` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/cylinder/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:53:31`
 
 Source excerpt:
@@ -193,7 +193,7 @@ Checklist evidence: the trigger is a method call on a test client object perform
 
 ### [ ] Finding `15` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/cylinder/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:260:31`
 
 Source excerpt:
@@ -210,7 +210,7 @@ Checklist evidence: the trigger is a method call on a test client object perform
 
 ### [ ] Finding `16` — BP-PY-7
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/cylinder/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:266:31`
 
 Source excerpt:
@@ -227,7 +227,7 @@ Checklist evidence: the trigger is a method call on a test client object perform
 
 ### [ ] Finding `17` — CWE-117
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/cylinder/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:396:9`
 
 Source excerpt:
@@ -288,6 +288,6 @@ Rule condition (from `detectBPPY45` in `internal/lang/python/detectors/bad_pract
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/cylinder/chunks`
+- Function evidence: `scripts/cylinder/findings/functions`
 - Validation: `git diff --check` — pass

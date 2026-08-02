@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit
 branch: main
 commit: 8fae080f49f374b062172ed6ac71042539ad1f7a
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/violit/chunks
+function_context_path: scripts/violit/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (`go build -o bin/goslop ./cmd/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/violit/scripts/chunks -context-dir real-repos/violit/scripts/findings/functions real-repos/violit`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/violit/chunks -context-dir scripts/violit/findings/functions real-repos/violit`
 - Findings: `248`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt` … `./scripts/chunks/Chunk_226_248.txt` (all 10 chunk files)
-- Function contexts reviewed: `./scripts/findings/functions/2.txt`, `5.txt`, `8.txt`, `12.txt`, `13.txt`, `14.txt`, `28.txt`, `29.txt`, `30.txt`, `67.txt`, `86.txt`, `90.txt`, `91.txt`, `111.txt`, `124.txt`, `131.txt`, `147.txt`, `148.txt`, `157.txt` … `164.txt`, `179.txt`, `213.txt`, `226.txt`, `235.txt` (for every proposed false positive / uncertain finding)
+- Chunks reviewed: `scripts/violit/chunks/Chunk_1_25.txt` … `scripts/violit/chunks/Chunk_226_248.txt` (all 10 chunk files)
+- Function contexts reviewed: `scripts/violit/findings/functions/2.txt`, `5.txt`, `8.txt`, `12.txt`, `13.txt`, `14.txt`, `28.txt`, `29.txt`, `30.txt`, `67.txt`, `86.txt`, `90.txt`, `91.txt`, `111.txt`, `124.txt`, `131.txt`, `147.txt`, `148.txt`, `157.txt` … `164.txt`, `179.txt`, `213.txt`, `226.txt`, `235.txt` (for every proposed false positive / uncertain finding)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/violit/chunks`.
+- [x] Read `scripts/violit/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `2` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/violit/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/01_demo_showcase/old_archive_demo_showcase.py:178:38`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches” (counter counts `if `/`elif `/`for `/`while `/`except ` substrings)
 
@@ -70,7 +70,7 @@ Checklist evidence: counted the function body from the source file; real control
 
 ### [ ] Finding `5` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/violit/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/02_violit_blog/violit_advanced_blog.py:43:6`
 - Checklist pattern: rule condition “dynamic SQL string reaches execute/executemany (use bound parameters)”
 
@@ -90,7 +90,7 @@ Checklist evidence: checked all `db_query(...)` call sites in the enclosing sour
 
 ### [ ] Finding `8` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/violit/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/02_violit_blog/violit_blog.py:40:6`
 - Checklist pattern: rule condition “dynamic SQL string reaches execute/executemany (use bound parameters)”
 
@@ -110,7 +110,7 @@ Checklist evidence: checked all `db_query(...)` call sites in the enclosing sour
 
 ### [ ] Finding `12` — `BP-PY-37`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/violit/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/03_multi_db_sqlite_editor/demo_multi_db_sqlite_editor.py:230:17`
 - Checklist pattern: rule condition “DB-API `cursor.execute` builds SQL with f-string or % format; use bound parameters”
 
@@ -132,7 +132,7 @@ Checklist evidence: the interpolation site is unreachable for any `field` outsid
 
 ### [ ] Finding `13` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/violit/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/03_multi_db_sqlite_editor/demo_multi_db_sqlite_editor.py:230:17`
 - Checklist pattern: rule condition “dynamic SQL string reaches execute/executemany (use bound parameters)”
 
@@ -152,7 +152,7 @@ Checklist evidence: the SQL identifier is allowlist-constrained in the same func
 
 ### [ ] Finding `14` — `BP-PY-37`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/violit/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/03_multi_db_sqlite_editor/demo_multi_db_sqlite_editor.py:234:13`
 - Checklist pattern: rule condition “DB-API `cursor.execute` builds SQL with f-string or % format; use bound parameters”
 
@@ -169,7 +169,7 @@ Checklist evidence: identifier is allowlist-constrained; values bound.
 
 ### [ ] Finding `28` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/violit/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/99_github_issues/github_issue_99_codeblock.py:27:1`
 - Checklist pattern: rule condition “print( in library code (not under __main__ guard, not tests)” with `printCallOutsideString` per-line check
 
@@ -193,7 +193,7 @@ Checklist evidence: line 27 lies inside the `'''` block that starts at line 13 a
 
 ### [ ] Finding `29` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/violit/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app.py:85:21`
 - Checklist pattern: rule condition “externally influenced value is written into an HTTP response header without CRLF neutralization”
 
@@ -222,7 +222,7 @@ Checklist evidence: `_cache_control_for_scope` returns only hardcoded literal st
 
 ### [ ] Finding `30` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/violit/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app.py:124:434`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
 
@@ -250,7 +250,7 @@ Checklist evidence: AST count of `If`/`For`/`While`/`Try` statements directly in
 
 ### [ ] Finding `67` — `BP-PY-40`
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/violit/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_launcher.py:298:15`
 - Checklist pattern: rule condition “threading.Thread started without .join … avoid fire-and-forget non-daemon threads” (the detector explicitly skips lines with `daemon=True`)
 
@@ -267,7 +267,7 @@ Checklist evidence: the thread is created with `daemon=True` (line 297) immediat
 
 ### [ ] Finding `86` — `BP-PY-13`
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/violit/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_runtime.py:414:32`
 - Checklist pattern: rule condition “A secret-like name is assigned a non-empty string literal in source”
 
@@ -284,7 +284,7 @@ Checklist evidence: the matched construct is a JS variable name inside a string 
 
 ### [ ] Finding `90` — `CWE-215`
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/violit/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_runtime.py:420:17`
 - Checklist pattern: rule condition “debug output includes a sensitive value; redact it before logging”
 
@@ -302,7 +302,7 @@ Checklist evidence: the printed expression is `bool(csrf_token)`, which can only
 
 ### [ ] Finding `91` — `BP-PY-32`
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/violit/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_runtime.py:553:24`
 - Checklist pattern: rule condition “FileResponse / static file helpers use a path from user input without confinement”
 
@@ -329,7 +329,7 @@ Checklist evidence: `media_path` is read from `registry` (app-populated `_vl_med
 
 ### [ ] Finding `111` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/violit/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/background.py:188:52`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
 
@@ -358,7 +358,7 @@ Checklist evidence: AST count of `If`/`For`/`While`/`Try` in `BackgroundTask._ru
 
 ### [ ] Finding `124` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/124.txt`
+- Function context: `scripts/violit/findings/functions/124.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/background.py:312:17`
 - Checklist pattern: rule condition “externally influenced input … without neutralizing line-breaking control characters”
 
@@ -374,7 +374,7 @@ Checklist evidence: the formatted values are an `int` and a truncated internally
 
 ### [ ] Finding `147` — `CWE-117`
 
-- Function context: `./scripts/findings/functions/147.txt`
+- Function context: `scripts/violit/findings/functions/147.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:129:17`
 - Checklist pattern: rule condition “externally influenced input … without neutralizing line-breaking control characters”
 
@@ -393,7 +393,7 @@ Checklist evidence: the interpolated value comes from the developer-defined SQLM
 
 ### [ ] Finding `148` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/148.txt`
+- Function context: `scripts/violit/findings/functions/148.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:151:33`
 - Checklist pattern: rule condition “dynamic SQL string reaches execute/executemany (use bound parameters)”
 
@@ -417,7 +417,7 @@ Checklist evidence: all interpolated values derive from `table.columns` / `col.n
 
 ### [ ] Finding `157` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/157.txt`
+- Function context: `scripts/violit/findings/functions/157.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:234:29`
 - Checklist pattern: rule condition “eval/exec on dynamic input enables arbitrary code execution”
 
@@ -437,7 +437,7 @@ Checklist evidence: the receiver `s` is a SQLModel session; `exec` is a method n
 
 ### [ ] Finding `158` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/158.txt`
+- Function context: `scripts/violit/findings/functions/158.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:279:20`
 - Checklist pattern: rule condition “`requests` HTTP calls omit `timeout=`” (detector regex `\b(session|sess|req_session)\.(get|post|…)\s*\(`)
 
@@ -455,7 +455,7 @@ Checklist evidence: `Session` is imported from `sqlmodel` and wraps `self._engin
 
 ### [ ] Finding `159` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/159.txt`
+- Function context: `scripts/violit/findings/functions/159.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:294:28`
 - Checklist pattern: rule condition “eval/exec on dynamic input enables arbitrary code execution”
 
@@ -475,7 +475,7 @@ Checklist evidence: the receiver is a SQLModel `Session`; the argument is a type
 
 ### [ ] Finding `160` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/160.txt`
+- Function context: `scripts/violit/findings/functions/160.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:306:33`
 - Checklist pattern: rule condition “eval/exec on dynamic input enables arbitrary code execution”
 
@@ -493,7 +493,7 @@ Checklist evidence: receiver is a SQLModel `Session`; argument is a `select(...)
 
 ### [ ] Finding `161` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/161.txt`
+- Function context: `scripts/violit/findings/functions/161.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:339:33`
 - Checklist pattern: rule condition “eval/exec on dynamic input enables arbitrary code execution”
 
@@ -511,7 +511,7 @@ Checklist evidence: receiver is a SQLModel `Session`; argument is a typed statem
 
 ### [ ] Finding `162` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/162.txt`
+- Function context: `scripts/violit/findings/functions/162.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:353:13`
 - Checklist pattern: rule condition “`requests` HTTP calls omit `timeout=`” (detector regex matches `session.delete(` by name)
 
@@ -530,7 +530,7 @@ Checklist evidence: `session` is a SQLModel `Session` bound to `self._engine`; `
 
 ### [ ] Finding `163` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/163.txt`
+- Function context: `scripts/violit/findings/functions/163.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:369:17`
 - Checklist pattern: rule condition “`requests` HTTP calls omit `timeout=`” (detector regex matches `session.delete(` by name)
 
@@ -549,7 +549,7 @@ Checklist evidence: `session` is a SQLModel `Session`; `delete`/`commit` are ORM
 
 ### [ ] Finding `164` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/164.txt`
+- Function context: `scripts/violit/findings/functions/164.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:387:28`
 - Checklist pattern: rule condition “eval/exec on dynamic input enables arbitrary code execution”
 
@@ -567,7 +567,7 @@ Checklist evidence: receiver is a SQLModel `Session`; argument is a typed statem
 
 ### [ ] Finding `179` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/179.txt`
+- Function context: `scripts/violit/findings/functions/179.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/chart_widgets.py:19:27`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
 
@@ -600,7 +600,7 @@ Checklist evidence: AST count of `If`/`For`/`While`/`Try` statements = 7 < 12.
 
 ### [ ] Finding `213` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/213.txt`
+- Function context: `scripts/violit/findings/functions/213.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/form_widgets.py:67:23`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
 
@@ -633,7 +633,7 @@ Checklist evidence: AST count of real control-flow statements in the `builder()`
 
 ### [ ] Finding `226` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/226.txt`
+- Function context: `scripts/violit/findings/functions/226.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/input_widgets.py:415:23`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
 
@@ -664,7 +664,7 @@ Checklist evidence: AST count of real control-flow statements in the `builder()`
 
 ### [ ] Finding `235` — `CWE-1121`
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/violit/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/layout_widgets.py:326:107`
 - Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
 
@@ -1027,6 +1027,6 @@ None. Finding 131 (CWE-829) reclassified as a true positive: `runpy.run_path(scr
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/violit/chunks`
+- Function evidence: `scripts/violit/findings/functions`
 - Validation: `git diff --check` — `pass`

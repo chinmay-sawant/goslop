@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/PyDepen
 branch: main
 commit: bc1e400990bb6b50a76da423fbfad6df8074c048
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/PyDepends
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/PyDepends/chunks
+function_context_path: scripts/PyDepends/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `bin/goslop` prebuilt (`make build`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/PyDepends/scripts/chunks -context-dir real-repos/PyDepends/scripts/findings/functions real-repos/PyDepends`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/PyDepends/chunks -context-dir scripts/PyDepends/findings/functions real-repos/PyDepends`
 - Findings: `4`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_4.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`
+- Chunks reviewed: `scripts/PyDepends/chunks/Chunk_1_4.txt`
+- Function contexts reviewed: `scripts/PyDepends/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/PyDepends/chunks`.
+- [x] Read `scripts/PyDepends/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -79,6 +79,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_4.txt`
-- Function evidence: `./scripts/findings/functions/1.txt`–`4.txt`
+- Chunk evidence: `scripts/PyDepends/chunks/Chunk_1_4.txt`
+- Function evidence: `scripts/PyDepends/findings/functions/1.txt`–`4.txt`
 - Validation: `git diff --check` — pass

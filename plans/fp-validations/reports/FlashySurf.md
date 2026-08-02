@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashyS
 branch: main
 commit: 3d14f8ca328e7f11d3fc6f2fe86bc15a2463184e
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/FlashySurf/chunks
+function_context_path: scripts/FlashySurf/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (bin/goslop prebuilt)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/FlashySurf/scripts/chunks -context-dir real-repos/FlashySurf/scripts/findings/functions real-repos/FlashySurf`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/FlashySurf/chunks -context-dir scripts/FlashySurf/findings/functions real-repos/FlashySurf`
 - Findings: `5`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_5.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`
+- Chunks reviewed: `scripts/FlashySurf/chunks/Chunk_1_5.txt`
+- Function contexts reviewed: `scripts/FlashySurf/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/FlashySurf/chunks`.
+- [x] Read `scripts/FlashySurf/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/FlashySurf/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf/data-process.py:167:1`
 - Checklist pattern: print sits at module scope (zero indentation) of a standalone script; the file is not a non-script module, so the rule's stated condition ("print is used for operational logging in non-script modules") is not satisfied.
 
@@ -62,7 +62,7 @@ Checklist evidence: the flagged line is a zero-indent, module-level `print(` in 
 
 ### [ ] Finding `2` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/FlashySurf/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf/data-process.py:168:1`
 - Checklist pattern: same construct as finding 1 — module-scope print in the same standalone script, adjacent to line 167; distinct line, so kept as its own finding.
 
@@ -79,7 +79,7 @@ Checklist evidence: the flagged line is a module-level `print(` (column 0) in a 
 
 ### [ ] Finding `4` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/FlashySurf/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf/semantic-classification.py:42:1`
 - Checklist pattern: print sits at module scope (zero indentation) of a standalone script; the file is not a non-script module, so the rule's stated condition is not satisfied.
 
@@ -98,7 +98,7 @@ Checklist evidence: the flagged line is a zero-indent, module-level `print(` in 
 
 ### [ ] Finding `5` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/FlashySurf/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf/semantic-classification.py:43:1`
 - Checklist pattern: same construct as finding 4 — module-scope print in the same standalone script, adjacent to line 42; distinct line, so kept as its own finding.
 
@@ -130,6 +130,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_5.txt`
-- Function evidence: `./scripts/findings/functions/1.txt`–`5.txt`
+- Chunk evidence: `scripts/FlashySurf/chunks/Chunk_1_5.txt`
+- Function evidence: `scripts/FlashySurf/findings/functions/1.txt`–`5.txt`
 - Validation: `git diff --check` — pass

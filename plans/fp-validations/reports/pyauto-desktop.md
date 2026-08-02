@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-
 branch: main
 commit: 2448ba4a843cde40697a289895b7cb2e399d5afa
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/pyauto-desktop/chunks
+function_context_path: scripts/pyauto-desktop/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `n/a` (prebuilt `./bin/goslop` in goslop repo root)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/pyauto-desktop/scripts/chunks -context-dir real-repos/pyauto-desktop/scripts/findings/functions real-repos/pyauto-desktop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pyauto-desktop/chunks -context-dir scripts/pyauto-desktop/findings/functions real-repos/pyauto-desktop`
 - Findings: `92`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_75.txt`, `./scripts/chunks/Chunk_76_92.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `63.txt`, `66.txt`, `74.txt` (all proposed false positives); full enclosing source read for all FP candidates and for every CWE-1121 / BP-PY-7 / BP-PY-12 / BP-PY-36 / PERF-PY-26 / CWE-1341 trigger.
+- Chunks reviewed: `scripts/pyauto-desktop/chunks/Chunk_1_25.txt`, `scripts/pyauto-desktop/chunks/Chunk_26_50.txt`, `scripts/pyauto-desktop/chunks/Chunk_51_75.txt`, `scripts/pyauto-desktop/chunks/Chunk_76_92.txt`
+- Function contexts reviewed: `scripts/pyauto-desktop/findings/functions/1.txt`, `63.txt`, `66.txt`, `74.txt` (all proposed false positives); full enclosing source read for all FP candidates and for every CWE-1121 / BP-PY-7 / BP-PY-12 / BP-PY-36 / PERF-PY-26 / CWE-1341 trigger.
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/pyauto-desktop/chunks`.
+- [x] Read `scripts/pyauto-desktop/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `1` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/pyauto-desktop/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/capture_tool.py:91:13`
 - Checklist pattern: rule condition (two releases of the same resource handle) is not met by the shown source.
 
@@ -66,7 +66,7 @@ Checklist evidence: `self.close()` is never invoked twice in a single execution 
 
 ### [ ] Finding `63` — `PERF-PY-26`
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/pyauto-desktop/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/main.py:342:1`
 - Checklist pattern: the decode is not on a hot path (no loop, no render/job path); the trigger only matches the function name.
 
@@ -91,7 +91,7 @@ Checklist evidence: the call site is not inside a loop and no render/job/per-fra
 
 ### [ ] Finding `66` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/pyauto-desktop/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/main.py:384:19`
 - Checklist pattern: the `exec` identifier is an attribute (method) reference, not the builtin exec.
 
@@ -110,7 +110,7 @@ Checklist evidence: the ident `exec` is preceded by a `.` attribute access on a 
 
 ### [ ] Finding `74` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/pyauto-desktop/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/main.py:890:9`
 - Checklist pattern: the `exec` identifier is an attribute (method) reference, not the builtin exec.
 
@@ -282,6 +282,6 @@ All remaining findings satisfy their rule's condition; tables per rule.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks` (4 chunk files, findings 1–92)
-- Function evidence: `./scripts/findings/functions` (92 per-finding contexts)
+- Chunk evidence: `scripts/pyauto-desktop/chunks` (4 chunk files, findings 1–92)
+- Function evidence: `scripts/pyauto-desktop/findings/functions` (92 per-finding contexts)
 - Validation: `git diff --check` — pass

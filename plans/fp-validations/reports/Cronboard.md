@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboa
 branch: main
 commit: 0fa5f0d
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/Cronboard/chunks
+function_context_path: scripts/Cronboard/findings/functions
 ```
 
 ## Scan evidence
 
-- Build command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/Cronboard/scripts/chunks -context-dir real-repos/Cronboard/scripts/findings/functions real-repos/Cronboard`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/Cronboard/scripts/chunks -context-dir real-repos/Cronboard/scripts/findings/functions real-repos/Cronboard`
+- Build command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Cronboard/chunks -context-dir scripts/Cronboard/findings/functions real-repos/Cronboard`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Cronboard/chunks -context-dir scripts/Cronboard/findings/functions real-repos/Cronboard`
 - Findings: 69
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_69.txt`
-- Function contexts reviewed: `./scripts/findings/functions/30.txt`, `40.txt`, `60.txt`, `61.txt`, `62.txt`, `69.txt`, plus the full enclosing source files for all of them (`cron_encrypt.py`, `cron_logger.py`, `cron_servers.py`, `test_cron_ssh_modal.py`)
+- Chunks reviewed: `scripts/Cronboard/chunks/Chunk_1_25.txt`, `scripts/Cronboard/chunks/Chunk_26_50.txt`, `scripts/Cronboard/chunks/Chunk_51_69.txt`
+- Function contexts reviewed: `scripts/Cronboard/findings/functions/30.txt`, `40.txt`, `60.txt`, `61.txt`, `62.txt`, `69.txt`, plus the full enclosing source files for all of them (`cron_encrypt.py`, `cron_logger.py`, `cron_servers.py`, `test_cron_ssh_modal.py`)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/Cronboard/chunks`.
+- [x] Read `scripts/Cronboard/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `30` — `CWE-215`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/Cronboard/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard/src/cronboard/screens/cron_servers.py:236:33`
 - Checklist pattern: debug sink arguments mention the word "password" but interpolate no sensitive value
 
@@ -63,7 +63,7 @@ Checklist evidence: CWE-215's condition is "debug output includes a sensitive va
 
 ### [ ] Finding `40` — `PERF-PY-25`
 
-- Function context: `./scripts/findings/functions/40.txt`
+- Function context: `scripts/Cronboard/findings/functions/40.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard/src/cronboard/services/cron_logging/cron_logger.py:31:1`
 - Checklist pattern: lambda is constructed once as a `sorted()` key, not per loop element
 
@@ -84,7 +84,7 @@ Checklist evidence: PERF-PY-25's condition is "heavy object or lambda is constru
 
 ### [ ] Finding `62` — `CWE-88`
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/Cronboard/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard/src/cronboard/services/encryption/cron_encrypt.py:74:12`
 - Checklist pattern: the untrusted value is passed via stdin; the argv's only dynamic segment is a constant path
 
@@ -115,7 +115,7 @@ Checklist evidence: CWE-88's condition is "dynamic value is embedded in a subpro
 
 ### [ ] Finding `69` — `CWE-260`
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/Cronboard/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard/tests/screens/test_cron_ssh_modal.py:96:13`
 - Checklist pattern: literal `"password": "password"` in a test assertion fixture, not a configuration map
 
@@ -257,6 +257,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/Cronboard/chunks`
+- Function evidence: `scripts/Cronboard/findings/functions`
 - Validation: `git diff --check` — pass

@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/python-
 branch: prod
 commit: 4f36e8faedd41272e91dbcb493c87abfc93c3b66
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/python-injection
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/python-injection/chunks
+function_context_path: scripts/python-injection/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (`go build -o bin/goslop ./cmd/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/python-injection/scripts/chunks -context-dir real-repos/python-injection/scripts/findings/functions real-repos/python-injection`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/python-injection/chunks -context-dir scripts/python-injection/findings/functions real-repos/python-injection`
 - Findings: `2`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_2.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `./scripts/findings/functions/2.txt`
+- Chunks reviewed: `scripts/python-injection/chunks/Chunk_1_2.txt`
+- Function contexts reviewed: `scripts/python-injection/findings/functions/1.txt`, `scripts/python-injection/findings/functions/2.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/python-injection/chunks`.
+- [x] Read `scripts/python-injection/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -53,6 +53,6 @@ Rule condition (from `detectBPPY41` in `internal/lang/python/detectors/bad_pract
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/python-injection/chunks`
+- Function evidence: `scripts/python-injection/findings/functions`
 - Validation: `git diff --check` — pass

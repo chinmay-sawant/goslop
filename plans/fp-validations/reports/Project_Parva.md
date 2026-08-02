@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project
 branch: main
 commit: d05f6111bb0a39ce8dc3c82330297b60ae82c7c5
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/Project_Parva/chunks
+function_context_path: scripts/Project_Parva/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `make build` (goslop binary at `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/Project_Parva/scripts/chunks -context-dir real-repos/Project_Parva/scripts/findings/functions real-repos/Project_Parva`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Project_Parva/chunks -context-dir scripts/Project_Parva/findings/functions real-repos/Project_Parva`
 - Findings: `412`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt` … `Chunk_401_412.txt` (17 files, findings 1–412)
-- Function contexts reviewed: `./scripts/findings/functions/<id>.txt` for every proposed false positive; enclosing source read when the exported context was insufficient (billing `service.py`/`storage.py`/`migrations.py`, `middleware.py`, `app_factory.py`, `rate_limit.py`, `public_artifacts_routes.py`, `rulelang_service.py`, `triad_pipeline.py`, `week3_ground_truth_pipeline.py`, `harness.py`, `ingest_moha_pdfs.py`, `verify_public.py`, `client.py`, `run_browser_smoke.py`, `check_public_claims.py`, `verify_clean_clone_assumptions.py`, `test_temporal_trust_tools.py`, `test_final_artifacts_exist.py`, `tithi.py`, `validate_schemas.py`).
+- Chunks reviewed: `scripts/Project_Parva/chunks/Chunk_1_25.txt` … `Chunk_401_412.txt` (17 files, findings 1–412)
+- Function contexts reviewed: `scripts/Project_Parva/findings/functions/<id>.txt` for every proposed false positive; enclosing source read when the exported context was insufficient (billing `service.py`/`storage.py`/`migrations.py`, `middleware.py`, `app_factory.py`, `rate_limit.py`, `public_artifacts_routes.py`, `rulelang_service.py`, `triad_pipeline.py`, `week3_ground_truth_pipeline.py`, `harness.py`, `ingest_moha_pdfs.py`, `verify_public.py`, `client.py`, `run_browser_smoke.py`, `check_public_claims.py`, `verify_clean_clone_assumptions.py`, `test_temporal_trust_tools.py`, `test_final_artifacts_exist.py`, `tithi.py`, `validate_schemas.py`).
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks` (all 17 chunks, findings 1–412).
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/Project_Parva/chunks` (all 17 chunks, findings 1–412).
+- [x] Read `scripts/Project_Parva/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition (`-explain` metadata + catalogue `detection_notes` in `ruleset/python/`) and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ One subsection per finding. No grouping was applied: no two false-positive findi
 
 ### [ ] Finding 1 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/Project_Parva/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/billing_routes.py:327:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -64,7 +64,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 2 — CWE-396
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/Project_Parva/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/engine_routes.py:278:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -83,7 +83,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 3 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/Project_Parva/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:100:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -102,7 +102,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 4 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/Project_Parva/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:110:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -121,7 +121,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 5 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/Project_Parva/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:118:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -140,7 +140,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 6 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/Project_Parva/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:126:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -159,7 +159,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 7 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/Project_Parva/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:134:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -178,7 +178,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 8 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/Project_Parva/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/rules_routes.py:112:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -197,7 +197,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 9 — CWE-89
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/Project_Parva/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/migrations.py:224:10`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -216,7 +216,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 10 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/Project_Parva/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/migrations.py:235:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -235,7 +235,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 11 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/Project_Parva/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:112:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -254,7 +254,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 12 — CWE-89
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/Project_Parva/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:112:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -273,7 +273,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 13 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/Project_Parva/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:193:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -292,7 +292,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 14 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/Project_Parva/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:208:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -311,7 +311,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 15 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/Project_Parva/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:252:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -330,7 +330,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 16 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/Project_Parva/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:259:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -349,7 +349,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 17 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/Project_Parva/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:276:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -368,7 +368,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 18 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/Project_Parva/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:382:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -387,7 +387,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 19 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/Project_Parva/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:397:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -406,7 +406,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 20 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/Project_Parva/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:420:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -425,7 +425,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 21 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/Project_Parva/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:429:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -444,7 +444,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 22 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/Project_Parva/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:480:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -463,7 +463,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 23 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/Project_Parva/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:554:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -482,7 +482,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 24 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/Project_Parva/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:593:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -501,7 +501,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 25 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/Project_Parva/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:602:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -520,7 +520,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 26 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/Project_Parva/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:654:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -539,7 +539,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 27 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/27.txt`
+- Function context: `scripts/Project_Parva/findings/functions/27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:678:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -558,7 +558,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 28 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/Project_Parva/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:732:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -577,7 +577,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 29 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/Project_Parva/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:741:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -596,7 +596,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 30 — BP-PY-37
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/Project_Parva/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:788:19`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -615,7 +615,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 31 — CWE-89
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/Project_Parva/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/storage.py:108:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -634,7 +634,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 32 — PERF-PY-23
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/Project_Parva/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/storage.py:131:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -653,7 +653,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 33 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/Project_Parva/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/app_factory.py:77:16`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -672,7 +672,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 34 — CWE-93
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/Project_Parva/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/app_factory.py:78:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -691,7 +691,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 35 — CWE-93
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/Project_Parva/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:61:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -710,7 +710,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 36 — CWE-290
 
-- Function context: `./scripts/findings/functions/36.txt`
+- Function context: `scripts/Project_Parva/findings/functions/36.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:181:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -729,7 +729,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 37 — CWE-396
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/Project_Parva/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:204:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -748,7 +748,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 38 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/38.txt`
+- Function context: `scripts/Project_Parva/findings/functions/38.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:794:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -767,7 +767,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 39 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/Project_Parva/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/rate_limit.py:166:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -786,7 +786,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 40 — CWE-396
 
-- Function context: `./scripts/findings/functions/40.txt`
+- Function context: `scripts/Project_Parva/findings/functions/40.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/rate_limit.py:197:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -805,7 +805,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 42 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/Project_Parva/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:17:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -824,7 +824,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 43 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/Project_Parva/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:347:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -843,7 +843,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 44 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/Project_Parva/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:350:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -862,7 +862,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 45 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/Project_Parva/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:366:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -881,7 +881,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 46 — CWE-390
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/Project_Parva/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:366:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -900,7 +900,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 47 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/Project_Parva/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:511:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -919,7 +919,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 48 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/Project_Parva/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:592:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -938,7 +938,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 49 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/Project_Parva/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator_v2.py:173:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -957,7 +957,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 50 — CWE-390
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/Project_Parva/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator_v2.py:173:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -976,7 +976,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 51 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/51.txt`
+- Function context: `scripts/Project_Parva/findings/functions/51.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/panchanga.py:81:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -995,7 +995,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 52 — BP-PY-5
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/Project_Parva/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/tithi.py:9:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1014,7 +1014,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 53 — CWE-186
 
-- Function context: `./scripts/findings/functions/53.txt`
+- Function context: `scripts/Project_Parva/findings/functions/53.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/compliance/notice_ingestion.py:14:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1033,7 +1033,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 54 — CWE-208
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/Project_Parva/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/membranes/source_resolution.py:98:59`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1052,7 +1052,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 55 — CWE-208
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/Project_Parva/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/policy/vm.py:64:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1071,7 +1071,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 56 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/Project_Parva/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/accuracy_architecture.py:219:15`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1090,7 +1090,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 57 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/Project_Parva/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/backtest.py:282:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1109,7 +1109,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 58 — CWE-390
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/Project_Parva/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/backtest.py:282:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1128,7 +1128,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 59 — CWE-1071
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/Project_Parva/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/backtest.py:282:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1147,7 +1147,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 60 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/Project_Parva/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/hamropatro_shadow.py:176:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1166,7 +1166,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 61 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/Project_Parva/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/shadow_residual_correction.py:96:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1185,7 +1185,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 63 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/Project_Parva/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/rules/triad_pipeline.py:125:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1204,7 +1204,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 64 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/Project_Parva/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/rules/triad_pipeline.py:150:23`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1223,7 +1223,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 65 — CWE-186
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/Project_Parva/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/agent_service.py:71:18`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1242,7 +1242,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 66 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/Project_Parva/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:415:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1261,7 +1261,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 67 — CWE-396
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/Project_Parva/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:415:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1280,7 +1280,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 68 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/Project_Parva/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:523:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1299,7 +1299,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 69 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/Project_Parva/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:761:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1318,7 +1318,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 71 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/Project_Parva/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:1384:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1337,7 +1337,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 72 — CWE-390
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/Project_Parva/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:1384:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1356,7 +1356,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 73 — CWE-1071
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/Project_Parva/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:1384:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1375,7 +1375,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 74 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/Project_Parva/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/timegraph_fact_links.py:39:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1394,7 +1394,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 75 — CWE-390
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/Project_Parva/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/timegraph_fact_links.py:39:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1413,7 +1413,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 76 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/Project_Parva/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/benchmark_runner.py:19:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1432,7 +1432,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 77 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/Project_Parva/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:157:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1451,7 +1451,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 78 — CWE-396
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/Project_Parva/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:157:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1470,7 +1470,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 79 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/Project_Parva/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:195:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1489,7 +1489,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 80 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/Project_Parva/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:238:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1508,7 +1508,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 81 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/Project_Parva/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_boundary_suite.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1527,7 +1527,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 82 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/Project_Parva/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_overrides.py:63:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1546,7 +1546,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 83 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/Project_Parva/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_source_review_queue.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1565,7 +1565,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 84 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/Project_Parva/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate.py:281:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1584,7 +1584,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 85 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/Project_Parva/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate.py:291:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1603,7 +1603,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 86 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/Project_Parva/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate.py:295:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1622,7 +1622,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 87 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/Project_Parva/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate.py:333:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1641,7 +1641,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 89 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/Project_Parva/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:114:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1660,7 +1660,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 90 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/Project_Parva/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:115:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1679,7 +1679,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 91 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/Project_Parva/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:116:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1698,7 +1698,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 92 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/Project_Parva/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:117:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1717,7 +1717,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 93 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/Project_Parva/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:127:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1736,7 +1736,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 94 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/Project_Parva/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:129:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1755,7 +1755,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 95 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/Project_Parva/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:133:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1774,7 +1774,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 96 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/Project_Parva/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:134:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1793,7 +1793,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 97 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/Project_Parva/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:137:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1812,7 +1812,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 98 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/Project_Parva/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v2.py:138:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1831,7 +1831,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 99 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/Project_Parva/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:27:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1850,7 +1850,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 100 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/Project_Parva/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:28:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1869,7 +1869,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 101 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/Project_Parva/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:29:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1888,7 +1888,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 102 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/Project_Parva/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:45:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1907,7 +1907,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 103 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/Project_Parva/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:55:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1926,7 +1926,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 104 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/Project_Parva/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:67:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1945,7 +1945,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 105 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/Project_Parva/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:68:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1964,7 +1964,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 106 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/106.txt`
+- Function context: `scripts/Project_Parva/findings/functions/106.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/evaluate_v3.py:69:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -1983,7 +1983,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 107 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/107.txt`
+- Function context: `scripts/Project_Parva/findings/functions/107.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/generate_beta_dashboard.py:33:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2002,7 +2002,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 108 — CWE-390
 
-- Function context: `./scripts/findings/functions/108.txt`
+- Function context: `scripts/Project_Parva/findings/functions/108.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/generate_beta_dashboard.py:33:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2021,7 +2021,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 109 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/109.txt`
+- Function context: `scripts/Project_Parva/findings/functions/109.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/generate_offline.py:18:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2040,7 +2040,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 110 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/110.txt`
+- Function context: `scripts/Project_Parva/findings/functions/110.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/generate_snapshot.py:16:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2059,7 +2059,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 111 — CWE-88
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/Project_Parva/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:178:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2078,7 +2078,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 112 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/112.txt`
+- Function context: `scripts/Project_Parva/findings/functions/112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:193:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2097,7 +2097,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 113 — PERF-PY-27
 
-- Function context: `./scripts/findings/functions/113.txt`
+- Function context: `scripts/Project_Parva/findings/functions/113.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:386:22`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2116,7 +2116,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 114 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/Project_Parva/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:466:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2135,7 +2135,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 115 — CWE-772
 
-- Function context: `./scripts/findings/functions/115.txt`
+- Function context: `scripts/Project_Parva/findings/functions/115.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_pradhanlaw_2082.py:113:43`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2154,7 +2154,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 116 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/116.txt`
+- Function context: `scripts/Project_Parva/findings/functions/116.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_pradhanlaw_2082.py:156:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2173,7 +2173,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 117 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/117.txt`
+- Function context: `scripts/Project_Parva/findings/functions/117.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/load_test.py:163:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2192,7 +2192,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 118 — CWE-390
 
-- Function context: `./scripts/findings/functions/118.txt`
+- Function context: `scripts/Project_Parva/findings/functions/118.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/load_test.py:163:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2211,7 +2211,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 119 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/119.txt`
+- Function context: `scripts/Project_Parva/findings/functions/119.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/profile_ephemeris.py:60:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2230,7 +2230,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 120 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/120.txt`
+- Function context: `scripts/Project_Parva/findings/functions/120.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/profile_tithi.py:60:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2249,7 +2249,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 121 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/121.txt`
+- Function context: `scripts/Project_Parva/findings/functions/121.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/week3_ground_truth_pipeline.py:174:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2268,7 +2268,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 122 — CWE-396
 
-- Function context: `./scripts/findings/functions/122.txt`
+- Function context: `scripts/Project_Parva/findings/functions/122.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/week3_ground_truth_pipeline.py:174:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2287,7 +2287,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 123 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/123.txt`
+- Function context: `scripts/Project_Parva/findings/functions/123.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/week3_ground_truth_pipeline.py:216:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2306,7 +2306,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 125 — CWE-22
 
-- Function context: `./scripts/findings/functions/125.txt`
+- Function context: `scripts/Project_Parva/findings/functions/125.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/benchmark/harness.py:163:73`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2325,7 +2325,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 126 — CWE-73
 
-- Function context: `./scripts/findings/functions/126.txt`
+- Function context: `scripts/Project_Parva/findings/functions/126.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/benchmark/validate_pack.py:83:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2344,7 +2344,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 127 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/127.txt`
+- Function context: `scripts/Project_Parva/findings/functions/127.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/examples/python/convert.py:15:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2363,7 +2363,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 128 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/128.txt`
+- Function context: `scripts/Project_Parva/findings/functions/128.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/examples/python/holidays.py:16:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2382,7 +2382,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 129 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/129.txt`
+- Function context: `scripts/Project_Parva/findings/functions/129.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/examples/python/preflight.py:11:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2401,7 +2401,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 130 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/130.txt`
+- Function context: `scripts/Project_Parva/findings/functions/130.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/examples/python/verify_bundle.py:16:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2420,7 +2420,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 131 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/131.txt`
+- Function context: `scripts/Project_Parva/findings/functions/131.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/integrations/mcp/server.py:11:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2439,7 +2439,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 132 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/132.txt`
+- Function context: `scripts/Project_Parva/findings/functions/132.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-agent-tools/examples/basic_usage.py:11:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2458,7 +2458,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 135 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/135.txt`
+- Function context: `scripts/Project_Parva/findings/functions/135.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-agent-tools/parva_tools/langchain.py:100:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2477,7 +2477,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 138 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/138.txt`
+- Function context: `scripts/Project_Parva/findings/functions/138.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/client.py:192:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2496,7 +2496,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 139 — CWE-390
 
-- Function context: `./scripts/findings/functions/139.txt`
+- Function context: `scripts/Project_Parva/findings/functions/139.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/client.py:192:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2515,7 +2515,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 140 — CWE-1071
 
-- Function context: `./scripts/findings/functions/140.txt`
+- Function context: `scripts/Project_Parva/findings/functions/140.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/client.py:192:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2534,7 +2534,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 141 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/141.txt`
+- Function context: `scripts/Project_Parva/findings/functions/141.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/server.py:341:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2553,7 +2553,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 142 — CWE-396
 
-- Function context: `./scripts/findings/functions/142.txt`
+- Function context: `scripts/Project_Parva/findings/functions/142.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/server.py:341:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2572,7 +2572,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 143 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/143.txt`
+- Function context: `scripts/Project_Parva/findings/functions/143.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/tests/test_client.py:69:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2591,7 +2591,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 144 — CWE-390
 
-- Function context: `./scripts/findings/functions/144.txt`
+- Function context: `scripts/Project_Parva/findings/functions/144.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/tests/test_client.py:69:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2610,7 +2610,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 145 — CWE-1071
 
-- Function context: `./scripts/findings/functions/145.txt`
+- Function context: `scripts/Project_Parva/findings/functions/145.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/tests/test_client.py:69:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2629,7 +2629,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 146 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/146.txt`
+- Function context: `scripts/Project_Parva/findings/functions/146.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-python/parva/cli.py:18:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2648,7 +2648,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 147 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/147.txt`
+- Function context: `scripts/Project_Parva/findings/functions/147.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-python/parva/cli.py:199:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2667,7 +2667,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 148 — CWE-829
 
-- Function context: `./scripts/findings/functions/148.txt`
+- Function context: `scripts/Project_Parva/findings/functions/148.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/parva_mcp_server/__init__.py:30:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2686,7 +2686,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 149 — CWE-94
 
-- Function context: `./scripts/findings/functions/149.txt`
+- Function context: `scripts/Project_Parva/findings/functions/149.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/parva_mcp_server/__init__.py:30:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2705,7 +2705,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 150 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/150.txt`
+- Function context: `scripts/Project_Parva/findings/functions/150.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_parva.py:19:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2724,7 +2724,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 151 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/151.txt`
+- Function context: `scripts/Project_Parva/findings/functions/151.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_parva.py:23:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2743,7 +2743,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 152 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/152.txt`
+- Function context: `scripts/Project_Parva/findings/functions/152.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_parva.py:316:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2762,7 +2762,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 153 — CWE-396
 
-- Function context: `./scripts/findings/functions/153.txt`
+- Function context: `scripts/Project_Parva/findings/functions/153.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_parva.py:316:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2781,7 +2781,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 154 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/154.txt`
+- Function context: `scripts/Project_Parva/findings/functions/154.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_static_baseline.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2800,7 +2800,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 155 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/155.txt`
+- Function context: `scripts/Project_Parva/findings/functions/155.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/backtest_future_bs_model.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2819,7 +2819,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 156 — CWE-88
 
-- Function context: `./scripts/findings/functions/156.txt`
+- Function context: `scripts/Project_Parva/findings/functions/156.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/benchmark/generate_benchmark_badge.py:46:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2838,7 +2838,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 157 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/157.txt`
+- Function context: `scripts/Project_Parva/findings/functions/157.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/calibrate_future_bs_rules.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2857,7 +2857,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 158 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/158.txt`
+- Function context: `scripts/Project_Parva/findings/functions/158.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/check_future_bs_public_leakage.py:20:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2876,7 +2876,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 159 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/159.txt`
+- Function context: `scripts/Project_Parva/findings/functions/159.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/check_maturity_lanes.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2895,7 +2895,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 160 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/160.txt`
+- Function context: `scripts/Project_Parva/findings/functions/160.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/check_path_leaks.py:80:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2914,7 +2914,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 161 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/161.txt`
+- Function context: `scripts/Project_Parva/findings/functions/161.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/claims/compile_public_claims.py:11:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2933,7 +2933,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 162 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/162.txt`
+- Function context: `scripts/Project_Parva/findings/functions/162.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/compare_external_sheet.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2952,7 +2952,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 163 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/163.txt`
+- Function context: `scripts/Project_Parva/findings/functions/163.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/conformance/generate_conformance_report.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2971,7 +2971,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 164 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/164.txt`
+- Function context: `scripts/Project_Parva/findings/functions/164.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:51:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -2990,7 +2990,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 165 — CWE-390
 
-- Function context: `./scripts/findings/functions/165.txt`
+- Function context: `scripts/Project_Parva/findings/functions/165.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:51:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3009,7 +3009,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 166 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/166.txt`
+- Function context: `scripts/Project_Parva/findings/functions/166.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:55:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3028,7 +3028,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 167 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/167.txt`
+- Function context: `scripts/Project_Parva/findings/functions/167.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:62:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3047,7 +3047,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 168 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/168.txt`
+- Function context: `scripts/Project_Parva/findings/functions/168.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:88:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3066,7 +3066,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 169 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/169.txt`
+- Function context: `scripts/Project_Parva/findings/functions/169.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/ephemeris/generate_solar_ingress_differential.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3085,7 +3085,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 170 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/170.txt`
+- Function context: `scripts/Project_Parva/findings/functions/170.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/ephemeris/generate_solar_ingress_differential.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3104,7 +3104,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 171 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/171.txt`
+- Function context: `scripts/Project_Parva/findings/functions/171.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/evidence/generate_evidence_packet.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3123,7 +3123,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 172 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/172.txt`
+- Function context: `scripts/Project_Parva/findings/functions/172.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/evidence/ingest_source_record.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3142,7 +3142,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 173 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/173.txt`
+- Function context: `scripts/Project_Parva/findings/functions/173.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/evidence/normalize_source_rows.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3161,7 +3161,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 174 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/174.txt`
+- Function context: `scripts/Project_Parva/findings/functions/174.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/evidence/promote_evidence_to_benchmark_candidate.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3180,7 +3180,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 175 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/175.txt`
+- Function context: `scripts/Project_Parva/findings/functions/175.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/export_future_bs_predictions.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3199,7 +3199,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 176 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/176.txt`
+- Function context: `scripts/Project_Parva/findings/functions/176.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/forge/build_bitplanes.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3218,7 +3218,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 177 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/177.txt`
+- Function context: `scripts/Project_Parva/findings/functions/177.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/forge/build_manifest.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3237,7 +3237,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 178 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/178.txt`
+- Function context: `scripts/Project_Parva/findings/functions/178.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/forge/build_static_index.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3256,7 +3256,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 179 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/179.txt`
+- Function context: `scripts/Project_Parva/findings/functions/179.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/forge/verify_manifest.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3275,7 +3275,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 180 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/180.txt`
+- Function context: `scripts/Project_Parva/findings/functions/180.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/accuracy_lab.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3294,7 +3294,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 181 — CWE-88
 
-- Function context: `./scripts/findings/functions/181.txt`
+- Function context: `scripts/Project_Parva/findings/functions/181.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/accuracy_lab.py:28:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3313,7 +3313,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 182 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/182.txt`
+- Function context: `scripts/Project_Parva/findings/functions/182.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/audit_external_bs_sheet.py:16:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3332,7 +3332,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 183 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/183.txt`
+- Function context: `scripts/Project_Parva/findings/functions/183.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/audit_witness_corpus.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3351,7 +3351,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 184 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/184.txt`
+- Function context: `scripts/Project_Parva/findings/functions/184.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/build_source_agreement_graph.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3370,7 +3370,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 185 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/185.txt`
+- Function context: `scripts/Project_Parva/findings/functions/185.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/check_data_target.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3389,7 +3389,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 186 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/186.txt`
+- Function context: `scripts/Project_Parva/findings/functions/186.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/collect_witness_corpus.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3408,7 +3408,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 187 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/187.txt`
+- Function context: `scripts/Project_Parva/findings/functions/187.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/compare_solar_civil_before_after.py:18:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3427,7 +3427,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 188 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/188.txt`
+- Function context: `scripts/Project_Parva/findings/functions/188.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_30_year_past_corpus_report.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3446,7 +3446,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 189 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/189.txt`
+- Function context: `scripts/Project_Parva/findings/functions/189.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_all_final_artifacts.py:18:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3465,7 +3465,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 190 — CWE-88
 
-- Function context: `./scripts/findings/functions/190.txt`
+- Function context: `scripts/Project_Parva/findings/functions/190.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_all_final_artifacts.py:30:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3484,7 +3484,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 191 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/191.txt`
+- Function context: `scripts/Project_Parva/findings/functions/191.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_calendar_var_report.py:16:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3503,7 +3503,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 192 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/192.txt`
+- Function context: `scripts/Project_Parva/findings/functions/192.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_claim_readiness_report.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3522,7 +3522,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 193 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/193.txt`
+- Function context: `scripts/Project_Parva/findings/functions/193.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_human_review_promotion_plan.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3541,7 +3541,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 194 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/194.txt`
+- Function context: `scripts/Project_Parva/findings/functions/194.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_human_review_queue.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3560,7 +3560,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 195 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/195.txt`
+- Function context: `scripts/Project_Parva/findings/functions/195.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_residual_report.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3579,7 +3579,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 196 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/196.txt`
+- Function context: `scripts/Project_Parva/findings/functions/196.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/merge_high_trust_witnesses.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3598,7 +3598,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 197 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/Project_Parva/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/optimize_regime_aware_accuracy_loop.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3617,7 +3617,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 198 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/198.txt`
+- Function context: `scripts/Project_Parva/findings/functions/198.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/optimize_solar_civil_rules_loop.py:23:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3636,7 +3636,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 199 — PERF-PY-23
 
-- Function context: `./scripts/findings/functions/199.txt`
+- Function context: `scripts/Project_Parva/findings/functions/199.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/optimize_solar_civil_rules_loop.py:281:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3655,7 +3655,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 200 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/200.txt`
+- Function context: `scripts/Project_Parva/findings/functions/200.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/parse_archive_panchanga.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3674,7 +3674,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 201 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/201.txt`
+- Function context: `scripts/Project_Parva/findings/functions/201.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/parse_gorkhapatra_witnesses.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3693,7 +3693,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 202 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/202.txt`
+- Function context: `scripts/Project_Parva/findings/functions/202.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/parse_open_source_converter_tables.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3712,7 +3712,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 203 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/203.txt`
+- Function context: `scripts/Project_Parva/findings/functions/203.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/parse_rat32_calendar.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3731,7 +3731,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 204 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/204.txt`
+- Function context: `scripts/Project_Parva/findings/functions/204.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/reconstruct_month_starts.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3750,7 +3750,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 205 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/205.txt`
+- Function context: `scripts/Project_Parva/findings/functions/205.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/replay_2083_ashwin.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3769,7 +3769,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 206 — CWE-88
 
-- Function context: `./scripts/findings/functions/206.txt`
+- Function context: `scripts/Project_Parva/findings/functions/206.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/replay_2083_ashwin.py:28:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3788,7 +3788,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 207 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/207.txt`
+- Function context: `scripts/Project_Parva/findings/functions/207.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/research_and_collect_high_trust_sources.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3807,7 +3807,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 208 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/208.txt`
+- Function context: `scripts/Project_Parva/findings/functions/208.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/run_data_acquisition_loop.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3826,7 +3826,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 209 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/209.txt`
+- Function context: `scripts/Project_Parva/findings/functions/209.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/run_hamropatro_shadow_evaluation.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3845,7 +3845,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 210 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/210.txt`
+- Function context: `scripts/Project_Parva/findings/functions/210.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/run_model_search.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3864,7 +3864,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 211 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/211.txt`
+- Function context: `scripts/Project_Parva/findings/functions/211.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/run_month_start_inversion_workbench.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3883,7 +3883,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 212 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/212.txt`
+- Function context: `scripts/Project_Parva/findings/functions/212.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/run_time_travel_backtest.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3902,7 +3902,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 213 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/213.txt`
+- Function context: `scripts/Project_Parva/findings/functions/213.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/train_solar_civil_with_reconstructed.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3921,7 +3921,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 214 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/214.txt`
+- Function context: `scripts/Project_Parva/findings/functions/214.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/tune_risk_thresholds.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3940,7 +3940,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 215 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/215.txt`
+- Function context: `scripts/Project_Parva/findings/functions/215.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/generate_accuracy_report.py:29:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3959,7 +3959,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 216 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/216.txt`
+- Function context: `scripts/Project_Parva/findings/functions/216.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/generate_authority_dashboard.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3978,7 +3978,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 217 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/217.txt`
+- Function context: `scripts/Project_Parva/findings/functions/217.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/generate_residual_report.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -3997,7 +3997,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 218 — CWE-88
 
-- Function context: `./scripts/findings/functions/218.txt`
+- Function context: `scripts/Project_Parva/findings/functions/218.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/node_runtime.py:49:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4016,7 +4016,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 219 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/219.txt`
+- Function context: `scripts/Project_Parva/findings/functions/219.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_agent_benchmark.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4035,7 +4035,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 220 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/220.txt`
+- Function context: `scripts/Project_Parva/findings/functions/220.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_agent_verify.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4054,7 +4054,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 221 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/221.txt`
+- Function context: `scripts/Project_Parva/findings/functions/221.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_conformance.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4073,7 +4073,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 222 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/222.txt`
+- Function context: `scripts/Project_Parva/findings/functions/222.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_credential_issue.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4092,7 +4092,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 223 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/223.txt`
+- Function context: `scripts/Project_Parva/findings/functions/223.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_credential_verify.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4111,7 +4111,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 224 — CWE-73
 
-- Function context: `./scripts/findings/functions/224.txt`
+- Function context: `scripts/Project_Parva/findings/functions/224.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_credential_verify.py:22:29`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4130,7 +4130,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 225 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/225.txt`
+- Function context: `scripts/Project_Parva/findings/functions/225.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_evidence_packet.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4149,7 +4149,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 226 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/226.txt`
+- Function context: `scripts/Project_Parva/findings/functions/226.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_evidence_packet.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4168,7 +4168,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 227 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/227.txt`
+- Function context: `scripts/Project_Parva/findings/functions/227.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_impact_verify.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4187,7 +4187,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 228 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/228.txt`
+- Function context: `scripts/Project_Parva/findings/functions/228.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_offline_bundle.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4206,7 +4206,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 229 — CWE-73
 
-- Function context: `./scripts/findings/functions/229.txt`
+- Function context: `scripts/Project_Parva/findings/functions/229.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_offline_verify.py:20:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4225,7 +4225,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 230 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/230.txt`
+- Function context: `scripts/Project_Parva/findings/functions/230.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_protocol_verify.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4244,7 +4244,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 231 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/231.txt`
+- Function context: `scripts/Project_Parva/findings/functions/231.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_release_diff.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4263,7 +4263,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 232 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/232.txt`
+- Function context: `scripts/Project_Parva/findings/functions/232.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_release_diff.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4282,7 +4282,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 233 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/233.txt`
+- Function context: `scripts/Project_Parva/findings/functions/233.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_rulelang_verify.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4301,7 +4301,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 234 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/234.txt`
+- Function context: `scripts/Project_Parva/findings/functions/234.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_rulelang_verify.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4320,7 +4320,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 235 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/Project_Parva/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_rulelang_verify.py:169:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4339,7 +4339,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 236 — CWE-396
 
-- Function context: `./scripts/findings/functions/236.txt`
+- Function context: `scripts/Project_Parva/findings/functions/236.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_rulelang_verify.py:169:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4358,7 +4358,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 237 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/237.txt`
+- Function context: `scripts/Project_Parva/findings/functions/237.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_timegraph_verify.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4377,7 +4377,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 238 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/238.txt`
+- Function context: `scripts/Project_Parva/findings/functions/238.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_timegraph_verify.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4396,7 +4396,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 239 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/239.txt`
+- Function context: `scripts/Project_Parva/findings/functions/239.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_timegraph_verify.py:41:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4415,7 +4415,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 240 — CWE-396
 
-- Function context: `./scripts/findings/functions/240.txt`
+- Function context: `scripts/Project_Parva/findings/functions/240.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_timegraph_verify.py:41:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4434,7 +4434,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 241 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/241.txt`
+- Function context: `scripts/Project_Parva/findings/functions/241.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_trust_verify.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4453,7 +4453,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 242 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/242.txt`
+- Function context: `scripts/Project_Parva/findings/functions/242.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_trust_verify.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4472,7 +4472,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 243 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/243.txt`
+- Function context: `scripts/Project_Parva/findings/functions/243.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_trust_verify.py:75:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4491,7 +4491,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 244 — CWE-396
 
-- Function context: `./scripts/findings/functions/244.txt`
+- Function context: `scripts/Project_Parva/findings/functions/244.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_trust_verify.py:75:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4510,7 +4510,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 245 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/245.txt`
+- Function context: `scripts/Project_Parva/findings/functions/245.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/perf/route_latency_smoke.py:21:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4529,7 +4529,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 246 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/246.txt`
+- Function context: `scripts/Project_Parva/findings/functions/246.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute/loadtest_cache.py:19:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4548,7 +4548,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 247 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/247.txt`
+- Function context: `scripts/Project_Parva/findings/functions/247.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute/precompute_all.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4567,7 +4567,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 248 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/248.txt`
+- Function context: `scripts/Project_Parva/findings/functions/248.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute/precompute_festivals.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4586,7 +4586,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 249 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/249.txt`
+- Function context: `scripts/Project_Parva/findings/functions/249.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute/precompute_panchanga.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4605,7 +4605,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 250 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/250.txt`
+- Function context: `scripts/Project_Parva/findings/functions/250.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute/profile_endpoints.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4624,7 +4624,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 251 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/251.txt`
+- Function context: `scripts/Project_Parva/findings/functions/251.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute_future_bs_predictions.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4643,7 +4643,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 252 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/252.txt`
+- Function context: `scripts/Project_Parva/findings/functions/252.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/precompute_solar_ingress_events.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4662,7 +4662,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 253 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/253.txt`
+- Function context: `scripts/Project_Parva/findings/functions/253.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/prepare_temple_data.py:23:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4681,7 +4681,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 254 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/254.txt`
+- Function context: `scripts/Project_Parva/findings/functions/254.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/audit_ceiling_depth.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4700,7 +4700,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 255 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/255.txt`
+- Function context: `scripts/Project_Parva/findings/functions/255.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/audit_ceiling_depth.py:42:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4719,7 +4719,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 256 — CWE-396
 
-- Function context: `./scripts/findings/functions/256.txt`
+- Function context: `scripts/Project_Parva/findings/functions/256.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/audit_ceiling_depth.py:42:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4738,7 +4738,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 257 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/257.txt`
+- Function context: `scripts/Project_Parva/findings/functions/257.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_backend_smoke.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4757,7 +4757,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 258 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/258.txt`
+- Function context: `scripts/Project_Parva/findings/functions/258.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_ceiling_depth_semantics.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4776,7 +4776,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 259 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/259.txt`
+- Function context: `scripts/Project_Parva/findings/functions/259.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_ceiling_depth_semantics.py:219:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4795,7 +4795,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 260 — CWE-396
 
-- Function context: `./scripts/findings/functions/260.txt`
+- Function context: `scripts/Project_Parva/findings/functions/260.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_ceiling_depth_semantics.py:219:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4814,7 +4814,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 261 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/261.txt`
+- Function context: `scripts/Project_Parva/findings/functions/261.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_ceiling_phase_requirements.py:18:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4833,7 +4833,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 262 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/262.txt`
+- Function context: `scripts/Project_Parva/findings/functions/262.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_contract_freeze.py:24:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4852,7 +4852,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 263 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/263.txt`
+- Function context: `scripts/Project_Parva/findings/functions/263.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_contract_freeze.py:97:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4871,7 +4871,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 264 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/264.txt`
+- Function context: `scripts/Project_Parva/findings/functions/264.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_contract_freeze.py:105:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4890,7 +4890,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 265 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/265.txt`
+- Function context: `scripts/Project_Parva/findings/functions/265.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_contract_freeze.py:108:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4909,7 +4909,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 266 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/266.txt`
+- Function context: `scripts/Project_Parva/findings/functions/266.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_documented_routes.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4928,7 +4928,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 267 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/267.txt`
+- Function context: `scripts/Project_Parva/findings/functions/267.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_jpl_lane.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4947,7 +4947,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 268 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/268.txt`
+- Function context: `scripts/Project_Parva/findings/functions/268.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_local_kernel_package.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4966,7 +4966,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 269 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/269.txt`
+- Function context: `scripts/Project_Parva/findings/functions/269.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_mcp_registry_metadata.py:11:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -4985,7 +4985,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 270 — CWE-88
 
-- Function context: `./scripts/findings/functions/270.txt`
+- Function context: `scripts/Project_Parva/findings/functions/270.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_package_readiness.py:39:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5004,7 +5004,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 271 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/271.txt`
+- Function context: `scripts/Project_Parva/findings/functions/271.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_production_preflight.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5023,7 +5023,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 272 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/272.txt`
+- Function context: `scripts/Project_Parva/findings/functions/272.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_provenance_readiness.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5042,7 +5042,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 274 — CWE-88
 
-- Function context: `./scripts/findings/functions/274.txt`
+- Function context: `scripts/Project_Parva/findings/functions/274.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_public_openapi_drift.py:37:18`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5061,7 +5061,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 275 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/275.txt`
+- Function context: `scripts/Project_Parva/findings/functions/275.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_public_safety_gate.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5080,7 +5080,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 276 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/276.txt`
+- Function context: `scripts/Project_Parva/findings/functions/276.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_public_safety_gate.py:19:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5099,7 +5099,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 277 — CWE-88
 
-- Function context: `./scripts/findings/functions/277.txt`
+- Function context: `scripts/Project_Parva/findings/functions/277.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_public_safety_gate.py:143:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5118,7 +5118,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 278 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/278.txt`
+- Function context: `scripts/Project_Parva/findings/functions/278.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_route_inventory.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5137,7 +5137,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 279 — CWE-88
 
-- Function context: `./scripts/findings/functions/279.txt`
+- Function context: `scripts/Project_Parva/findings/functions/279.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_sdk_examples.py:30:18`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5156,7 +5156,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 280 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/280.txt`
+- Function context: `scripts/Project_Parva/findings/functions/280.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_sdk_install.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5175,7 +5175,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 281 — CWE-88
 
-- Function context: `./scripts/findings/functions/281.txt`
+- Function context: `scripts/Project_Parva/findings/functions/281.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/clean_local_artifacts.py:36:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5194,7 +5194,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 282 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/282.txt`
+- Function context: `scripts/Project_Parva/findings/functions/282.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/clean_local_artifacts.py:66:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5213,7 +5213,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 283 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/283.txt`
+- Function context: `scripts/Project_Parva/findings/functions/283.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/clean_local_artifacts.py:70:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5232,7 +5232,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 284 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/284.txt`
+- Function context: `scripts/Project_Parva/findings/functions/284.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/clean_local_artifacts.py:77:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5251,7 +5251,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 285 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/285.txt`
+- Function context: `scripts/Project_Parva/findings/functions/285.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_dashboard_metrics.py:19:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5270,7 +5270,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 286 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/286.txt`
+- Function context: `scripts/Project_Parva/findings/functions/286.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_openapi_profiles.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5289,7 +5289,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 287 — CWE-215
 
-- Function context: `./scripts/findings/functions/287.txt`
+- Function context: `scripts/Project_Parva/findings/functions/287.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_partner_api_key.py:83:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5308,7 +5308,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 288 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/288.txt`
+- Function context: `scripts/Project_Parva/findings/functions/288.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_phase_00_trust_arrest_report.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5327,7 +5327,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 289 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/289.txt`
+- Function context: `scripts/Project_Parva/findings/functions/289.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_public_beta_artifacts.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5346,7 +5346,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 290 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/290.txt`
+- Function context: `scripts/Project_Parva/findings/functions/290.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_public_beta_dossier.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5365,7 +5365,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 291 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/291.txt`
+- Function context: `scripts/Project_Parva/findings/functions/291.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_public_demo_openapi.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5384,7 +5384,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 292 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/292.txt`
+- Function context: `scripts/Project_Parva/findings/functions/292.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_public_demo_openapi.py:44:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5403,7 +5403,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 293 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/293.txt`
+- Function context: `scripts/Project_Parva/findings/functions/293.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_release_candidate_dossier.py:18:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5422,7 +5422,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 294 — CWE-88
 
-- Function context: `./scripts/findings/functions/294.txt`
+- Function context: `scripts/Project_Parva/findings/functions/294.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_release_candidate_dossier.py:74:21`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5441,7 +5441,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 295 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/295.txt`
+- Function context: `scripts/Project_Parva/findings/functions/295.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_trust_status_report.py:19:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5460,7 +5460,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 296 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/296.txt`
+- Function context: `scripts/Project_Parva/findings/functions/296.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_trust_status_report.py:21:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5479,7 +5479,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 297 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/297.txt`
+- Function context: `scripts/Project_Parva/findings/functions/297.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_trust_status_report.py:92:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5498,7 +5498,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 298 — CWE-396
 
-- Function context: `./scripts/findings/functions/298.txt`
+- Function context: `scripts/Project_Parva/findings/functions/298.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_trust_status_report.py:92:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5517,7 +5517,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 299 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/299.txt`
+- Function context: `scripts/Project_Parva/findings/functions/299.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/refresh_trust_artifacts.py:18:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5536,7 +5536,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 300 — CWE-88
 
-- Function context: `./scripts/findings/functions/300.txt`
+- Function context: `scripts/Project_Parva/findings/functions/300.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/refresh_trust_artifacts.py:24:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5555,7 +5555,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 301 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/301.txt`
+- Function context: `scripts/Project_Parva/findings/functions/301.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/refresh_trust_artifacts.py:33:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5574,7 +5574,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 302 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/302.txt`
+- Function context: `scripts/Project_Parva/findings/functions/302.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/refresh_trust_artifacts.py:36:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5593,7 +5593,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 303 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/303.txt`
+- Function context: `scripts/Project_Parva/findings/functions/303.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/regenerate_public_release_hashes.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5612,7 +5612,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 304 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/304.txt`
+- Function context: `scripts/Project_Parva/findings/functions/304.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/regenerate_public_release_hashes.py:18:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5631,7 +5631,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 305 — CWE-208
 
-- Function context: `./scripts/findings/functions/305.txt`
+- Function context: `scripts/Project_Parva/findings/functions/305.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/regenerate_public_release_hashes.py:113:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5650,7 +5650,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 306 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/306.txt`
+- Function context: `scripts/Project_Parva/findings/functions/306.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/reviewer_dry_run.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5669,7 +5669,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 307 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/307.txt`
+- Function context: `scripts/Project_Parva/findings/functions/307.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_ceiling_climax_demos.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5688,7 +5688,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 308 — CWE-208
 
-- Function context: `./scripts/findings/functions/308.txt`
+- Function context: `scripts/Project_Parva/findings/functions/308.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_ceiling_climax_demos.py:61:61`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5707,7 +5707,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 309 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/309.txt`
+- Function context: `scripts/Project_Parva/findings/functions/309.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_public_coverage.py:28:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5726,7 +5726,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 310 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/310.txt`
+- Function context: `scripts/Project_Parva/findings/functions/310.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_release_candidate_gates.py:15:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5745,7 +5745,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 311 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/311.txt`
+- Function context: `scripts/Project_Parva/findings/functions/311.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_release_candidate_gates.py:33:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5764,7 +5764,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 312 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/312.txt`
+- Function context: `scripts/Project_Parva/findings/functions/312.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_release_candidate_gates.py:61:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5783,7 +5783,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 313 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/313.txt`
+- Function context: `scripts/Project_Parva/findings/functions/313.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/snapshot_openapi.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5802,7 +5802,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 314 — CWE-88
 
-- Function context: `./scripts/findings/functions/314.txt`
+- Function context: `scripts/Project_Parva/findings/functions/314.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_clean_clone_assumptions.py:87:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5821,7 +5821,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 316 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/316.txt`
+- Function context: `scripts/Project_Parva/findings/functions/316.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5840,7 +5840,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 317 — CWE-88
 
-- Function context: `./scripts/findings/functions/317.txt`
+- Function context: `scripts/Project_Parva/findings/functions/317.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:22:14`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5859,7 +5859,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 318 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/318.txt`
+- Function context: `scripts/Project_Parva/findings/functions/318.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:96:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5878,7 +5878,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 319 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/319.txt`
+- Function context: `scripts/Project_Parva/findings/functions/319.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:97:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5897,7 +5897,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 320 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/320.txt`
+- Function context: `scripts/Project_Parva/findings/functions/320.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:100:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5916,7 +5916,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 321 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/321.txt`
+- Function context: `scripts/Project_Parva/findings/functions/321.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:102:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5935,7 +5935,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 322 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/322.txt`
+- Function context: `scripts/Project_Parva/findings/functions/322.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/resolve_npm_command.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5954,7 +5954,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 323 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/323.txt`
+- Function context: `scripts/Project_Parva/findings/functions/323.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/rules/generate_rule_triads.py:14:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5973,7 +5973,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 324 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/324.txt`
+- Function context: `scripts/Project_Parva/findings/functions/324.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/rules/ingest_rule_sources.py:21:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -5992,7 +5992,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 325 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/325.txt`
+- Function context: `scripts/Project_Parva/findings/functions/325.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/rules/ingest_rule_sources.py:119:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6011,7 +6011,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 326 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/326.txt`
+- Function context: `scripts/Project_Parva/findings/functions/326.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/rules/migrate_provisional_templates.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6030,7 +6030,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 327 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/327.txt`
+- Function context: `scripts/Project_Parva/findings/functions/327.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/rules/migrate_rules_v4.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6049,7 +6049,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 328 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/328.txt`
+- Function context: `scripts/Project_Parva/findings/functions/328.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_browser_smoke.py:50:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6068,7 +6068,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 329 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/329.txt`
+- Function context: `scripts/Project_Parva/findings/functions/329.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_browser_smoke.py:57:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6087,7 +6087,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 330 — CWE-88
 
-- Function context: `./scripts/findings/functions/330.txt`
+- Function context: `scripts/Project_Parva/findings/functions/330.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_browser_smoke.py:60:24`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6106,7 +6106,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 331 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/331.txt`
+- Function context: `scripts/Project_Parva/findings/functions/331.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_browser_smoke.py:73:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6125,7 +6125,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 332 — CWE-396
 
-- Function context: `./scripts/findings/functions/332.txt`
+- Function context: `scripts/Project_Parva/findings/functions/332.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_browser_smoke.py:195:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6144,7 +6144,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 333 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/333.txt`
+- Function context: `scripts/Project_Parva/findings/functions/333.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_accessibility.py:55:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6163,7 +6163,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 334 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/334.txt`
+- Function context: `scripts/Project_Parva/findings/functions/334.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_accessibility.py:62:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6182,7 +6182,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 335 — CWE-88
 
-- Function context: `./scripts/findings/functions/335.txt`
+- Function context: `scripts/Project_Parva/findings/functions/335.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_accessibility.py:65:24`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6201,7 +6201,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 336 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/336.txt`
+- Function context: `scripts/Project_Parva/findings/functions/336.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_accessibility.py:78:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6220,7 +6220,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 337 — CWE-396
 
-- Function context: `./scripts/findings/functions/337.txt`
+- Function context: `scripts/Project_Parva/findings/functions/337.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_accessibility.py:214:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6239,7 +6239,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 338 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/338.txt`
+- Function context: `scripts/Project_Parva/findings/functions/338.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_performance.py:59:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6258,7 +6258,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 339 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/339.txt`
+- Function context: `scripts/Project_Parva/findings/functions/339.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_performance.py:66:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6277,7 +6277,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 340 — CWE-88
 
-- Function context: `./scripts/findings/functions/340.txt`
+- Function context: `scripts/Project_Parva/findings/functions/340.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_performance.py:69:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6296,7 +6296,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 341 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/341.txt`
+- Function context: `scripts/Project_Parva/findings/functions/341.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_performance.py:82:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6315,7 +6315,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 342 — CWE-396
 
-- Function context: `./scripts/findings/functions/342.txt`
+- Function context: `scripts/Project_Parva/findings/functions/342.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_performance.py:187:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6334,7 +6334,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 343 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/343.txt`
+- Function context: `scripts/Project_Parva/findings/functions/343.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_golden_journeys.py:55:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6353,7 +6353,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 344 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/344.txt`
+- Function context: `scripts/Project_Parva/findings/functions/344.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_golden_journeys.py:62:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6372,7 +6372,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 345 — CWE-88
 
-- Function context: `./scripts/findings/functions/345.txt`
+- Function context: `scripts/Project_Parva/findings/functions/345.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_golden_journeys.py:65:24`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6391,7 +6391,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 346 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/346.txt`
+- Function context: `scripts/Project_Parva/findings/functions/346.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_golden_journeys.py:78:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6410,7 +6410,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 347 — CWE-396
 
-- Function context: `./scripts/findings/functions/347.txt`
+- Function context: `scripts/Project_Parva/findings/functions/347.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_golden_journeys.py:211:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6429,7 +6429,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 348 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/348.txt`
+- Function context: `scripts/Project_Parva/findings/functions/348.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/sources/build_source_snapshot.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6448,7 +6448,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 349 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/349.txt`
+- Function context: `scripts/Project_Parva/findings/functions/349.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/sources/validate_dockets.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6467,7 +6467,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 350 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/350.txt`
+- Function context: `scripts/Project_Parva/findings/functions/350.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/spec/run_conformance_tests.py:16:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6486,7 +6486,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 351 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/351.txt`
+- Function context: `scripts/Project_Parva/findings/functions/351.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/telegram/bot_poc.py:99:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6505,7 +6505,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 352 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/352.txt`
+- Function context: `scripts/Project_Parva/findings/functions/352.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/telegram/bot_poc.py:117:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6524,7 +6524,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 353 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/353.txt`
+- Function context: `scripts/Project_Parva/findings/functions/353.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/telegram/bot_poc.py:118:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6543,7 +6543,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 354 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/354.txt`
+- Function context: `scripts/Project_Parva/findings/functions/354.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/telegram/bot_poc.py:119:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6562,7 +6562,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 355 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/355.txt`
+- Function context: `scripts/Project_Parva/findings/functions/355.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/telegram/bot_poc.py:120:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6581,7 +6581,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 356 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/356.txt`
+- Function context: `scripts/Project_Parva/findings/functions/356.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/transparency/append_release_log.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6600,7 +6600,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 357 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/357.txt`
+- Function context: `scripts/Project_Parva/findings/functions/357.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/transparency/verify_log.py:12:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6619,7 +6619,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 358 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/358.txt`
+- Function context: `scripts/Project_Parva/findings/functions/358.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/vendor_audit/run_vendor_date_risk_audit.py:17:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6638,7 +6638,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 359 — CWE-22
 
-- Function context: `./scripts/findings/functions/359.txt`
+- Function context: `scripts/Project_Parva/findings/functions/359.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/accuracy/test_prediction_run_immutability.py:28:45`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6657,7 +6657,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 360 — CWE-22
 
-- Function context: `./scripts/findings/functions/360.txt`
+- Function context: `scripts/Project_Parva/findings/functions/360.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/accuracy/test_source_policy_metrics_exist.py:12:51`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6676,7 +6676,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 361 — CWE-829
 
-- Function context: `./scripts/findings/functions/361.txt`
+- Function context: `scripts/Project_Parva/findings/functions/361.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_canonical_runtime_registry.py:9:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6695,7 +6695,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 362 — CWE-829
 
-- Function context: `./scripts/findings/functions/362.txt`
+- Function context: `scripts/Project_Parva/findings/functions/362.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_deprecated_modules_not_imported_by_public_routes.py:9:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6714,7 +6714,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 363 — CWE-829
 
-- Function context: `./scripts/findings/functions/363.txt`
+- Function context: `scripts/Project_Parva/findings/functions/363.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_no_public_route_imports_research_private.py:9:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6733,7 +6733,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 364 — CWE-829
 
-- Function context: `./scripts/findings/functions/364.txt`
+- Function context: `scripts/Project_Parva/findings/functions/364.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_no_runtime_tests_fixture_dependency.py:9:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6752,7 +6752,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 365 — CWE-829
 
-- Function context: `./scripts/findings/functions/365.txt`
+- Function context: `scripts/Project_Parva/findings/functions/365.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_runtime_does_not_depend_on_tests_fixtures.py:9:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6771,7 +6771,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 366 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/366.txt`
+- Function context: `scripts/Project_Parva/findings/functions/366.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/artifacts/test_final_artifacts_exist.py:8:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6790,7 +6790,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 367 — CWE-829
 
-- Function context: `./scripts/findings/functions/367.txt`
+- Function context: `scripts/Project_Parva/findings/functions/367.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/benchmark/test_benchmark_schema.py:8:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6809,7 +6809,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 368 — CWE-829
 
-- Function context: `./scripts/findings/functions/368.txt`
+- Function context: `scripts/Project_Parva/findings/functions/368.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/benchmark/test_runners.py:11:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6828,7 +6828,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 369 — CWE-93
 
-- Function context: `./scripts/findings/functions/369.txt`
+- Function context: `scripts/Project_Parva/findings/functions/369.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/integration/test_engine_e2e.py:11:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6847,7 +6847,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 370 — CWE-93
 
-- Function context: `./scripts/findings/functions/370.txt`
+- Function context: `scripts/Project_Parva/findings/functions/370.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/integration/test_personal_stack_v3.py:55:16`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6866,7 +6866,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 371 — CWE-93
 
-- Function context: `./scripts/findings/functions/371.txt`
+- Function context: `scripts/Project_Parva/findings/functions/371.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/integration/test_private_surface_proof_capsules.py:23:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6885,7 +6885,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 372 — CWE-93
 
-- Function context: `./scripts/findings/functions/372.txt`
+- Function context: `scripts/Project_Parva/findings/functions/372.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/integration/test_request_guards.py:47:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6904,7 +6904,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 373 — CWE-93
 
-- Function context: `./scripts/findings/functions/373.txt`
+- Function context: `scripts/Project_Parva/findings/functions/373.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/integration/test_temporal_compass_api.py:14:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6923,7 +6923,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 374 — CWE-93
 
-- Function context: `./scripts/findings/functions/374.txt`
+- Function context: `scripts/Project_Parva/findings/functions/374.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/integration/test_v3_envelope_opt_in.py:10:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6942,7 +6942,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 375 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/375.txt`
+- Function context: `scripts/Project_Parva/findings/functions/375.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/release/test_archive_hygiene.py:41:16`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6961,7 +6961,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 376 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/376.txt`
+- Function context: `scripts/Project_Parva/findings/functions/376.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/release/test_archive_hygiene.py:58:16`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6980,7 +6980,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 377 — CWE-829
 
-- Function context: `./scripts/findings/functions/377.txt`
+- Function context: `scripts/Project_Parva/findings/functions/377.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/runtime/test_canonical_runtime_imports.py:10:8`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -6999,7 +6999,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 378 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/378.txt`
+- Function context: `scripts/Project_Parva/findings/functions/378.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/security/test_embed_security.py:44:13`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7018,7 +7018,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 379 — CWE-829
 
-- Function context: `./scripts/findings/functions/379.txt`
+- Function context: `scripts/Project_Parva/findings/functions/379.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/benchmark/test_public_benchmark_runners.py:12:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7037,7 +7037,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 380 — BP-PY-13
 
-- Function context: `./scripts/findings/functions/380.txt`
+- Function context: `scripts/Project_Parva/findings/functions/380.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/billing/test_api_key_hashing.py:11:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7056,7 +7056,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 381 — CWE-93
 
-- Function context: `./scripts/findings/functions/381.txt`
+- Function context: `scripts/Project_Parva/findings/functions/381.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/bootstrap/test_middleware.py:44:17`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7075,7 +7075,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 382 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/382.txt`
+- Function context: `scripts/Project_Parva/findings/functions/382.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/bootstrap/test_rate_limit.py:17:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7094,7 +7094,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 383 — CWE-94
 
-- Function context: `./scripts/findings/functions/383.txt`
+- Function context: `scripts/Project_Parva/findings/functions/383.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/bootstrap/test_rate_limit.py:17:9`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7113,7 +7113,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 384 — CWE-93
 
-- Function context: `./scripts/findings/functions/384.txt`
+- Function context: `scripts/Project_Parva/findings/functions/384.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/bootstrap/test_security_hardening.py:15:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7132,7 +7132,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 385 — BP-PY-2
 
-- Function context: `./scripts/findings/functions/385.txt`
+- Function context: `scripts/Project_Parva/findings/functions/385.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/calendar/test_calculator.py:109:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7151,7 +7151,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 386 — CWE-390
 
-- Function context: `./scripts/findings/functions/386.txt`
+- Function context: `scripts/Project_Parva/findings/functions/386.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/calendar/test_calculator.py:109:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7170,7 +7170,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 387 — CWE-208
 
-- Function context: `./scripts/findings/functions/387.txt`
+- Function context: `scripts/Project_Parva/findings/functions/387.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/policy/test_policy_vm.py:18:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7189,7 +7189,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 388 — CWE-93
 
-- Function context: `./scripts/findings/functions/388.txt`
+- Function context: `scripts/Project_Parva/findings/functions/388.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/reliability/test_request_id_and_trace_id.py:14:20`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7208,7 +7208,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 389 — CWE-208
 
-- Function context: `./scripts/findings/functions/389.txt`
+- Function context: `scripts/Project_Parva/findings/functions/389.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/trust/test_field_provenance.py:37:12`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7227,7 +7227,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 390 — CWE-208
 
-- Function context: `./scripts/findings/functions/390.txt`
+- Function context: `scripts/Project_Parva/findings/functions/390.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/trust/test_taint_algebra.py:33:84`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7246,7 +7246,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 391 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/391.txt`
+- Function context: `scripts/Project_Parva/findings/functions/391.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/trust/test_temporal_trust_tools.py:53:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7265,7 +7265,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 392 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/392.txt`
+- Function context: `scripts/Project_Parva/findings/functions/392.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:22:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7284,7 +7284,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 393 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/393.txt`
+- Function context: `scripts/Project_Parva/findings/functions/393.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:557:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7303,7 +7303,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 394 — CWE-396
 
-- Function context: `./scripts/findings/functions/394.txt`
+- Function context: `scripts/Project_Parva/findings/functions/394.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:557:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7322,7 +7322,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 395 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/395.txt`
+- Function context: `scripts/Project_Parva/findings/functions/395.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:584:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7341,7 +7341,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 396 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/396.txt`
+- Function context: `scripts/Project_Parva/findings/functions/396.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:588:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7360,7 +7360,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 397 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/397.txt`
+- Function context: `scripts/Project_Parva/findings/functions/397.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:893:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7379,7 +7379,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 398 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/398.txt`
+- Function context: `scripts/Project_Parva/findings/functions/398.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/future_bs_audit/blinded_audit.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7398,7 +7398,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 399 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/399.txt`
+- Function context: `scripts/Project_Parva/findings/functions/399.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/parva-cli/parva_cli.py:13:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7417,7 +7417,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 400 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/400.txt`
+- Function context: `scripts/Project_Parva/findings/functions/400.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/parva-cli/parva_cli.py:98:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7436,7 +7436,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 401 — BP-PY-45
 
-- Function context: `./scripts/findings/functions/401.txt`
+- Function context: `scripts/Project_Parva/findings/functions/401.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:15:5`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7455,7 +7455,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 402 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/402.txt`
+- Function context: `scripts/Project_Parva/findings/functions/402.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:246:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7474,7 +7474,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 403 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/403.txt`
+- Function context: `scripts/Project_Parva/findings/functions/403.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:271:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7493,7 +7493,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 404 — CWE-396
 
-- Function context: `./scripts/findings/functions/404.txt`
+- Function context: `scripts/Project_Parva/findings/functions/404.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:271:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7512,7 +7512,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 405 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/405.txt`
+- Function context: `scripts/Project_Parva/findings/functions/405.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/trust/append_log_entry.py:83:25`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7531,7 +7531,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 406 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/406.txt`
+- Function context: `scripts/Project_Parva/findings/functions/406.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:186:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7550,7 +7550,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 407 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/407.txt`
+- Function context: `scripts/Project_Parva/findings/functions/407.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:195:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7569,7 +7569,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 408 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/408.txt`
+- Function context: `scripts/Project_Parva/findings/functions/408.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:204:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7588,7 +7588,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 409 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/409.txt`
+- Function context: `scripts/Project_Parva/findings/functions/409.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:209:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7607,7 +7607,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 410 — PERF-PY-25
 
-- Function context: `./scripts/findings/functions/410.txt`
+- Function context: `scripts/Project_Parva/findings/functions/410.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:211:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7626,7 +7626,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 411 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/411.txt`
+- Function context: `scripts/Project_Parva/findings/functions/411.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:245:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7645,7 +7645,7 @@ Checklist evidence: the flagged source does not satisfy the rule condition as st
 
 ### [ ] Finding 412 — CWE-396
 
-- Function context: `./scripts/findings/functions/412.txt`
+- Function context: `scripts/Project_Parva/findings/functions/412.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:245:1`
 - Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
 
@@ -7712,6 +7712,6 @@ None — every finding was classifiable from the rule condition and the shown so
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/Project_Parva/chunks`
+- Function evidence: `scripts/Project_Parva/findings/functions`
 - Validation: `git diff --check` — pass (exit 0)

@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquest
 branch: main
 commit: 7633aa3f1f9fcdb7790192ffd8cfacb69ca2c807
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/niquests/chunks
+function_context_path: scripts/niquests/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (goslop binary used: `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/niquests/scripts/chunks -context-dir real-repos/niquests/scripts/findings/functions real-repos/niquests`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/niquests/chunks -context-dir scripts/niquests/findings/functions real-repos/niquests`
 - Findings: `346`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_75.txt`, `./scripts/chunks/Chunk_76_100.txt`, `./scripts/chunks/Chunk_101_125.txt`, `./scripts/chunks/Chunk_126_150.txt`, `./scripts/chunks/Chunk_151_175.txt`, `./scripts/chunks/Chunk_176_200.txt`, `./scripts/chunks/Chunk_201_225.txt`, `./scripts/chunks/Chunk_226_250.txt`, `./scripts/chunks/Chunk_251_275.txt`, `./scripts/chunks/Chunk_276_300.txt`, `./scripts/chunks/Chunk_301_325.txt`, `./scripts/chunks/Chunk_326_346.txt`
-- Function contexts reviewed: `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive (all 311); enclosing source read when the exported context was insufficient
+- Chunks reviewed: `scripts/niquests/chunks/Chunk_1_25.txt`, `scripts/niquests/chunks/Chunk_26_50.txt`, `scripts/niquests/chunks/Chunk_51_75.txt`, `scripts/niquests/chunks/Chunk_76_100.txt`, `scripts/niquests/chunks/Chunk_101_125.txt`, `scripts/niquests/chunks/Chunk_126_150.txt`, `scripts/niquests/chunks/Chunk_151_175.txt`, `scripts/niquests/chunks/Chunk_176_200.txt`, `scripts/niquests/chunks/Chunk_201_225.txt`, `scripts/niquests/chunks/Chunk_226_250.txt`, `scripts/niquests/chunks/Chunk_251_275.txt`, `scripts/niquests/chunks/Chunk_276_300.txt`, `scripts/niquests/chunks/Chunk_301_325.txt`, `scripts/niquests/chunks/Chunk_326_346.txt`
+- Function contexts reviewed: `scripts/niquests/findings/functions/<finding-id>.txt` for every proposed false positive (all 311); enclosing source read when the exported context was insufficient
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/niquests/chunks`.
+- [x] Read `scripts/niquests/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ One subsection per finding. Findings could not be grouped: every pair of finding
 
 ### [ ] Finding `1` — `BP-PY-45`
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/niquests/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/docs/conf.py:24:1`
 - Checklist pattern: Sphinx docs-build configuration script
 
@@ -64,7 +64,7 @@ Checklist evidence: BP-PY-45 targets runtime library behavior; a docs build scri
 
 ### [ ] Finding `2` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/niquests/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/noxfile.py:95:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -82,7 +82,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `3` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/niquests/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/noxfile.py:147:9`
 - Checklist pattern: print in a nox automation script for CI console output
 
@@ -101,7 +101,7 @@ Checklist evidence: BP-PY-46 targets 'library code'; noxfile.py is a dev/CI scri
 
 ### [ ] Finding `4` — `CWE-22`
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/niquests/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/noxfile.py:157:53`
 - Checklist pattern: path built from constants in a dev automation script
 
@@ -120,7 +120,7 @@ Checklist evidence: CWE-22's condition requires a dynamic segment from an untrus
 
 ### [ ] Finding `5` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/niquests/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/noxfile.py:160:9`
 - Checklist pattern: print in a nox automation script for CI console output
 
@@ -139,7 +139,7 @@ Checklist evidence: BP-PY-46 targets 'library code'; noxfile.py is a dev/CI scri
 
 ### [ ] Finding `6` — `CWE-409`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/niquests/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/noxfile.py:237:19`
 - Checklist pattern: tarfile extraction using the documented safe filter
 
@@ -158,7 +158,7 @@ Checklist evidence: CWE-409's fix explicitly recommends 'the platform's document
 
 ### [ ] Finding `7` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/niquests/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/__init__.py:24:8`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -177,7 +177,7 @@ Checklist evidence: BP-PY-46's condition is a real `print` call in library code;
 
 ### [ ] Finding `8` — `BP-PY-5`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/niquests/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_async.py:14:1`
 - Checklist pattern: deliberate API re-export shim marked `# noqa`
 
@@ -196,7 +196,7 @@ Checklist evidence: the wildcard import is the module's designed function (re-ex
 
 ### [ ] Finding `9` — `BP-PY-5`
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/niquests/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_typing.py:14:1`
 - Checklist pattern: deliberate API re-export shim marked `# noqa`
 
@@ -215,7 +215,7 @@ Checklist evidence: the wildcard import is the module's designed function (re-ex
 
 ### [ ] Finding `10` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/niquests/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/__init__.py:11:12`
 - Checklist pattern: requests/session call inside a docstring doctest example
 
@@ -234,7 +234,7 @@ Checklist evidence: BP-PY-14's condition is an executable requests call missing 
 
 ### [ ] Finding `11` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/niquests/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/__init__.py:27:18`
 - Checklist pattern: requests/session call inside a docstring doctest example
 
@@ -253,7 +253,7 @@ Checklist evidence: BP-PY-14's condition is an executable requests call missing 
 
 ### [ ] Finding `12` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/niquests/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/builder.py:350:1`
 - Checklist pattern: parsing fallback for an optional `filename*` encoding split
 
@@ -272,7 +272,7 @@ Checklist evidence: the except-pass is a deliberate fallback for a malformed opt
 
 ### [ ] Finding `13` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/niquests/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/builder.py:350:1`
 - Checklist pattern: parsing fallback for an optional `filename*` encoding split
 
@@ -291,7 +291,7 @@ Checklist evidence: the except-pass is a deliberate fallback for a malformed opt
 
 ### [ ] Finding `14` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/niquests/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/builder.py:350:13`
 - Checklist pattern: parsing fallback for an optional `filename*` encoding split
 
@@ -310,7 +310,7 @@ Checklist evidence: the except-pass is a deliberate fallback for a malformed opt
 
 ### [ ] Finding `15` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/niquests/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/models.py:893:1`
 - Checklist pattern: parsing fallback in header subclass lookup
 
@@ -329,7 +329,7 @@ Checklist evidence: the exception is the expected outcome of probing for an opti
 
 ### [ ] Finding `16` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/niquests/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/models.py:893:1`
 - Checklist pattern: parsing fallback in header subclass lookup
 
@@ -348,7 +348,7 @@ Checklist evidence: the exception is the expected outcome of probing for an opti
 
 ### [ ] Finding `17` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/niquests/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/models.py:893:13`
 - Checklist pattern: parsing fallback in header subclass lookup
 
@@ -367,7 +367,7 @@ Checklist evidence: the exception is the expected outcome of probing for an opti
 
 ### [ ] Finding `18` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/niquests/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/utils.py:339:1`
 - Checklist pattern: parsing fallback when a segment contains no `;`
 
@@ -386,7 +386,7 @@ Checklist evidence: the flagged `pass` implements an expected parsing branch, no
 
 ### [ ] Finding `19` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/niquests/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/utils.py:339:1`
 - Checklist pattern: parsing fallback when a segment contains no `;`
 
@@ -405,7 +405,7 @@ Checklist evidence: the flagged `pass` implements an expected parsing branch, no
 
 ### [ ] Finding `20` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/niquests/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/_vendor/kiss_headers/utils.py:339:5`
 - Checklist pattern: parsing fallback when a segment contains no `;`
 
@@ -424,7 +424,7 @@ Checklist evidence: the flagged `pass` implements an expected parsing branch, no
 
 ### [ ] Finding `21` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/niquests/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:568:1`
 - Checklist pattern: certificate-fingerprint pinning path — verification is still performed
 
@@ -443,7 +443,7 @@ Checklist evidence: the rule's condition 'TLS verification disabled' is not sati
 
 ### [ ] Finding `22` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/niquests/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:591:23`
 - Checklist pattern: comparison expression, not a disabling assignment
 
@@ -462,7 +462,7 @@ Checklist evidence: the rule's CERT_NONE marker fires on the regex token inside 
 
 ### [ ] Finding `23` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/niquests/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:594:19`
 - Checklist pattern: certificate-fingerprint pinning path — verification is still performed
 
@@ -481,7 +481,7 @@ Checklist evidence: the rule's condition 'TLS verification disabled' is not sati
 
 ### [ ] Finding `24` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/niquests/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:608:23`
 - Checklist pattern: comparison expression, not a disabling assignment
 
@@ -500,7 +500,7 @@ Checklist evidence: the rule's CERT_NONE marker fires on the regex token inside 
 
 ### [ ] Finding `25` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/niquests/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:611:19`
 - Checklist pattern: caller-opted `verify=False` implementation of the documented public API
 
@@ -519,7 +519,7 @@ Checklist evidence: the disablement is parameter-gated and opt-in through the pu
 
 ### [ ] Finding `29` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/niquests/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1075:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -538,7 +538,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `30` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/niquests/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1075:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -557,7 +557,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `31` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/niquests/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1075:29`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -576,7 +576,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `32` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/niquests/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1091:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -595,7 +595,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `33` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/niquests/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1666:1`
 - Checklist pattern: certificate-fingerprint pinning path — verification is still performed
 
@@ -614,7 +614,7 @@ Checklist evidence: the rule's condition 'TLS verification disabled' is not sati
 
 ### [ ] Finding `34` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/niquests/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1688:23`
 - Checklist pattern: comparison expression, not a disabling assignment
 
@@ -633,7 +633,7 @@ Checklist evidence: the rule's CERT_NONE marker fires on the regex token inside 
 
 ### [ ] Finding `35` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/niquests/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1691:19`
 - Checklist pattern: certificate-fingerprint pinning path — verification is still performed
 
@@ -652,7 +652,7 @@ Checklist evidence: the rule's condition 'TLS verification disabled' is not sati
 
 ### [ ] Finding `36` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/36.txt`
+- Function context: `scripts/niquests/findings/functions/36.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1705:23`
 - Checklist pattern: comparison expression, not a disabling assignment
 
@@ -671,7 +671,7 @@ Checklist evidence: the rule's CERT_NONE marker fires on the regex token inside 
 
 ### [ ] Finding `37` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/niquests/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:1708:19`
 - Checklist pattern: caller-opted `verify=False` implementation of the documented public API
 
@@ -690,7 +690,7 @@ Checklist evidence: the disablement is parameter-gated and opt-in through the pu
 
 ### [ ] Finding `41` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/niquests/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:2189:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -709,7 +709,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `42` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/niquests/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/adapters.py:2207:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -728,7 +728,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `43` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/niquests/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_api.py:183:26`
 - Checklist pattern: timeout passed as a positional argument
 
@@ -747,7 +747,7 @@ Checklist evidence: the rule's condition 'call missing timeout=' is not met — 
 
 ### [ ] Finding `44` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/niquests/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:99:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -766,7 +766,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `45` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/niquests/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:99:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -785,7 +785,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `46` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/niquests/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:99:5`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -804,7 +804,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `49` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/niquests/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:620:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -823,7 +823,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `50` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/niquests/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:703:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -842,7 +842,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `52` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/niquests/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:731:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -861,7 +861,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `54` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/54.txt`
+- Function context: `scripts/niquests/findings/functions/54.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:957:1`
 - Checklist pattern: generator-exhaustion control flow
 
@@ -880,7 +880,7 @@ Checklist evidence: the rule's 'failures discarded silently' condition does not 
 
 ### [ ] Finding `55` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/niquests/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:1015:23`
 - Checklist pattern: mutually exclusive close paths, single release per execution
 
@@ -899,7 +899,7 @@ Checklist evidence: CWE-1341's condition is the same handle released twice on on
 
 ### [ ] Finding `58` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/niquests/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/async_session.py:1234:1`
 - Checklist pattern: non-seekable body probe fallback
 
@@ -918,7 +918,7 @@ Checklist evidence: the probe failure is expected for streaming bodies and handl
 
 ### [ ] Finding `59` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/59.txt`
+- Function context: `scripts/niquests/findings/functions/59.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/auth.py:75:14`
 - Checklist pattern: write to an outgoing request header, not a response header
 
@@ -937,7 +937,7 @@ Checklist evidence: CWE-93's condition is writing an externally influenced value
 
 ### [ ] Finding `60` — `BP-PY-14`
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/niquests/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/auth.py:399:27`
 - Checklist pattern: requests/session call inside a docstring doctest example
 
@@ -956,7 +956,7 @@ Checklist evidence: BP-PY-14's condition is an executable requests call missing 
 
 ### [ ] Finding `61` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/61.txt`
+- Function context: `scripts/niquests/findings/functions/61.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/auth.py:400:17`
 - Checklist pattern: `print(` token inside a docstring doctest example
 
@@ -975,7 +975,7 @@ Checklist evidence: BP-PY-46's condition is a real `print` call in library code;
 
 ### [ ] Finding `62` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/62.txt`
+- Function context: `scripts/niquests/findings/functions/62.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:57:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -994,7 +994,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `63` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/63.txt`
+- Function context: `scripts/niquests/findings/functions/63.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:57:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1013,7 +1013,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `64` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/niquests/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:57:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1032,7 +1032,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `65` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/niquests/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:57:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1051,7 +1051,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `66` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/niquests/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:57:13`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1070,7 +1070,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `67` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/niquests/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:77:1`
 - Checklist pattern: best-effort `to_py()` conversion with `None` fallback
 
@@ -1089,7 +1089,7 @@ Checklist evidence: the handler returns a defined fallback value, so the failure
 
 ### [ ] Finding `68` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/68.txt`
+- Function context: `scripts/niquests/findings/functions/68.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:131:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1108,7 +1108,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `69` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/niquests/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:131:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1127,7 +1127,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `70` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/70.txt`
+- Function context: `scripts/niquests/findings/functions/70.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:189:1`
 - Checklist pattern: retry-loop handler that acts on the exception
 
@@ -1146,7 +1146,7 @@ Checklist evidence: BP-PY-1's 'hides failures' condition is unmet: the generic c
 
 ### [ ] Finding `71` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/niquests/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:299:1`
 - Checklist pattern: best-effort response-header parse fallback
 
@@ -1165,7 +1165,7 @@ Checklist evidence: the handler is a defensive bridge fallback with a defined re
 
 ### [ ] Finding `72` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/niquests/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:299:1`
 - Checklist pattern: best-effort response-header parse fallback
 
@@ -1184,7 +1184,7 @@ Checklist evidence: the handler is a defensive bridge fallback with a defined re
 
 ### [ ] Finding `73` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/niquests/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:312:1`
 - Checklist pattern: fallback for missing reason phrase
 
@@ -1203,7 +1203,7 @@ Checklist evidence: the handler assigns a defined fallback value.
 
 ### [ ] Finding `74` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/niquests/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/__init__.py:327:1`
 - Checklist pattern: fallback for body read failure
 
@@ -1222,7 +1222,7 @@ Checklist evidence: the handler assigns a defined fallback value.
 
 ### [ ] Finding `75` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/niquests/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:56:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1241,7 +1241,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `76` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/76.txt`
+- Function context: `scripts/niquests/findings/functions/76.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:56:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1260,7 +1260,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `77` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/77.txt`
+- Function context: `scripts/niquests/findings/functions/77.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:56:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1279,7 +1279,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `78` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/78.txt`
+- Function context: `scripts/niquests/findings/functions/78.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:56:1`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1298,7 +1298,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `79` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/79.txt`
+- Function context: `scripts/niquests/findings/functions/79.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:56:13`
 - Checklist pattern: documented defensive JS-bridge reader setup
 
@@ -1317,7 +1317,7 @@ Checklist evidence: the handler is a deliberate best-effort bridge probe with a 
 
 ### [ ] Finding `80` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/80.txt`
+- Function context: `scripts/niquests/findings/functions/80.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:119:1`
 - Checklist pattern: best-effort stream read with `None` fallback
 
@@ -1336,7 +1336,7 @@ Checklist evidence: the handler returns a defined fallback.
 
 ### [ ] Finding `81` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/81.txt`
+- Function context: `scripts/niquests/findings/functions/81.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:153:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1355,7 +1355,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `82` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/82.txt`
+- Function context: `scripts/niquests/findings/functions/82.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:153:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1374,7 +1374,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `83` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/niquests/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:216:1`
 - Checklist pattern: retry-loop handler that acts on the exception
 
@@ -1393,7 +1393,7 @@ Checklist evidence: BP-PY-1's 'hides failures' condition is unmet: the generic c
 
 ### [ ] Finding `84` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/niquests/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:341:1`
 - Checklist pattern: best-effort response-header parse fallback
 
@@ -1412,7 +1412,7 @@ Checklist evidence: the handler is a defensive bridge fallback with a defined re
 
 ### [ ] Finding `85` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/85.txt`
+- Function context: `scripts/niquests/findings/functions/85.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:341:1`
 - Checklist pattern: best-effort response-header parse fallback
 
@@ -1431,7 +1431,7 @@ Checklist evidence: the handler is a defensive bridge fallback with a defined re
 
 ### [ ] Finding `86` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/86.txt`
+- Function context: `scripts/niquests/findings/functions/86.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/__init__.py:355:1`
 - Checklist pattern: fallback for missing reason phrase
 
@@ -1450,7 +1450,7 @@ Checklist evidence: the handler assigns a defined fallback value.
 
 ### [ ] Finding `87` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/niquests/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_sse.py:58:1`
 - Checklist pattern: best-effort stream read with `None` fallback
 
@@ -1469,7 +1469,7 @@ Checklist evidence: the handler returns a defined fallback.
 
 ### [ ] Finding `88` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/niquests/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_sse.py:58:1`
 - Checklist pattern: best-effort stream read with `None` fallback
 
@@ -1488,7 +1488,7 @@ Checklist evidence: the handler returns a defined fallback.
 
 ### [ ] Finding `89` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/niquests/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_sse.py:147:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1507,7 +1507,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `90` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/niquests/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_sse.py:147:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1526,7 +1526,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `91` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/91.txt`
+- Function context: `scripts/niquests/findings/functions/91.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_sse.py:147:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1545,7 +1545,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `92` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/niquests/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_sse.py:147:13`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1564,7 +1564,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `93` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/niquests/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:123:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1583,7 +1583,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `94` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/niquests/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:123:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1602,7 +1602,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `95` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/niquests/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:123:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1621,7 +1621,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `96` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/niquests/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:123:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1640,7 +1640,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `97` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/niquests/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:123:9`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1659,7 +1659,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `98` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/niquests/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:129:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1678,7 +1678,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `99` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/99.txt`
+- Function context: `scripts/niquests/findings/functions/99.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_async/_ws.py:129:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1697,7 +1697,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `100` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/100.txt`
+- Function context: `scripts/niquests/findings/functions/100.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_sse.py:59:1`
 - Checklist pattern: best-effort stream read with `None` fallback
 
@@ -1716,7 +1716,7 @@ Checklist evidence: the handler returns a defined fallback.
 
 ### [ ] Finding `101` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/101.txt`
+- Function context: `scripts/niquests/findings/functions/101.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_sse.py:59:1`
 - Checklist pattern: best-effort stream read with `None` fallback
 
@@ -1735,7 +1735,7 @@ Checklist evidence: the handler returns a defined fallback.
 
 ### [ ] Finding `102` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/102.txt`
+- Function context: `scripts/niquests/findings/functions/102.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_sse.py:151:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1754,7 +1754,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `103` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/103.txt`
+- Function context: `scripts/niquests/findings/functions/103.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_sse.py:151:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1773,7 +1773,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `104` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/104.txt`
+- Function context: `scripts/niquests/findings/functions/104.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_sse.py:151:1`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1792,7 +1792,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `105` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/105.txt`
+- Function context: `scripts/niquests/findings/functions/105.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_sse.py:151:13`
 - Checklist pattern: teardown best-effort reader cancellation
 
@@ -1811,7 +1811,7 @@ Checklist evidence: the cancellation failure is the expected outcome of tearing 
 
 ### [ ] Finding `106` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/106.txt`
+- Function context: `scripts/niquests/findings/functions/106.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:177:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1830,7 +1830,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `107` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/107.txt`
+- Function context: `scripts/niquests/findings/functions/107.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:177:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1849,7 +1849,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `108` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/108.txt`
+- Function context: `scripts/niquests/findings/functions/108.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:177:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1868,7 +1868,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `109` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/109.txt`
+- Function context: `scripts/niquests/findings/functions/109.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:177:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1887,7 +1887,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `110` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/110.txt`
+- Function context: `scripts/niquests/findings/functions/110.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:177:9`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1906,7 +1906,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `111` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/111.txt`
+- Function context: `scripts/niquests/findings/functions/111.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:183:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1925,7 +1925,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `112` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/112.txt`
+- Function context: `scripts/niquests/findings/functions/112.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/pyodide/_ws.py:183:1`
 - Checklist pattern: documented defensive teardown suppression of JS errors
 
@@ -1944,7 +1944,7 @@ Checklist evidence: the pass is documented as intentional teardown suppression; 
 
 ### [ ] Finding `114` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/114.txt`
+- Function context: `scripts/niquests/findings/functions/114.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/revocation/_crl/__init__.py:259:1`
 - Checklist pattern: best-effort issuer-certificate fetch during revocation checking
 
@@ -1963,7 +1963,7 @@ Checklist evidence: the `RequestException` is an expected outcome of a best-effo
 
 ### [ ] Finding `115` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/115.txt`
+- Function context: `scripts/niquests/findings/functions/115.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/revocation/_crl/__init__.py:259:1`
 - Checklist pattern: best-effort issuer-certificate fetch during revocation checking
 
@@ -1982,7 +1982,7 @@ Checklist evidence: the `RequestException` is an expected outcome of a best-effo
 
 ### [ ] Finding `116` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/116.txt`
+- Function context: `scripts/niquests/findings/functions/116.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/revocation/_crl/__init__.py:259:21`
 - Checklist pattern: best-effort issuer-certificate fetch during revocation checking
 
@@ -2001,7 +2001,7 @@ Checklist evidence: the `RequestException` is an expected outcome of a best-effo
 
 ### [ ] Finding `121` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/121.txt`
+- Function context: `scripts/niquests/findings/functions/121.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/revocation/_ocsp/__init__.py:325:1`
 - Checklist pattern: best-effort issuer-certificate fetch during revocation checking
 
@@ -2020,7 +2020,7 @@ Checklist evidence: the `RequestException` is an expected outcome of a best-effo
 
 ### [ ] Finding `122` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/122.txt`
+- Function context: `scripts/niquests/findings/functions/122.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/revocation/_ocsp/__init__.py:325:1`
 - Checklist pattern: best-effort issuer-certificate fetch during revocation checking
 
@@ -2039,7 +2039,7 @@ Checklist evidence: the `RequestException` is an expected outcome of a best-effo
 
 ### [ ] Finding `123` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/123.txt`
+- Function context: `scripts/niquests/findings/functions/123.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/revocation/_ocsp/__init__.py:325:21`
 - Checklist pattern: best-effort issuer-certificate fetch during revocation checking
 
@@ -2058,7 +2058,7 @@ Checklist evidence: the `RequestException` is an expected outcome of a best-effo
 
 ### [ ] Finding `127` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/127.txt`
+- Function context: `scripts/niquests/findings/functions/127.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/__init__.py:129:1`
 - Checklist pattern: generic catch inside the retry loop that re-raises on exhaustion
 
@@ -2077,7 +2077,7 @@ Checklist evidence: CWE-396's 'can hide distinct failure conditions' is unmet: t
 
 ### [ ] Finding `128` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/128.txt`
+- Function context: `scripts/niquests/findings/functions/128.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:182:1`
 - Checklist pattern: generic catch inside the retry loop that re-raises on exhaustion
 
@@ -2096,7 +2096,7 @@ Checklist evidence: CWE-396's 'can hide distinct failure conditions' is unmet: t
 
 ### [ ] Finding `129` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/129.txt`
+- Function context: `scripts/niquests/findings/functions/129.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:355:1`
 - Checklist pattern: application exception captured for later propagation
 
@@ -2115,7 +2115,7 @@ Checklist evidence: the exception is propagated, not hidden.
 
 ### [ ] Finding `130` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/130.txt`
+- Function context: `scripts/niquests/findings/functions/130.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:661:1`
 - Checklist pattern: startup failure recorded and surfaced
 
@@ -2134,7 +2134,7 @@ Checklist evidence: the failure is surfaced through the startup handshake, not s
 
 ### [ ] Finding `131` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/131.txt`
+- Function context: `scripts/niquests/findings/functions/131.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:679:1`
 - Checklist pattern: wait-until-cancelled loop termination
 
@@ -2153,7 +2153,7 @@ Checklist evidence: cancellation is the intended control flow, not a silently di
 
 ### [ ] Finding `132` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/132.txt`
+- Function context: `scripts/niquests/findings/functions/132.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:679:1`
 - Checklist pattern: wait-until-cancelled loop termination
 
@@ -2172,7 +2172,7 @@ Checklist evidence: cancellation is the intended control flow, not a silently di
 
 ### [ ] Finding `133` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/133.txt`
+- Function context: `scripts/niquests/findings/functions/133.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:687:1`
 - Checklist pattern: designed lifespan-shutdown path
 
@@ -2191,7 +2191,7 @@ Checklist evidence: the exception set is the expected outcome of the shutdown ha
 
 ### [ ] Finding `134` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/134.txt`
+- Function context: `scripts/niquests/findings/functions/134.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:711:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2210,7 +2210,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `135` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/135.txt`
+- Function context: `scripts/niquests/findings/functions/135.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:735:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2229,7 +2229,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `136` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/136.txt`
+- Function context: `scripts/niquests/findings/functions/136.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_async/__init__.py:795:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2248,7 +2248,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `137` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/137.txt`
+- Function context: `scripts/niquests/findings/functions/137.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_sse.py:153:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2267,7 +2267,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `138` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/138.txt`
+- Function context: `scripts/niquests/findings/functions/138.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_sse.py:153:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2286,7 +2286,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `139` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/139.txt`
+- Function context: `scripts/niquests/findings/functions/139.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_sse.py:170:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2305,7 +2305,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `140` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/140.txt`
+- Function context: `scripts/niquests/findings/functions/140.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_ws.py:44:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2324,7 +2324,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `141` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/141.txt`
+- Function context: `scripts/niquests/findings/functions/141.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_ws.py:44:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2343,7 +2343,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `142` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/142.txt`
+- Function context: `scripts/niquests/findings/functions/142.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_ws.py:58:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2362,7 +2362,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `143` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/143.txt`
+- Function context: `scripts/niquests/findings/functions/143.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/sgi/_ws.py:72:1`
 - Checklist pattern: bridge that propagates the exception into the future
 
@@ -2381,7 +2381,7 @@ Checklist evidence: the exception is re-raised to the awaiting side, so no failu
 
 ### [ ] Finding `144` — `CWE-772`
 
-- Function context: `./scripts/findings/functions/144.txt`
+- Function context: `scripts/niquests/findings/functions/144.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/unixsocket/__init__.py:47:23`
 - Checklist pattern: socket ownership transferred to the connection object
 
@@ -2400,7 +2400,7 @@ Checklist evidence: CWE-772 requires the resource to never be released; here it 
 
 ### [ ] Finding `145` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/145.txt`
+- Function context: `scripts/niquests/findings/functions/145.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_adapter.py:107:1`
 - Checklist pattern: re-raise of every unexpected exception
 
@@ -2419,7 +2419,7 @@ Checklist evidence: CWE-396's condition is unmet: unexpected failures are re-rai
 
 ### [ ] Finding `148` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/148.txt`
+- Function context: `scripts/niquests/findings/functions/148.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_adapter.py:216:1`
 - Checklist pattern: retry-loop handler that acts on the exception
 
@@ -2438,7 +2438,7 @@ Checklist evidence: the generic catch feeds the retry machinery and re-raises on
 
 ### [ ] Finding `149` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/149.txt`
+- Function context: `scripts/niquests/findings/functions/149.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_adapter.py:235:25`
 - Checklist pattern: mutually exclusive close paths, single release per execution
 
@@ -2457,7 +2457,7 @@ Checklist evidence: CWE-1341's condition is the same handle released twice on on
 
 ### [ ] Finding `150` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/150.txt`
+- Function context: `scripts/niquests/findings/functions/150.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_adapter.py:99:1`
 - Checklist pattern: upload-failure cleanup flag
 
@@ -2476,7 +2476,7 @@ Checklist evidence: the handler takes a visible action, so failures are not sile
 
 ### [ ] Finding `151` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/151.txt`
+- Function context: `scripts/niquests/findings/functions/151.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_adapter.py:99:1`
 - Checklist pattern: upload-failure cleanup flag
 
@@ -2495,7 +2495,7 @@ Checklist evidence: the handler takes a visible action, so failures are not sile
 
 ### [ ] Finding `154` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/154.txt`
+- Function context: `scripts/niquests/findings/functions/154.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_adapter.py:237:1`
 - Checklist pattern: retry-loop handler that acts on the exception
 
@@ -2514,7 +2514,7 @@ Checklist evidence: the generic catch feeds the retry machinery and re-raises on
 
 ### [ ] Finding `155` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/155.txt`
+- Function context: `scripts/niquests/findings/functions/155.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_adapter.py:256:31`
 - Checklist pattern: mutually exclusive close paths, single release per execution
 
@@ -2533,7 +2533,7 @@ Checklist evidence: CWE-1341's condition is the same handle released twice on on
 
 ### [ ] Finding `156` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/156.txt`
+- Function context: `scripts/niquests/findings/functions/156.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_sse.py:62:1`
 - Checklist pattern: optional numeric conversion fallback in SSE field parsing
 
@@ -2552,7 +2552,7 @@ Checklist evidence: the exception is an expected parsing outcome with a defined 
 
 ### [ ] Finding `157` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/157.txt`
+- Function context: `scripts/niquests/findings/functions/157.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_sse.py:62:1`
 - Checklist pattern: optional numeric conversion fallback in SSE field parsing
 
@@ -2571,7 +2571,7 @@ Checklist evidence: the exception is an expected parsing outcome with a defined 
 
 ### [ ] Finding `158` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/158.txt`
+- Function context: `scripts/niquests/findings/functions/158.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_async/_sse.py:62:17`
 - Checklist pattern: optional numeric conversion fallback in SSE field parsing
 
@@ -2590,7 +2590,7 @@ Checklist evidence: the exception is an expected parsing outcome with a defined 
 
 ### [ ] Finding `159` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/159.txt`
+- Function context: `scripts/niquests/findings/functions/159.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_sse.py:61:1`
 - Checklist pattern: optional numeric conversion fallback in SSE field parsing
 
@@ -2609,7 +2609,7 @@ Checklist evidence: the exception is an expected parsing outcome with a defined 
 
 ### [ ] Finding `160` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/160.txt`
+- Function context: `scripts/niquests/findings/functions/160.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_sse.py:61:1`
 - Checklist pattern: optional numeric conversion fallback in SSE field parsing
 
@@ -2628,7 +2628,7 @@ Checklist evidence: the exception is an expected parsing outcome with a defined 
 
 ### [ ] Finding `161` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/161.txt`
+- Function context: `scripts/niquests/findings/functions/161.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_sse.py:61:17`
 - Checklist pattern: optional numeric conversion fallback in SSE field parsing
 
@@ -2647,7 +2647,7 @@ Checklist evidence: the exception is an expected parsing outcome with a defined 
 
 ### [ ] Finding `162` — `BP-PY-49`
 
-- Function context: `./scripts/findings/functions/162.txt`
+- Function context: `scripts/niquests/findings/functions/162.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/extensions/wasi/_utils.py:63:41`
 - Checklist pattern: `verify=False` text inside an error-message string
 
@@ -2666,7 +2666,7 @@ Checklist evidence: no TLS disabling construct exists at this line — the regex
 
 ### [ ] Finding `165` — `BP-PY-36`
 
-- Function context: `./scripts/findings/functions/165.txt`
+- Function context: `scripts/niquests/findings/functions/165.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/help.py:176:1`
 - Checklist pattern: niquests' own HTTP `Session`, not SQLAlchemy
 
@@ -2685,7 +2685,7 @@ Checklist evidence: BP-PY-36's condition is a SQLAlchemy `Session`/`SessionLocal
 
 ### [ ] Finding `166` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/166.txt`
+- Function context: `scripts/niquests/findings/functions/166.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/help.py:196:1`
 - Checklist pattern: best-effort update check
 
@@ -2704,7 +2704,7 @@ Checklist evidence: the exception set (network + parse) is expected for a best-e
 
 ### [ ] Finding `167` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/167.txt`
+- Function context: `scripts/niquests/findings/functions/167.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/help.py:196:1`
 - Checklist pattern: best-effort update check
 
@@ -2723,7 +2723,7 @@ Checklist evidence: the exception set (network + parse) is expected for a best-e
 
 ### [ ] Finding `168` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/168.txt`
+- Function context: `scripts/niquests/findings/functions/168.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:488:25`
 - Checklist pattern: write to an outgoing request header, not a response header
 
@@ -2742,7 +2742,7 @@ Checklist evidence: CWE-93's condition is writing an externally influenced value
 
 ### [ ] Finding `169` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/169.txt`
+- Function context: `scripts/niquests/findings/functions/169.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1065:1`
 - Checklist pattern: defensive probe of lazily-initialized attributes
 
@@ -2761,7 +2761,7 @@ Checklist evidence: the exception is the expected outcome for an uninitialized o
 
 ### [ ] Finding `170` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/170.txt`
+- Function context: `scripts/niquests/findings/functions/170.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1065:1`
 - Checklist pattern: defensive probe of lazily-initialized attributes
 
@@ -2780,7 +2780,7 @@ Checklist evidence: the exception is the expected outcome for an uninitialized o
 
 ### [ ] Finding `171` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/171.txt`
+- Function context: `scripts/niquests/findings/functions/171.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1065:9`
 - Checklist pattern: defensive probe of lazily-initialized attributes
 
@@ -2799,7 +2799,7 @@ Checklist evidence: the exception is the expected outcome for an uninitialized o
 
 ### [ ] Finding `172` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/172.txt`
+- Function context: `scripts/niquests/findings/functions/172.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1079:1`
 - Checklist pattern: defensive probe of lazily-initialized attributes
 
@@ -2818,7 +2818,7 @@ Checklist evidence: the exception is the expected outcome for an uninitialized o
 
 ### [ ] Finding `173` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/173.txt`
+- Function context: `scripts/niquests/findings/functions/173.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1233:1`
 - Checklist pattern: optional content-length progress hint fallback
 
@@ -2837,7 +2837,7 @@ Checklist evidence: the flagged `pass` is the expected fallback for an optional 
 
 ### [ ] Finding `174` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/174.txt`
+- Function context: `scripts/niquests/findings/functions/174.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1318:1`
 - Checklist pattern: optional content-length progress hint fallback
 
@@ -2856,7 +2856,7 @@ Checklist evidence: the flagged `pass` is the expected fallback for an optional 
 
 ### [ ] Finding `175` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/175.txt`
+- Function context: `scripts/niquests/findings/functions/175.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1768:1`
 - Checklist pattern: optional content-length progress hint fallback
 
@@ -2875,7 +2875,7 @@ Checklist evidence: the flagged `pass` is the expected fallback for an optional 
 
 ### [ ] Finding `176` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/176.txt`
+- Function context: `scripts/niquests/findings/functions/176.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/models.py:1827:1`
 - Checklist pattern: optional content-length progress hint fallback
 
@@ -2894,7 +2894,7 @@ Checklist evidence: the flagged `pass` is the expected fallback for an optional 
 
 ### [ ] Finding `177` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/177.txt`
+- Function context: `scripts/niquests/findings/functions/177.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/packages.py:42:29`
 - Checklist pattern: dynamic import over a developer-controlled constant allowlist
 
@@ -2913,7 +2913,7 @@ Checklist evidence: CWE-829/CWE-94's condition is dynamically loading untrusted/
 
 ### [ ] Finding `178` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/178.txt`
+- Function context: `scripts/niquests/findings/functions/178.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/packages.py:42:29`
 - Checklist pattern: dynamic import over a developer-controlled constant allowlist
 
@@ -2932,7 +2932,7 @@ Checklist evidence: CWE-829/CWE-94's condition is dynamically loading untrusted/
 
 ### [ ] Finding `179` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/179.txt`
+- Function context: `scripts/niquests/findings/functions/179.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:115:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -2951,7 +2951,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `180` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/180.txt`
+- Function context: `scripts/niquests/findings/functions/180.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:115:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -2970,7 +2970,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `181` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/181.txt`
+- Function context: `scripts/niquests/findings/functions/181.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:115:5`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -2989,7 +2989,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `182` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/182.txt`
+- Function context: `scripts/niquests/findings/functions/182.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:1449:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3008,7 +3008,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `184` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/184.txt`
+- Function context: `scripts/niquests/findings/functions/184.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:1476:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3027,7 +3027,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `186` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/186.txt`
+- Function context: `scripts/niquests/findings/functions/186.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:1709:1`
 - Checklist pattern: generator-exhaustion control flow
 
@@ -3046,7 +3046,7 @@ Checklist evidence: the rule's 'failures discarded silently' condition does not 
 
 ### [ ] Finding `187` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/187.txt`
+- Function context: `scripts/niquests/findings/functions/187.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:1785:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3065,7 +3065,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `188` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/188.txt`
+- Function context: `scripts/niquests/findings/functions/188.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/sessions.py:1801:13`
 - Checklist pattern: different handles closed in one loop
 
@@ -3084,7 +3084,7 @@ Checklist evidence: the two `close()` calls release different resources, so the 
 
 ### [ ] Finding `195` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/195.txt`
+- Function context: `scripts/niquests/findings/functions/195.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/utils.py:157:1`
 - Checklist pattern: expected fallback for non-file objects
 
@@ -3103,7 +3103,7 @@ Checklist evidence: the shown source documents the `AttributeError`/`Unsupported
 
 ### [ ] Finding `196` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/196.txt`
+- Function context: `scripts/niquests/findings/functions/196.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/utils.py:157:1`
 - Checklist pattern: expected fallback for non-file objects
 
@@ -3122,7 +3122,7 @@ Checklist evidence: the shown source documents the `AttributeError`/`Unsupported
 
 ### [ ] Finding `197` — `CWE-396`
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/niquests/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/utils.py:256:1`
 - Checklist pattern: cleanup handler that removes the temp file
 
@@ -3141,7 +3141,7 @@ Checklist evidence: the handler acts (removes the temporary file), so the 'detec
 
 ### [ ] Finding `198` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/198.txt`
+- Function context: `scripts/niquests/findings/functions/198.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/utils.py:815:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3160,7 +3160,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `199` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/199.txt`
+- Function context: `scripts/niquests/findings/functions/199.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/utils.py:815:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3179,7 +3179,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `201` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/201.txt`
+- Function context: `scripts/niquests/findings/functions/201.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/src/niquests/utils.py:1196:1`
 - Checklist pattern: scheme-parsing fallback that falls through to an explicit raise
 
@@ -3198,7 +3198,7 @@ Checklist evidence: the `pass` only bridges to the enclosing `raise`, so no erro
 
 ### [ ] Finding `202` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/202.txt`
+- Function context: `scripts/niquests/findings/functions/202.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/conftest.py:107:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3217,7 +3217,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `203` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/203.txt`
+- Function context: `scripts/niquests/findings/functions/203.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/conftest.py:107:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3236,7 +3236,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `204` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/204.txt`
+- Function context: `scripts/niquests/findings/functions/204.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/conftest.py:107:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -3255,7 +3255,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `205` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/205.txt`
+- Function context: `scripts/niquests/findings/functions/205.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_asgi.py:52:1`
 - Checklist pattern: test websocket receive loop termination
 
@@ -3274,7 +3274,7 @@ Checklist evidence: test code: the exception is the expected end of the receive 
 
 ### [ ] Finding `206` — `CWE-617`
 
-- Function context: `./scripts/findings/functions/206.txt`
+- Function context: `scripts/niquests/findings/functions/206.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_async.py:30:1`
 - Checklist pattern: test assertion is the verification mechanism
 
@@ -3293,7 +3293,7 @@ Checklist evidence: CWE-617's condition is a reachable assertion on request-cont
 
 ### [ ] Finding `207` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/207.txt`
+- Function context: `scripts/niquests/findings/functions/207.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_async.py:30:19`
 - Checklist pattern: test assertion reading a header value
 
@@ -3312,7 +3312,7 @@ Checklist evidence: CWE-93 requires a header write; the shown source only compar
 
 ### [ ] Finding `208` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/208.txt`
+- Function context: `scripts/niquests/findings/functions/208.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_async.py:195:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3331,7 +3331,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `209` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/209.txt`
+- Function context: `scripts/niquests/findings/functions/209.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:58:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3350,7 +3350,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `210` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/210.txt`
+- Function context: `scripts/niquests/findings/functions/210.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:91:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3369,7 +3369,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `211` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/211.txt`
+- Function context: `scripts/niquests/findings/functions/211.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:129:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3388,7 +3388,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `212` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/212.txt`
+- Function context: `scripts/niquests/findings/functions/212.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:160:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3407,7 +3407,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `213` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/213.txt`
+- Function context: `scripts/niquests/findings/functions/213.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:192:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3426,7 +3426,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `214` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/214.txt`
+- Function context: `scripts/niquests/findings/functions/214.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:225:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3445,7 +3445,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `215` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/215.txt`
+- Function context: `scripts/niquests/findings/functions/215.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:263:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3464,7 +3464,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `216` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/216.txt`
+- Function context: `scripts/niquests/findings/functions/216.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:294:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3483,7 +3483,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `217` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/217.txt`
+- Function context: `scripts/niquests/findings/functions/217.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:353:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3502,7 +3502,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `218` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/218.txt`
+- Function context: `scripts/niquests/findings/functions/218.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:403:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3521,7 +3521,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `219` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/219.txt`
+- Function context: `scripts/niquests/findings/functions/219.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:446:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3540,7 +3540,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `220` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/220.txt`
+- Function context: `scripts/niquests/findings/functions/220.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:500:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3559,7 +3559,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `221` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/221.txt`
+- Function context: `scripts/niquests/findings/functions/221.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:550:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3578,7 +3578,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `222` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/222.txt`
+- Function context: `scripts/niquests/findings/functions/222.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:598:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3597,7 +3597,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `223` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/223.txt`
+- Function context: `scripts/niquests/findings/functions/223.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:646:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3616,7 +3616,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `224` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/224.txt`
+- Function context: `scripts/niquests/findings/functions/224.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:684:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3635,7 +3635,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `225` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/225.txt`
+- Function context: `scripts/niquests/findings/functions/225.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:727:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3654,7 +3654,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `226` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/226.txt`
+- Function context: `scripts/niquests/findings/functions/226.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:770:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3673,7 +3673,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `227` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/227.txt`
+- Function context: `scripts/niquests/findings/functions/227.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:814:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3692,7 +3692,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `228` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/228.txt`
+- Function context: `scripts/niquests/findings/functions/228.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:856:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3711,7 +3711,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `229` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/229.txt`
+- Function context: `scripts/niquests/findings/functions/229.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:901:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3730,7 +3730,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `230` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/230.txt`
+- Function context: `scripts/niquests/findings/functions/230.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:946:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3749,7 +3749,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `231` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/231.txt`
+- Function context: `scripts/niquests/findings/functions/231.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:984:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3768,7 +3768,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `232` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/232.txt`
+- Function context: `scripts/niquests/findings/functions/232.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1022:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3787,7 +3787,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `233` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/233.txt`
+- Function context: `scripts/niquests/findings/functions/233.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1059:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3806,7 +3806,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `234` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/234.txt`
+- Function context: `scripts/niquests/findings/functions/234.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1095:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3825,7 +3825,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `235` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/niquests/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1128:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3844,7 +3844,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `236` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/236.txt`
+- Function context: `scripts/niquests/findings/functions/236.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1160:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3863,7 +3863,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `237` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/237.txt`
+- Function context: `scripts/niquests/findings/functions/237.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1197:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3882,7 +3882,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `238` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/238.txt`
+- Function context: `scripts/niquests/findings/functions/238.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1234:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3901,7 +3901,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `239` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/239.txt`
+- Function context: `scripts/niquests/findings/functions/239.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1276:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3920,7 +3920,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `240` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/240.txt`
+- Function context: `scripts/niquests/findings/functions/240.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1318:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3939,7 +3939,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `241` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/241.txt`
+- Function context: `scripts/niquests/findings/functions/241.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1359:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3958,7 +3958,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `242` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/242.txt`
+- Function context: `scripts/niquests/findings/functions/242.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1400:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3977,7 +3977,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `243` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/243.txt`
+- Function context: `scripts/niquests/findings/functions/243.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1442:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -3996,7 +3996,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `244` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/244.txt`
+- Function context: `scripts/niquests/findings/functions/244.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1483:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4015,7 +4015,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `245` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/245.txt`
+- Function context: `scripts/niquests/findings/functions/245.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1528:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4034,7 +4034,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `246` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/246.txt`
+- Function context: `scripts/niquests/findings/functions/246.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1573:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4053,7 +4053,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `247` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/247.txt`
+- Function context: `scripts/niquests/findings/functions/247.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1617:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4072,7 +4072,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `248` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/248.txt`
+- Function context: `scripts/niquests/findings/functions/248.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1661:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4091,7 +4091,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `249` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/249.txt`
+- Function context: `scripts/niquests/findings/functions/249.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_emscripten.py:1715:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4110,7 +4110,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `250` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/250.txt`
+- Function context: `scripts/niquests/findings/functions/250.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_lowlevel.py:38:21`
 - Checklist pattern: test assertion reading a header value
 
@@ -4129,7 +4129,7 @@ Checklist evidence: CWE-93 requires a header write; the shown source only compar
 
 ### [ ] Finding `251` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/251.txt`
+- Function context: `scripts/niquests/findings/functions/251.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:79:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4148,7 +4148,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `252` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/252.txt`
+- Function context: `scripts/niquests/findings/functions/252.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:124:19`
 - Checklist pattern: test assertion reading a header value
 
@@ -4167,7 +4167,7 @@ Checklist evidence: CWE-93 requires a header write; the shown source only compar
 
 ### [ ] Finding `253` — `CWE-208`
 
-- Function context: `./scripts/findings/functions/253.txt`
+- Function context: `scripts/niquests/findings/functions/253.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:574:16`
 - Checklist pattern: equality of an auth object in a test assertion
 
@@ -4186,7 +4186,7 @@ Checklist evidence: CWE-208's condition is comparing security-sensitive values; 
 
 ### [ ] Finding `254` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/254.txt`
+- Function context: `scripts/niquests/findings/functions/254.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1030:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4204,7 +4204,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `255` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/255.txt`
+- Function context: `scripts/niquests/findings/functions/255.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1044:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4221,7 +4221,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `256` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/256.txt`
+- Function context: `scripts/niquests/findings/functions/256.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1047:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4240,7 +4240,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `257` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/257.txt`
+- Function context: `scripts/niquests/findings/functions/257.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1054:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4257,7 +4257,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `258` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/258.txt`
+- Function context: `scripts/niquests/findings/functions/258.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1651:16`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4276,7 +4276,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `259` — `CWE-502`
 
-- Function context: `./scripts/findings/functions/259.txt`
+- Function context: `scripts/niquests/findings/functions/259.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1651:16`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4295,7 +4295,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `260` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/260.txt`
+- Function context: `scripts/niquests/findings/functions/260.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1655:14`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4314,7 +4314,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `261` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/261.txt`
+- Function context: `scripts/niquests/findings/functions/261.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1663:13`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4333,7 +4333,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `262` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/262.txt`
+- Function context: `scripts/niquests/findings/functions/262.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1679:13`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4352,7 +4352,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `263` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/263.txt`
+- Function context: `scripts/niquests/findings/functions/263.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1694:13`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4371,7 +4371,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `264` — `BP-PY-10`
 
-- Function context: `./scripts/findings/functions/264.txt`
+- Function context: `scripts/niquests/findings/functions/264.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:1724:13`
 - Checklist pattern: self-serialized pickle round-trip tests
 
@@ -4390,7 +4390,7 @@ Checklist evidence: BP-PY-10/CWE-502's condition is deserializing untrusted data
 
 ### [ ] Finding `265` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/265.txt`
+- Function context: `scripts/niquests/findings/functions/265.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2163:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4409,7 +4409,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `266` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/266.txt`
+- Function context: `scripts/niquests/findings/functions/266.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2626:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4428,7 +4428,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `267` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/267.txt`
+- Function context: `scripts/niquests/findings/functions/267.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2630:1`
 - Checklist pattern: expected-exception path of a timeout test
 
@@ -4447,7 +4447,7 @@ Checklist evidence: the `pass` is the success path of the test (the exception wa
 
 ### [ ] Finding `268` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/268.txt`
+- Function context: `scripts/niquests/findings/functions/268.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2630:1`
 - Checklist pattern: expected-exception path of a timeout test
 
@@ -4466,7 +4466,7 @@ Checklist evidence: the `pass` is the success path of the test (the exception wa
 
 ### [ ] Finding `269` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/269.txt`
+- Function context: `scripts/niquests/findings/functions/269.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2630:9`
 - Checklist pattern: expected-exception path of a timeout test
 
@@ -4485,7 +4485,7 @@ Checklist evidence: the `pass` is the success path of the test (the exception wa
 
 ### [ ] Finding `270` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/270.txt`
+- Function context: `scripts/niquests/findings/functions/270.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2643:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4504,7 +4504,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `271` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/271.txt`
+- Function context: `scripts/niquests/findings/functions/271.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:2647:1`
 - Checklist pattern: expected-exception path of a timeout test
 
@@ -4523,7 +4523,7 @@ Checklist evidence: the `pass` is the success path of the test (the exception wa
 
 ### [ ] Finding `272` — `CWE-617`
 
-- Function context: `./scripts/findings/functions/272.txt`
+- Function context: `scripts/niquests/findings/functions/272.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_requests.py:3078:1`
 - Checklist pattern: test assertion is the verification mechanism
 
@@ -4542,7 +4542,7 @@ Checklist evidence: CWE-617's condition is a reachable assertion on request-cont
 
 ### [ ] Finding `273` — `CWE-772`
 
-- Function context: `./scripts/findings/functions/273.txt`
+- Function context: `scripts/niquests/findings/functions/273.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_testserver.py:41:1`
 - Checklist pattern: test socket used to verify connection refusal
 
@@ -4561,7 +4561,7 @@ Checklist evidence: CWE-772's condition is a resource leak in production code; t
 
 ### [ ] Finding `274` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/274.txt`
+- Function context: `scripts/niquests/findings/functions/274.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_testserver.py:53:21`
 - Checklist pattern: test assertion reading a header value
 
@@ -4580,7 +4580,7 @@ Checklist evidence: CWE-93 requires a header write; the shown source only compar
 
 ### [ ] Finding `275` — `BP-PY-41`
 
-- Function context: `./scripts/findings/functions/275.txt`
+- Function context: `scripts/niquests/findings/functions/275.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_testserver.py:134:1`
 - Checklist pattern: test delegates to an assert-bearing helper / is a smoke or expected-exception test
 
@@ -4599,7 +4599,7 @@ Checklist evidence: BP-PY-41's condition is a placeholder test that passes even 
 
 ### [ ] Finding `276` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/276.txt`
+- Function context: `scripts/niquests/findings/functions/276.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_testserver.py:179:13`
 - Checklist pattern: two distinct sockets closed once each
 
@@ -4618,7 +4618,7 @@ Checklist evidence: the matched pair releases distinct handles.
 
 ### [ ] Finding `277` — `CWE-397`
 
-- Function context: `./scripts/findings/functions/277.txt`
+- Function context: `scripts/niquests/findings/functions/277.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_testserver.py:220:1`
 - Checklist pattern: tests deliberately raising a generic exception
 
@@ -4637,7 +4637,7 @@ Checklist evidence: CWE-397's condition targets production code raising generic 
 
 ### [ ] Finding `278` — `BP-PY-13`
 
-- Function context: `./scripts/findings/functions/278.txt`
+- Function context: `scripts/niquests/findings/functions/278.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_utils.py:318:8`
 - Checklist pattern: test fixture punctuation string, not a credential
 
@@ -4656,7 +4656,7 @@ Checklist evidence: BP-PY-13's condition is a hardcoded secret-like credential; 
 
 ### [ ] Finding `279` — `CWE-397`
 
-- Function context: `./scripts/findings/functions/279.txt`
+- Function context: `scripts/niquests/findings/functions/279.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_utils.py:816:1`
 - Checklist pattern: tests deliberately raising a generic exception
 
@@ -4675,7 +4675,7 @@ Checklist evidence: CWE-397's condition targets production code raising generic 
 
 ### [ ] Finding `280` — `CWE-770`
 
-- Function context: `./scripts/findings/functions/280.txt`
+- Function context: `scripts/niquests/findings/functions/280.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/test_wsgi.py:59:21`
 - Checklist pattern: test WSGI fixture reading its own request body
 
@@ -4694,7 +4694,7 @@ Checklist evidence: CWE-770's condition is a production request reader without a
 
 ### [ ] Finding `281` — `CWE-772`
 
-- Function context: `./scripts/findings/functions/281.txt`
+- Function context: `scripts/niquests/findings/functions/281.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/testserver/server.py:81:39`
 - Checklist pattern: socket ownership transferred via return
 
@@ -4713,7 +4713,7 @@ Checklist evidence: the resource escapes the function to its owner, which releas
 
 ### [ ] Finding `282` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/282.txt`
+- Function context: `scripts/niquests/findings/functions/282.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/testserver/server.py:90:1`
 - Checklist pattern: defensive close of the server socket
 
@@ -4732,7 +4732,7 @@ Checklist evidence: the exception is the expected outcome of idempotent close; t
 
 ### [ ] Finding `283` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/283.txt`
+- Function context: `scripts/niquests/findings/functions/283.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/testserver/server.py:90:1`
 - Checklist pattern: defensive close of the server socket
 
@@ -4751,7 +4751,7 @@ Checklist evidence: the exception is the expected outcome of idempotent close; t
 
 ### [ ] Finding `284` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/284.txt`
+- Function context: `scripts/niquests/findings/functions/284.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/testserver/server.py:90:9`
 - Checklist pattern: defensive close of the server socket
 
@@ -4770,7 +4770,7 @@ Checklist evidence: the exception is the expected outcome of idempotent close; t
 
 ### [ ] Finding `285` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/285.txt`
+- Function context: `scripts/niquests/findings/functions/285.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/app.py:21:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -4789,7 +4789,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `286` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/286.txt`
+- Function context: `scripts/niquests/findings/functions/286.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/app.py:21:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -4808,7 +4808,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `287` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/287.txt`
+- Function context: `scripts/niquests/findings/functions/287.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/app.py:22:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -4827,7 +4827,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `288` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/288.txt`
+- Function context: `scripts/niquests/findings/functions/288.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/app.py:22:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -4846,7 +4846,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `289` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/289.txt`
+- Function context: `scripts/niquests/findings/functions/289.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/app.py:22:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -4865,7 +4865,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `290` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/290.txt`
+- Function context: `scripts/niquests/findings/functions/290.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:257:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4884,7 +4884,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `291` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/291.txt`
+- Function context: `scripts/niquests/findings/functions/291.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:257:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4903,7 +4903,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `292` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/292.txt`
+- Function context: `scripts/niquests/findings/functions/292.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:257:5`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4922,7 +4922,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `293` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/293.txt`
+- Function context: `scripts/niquests/findings/functions/293.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:297:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4941,7 +4941,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `294` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/294.txt`
+- Function context: `scripts/niquests/findings/functions/294.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:305:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4960,7 +4960,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `295` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/295.txt`
+- Function context: `scripts/niquests/findings/functions/295.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:313:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4979,7 +4979,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `296` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/296.txt`
+- Function context: `scripts/niquests/findings/functions/296.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:321:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -4998,7 +4998,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `297` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/297.txt`
+- Function context: `scripts/niquests/findings/functions/297.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:335:11`
 - Checklist pattern: test exercising idempotent close
 
@@ -5017,7 +5017,7 @@ Checklist evidence: the double close is the test's subject matter, not an accide
 
 ### [ ] Finding `298` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/298.txt`
+- Function context: `scripts/niquests/findings/functions/298.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/edge_cases.py:417:1`
 - Checklist pattern: expected-exception exercises in WASI guest edge-case tests
 
@@ -5036,7 +5036,7 @@ Checklist evidence: the except-pass is the expected-exception verification of th
 
 ### [ ] Finding `299` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/299.txt`
+- Function context: `scripts/niquests/findings/functions/299.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/async/test_wasi.py:47:23`
 - Checklist pattern: test assertion reading a header value
 
@@ -5055,7 +5055,7 @@ Checklist evidence: CWE-93 requires a header write; the shown source only compar
 
 ### [ ] Finding `300` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/300.txt`
+- Function context: `scripts/niquests/findings/functions/300.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/combined/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5074,7 +5074,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `301` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/301.txt`
+- Function context: `scripts/niquests/findings/functions/301.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/combined/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5093,7 +5093,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `302` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/302.txt`
+- Function context: `scripts/niquests/findings/functions/302.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/combined/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5112,7 +5112,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `303` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/303.txt`
+- Function context: `scripts/niquests/findings/functions/303.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/combined/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5131,7 +5131,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `304` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/304.txt`
+- Function context: `scripts/niquests/findings/functions/304.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/combined/app.py:21:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5150,7 +5150,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `305` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/305.txt`
+- Function context: `scripts/niquests/findings/functions/305.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_async/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5169,7 +5169,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `306` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/306.txt`
+- Function context: `scripts/niquests/findings/functions/306.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_async/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5188,7 +5188,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `307` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/307.txt`
+- Function context: `scripts/niquests/findings/functions/307.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_async/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5207,7 +5207,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `308` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/308.txt`
+- Function context: `scripts/niquests/findings/functions/308.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_async/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5226,7 +5226,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `309` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/309.txt`
+- Function context: `scripts/niquests/findings/functions/309.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_async/app.py:21:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5245,7 +5245,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `310` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/310.txt`
+- Function context: `scripts/niquests/findings/functions/310.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5264,7 +5264,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `311` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/311.txt`
+- Function context: `scripts/niquests/findings/functions/311.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5283,7 +5283,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `312` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/312.txt`
+- Function context: `scripts/niquests/findings/functions/312.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5302,7 +5302,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `313` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/313.txt`
+- Function context: `scripts/niquests/findings/functions/313.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5321,7 +5321,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `314` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/314.txt`
+- Function context: `scripts/niquests/findings/functions/314.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/hybrid_sync/app.py:20:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5340,7 +5340,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `315` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/315.txt`
+- Function context: `scripts/niquests/findings/functions/315.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/p1_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5359,7 +5359,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `316` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/316.txt`
+- Function context: `scripts/niquests/findings/functions/316.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/p1_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5378,7 +5378,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `317` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/317.txt`
+- Function context: `scripts/niquests/findings/functions/317.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/p1_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5397,7 +5397,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `318` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/318.txt`
+- Function context: `scripts/niquests/findings/functions/318.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/p1_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5416,7 +5416,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `319` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/319.txt`
+- Function context: `scripts/niquests/findings/functions/319.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/p1_sync/app.py:20:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5435,7 +5435,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `320` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/320.txt`
+- Function context: `scripts/niquests/findings/functions/320.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_async/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5454,7 +5454,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `321` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/321.txt`
+- Function context: `scripts/niquests/findings/functions/321.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_async/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5473,7 +5473,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `322` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/322.txt`
+- Function context: `scripts/niquests/findings/functions/322.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_async/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5492,7 +5492,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `323` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/323.txt`
+- Function context: `scripts/niquests/findings/functions/323.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_async/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5511,7 +5511,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `324` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/324.txt`
+- Function context: `scripts/niquests/findings/functions/324.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_async/app.py:21:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5530,7 +5530,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `325` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/325.txt`
+- Function context: `scripts/niquests/findings/functions/325.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5549,7 +5549,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `326` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/326.txt`
+- Function context: `scripts/niquests/findings/functions/326.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5568,7 +5568,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `327` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/327.txt`
+- Function context: `scripts/niquests/findings/functions/327.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5587,7 +5587,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `328` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/328.txt`
+- Function context: `scripts/niquests/findings/functions/328.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5606,7 +5606,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `329` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/329.txt`
+- Function context: `scripts/niquests/findings/functions/329.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/socket_sync/app.py:20:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5625,7 +5625,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `330` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/330.txt`
+- Function context: `scripts/niquests/findings/functions/330.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/app.py:21:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5644,7 +5644,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `331` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/331.txt`
+- Function context: `scripts/niquests/findings/functions/331.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/app.py:21:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5663,7 +5663,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `332` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/332.txt`
+- Function context: `scripts/niquests/findings/functions/332.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/app.py:22:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5682,7 +5682,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `333` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/333.txt`
+- Function context: `scripts/niquests/findings/functions/333.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/app.py:22:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5701,7 +5701,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `334` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/334.txt`
+- Function context: `scripts/niquests/findings/functions/334.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/app.py:22:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5720,7 +5720,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `335` — `CWE-1341`
 
-- Function context: `./scripts/findings/functions/335.txt`
+- Function context: `scripts/niquests/findings/functions/335.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/test_edges.py:377:5`
 - Checklist pattern: test exercising idempotent close
 
@@ -5739,7 +5739,7 @@ Checklist evidence: the double close is the test's subject matter, not an accide
 
 ### [ ] Finding `336` — `CWE-93`
 
-- Function context: `./scripts/findings/functions/336.txt`
+- Function context: `scripts/niquests/findings/functions/336.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/sync/test_wasi.py:34:19`
 - Checklist pattern: test assertion reading a header value
 
@@ -5758,7 +5758,7 @@ Checklist evidence: CWE-93 requires a header write; the shown source only compar
 
 ### [ ] Finding `337` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/337.txt`
+- Function context: `scripts/niquests/findings/functions/337.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_async/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5777,7 +5777,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `338` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/338.txt`
+- Function context: `scripts/niquests/findings/functions/338.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_async/app.py:20:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5796,7 +5796,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `339` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/339.txt`
+- Function context: `scripts/niquests/findings/functions/339.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_async/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5815,7 +5815,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `340` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/340.txt`
+- Function context: `scripts/niquests/findings/functions/340.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_async/app.py:21:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5834,7 +5834,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `341` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/341.txt`
+- Function context: `scripts/niquests/findings/functions/341.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_async/app.py:21:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5853,7 +5853,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `342` — `CWE-829`
 
-- Function context: `./scripts/findings/functions/342.txt`
+- Function context: `scripts/niquests/findings/functions/342.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5872,7 +5872,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `343` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/343.txt`
+- Function context: `scripts/niquests/findings/functions/343.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_sync/app.py:19:13`
 - Checklist pattern: enumeration and import of the package's own submodules
 
@@ -5891,7 +5891,7 @@ Checklist evidence: CWE-829/CWE-94's condition is an untrusted control sphere; t
 
 ### [ ] Finding `344` — `BP-PY-2`
 
-- Function context: `./scripts/findings/functions/344.txt`
+- Function context: `scripts/niquests/findings/functions/344.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5910,7 +5910,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `345` — `CWE-390`
 
-- Function context: `./scripts/findings/functions/345.txt`
+- Function context: `scripts/niquests/findings/functions/345.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_sync/app.py:20:1`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -5929,7 +5929,7 @@ Checklist evidence: BP-PY-2/CWE-390/CWE-1071's condition is 'an exception handle
 
 ### [ ] Finding `346` — `CWE-1071`
 
-- Function context: `./scripts/findings/functions/346.txt`
+- Function context: `scripts/niquests/findings/functions/346.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests/tests/wasi_guest/unavailable_sync/app.py:20:9`
 - Checklist pattern: optional-dependency import fallback (`except ImportError: pass`)
 
@@ -6013,6 +6013,6 @@ Findings that satisfy the rule condition as implemented, with no visible mitigat
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/niquests/chunks`
+- Function evidence: `scripts/niquests/findings/functions`
 - Validation: `git diff --check` — pass (run in the goslop repo root after writing this report)

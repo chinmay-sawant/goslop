@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/graphze
 branch: master
 commit: 0133f90898dc8b6de9b61994c3de622e591b2012
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/graphzero
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/graphzero/chunks
+function_context_path: scripts/graphzero/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/graphzero/scripts/chunks -context-dir real-repos/graphzero/scripts/findings/functions real-repos/graphzero`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/graphzero/chunks -context-dir scripts/graphzero/findings/functions real-repos/graphzero`
 - Findings: `7`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_7.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`, `6.txt`, `7.txt`
+- Chunks reviewed: `scripts/graphzero/chunks/Chunk_1_7.txt`
+- Function contexts reviewed: `scripts/graphzero/findings/functions/1.txt`, `2.txt`, `3.txt`, `4.txt`, `5.txt`, `6.txt`, `7.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/graphzero/chunks`.
+- [x] Read `scripts/graphzero/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -125,6 +125,6 @@ Checklist evidence: `pyTierBTOCTOURE` requires `os.path.(exists|lexists)(<ident>
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_7.txt` (all 7 findings)
-- Function evidence: `./scripts/findings/functions/1.txt` … `7.txt`
+- Chunk evidence: `scripts/graphzero/chunks/Chunk_1_7.txt` (all 7 findings)
+- Function evidence: `scripts/graphzero/findings/functions/1.txt` … `7.txt`
 - Validation: `git diff --check` — pass

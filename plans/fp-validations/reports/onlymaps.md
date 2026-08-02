@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymap
 branch: main
 commit: 6444a59
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/onlymaps/chunks
+function_context_path: scripts/onlymaps/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `(pre-built) ./bin/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/onlymaps/scripts/chunks -context-dir real-repos/onlymaps/scripts/findings/functions real-repos/onlymaps`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/onlymaps/chunks -context-dir scripts/onlymaps/findings/functions real-repos/onlymaps`
 - Findings: `99`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_75.txt`, `./scripts/chunks/Chunk_76_99.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` … `50.txt` (all exported contexts read; contexts for findings 51–99 taken from the chunk files and the enclosing source read directly for every finding)
+- Chunks reviewed: `scripts/onlymaps/chunks/Chunk_1_25.txt`, `scripts/onlymaps/chunks/Chunk_26_50.txt`, `scripts/onlymaps/chunks/Chunk_51_75.txt`, `scripts/onlymaps/chunks/Chunk_76_99.txt`
+- Function contexts reviewed: `scripts/onlymaps/findings/functions/1.txt` … `50.txt` (all exported contexts read; contexts for findings 51–99 taken from the chunk files and the enclosing source read directly for every finding)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/onlymaps/chunks`.
+- [x] Read `scripts/onlymaps/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding `2` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/onlymaps/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:136:13`
 - Checklist pattern: `.open(` is a call on a custom lifecycle method, not the builtin file-opening `open()`
 
@@ -65,7 +65,7 @@ Checklist evidence: BP-PY-7's condition (a file opened without `with`, risking r
 
 ### [ ] Finding `3` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/onlymaps/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:215:1`
 - Checklist pattern: handler's failure is immediately re-raised, so it is not swallowed
 
@@ -90,7 +90,7 @@ Checklist evidence: the shown source's suite ends in `raise`, so the "swallows a
 
 ### [ ] Finding `4` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/onlymaps/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:232:9`
 - Checklist pattern: `exec` token is a method *definition*, not a call of the builtin `exec()`
 
@@ -108,7 +108,7 @@ Checklist evidence: BP-PY-12's condition "eval/exec on dynamic input" requires a
 
 ### [ ] Finding `5` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/onlymaps/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:232:9`
 - Checklist pattern: `exec` token is a method definition; no code-generation sink exists
 
@@ -126,7 +126,7 @@ Checklist evidence: the "dynamic value reaches a Python code-generation sink" co
 
 ### [ ] Finding `6` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/onlymaps/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:244:22`
 - Checklist pattern: `exec` token is a method call on the library's own `Query` object, not the builtin
 
@@ -142,7 +142,7 @@ Checklist evidence: BP-PY-12's condition requires the `eval`/`exec` builtin; the
 
 ### [ ] Finding `7` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/onlymaps/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:376:1`
 - Checklist pattern: handler rolls back and re-raises; failure is propagated
 
@@ -165,7 +165,7 @@ Checklist evidence: the suite ends with `raise` — the "bare except swallows al
 
 ### [ ] Finding `8` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/onlymaps/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:382:9`
 - Checklist pattern: `def open(self)` is a method definition, not an `open()` call
 
@@ -183,7 +183,7 @@ Checklist evidence: BP-PY-7's condition "a file is opened without a `with` state
 
 ### [ ] Finding `9` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/onlymaps/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:408:1`
 - Checklist pattern: handler clears state and re-raises
 
@@ -206,7 +206,7 @@ Checklist evidence: suite ends with `raise` — the "swallows all exceptions" pr
 
 ### [ ] Finding `15` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/onlymaps/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:464:25`
 - Checklist pattern: `.open(` is the custom connection lifecycle method, not file open
 
@@ -224,7 +224,7 @@ Checklist evidence: BP-PY-7 targets the builtin file-opening `open()`; the call 
 
 ### [ ] Finding `19` — `CWE-478`
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/onlymaps/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_drivers.py:403:1`
 - Checklist pattern: unmatched values are handled by an unconditional fallback statement immediately after the match
 
@@ -251,7 +251,7 @@ Checklist evidence: the rule condition "match without a default branch" is met s
 
 ### [ ] Finding `20` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/onlymaps/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:169:13`
 - Checklist pattern: `.open(` is a custom pool lifecycle method inside `__enter__`
 
@@ -268,7 +268,7 @@ Checklist evidence: the call target is a user-defined method, not the builtin `o
 
 ### [ ] Finding `21` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/onlymaps/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:192:13`
 - Checklist pattern: `.open(` is a call on a `Connection` object, not file open
 
@@ -290,7 +290,7 @@ Checklist evidence: the receiver is a `Connection` instance with a custom `open`
 
 ### [ ] Finding `22` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/onlymaps/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:215:1`
 - Checklist pattern: handler decrements the counter and re-raises
 
@@ -313,7 +313,7 @@ Checklist evidence: the suite ends with `raise` — the "bare except swallows al
 
 ### [ ] Finding `23` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/onlymaps/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:280:9`
 - Checklist pattern: `exec` token is a method definition, not the builtin
 
@@ -330,7 +330,7 @@ Checklist evidence: BP-PY-12 requires an `eval`/`exec`/`compile` call with a non
 
 ### [ ] Finding `24` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/onlymaps/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:280:9`
 - Checklist pattern: `exec` token is a method definition; no code-generation sink exists
 
@@ -347,7 +347,7 @@ Checklist evidence: CWE-94's "dynamic value reaches a Python code-generation sin
 
 ### [ ] Finding `25` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/onlymaps/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:293:18`
 - Checklist pattern: `exec` token is a method call on a pool-checked-out `Connection`
 
@@ -364,7 +364,7 @@ Checklist evidence: the call target is the user-defined `Connection.exec`; BP-PY
 
 ### [ ] Finding `26` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/onlymaps/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:429:9`
 - Checklist pattern: `def open(self)` is a method definition, not an `open()` call
 
@@ -382,7 +382,7 @@ Checklist evidence: BP-PY-7's "file opened without `with`" condition is unmet �
 
 ### [ ] Finding `27` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/27.txt`
+- Function context: `scripts/onlymaps/findings/functions/27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:443:1`
 - Checklist pattern: handler closes the pool and re-raises
 
@@ -402,7 +402,7 @@ Checklist evidence: the suite ends with `raise` — the "swallows all exceptions
 
 ### [ ] Finding `32` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/onlymaps/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_query.py:52:9`
 - Checklist pattern: `exec` token is a method definition, not the builtin
 
@@ -424,7 +424,7 @@ Checklist evidence: BP-PY-12's condition requires an actual `exec(` call; the li
 
 ### [ ] Finding `33` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/onlymaps/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_query.py:52:9`
 - Checklist pattern: `exec` token is a method definition; no code-generation sink exists
 
@@ -446,7 +446,7 @@ Checklist evidence: CWE-94's code-generation-sink condition is unmet — there i
 
 ### [ ] Finding `34` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/34.txt`
+- Function context: `scripts/onlymaps/findings/functions/34.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_query.py:257:23`
 - Checklist pattern: the sink already receives bound parameters; SQL text is never interpolated here
 
@@ -465,7 +465,7 @@ Checklist evidence: CWE-89's condition "dynamic SQL string reaches execute" is u
 
 ### [ ] Finding `35` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/onlymaps/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:38:9`
 - Checklist pattern: `execute` token is a protocol method *definition* (PEP-249), not a call
 
@@ -488,7 +488,7 @@ Checklist evidence: CWE-89's condition "dynamic SQL string reaches execute/execu
 
 ### [ ] Finding `36` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/36.txt`
+- Function context: `scripts/onlymaps/findings/functions/36.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:153:9`
 - Checklist pattern: `exec` token is a `@overload` method definition, not the builtin
 
@@ -510,7 +510,7 @@ Checklist evidence: BP-PY-12's eval/exec-call condition is unmet — the line is
 
 ### [ ] Finding `37` — `CWE-94`
 
-- Function context: `./scripts/findings/functions/37.txt`
+- Function context: `scripts/onlymaps/findings/functions/37.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:153:9`
 - Checklist pattern: `exec` token is a `@overload` method definition; no code-generation sink
 
@@ -532,7 +532,7 @@ Checklist evidence: CWE-94's code-generation-sink condition is unmet — no call
 
 ### [ ] Finding `38` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/38.txt`
+- Function context: `scripts/onlymaps/findings/functions/38.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:170:9`
 - Checklist pattern: `exec` token is a `@overload` method definition, not the builtin
 
@@ -554,7 +554,7 @@ Checklist evidence: BP-PY-12's condition requires an actual `exec(` call; the li
 
 ### [ ] Finding `39` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/39.txt`
+- Function context: `scripts/onlymaps/findings/functions/39.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:538:9`
 - Checklist pattern: `def open(self)` is a protocol method definition, not an `open()` call
 
@@ -572,7 +572,7 @@ Checklist evidence: BP-PY-7's file-resource condition is unmet — the line is a
 
 ### [ ] Finding `41` — `CWE-478`
 
-- Function context: `./scripts/findings/functions/41.txt`
+- Function context: `scripts/onlymaps/findings/functions/41.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_types.py:307:1`
 - Checklist pattern: unmatched values are handled by an unconditional fallback statement after the match
 
@@ -594,7 +594,7 @@ Checklist evidence: the rule condition "match with no default branch" is met syn
 
 ### [ ] Finding `43` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/43.txt`
+- Function context: `scripts/onlymaps/findings/functions/43.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:6:5`
 - Checklist pattern: `print` in an invoke task-runner CLI file, user-facing step output, not library logging
 
@@ -615,7 +615,7 @@ Checklist evidence: BP-PY-46 targets library modules; the flagged module is a CL
 
 ### [ ] Finding `44` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/onlymaps/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:12:5`
 - Checklist pattern: same CLI task-file user output as Finding 43
 
@@ -634,7 +634,7 @@ Checklist evidence: the module is a CLI task file; the print is inside a `@task`
 
 ### [ ] Finding `45` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/onlymaps/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:20:5`
 - Checklist pattern: same CLI task-file user output as Finding 43
 
@@ -653,7 +653,7 @@ Checklist evidence: the flagged file is a CLI task runner (`@task` entrypoints),
 
 ### [ ] Finding `46` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/46.txt`
+- Function context: `scripts/onlymaps/findings/functions/46.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:23:5`
 - Checklist pattern: same CLI task-file user output as Finding 43
 
@@ -671,7 +671,7 @@ Checklist evidence: the module is the project's CLI task file — the "print use
 
 ### [ ] Finding `47` — `BP-PY-46`
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/onlymaps/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:25:5`
 - Checklist pattern: same CLI task-file user output as Finding 43
 
@@ -688,7 +688,7 @@ Checklist evidence: the flagged file is a CLI task runner, so the "non-script mo
 
 ### [ ] Finding `48` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/onlymaps/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/connections.py:49:9`
 - Checklist pattern: `.open(` is a call on a `Connection` fixture object, not file open
 
@@ -708,7 +708,7 @@ Checklist evidence: the receiver is a `Connection` with a custom `open` method; 
 
 ### [ ] Finding `49` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/onlymaps/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/connections.py:83:9`
 - Checklist pattern: `.open(` is a call on a `ConnectionPool` fixture object, not file open
 
@@ -728,7 +728,7 @@ Checklist evidence: the call target is a user-defined method; the "file opened w
 
 ### [ ] Finding `50` — `BP-PY-42`
 
-- Function context: `./scripts/findings/functions/50.txt`
+- Function context: `scripts/onlymaps/findings/functions/50.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/connections.py:142:1`
 - Checklist pattern: try/except is fixture teardown cleanup, not a test function expecting failure
 
@@ -752,7 +752,7 @@ Checklist evidence: the rule restricts to test-function bodies; the flagged try/
 
 ### [ ] Finding `55` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/55.txt`
+- Function context: `scripts/onlymaps/findings/functions/55.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/containers.py:139:18`
 - Checklist pattern: `exec` token is a method call on a testcontainers container object, not the builtin
 
@@ -774,7 +774,7 @@ Checklist evidence: BP-PY-12's condition requires the `eval`/`exec` builtin; the
 
 ### [ ] Finding `56` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/56.txt`
+- Function context: `scripts/onlymaps/findings/functions/56.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/containers.py:152:18`
 - Checklist pattern: same container-method `exec` call as Finding 55
 
@@ -797,7 +797,7 @@ Checklist evidence: the call target is the `OracleDbContainer` method; the eval/
 
 ### [ ] Finding `57` — `CWE-89`
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/onlymaps/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/containers.py:180:13`
 - Checklist pattern: the first argument is a compile-time SQL constant, not a dynamic/interpolated string
 
@@ -815,7 +815,7 @@ Checklist evidence: CWE-89's "dynamic SQL string reaches execute" condition is u
 
 ### [ ] Finding `58` — `BP-PY-42`
 
-- Function context: `./scripts/findings/functions/58.txt`
+- Function context: `scripts/onlymaps/findings/functions/58.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/executors.py:77:1`
 - Checklist pattern: try/except is an executor-drain helper, not a test function expecting failure
 
@@ -839,7 +839,7 @@ Checklist evidence: BP-PY-42 restricts to test-function bodies (`def test_*`); `
 
 ### [ ] Finding `64` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/64.txt`
+- Function context: `scripts/onlymaps/findings/functions/64.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_connect.py:40:11`
 - Checklist pattern: `.open(` is a call on a `Database` object, not file open
 
@@ -859,7 +859,7 @@ Checklist evidence: the receiver is a `Database` object with a custom `open` met
 
 ### [ ] Finding `65` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/65.txt`
+- Function context: `scripts/onlymaps/findings/functions/65.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_connect.py:97:11`
 - Checklist pattern: `.open(` is a call on a `Database` object, not file open
 
@@ -879,7 +879,7 @@ Checklist evidence: the call target is a user-defined method, not the builtin `o
 
 ### [ ] Finding `66` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/66.txt`
+- Function context: `scripts/onlymaps/findings/functions/66.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_connection.py:172:27`
 - Checklist pattern: `.open(` is a call on a `Connection` object under `pytest.raises`, not file open
 
@@ -896,7 +896,7 @@ Checklist evidence: the receiver is a `Connection` with a custom `open`; BP-PY-7
 
 ### [ ] Finding `67` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/67.txt`
+- Function context: `scripts/onlymaps/findings/functions/67.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_connection.py:234:30`
 - Checklist pattern: `exec` token is a method call on a `Connection` object, not the builtin
 
@@ -914,7 +914,7 @@ Checklist evidence: BP-PY-12 requires the `eval`/`exec` builtin; the call target
 
 ### [ ] Finding `69` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/69.txt`
+- Function context: `scripts/onlymaps/findings/functions/69.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:52:15`
 - Checklist pattern: `.open(` is a call on a `Database` object under `pytest.raises`, not file open
 
@@ -931,7 +931,7 @@ Checklist evidence: the call target is a user-defined method; BP-PY-7's "file op
 
 ### [ ] Finding `70` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/70.txt`
+- Function context: `scripts/onlymaps/findings/functions/70.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:94:19`
 - Checklist pattern: `exec` token is a method call on a `Database` object, not the builtin
 
@@ -949,7 +949,7 @@ Checklist evidence: the call target is the user-defined `exec` method of the `Da
 
 ### [ ] Finding `71` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/71.txt`
+- Function context: `scripts/onlymaps/findings/functions/71.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:108:12`
 - Checklist pattern: same `Database.exec` method call as Finding 70
 
@@ -965,7 +965,7 @@ Checklist evidence: BP-PY-12's builtin-exec condition is unmet — the call targ
 
 ### [ ] Finding `72` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/72.txt`
+- Function context: `scripts/onlymaps/findings/functions/72.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:274:16`
 - Checklist pattern: same `Database.exec` method call as Finding 70
 
@@ -982,7 +982,7 @@ Checklist evidence: the call target is the user-defined `Database.exec` method, 
 
 ### [ ] Finding `73` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/73.txt`
+- Function context: `scripts/onlymaps/findings/functions/73.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:290:16`
 - Checklist pattern: same `Database.exec` method call as Finding 70
 
@@ -999,7 +999,7 @@ Checklist evidence: the call target is the `Database.exec` method; the eval/exec
 
 ### [ ] Finding `74` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/74.txt`
+- Function context: `scripts/onlymaps/findings/functions/74.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:319:16`
 - Checklist pattern: same `Database.exec` method call as Finding 70
 
@@ -1016,7 +1016,7 @@ Checklist evidence: the call target is the user-defined method; BP-PY-12's condi
 
 ### [ ] Finding `75` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/75.txt`
+- Function context: `scripts/onlymaps/findings/functions/75.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:337:20`
 - Checklist pattern: same `Database.exec` method call as Finding 70
 
@@ -1034,7 +1034,7 @@ Checklist evidence: the call target is the `Database.exec` method; the eval/exec
 
 ### [ ] Finding `83` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/83.txt`
+- Function context: `scripts/onlymaps/findings/functions/83.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:452:11`
 - Checklist pattern: `.open(` is a call on a `Database` object under `pytest.raises`, not file open
 
@@ -1051,7 +1051,7 @@ Checklist evidence: the call target is a user-defined method; BP-PY-7's file-res
 
 ### [ ] Finding `84` — `BP-PY-7`
 
-- Function context: `./scripts/findings/functions/84.txt`
+- Function context: `scripts/onlymaps/findings/functions/84.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_database.py:480:15`
 - Checklist pattern: `.open(` is a call on a `Database` object in a concurrency test, not file open
 
@@ -1070,7 +1070,7 @@ Checklist evidence: the receiver is a `Database` with a custom `open`; the "file
 
 ### [ ] Finding `87` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/87.txt`
+- Function context: `scripts/onlymaps/findings/functions/87.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_pool.py:49:26`
 - Checklist pattern: `exec` token is a method call on a `ConnectionPool` object, not the builtin
 
@@ -1088,7 +1088,7 @@ Checklist evidence: the call target is the user-defined `ConnectionPool.exec`; B
 
 ### [ ] Finding `88` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/88.txt`
+- Function context: `scripts/onlymaps/findings/functions/88.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_pool.py:63:1`
 - Checklist pattern: the handler records the exception into the test's result variable, which is asserted later
 
@@ -1111,7 +1111,7 @@ Checklist evidence: BP-PY-1's "broad except hides failures" predicate is not sat
 
 ### [ ] Finding `89` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/89.txt`
+- Function context: `scripts/onlymaps/findings/functions/89.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_pool.py:176:22`
 - Checklist pattern: same `ConnectionPool.exec` method call as Finding 87
 
@@ -1129,7 +1129,7 @@ Checklist evidence: the call target is the user-defined method; the eval/exec-bu
 
 ### [ ] Finding `90` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/90.txt`
+- Function context: `scripts/onlymaps/findings/functions/90.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_pool.py:218:16`
 - Checklist pattern: same `ConnectionPool.exec` method call as Finding 87
 
@@ -1145,7 +1145,7 @@ Checklist evidence: the call target is `ConnectionPool.exec`; BP-PY-12's conditi
 
 ### [ ] Finding `92` — `BP-PY-1`
 
-- Function context: `./scripts/findings/functions/92.txt`
+- Function context: `scripts/onlymaps/findings/functions/92.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:78:1`
 - Checklist pattern: the handler records the exception into the test's result variable for later assertion
 
@@ -1164,7 +1164,7 @@ Checklist evidence: BP-PY-1's "broad except hides failures" predicate is not sat
 
 ### [ ] Finding `93` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/93.txt`
+- Function context: `scripts/onlymaps/findings/functions/93.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:343:16`
 - Checklist pattern: `exec` token is a method call on a `Database` object, not the builtin
 
@@ -1183,7 +1183,7 @@ Checklist evidence: the call target is the user-defined `Database.exec`; BP-PY-1
 
 ### [ ] Finding `94` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/94.txt`
+- Function context: `scripts/onlymaps/findings/functions/94.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:372:12`
 - Checklist pattern: same `Database.exec` method call as Finding 93 (SQL text passed as the method's argument)
 
@@ -1206,7 +1206,7 @@ Checklist evidence: the call target is `Database.exec` (a user-defined method), 
 
 ### [ ] Finding `95` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/95.txt`
+- Function context: `scripts/onlymaps/findings/functions/95.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:394:12`
 - Checklist pattern: same `Database.exec` method call as Finding 93
 
@@ -1225,7 +1225,7 @@ Checklist evidence: the call target is the user-defined method; BP-PY-12's condi
 
 ### [ ] Finding `96` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/96.txt`
+- Function context: `scripts/onlymaps/findings/functions/96.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:415:12`
 - Checklist pattern: same `Database.exec` method call as Finding 93
 
@@ -1248,7 +1248,7 @@ Checklist evidence: the call target is `Database.exec`, so the eval/exec-builtin
 
 ### [ ] Finding `97` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/97.txt`
+- Function context: `scripts/onlymaps/findings/functions/97.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:439:12`
 - Checklist pattern: same `Database.exec` method call as Finding 93
 
@@ -1267,7 +1267,7 @@ Checklist evidence: the call target is the user-defined `Database.exec` method; 
 
 ### [ ] Finding `98` — `BP-PY-12`
 
-- Function context: `./scripts/findings/functions/98.txt`
+- Function context: `scripts/onlymaps/findings/functions/98.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:475:16`
 - Checklist pattern: same `Database.exec` method call as Finding 93
 
@@ -1386,6 +1386,6 @@ Rule condition (`rules_testing.go` `detectBPPY41`): a `test_*` function body con
 ## Final evidence
 
 - Delegated reviewers: none (single-reviewer audit)
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/onlymaps/chunks`
+- Function evidence: `scripts/onlymaps/findings/functions`
 - Validation: `git diff --check` — pass

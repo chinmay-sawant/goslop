@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide
 branch: main
 commit: 136f7a4c3bc593488cd1e2c62bd74956265533d6
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/logxide/chunks
+function_context_path: scripts/logxide/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `n/a` (scan artifacts pre-generated; no rebuild performed)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/logxide/scripts/chunks -context-dir real-repos/logxide/scripts/findings/functions real-repos/logxide`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/logxide/chunks -context-dir scripts/logxide/findings/functions real-repos/logxide`
 - Findings: `503`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt` .. `./scripts/chunks/Chunk_501_503.txt` (all 21 chunk files)
-- Function contexts reviewed: `./scripts/findings/functions/<id>.txt` for every proposed false positive (chunk `Context:` excerpt for all 503; individual context files and enclosing sources followed up where the excerpt was insufficient)
+- Chunks reviewed: `scripts/logxide/chunks/Chunk_1_25.txt` .. `scripts/logxide/chunks/Chunk_501_503.txt` (all 21 chunk files)
+- Function contexts reviewed: `scripts/logxide/findings/functions/<id>.txt` for every proposed false positive (chunk `Context:` excerpt for all 503; individual context files and enclosing sources followed up where the excerpt was insufficient)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/logxide/chunks`.
+- [x] Read `scripts/logxide/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ One subsection per finding; the excerpt is the smallest snippet from the functio
 
 ### [ ] Finding 2 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/logxide/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/_bench_common.py:237:25`
 - Checklist pattern: `os.open()` is not the `open()` builtin
 
@@ -64,7 +64,7 @@ Checklist evidence: the flagged call is `os.open` (returns a raw fd), not the bu
 
 ### [ ] Finding 4 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/logxide/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/basic_handlers_benchmark.py:117:1`
 - Checklist pattern: catch-all converts the failure into a recorded benchmark result
 
@@ -83,7 +83,7 @@ Checklist evidence: the handler body assigns `result.ok`/`result.error`, explici
 
 ### [ ] Finding 5 — CWE-396
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/logxide/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/basic_handlers_benchmark.py:117:1`
 - Checklist pattern: catch-all converts the failure into a recorded benchmark result
 
@@ -102,7 +102,7 @@ Checklist evidence: the generic catch exists only to record any benchmark failur
 
 ### [ ] Finding 14 — CWE-117
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/logxide/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/compare_loggers.py:138:26`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -121,7 +121,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 16 — CWE-88
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/logxide/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/compare_loggers.py:162:12`
 - Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
 
@@ -140,7 +140,7 @@ Checklist evidence: each value follows its named flag as its own argv element; n
 
 ### [ ] Finding 18 — CWE-88
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/logxide/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/gil_benchmark.py:90:12`
 - Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
 
@@ -159,7 +159,7 @@ Checklist evidence: each value follows its named flag as its own argv element; n
 
 ### [ ] Finding 19 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/logxide/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/gil_benchmark.py:109:1`
 - Checklist pattern: `argparse.parse_args()` runs once at process start, not on a hot path
 
@@ -178,7 +178,7 @@ Checklist evidence: the flagged parse executes once per process at startup.
 
 ### [ ] Finding 21 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/logxide/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/perf_micro.py:79:1`
 - Checklist pattern: catch-all converts the failure into a recorded benchmark result
 
@@ -197,7 +197,7 @@ Checklist evidence: the handler body assigns `result.ok`/`result.error`, explici
 
 ### [ ] Finding 22 — CWE-396
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/logxide/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/perf_micro.py:79:1`
 - Checklist pattern: catch-all converts the failure into a recorded benchmark result
 
@@ -216,7 +216,7 @@ Checklist evidence: the generic catch exists only to record any benchmark failur
 
 ### [ ] Finding 25 — CWE-117
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/logxide/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/perf_vs_stdlib.py:73:26`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -235,7 +235,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 26 — CWE-88
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/logxide/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/perf_vs_stdlib.py:90:12`
 - Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
 
@@ -254,7 +254,7 @@ Checklist evidence: each value follows its named flag as its own argv element; n
 
 ### [ ] Finding 30 — CWE-88
 
-- Function context: `./scripts/findings/functions/30.txt`
+- Function context: `scripts/logxide/findings/functions/30.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/real_handlers_comparison.py:154:12`
 - Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
 
@@ -273,7 +273,7 @@ Checklist evidence: each value follows its named flag as its own argv element; n
 
 ### [ ] Finding 31 — PERF-PY-26
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/logxide/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/real_handlers_comparison.py:184:1`
 - Checklist pattern: `argparse.parse_args()` runs once at process start, not on a hot path
 
@@ -292,7 +292,7 @@ Checklist evidence: the flagged parse executes once per process at startup.
 
 ### [ ] Finding 33 — CWE-117
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/logxide/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/basic_usage.py:64:5`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -311,7 +311,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 52 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/52.txt`
+- Function context: `scripts/logxide/findings/functions/52.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/django_integration.py:317:1`
 - Checklist pattern: catch-all converts the failure into an HTTP error response
 
@@ -330,7 +330,7 @@ Checklist evidence: the handler returns an error response to the caller after lo
 
 ### [ ] Finding 57 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/logxide/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/django_integration.py:347:1`
 - Checklist pattern: health-check catch-all updates service status
 
@@ -349,7 +349,7 @@ Checklist evidence: the exception is processed into the health-check status resu
 
 ### [ ] Finding 60 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/60.txt`
+- Function context: `scripts/logxide/findings/functions/60.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/django_integration.py:405:1`
 - Checklist pattern: catch-all converts the failure into an HTTP error response
 
@@ -368,7 +368,7 @@ Checklist evidence: the handler returns an error response to the caller after lo
 
 ### [ ] Finding 115 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/115.txt`
+- Function context: `scripts/logxide/findings/functions/115.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/fastapi_advanced.py:549:1`
 - Checklist pattern: health-check catch-all updates service status
 
@@ -387,7 +387,7 @@ Checklist evidence: the exception is processed into the health-check status resu
 
 ### [ ] Finding 124 — CWE-1046
 
-- Function context: `./scripts/findings/functions/124.txt`
+- Function context: `scripts/logxide/findings/functions/124.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/fastapi_advanced.py:656:1`
 - Checklist pattern: flagged line is an integer increment, not string concatenation
 
@@ -406,7 +406,7 @@ Checklist evidence: the flagged expression is `int += 1`, not `str += str`.
 
 ### [ ] Finding 129 — CWE-117
 
-- Function context: `./scripts/findings/functions/129.txt`
+- Function context: `scripts/logxide/findings/functions/129.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/fastapi_demo.py:69:9`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -425,7 +425,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 146 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/146.txt`
+- Function context: `scripts/logxide/findings/functions/146.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/flask_integration.py:219:1`
 - Checklist pattern: catch-all rolls back the transaction and returns an error response
 
@@ -444,7 +444,7 @@ Checklist evidence: the exception triggers `db.session.rollback()` and a 500 res
 
 ### [ ] Finding 151 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/151.txt`
+- Function context: `scripts/logxide/findings/functions/151.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/flask_integration.py:249:1`
 - Checklist pattern: health-check catch-all updates service status
 
@@ -463,7 +463,7 @@ Checklist evidence: the exception is processed into the health-check status resu
 
 ### [ ] Finding 154 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/154.txt`
+- Function context: `scripts/logxide/findings/functions/154.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/flask_integration.py:304:1`
 - Checklist pattern: catch-all converts the failure into an HTTP error response
 
@@ -482,7 +482,7 @@ Checklist evidence: the handler returns an error response to the caller after lo
 
 ### [ ] Finding 168 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/168.txt`
+- Function context: `scripts/logxide/findings/functions/168.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_detailed.py:3:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -501,7 +501,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 169 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/169.txt`
+- Function context: `scripts/logxide/findings/functions/169.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_json.py:3:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -520,7 +520,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 170 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/170.txt`
+- Function context: `scripts/logxide/findings/functions/170.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_minimal.py:3:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -539,7 +539,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 171 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/171.txt`
+- Function context: `scripts/logxide/findings/functions/171.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_production.py:3:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -558,7 +558,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 173 — CWE-117
 
-- Function context: `./scripts/findings/functions/173.txt`
+- Function context: `scripts/logxide/findings/functions/173.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_production.py:19:5`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -577,7 +577,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 174 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/174.txt`
+- Function context: `scripts/logxide/findings/functions/174.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_simple.py:3:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -596,7 +596,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 175 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/175.txt`
+- Function context: `scripts/logxide/findings/functions/175.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_threaded.py:6:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -615,7 +615,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 177 — CWE-117
 
-- Function context: `./scripts/findings/functions/177.txt`
+- Function context: `scripts/logxide/findings/functions/177.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_threaded.py:21:9`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -634,7 +634,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 179 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/179.txt`
+- Function context: `scripts/logxide/findings/functions/179.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:15:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -653,7 +653,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 180 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/180.txt`
+- Function context: `scripts/logxide/findings/functions/180.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:35:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -672,7 +672,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 182 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/182.txt`
+- Function context: `scripts/logxide/findings/functions/182.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:40:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -691,7 +691,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 183 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/183.txt`
+- Function context: `scripts/logxide/findings/functions/183.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:49:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -710,7 +710,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 185 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/185.txt`
+- Function context: `scripts/logxide/findings/functions/185.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:54:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -729,7 +729,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 186 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/186.txt`
+- Function context: `scripts/logxide/findings/functions/186.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:67:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -748,7 +748,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 188 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/188.txt`
+- Function context: `scripts/logxide/findings/functions/188.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:72:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -767,7 +767,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 189 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/189.txt`
+- Function context: `scripts/logxide/findings/functions/189.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:82:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -786,7 +786,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 191 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/191.txt`
+- Function context: `scripts/logxide/findings/functions/191.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:87:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -805,7 +805,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 192 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/192.txt`
+- Function context: `scripts/logxide/findings/functions/192.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:101:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -824,7 +824,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 194 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/194.txt`
+- Function context: `scripts/logxide/findings/functions/194.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:106:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -843,7 +843,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 196 — CWE-117
 
-- Function context: `./scripts/findings/functions/196.txt`
+- Function context: `scripts/logxide/findings/functions/196.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:120:13`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -862,7 +862,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 197 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/197.txt`
+- Function context: `scripts/logxide/findings/functions/197.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:146:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -881,7 +881,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 199 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/199.txt`
+- Function context: `scripts/logxide/findings/functions/199.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:151:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -900,7 +900,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 201 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/201.txt`
+- Function context: `scripts/logxide/findings/functions/201.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:175:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -919,7 +919,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 203 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/203.txt`
+- Function context: `scripts/logxide/findings/functions/203.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:180:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -938,7 +938,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 204 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/204.txt`
+- Function context: `scripts/logxide/findings/functions/204.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:189:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -957,7 +957,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 215 — CWE-117
 
-- Function context: `./scripts/findings/functions/215.txt`
+- Function context: `scripts/logxide/findings/functions/215.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/performance_demo.py:145:9`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -976,7 +976,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 218 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/218.txt`
+- Function context: `scripts/logxide/findings/functions/218.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:35:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -995,7 +995,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 219 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/219.txt`
+- Function context: `scripts/logxide/findings/functions/219.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:36:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1014,7 +1014,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 220 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/220.txt`
+- Function context: `scripts/logxide/findings/functions/220.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:37:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1033,7 +1033,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 221 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/221.txt`
+- Function context: `scripts/logxide/findings/functions/221.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:44:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1052,7 +1052,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 222 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/222.txt`
+- Function context: `scripts/logxide/findings/functions/222.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:45:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1071,7 +1071,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 223 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/223.txt`
+- Function context: `scripts/logxide/findings/functions/223.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:48:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1090,7 +1090,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 224 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/224.txt`
+- Function context: `scripts/logxide/findings/functions/224.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:49:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1109,7 +1109,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 225 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/225.txt`
+- Function context: `scripts/logxide/findings/functions/225.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:53:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1128,7 +1128,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 226 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/226.txt`
+- Function context: `scripts/logxide/findings/functions/226.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:89:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1147,7 +1147,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 227 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/227.txt`
+- Function context: `scripts/logxide/findings/functions/227.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:100:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1166,7 +1166,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 228 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/228.txt`
+- Function context: `scripts/logxide/findings/functions/228.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:101:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1185,7 +1185,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 229 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/229.txt`
+- Function context: `scripts/logxide/findings/functions/229.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:106:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1204,7 +1204,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 230 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/230.txt`
+- Function context: `scripts/logxide/findings/functions/230.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:111:1`
 - Checklist pattern: catch-all delegates to full exception reporting
 
@@ -1223,7 +1223,7 @@ Checklist evidence: the handler body is a full exception-reporting call (`logger
 
 ### [ ] Finding 231 — CWE-396
 
-- Function context: `./scripts/findings/functions/231.txt`
+- Function context: `scripts/logxide/findings/functions/231.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:111:1`
 - Checklist pattern: catch-all delegates to full exception reporting
 
@@ -1242,7 +1242,7 @@ Checklist evidence: the exception is routed to the error-reporting contract, not
 
 ### [ ] Finding 232 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/232.txt`
+- Function context: `scripts/logxide/findings/functions/232.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:119:1`
 - Checklist pattern: catch-all delegates to full exception reporting
 
@@ -1261,7 +1261,7 @@ Checklist evidence: the handler body is a full exception-reporting call (`logger
 
 ### [ ] Finding 234 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/234.txt`
+- Function context: `scripts/logxide/findings/functions/234.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:123:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1280,7 +1280,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 235 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/logxide/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:124:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1299,7 +1299,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 236 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/236.txt`
+- Function context: `scripts/logxide/findings/functions/236.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:129:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1318,7 +1318,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 237 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/237.txt`
+- Function context: `scripts/logxide/findings/functions/237.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:149:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1337,7 +1337,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 238 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/238.txt`
+- Function context: `scripts/logxide/findings/functions/238.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:150:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1356,7 +1356,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 239 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/239.txt`
+- Function context: `scripts/logxide/findings/functions/239.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:155:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1375,7 +1375,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 242 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/242.txt`
+- Function context: `scripts/logxide/findings/functions/242.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:179:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1394,7 +1394,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 243 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/243.txt`
+- Function context: `scripts/logxide/findings/functions/243.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:180:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1413,7 +1413,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 244 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/244.txt`
+- Function context: `scripts/logxide/findings/functions/244.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:185:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1432,7 +1432,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 247 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/247.txt`
+- Function context: `scripts/logxide/findings/functions/247.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:213:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1451,7 +1451,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 248 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/248.txt`
+- Function context: `scripts/logxide/findings/functions/248.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:214:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1470,7 +1470,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 249 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/249.txt`
+- Function context: `scripts/logxide/findings/functions/249.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:219:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1489,7 +1489,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 250 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/250.txt`
+- Function context: `scripts/logxide/findings/functions/250.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:241:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1508,7 +1508,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 251 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/251.txt`
+- Function context: `scripts/logxide/findings/functions/251.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:243:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1527,7 +1527,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 252 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/252.txt`
+- Function context: `scripts/logxide/findings/functions/252.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:245:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1546,7 +1546,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 253 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/253.txt`
+- Function context: `scripts/logxide/findings/functions/253.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:250:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1565,7 +1565,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 254 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/254.txt`
+- Function context: `scripts/logxide/findings/functions/254.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:283:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1584,7 +1584,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 255 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/255.txt`
+- Function context: `scripts/logxide/findings/functions/255.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:284:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1603,7 +1603,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 256 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/256.txt`
+- Function context: `scripts/logxide/findings/functions/256.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:289:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1622,7 +1622,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 260 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/260.txt`
+- Function context: `scripts/logxide/findings/functions/260.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:325:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1641,7 +1641,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 261 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/261.txt`
+- Function context: `scripts/logxide/findings/functions/261.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/sentry_integration.py:326:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -1660,7 +1660,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 263 — CWE-117
 
-- Function context: `./scripts/findings/functions/263.txt`
+- Function context: `scripts/logxide/findings/functions/263.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/simple_demo.py:39:9`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -1679,7 +1679,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 270 — CWE-89
 
-- Function context: `./scripts/findings/functions/270.txt`
+- Function context: `scripts/logxide/findings/functions/270.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/third_party_integration.py:71:17`
 - Checklist pattern: SQL string is a constant literal with no interpolation
 
@@ -1698,7 +1698,7 @@ Checklist evidence: the executed SQL contains no placeholders or interpolated ex
 
 ### [ ] Finding 279 — CWE-1333
 
-- Function context: `./scripts/findings/functions/279.txt`
+- Function context: `scripts/logxide/findings/functions/279.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/compat_handlers.py:65:18`
 - Checklist pattern: nested repetition alternatives are disjoint and anchored by literals (linear-time)
 
@@ -1717,7 +1717,7 @@ Checklist evidence: the repeated group's alternatives start with disjoint litera
 
 ### [ ] Finding 284 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/284.txt`
+- Function context: `scripts/logxide/findings/functions/284.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/compat_handlers.py:361:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1736,7 +1736,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 285 — CWE-396
 
-- Function context: `./scripts/findings/functions/285.txt`
+- Function context: `scripts/logxide/findings/functions/285.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/compat_handlers.py:361:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1755,7 +1755,7 @@ Checklist evidence: the exception is routed to `handleError`, not hidden.
 
 ### [ ] Finding 287 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/287.txt`
+- Function context: `scripts/logxide/findings/functions/287.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/fast_logger_wrapper.py:55:1`
 - Checklist pattern: catch-all recovers with a fallback value
 
@@ -1774,7 +1774,7 @@ Checklist evidence: the handler body performs explicit fallback recovery.
 
 ### [ ] Finding 288 — CWE-396
 
-- Function context: `./scripts/findings/functions/288.txt`
+- Function context: `scripts/logxide/findings/functions/288.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/fast_logger_wrapper.py:55:1`
 - Checklist pattern: catch-all recovers with a fallback value
 
@@ -1793,7 +1793,7 @@ Checklist evidence: the exception is converted into a fallback value/state.
 
 ### [ ] Finding 289 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/289.txt`
+- Function context: `scripts/logxide/findings/functions/289.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:191:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1812,7 +1812,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 290 — CWE-396
 
-- Function context: `./scripts/findings/functions/290.txt`
+- Function context: `scripts/logxide/findings/functions/290.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:191:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1831,7 +1831,7 @@ Checklist evidence: the exception is routed to `handleError`, not hidden.
 
 ### [ ] Finding 291 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/291.txt`
+- Function context: `scripts/logxide/findings/functions/291.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:260:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1850,7 +1850,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 292 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/292.txt`
+- Function context: `scripts/logxide/findings/functions/292.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:325:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1869,7 +1869,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 293 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/293.txt`
+- Function context: `scripts/logxide/findings/functions/293.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:406:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1888,7 +1888,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 294 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/294.txt`
+- Function context: `scripts/logxide/findings/functions/294.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:477:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1907,7 +1907,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 295 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/295.txt`
+- Function context: `scripts/logxide/findings/functions/295.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:519:1`
 - Checklist pattern: catch-all delegates to the logging error contract
 
@@ -1926,7 +1926,7 @@ Checklist evidence: the handler body delegates to `handleError`, the stdlib emit
 
 ### [ ] Finding 297 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/297.txt`
+- Function context: `scripts/logxide/findings/functions/297.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/interceptor.py:42:1`
 - Checklist pattern: catch-all recovers with a fallback value
 
@@ -1945,7 +1945,7 @@ Checklist evidence: the handler body performs explicit fallback recovery.
 
 ### [ ] Finding 298 — CWE-396
 
-- Function context: `./scripts/findings/functions/298.txt`
+- Function context: `scripts/logxide/findings/functions/298.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/interceptor.py:42:1`
 - Checklist pattern: catch-all recovers with a fallback value
 
@@ -1964,7 +1964,7 @@ Checklist evidence: the exception is converted into a fallback value/state.
 
 ### [ ] Finding 303 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/303.txt`
+- Function context: `scripts/logxide/findings/functions/303.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/sentry_integration.py:85:1`
 - Checklist pattern: catch-all delegates to the error handler contract
 
@@ -1983,7 +1983,7 @@ Checklist evidence: the handler body delegates to the dedicated `_handle_error` 
 
 ### [ ] Finding 304 — CWE-396
 
-- Function context: `./scripts/findings/functions/304.txt`
+- Function context: `scripts/logxide/findings/functions/304.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/sentry_integration.py:85:1`
 - Checklist pattern: catch-all delegates to the error handler contract
 
@@ -2002,7 +2002,7 @@ Checklist evidence: the exception is routed to `_handle_error`, not hidden.
 
 ### [ ] Finding 307 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/307.txt`
+- Function context: `scripts/logxide/findings/functions/307.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/testing.py:163:1`
 - Checklist pattern: catch-all recovers with a fallback value
 
@@ -2021,7 +2021,7 @@ Checklist evidence: the handler body performs explicit fallback recovery.
 
 ### [ ] Finding 308 — CWE-396
 
-- Function context: `./scripts/findings/functions/308.txt`
+- Function context: `scripts/logxide/findings/functions/308.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/testing.py:163:1`
 - Checklist pattern: catch-all recovers with a fallback value
 
@@ -2040,7 +2040,7 @@ Checklist evidence: the exception is converted into a fallback value/state.
 
 ### [ ] Finding 309 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/309.txt`
+- Function context: `scripts/logxide/findings/functions/309.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:18:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2059,7 +2059,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 312 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/312.txt`
+- Function context: `scripts/logxide/findings/functions/312.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:21:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2078,7 +2078,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 313 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/313.txt`
+- Function context: `scripts/logxide/findings/functions/313.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:28:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2097,7 +2097,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 314 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/314.txt`
+- Function context: `scripts/logxide/findings/functions/314.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:35:13`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2116,7 +2116,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 315 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/315.txt`
+- Function context: `scripts/logxide/findings/functions/315.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:44:13`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2135,7 +2135,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 316 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/316.txt`
+- Function context: `scripts/logxide/findings/functions/316.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:50:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2154,7 +2154,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 317 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/317.txt`
+- Function context: `scripts/logxide/findings/functions/317.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:51:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2173,7 +2173,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 318 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/318.txt`
+- Function context: `scripts/logxide/findings/functions/318.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:52:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2192,7 +2192,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 319 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/319.txt`
+- Function context: `scripts/logxide/findings/functions/319.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:55:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2211,7 +2211,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 320 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/320.txt`
+- Function context: `scripts/logxide/findings/functions/320.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:61:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2230,7 +2230,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 321 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/321.txt`
+- Function context: `scripts/logxide/findings/functions/321.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:64:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2249,7 +2249,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 322 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/322.txt`
+- Function context: `scripts/logxide/findings/functions/322.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:65:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2268,7 +2268,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 323 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/323.txt`
+- Function context: `scripts/logxide/findings/functions/323.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:70:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2287,7 +2287,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 324 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/324.txt`
+- Function context: `scripts/logxide/findings/functions/324.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:75:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2306,7 +2306,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 325 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/325.txt`
+- Function context: `scripts/logxide/findings/functions/325.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:79:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2325,7 +2325,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 326 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/326.txt`
+- Function context: `scripts/logxide/findings/functions/326.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:83:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2344,7 +2344,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 327 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/327.txt`
+- Function context: `scripts/logxide/findings/functions/327.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:87:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2363,7 +2363,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 328 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/328.txt`
+- Function context: `scripts/logxide/findings/functions/328.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:92:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2382,7 +2382,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 329 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/329.txt`
+- Function context: `scripts/logxide/findings/functions/329.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:100:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2401,7 +2401,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 330 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/330.txt`
+- Function context: `scripts/logxide/findings/functions/330.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:105:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2420,7 +2420,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 331 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/331.txt`
+- Function context: `scripts/logxide/findings/functions/331.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:112:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2439,7 +2439,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 332 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/332.txt`
+- Function context: `scripts/logxide/findings/functions/332.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:117:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2458,7 +2458,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 333 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/333.txt`
+- Function context: `scripts/logxide/findings/functions/333.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:121:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2477,7 +2477,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 334 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/334.txt`
+- Function context: `scripts/logxide/findings/functions/334.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:126:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2496,7 +2496,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 335 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/335.txt`
+- Function context: `scripts/logxide/findings/functions/335.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:130:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2515,7 +2515,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 336 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/336.txt`
+- Function context: `scripts/logxide/findings/functions/336.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:135:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2534,7 +2534,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 337 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/337.txt`
+- Function context: `scripts/logxide/findings/functions/337.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/publish.py:142:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2553,7 +2553,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 341 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/341.txt`
+- Function context: `scripts/logxide/findings/functions/341.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:14:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2572,7 +2572,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 342 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/342.txt`
+- Function context: `scripts/logxide/findings/functions/342.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:16:1`
 - Checklist pattern: try/except is a defensive guard, not a failure expectation
 
@@ -2591,7 +2591,7 @@ Checklist evidence: the except branch reports the failure rather than asserting 
 
 ### [ ] Finding 343 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/343.txt`
+- Function context: `scripts/logxide/findings/functions/343.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:19:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2610,7 +2610,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 346 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/346.txt`
+- Function context: `scripts/logxide/findings/functions/346.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:22:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2629,7 +2629,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 348 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/348.txt`
+- Function context: `scripts/logxide/findings/functions/348.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:29:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2648,7 +2648,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 349 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/349.txt`
+- Function context: `scripts/logxide/findings/functions/349.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:42:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2667,7 +2667,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 351 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/351.txt`
+- Function context: `scripts/logxide/findings/functions/351.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:45:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2686,7 +2686,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 353 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/353.txt`
+- Function context: `scripts/logxide/findings/functions/353.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:52:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2705,7 +2705,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 354 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/354.txt`
+- Function context: `scripts/logxide/findings/functions/354.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:68:13`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2724,7 +2724,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 355 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/355.txt`
+- Function context: `scripts/logxide/findings/functions/355.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:71:13`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2743,7 +2743,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 357 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/357.txt`
+- Function context: `scripts/logxide/findings/functions/357.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:74:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2762,7 +2762,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 359 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/359.txt`
+- Function context: `scripts/logxide/findings/functions/359.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:81:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2781,7 +2781,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 361 — CWE-117
 
-- Function context: `./scripts/findings/functions/361.txt`
+- Function context: `scripts/logxide/findings/functions/361.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:94:13`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -2800,7 +2800,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 362 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/362.txt`
+- Function context: `scripts/logxide/findings/functions/362.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:101:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2819,7 +2819,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 364 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/364.txt`
+- Function context: `scripts/logxide/findings/functions/364.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:106:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2838,7 +2838,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 366 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/366.txt`
+- Function context: `scripts/logxide/findings/functions/366.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:113:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2857,7 +2857,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 368 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/368.txt`
+- Function context: `scripts/logxide/findings/functions/368.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:141:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2876,7 +2876,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 370 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/370.txt`
+- Function context: `scripts/logxide/findings/functions/370.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:144:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2895,7 +2895,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 372 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/372.txt`
+- Function context: `scripts/logxide/findings/functions/372.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:151:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2914,7 +2914,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 373 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/373.txt`
+- Function context: `scripts/logxide/findings/functions/373.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:170:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2933,7 +2933,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 375 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/375.txt`
+- Function context: `scripts/logxide/findings/functions/375.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:173:9`
 - Checklist pattern: print in a script module, not a library module
 
@@ -2952,7 +2952,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 377 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/377.txt`
+- Function context: `scripts/logxide/findings/functions/377.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/conftest.py:28:1`
 - Checklist pattern: flagged try/except is a helper, not a test expecting failure
 
@@ -2971,7 +2971,7 @@ Checklist evidence: the construct is a defensive flush helper in a fixture, not 
 
 ### [ ] Finding 382 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/382.txt`
+- Function context: `scripts/logxide/findings/functions/382.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/conftest.py:36:6`
 - Checklist pattern: daemon thread with explicit synchronization, no join needed
 
@@ -2990,7 +2990,7 @@ Checklist evidence: daemon thread plus explicit `Event.wait` synchronization pro
 
 ### [ ] Finding 397 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/397.txt`
+- Function context: `scripts/logxide/findings/functions/397.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_basic_logging.py:97:1`
 - Checklist pattern: try/except is a crash-guard, not a failure expectation
 
@@ -3009,7 +3009,7 @@ Checklist evidence: the except branch tolerates unsupported formats instead of a
 
 ### [ ] Finding 405 — CWE-117
 
-- Function context: `./scripts/findings/functions/405.txt`
+- Function context: `scripts/logxide/findings/functions/405.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_basic_logging.py:147:17`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -3028,7 +3028,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 411 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/411.txt`
+- Function context: `scripts/logxide/findings/functions/411.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_compatibility.py:10:1`
 - Checklist pattern: try/except deliberately creates the exception to exercise `logging.exception`
 
@@ -3047,7 +3047,7 @@ Checklist evidence: the try body raises a controlled exception to drive the logg
 
 ### [ ] Finding 412 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/412.txt`
+- Function context: `scripts/logxide/findings/functions/412.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_compatibility.py:12:1`
 - Checklist pattern: catch-all delegates to full exception reporting
 
@@ -3066,7 +3066,7 @@ Checklist evidence: the handler body is a full exception-reporting call (`logger
 
 ### [ ] Finding 414 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/414.txt`
+- Function context: `scripts/logxide/findings/functions/414.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:65:1`
 - Checklist pattern: test verifies outcomes via `pytest.fail`, not side-effects-only
 
@@ -3085,7 +3085,7 @@ Checklist evidence: the test contains explicit verification mechanisms (`pytest.
 
 ### [ ] Finding 416 — CWE-94
 
-- Function context: `./scripts/findings/functions/416.txt`
+- Function context: `scripts/logxide/findings/functions/416.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:68:9`
 - Checklist pattern: compile input is the repo's own committed docs, not externally influenced
 
@@ -3104,7 +3104,7 @@ Checklist evidence: input source is repo-committed docs; the compile result is n
 
 ### [ ] Finding 417 — BP-PY-12
 
-- Function context: `./scripts/findings/functions/417.txt`
+- Function context: `scripts/logxide/findings/functions/417.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:74:33`
 - Checklist pattern: flagged line is a comment, not an eval/exec sink
 
@@ -3123,7 +3123,7 @@ Checklist evidence: the flagged token is prose in a comment; no dynamic eval/exe
 
 ### [ ] Finding 418 — BP-PY-41
 
-- Function context: `./scripts/findings/functions/418.txt`
+- Function context: `scripts/logxide/findings/functions/418.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:201:1`
 - Checklist pattern: test verifies outcomes via `pytest.fail`, not side-effects-only
 
@@ -3142,7 +3142,7 @@ Checklist evidence: the test contains explicit verification mechanisms (`pytest.
 
 ### [ ] Finding 419 — CWE-829
 
-- Function context: `./scripts/findings/functions/419.txt`
+- Function context: `scripts/logxide/findings/functions/419.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:215:13`
 - Checklist pattern: dynamic import selects from repo-derived framework names, not request input
 
@@ -3161,7 +3161,7 @@ Checklist evidence: module names originate from repo-committed code content, not
 
 ### [ ] Finding 420 — CWE-829
 
-- Function context: `./scripts/findings/functions/420.txt`
+- Function context: `scripts/logxide/findings/functions/420.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:25:16`
 - Checklist pattern: file path comes from the repo's own examples directory, not request input
 
@@ -3180,7 +3180,7 @@ Checklist evidence: the path is derived from a local directory listing of repo f
 
 ### [ ] Finding 423 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/423.txt`
+- Function context: `scripts/logxide/findings/functions/423.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:55:1`
 - Checklist pattern: try/except is a defensive guard, not a failure expectation
 
@@ -3199,7 +3199,7 @@ Checklist evidence: the except branch reports the failure rather than asserting 
 
 ### [ ] Finding 426 — CWE-489
 
-- Function context: `./scripts/findings/functions/426.txt`
+- Function context: `scripts/logxide/findings/functions/426.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:137:1`
 - Checklist pattern: debug flag set inside a test, not application source
 
@@ -3218,7 +3218,7 @@ Checklist evidence: the construct is test code configuring a fake settings/SDK o
 
 ### [ ] Finding 427 — CWE-756
 
-- Function context: `./scripts/findings/functions/427.txt`
+- Function context: `scripts/logxide/findings/functions/427.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:137:1`
 - Checklist pattern: debug flag set inside a test, not a deployed application
 
@@ -3237,7 +3237,7 @@ Checklist evidence: the construct is test code, not application source.
 
 ### [ ] Finding 431 — CWE-117
 
-- Function context: `./scripts/findings/functions/431.txt`
+- Function context: `scripts/logxide/findings/functions/431.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:237:13`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -3256,7 +3256,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 439 — CWE-117
 
-- Function context: `./scripts/findings/functions/439.txt`
+- Function context: `scripts/logxide/findings/functions/439.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_gil_scaling.py:123:9`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -3275,7 +3275,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 441 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/441.txt`
+- Function context: `scripts/logxide/findings/functions/441.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_http_auth.py:41:11`
 - Checklist pattern: daemon server thread with explicit shutdown protocol
 
@@ -3294,7 +3294,7 @@ Checklist evidence: daemon thread plus explicit `shutdown()` on teardown.
 
 ### [ ] Finding 442 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/442.txt`
+- Function context: `scripts/logxide/findings/functions/442.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_http_handler_features.py:43:11`
 - Checklist pattern: daemon server thread with explicit shutdown protocol
 
@@ -3313,7 +3313,7 @@ Checklist evidence: daemon thread plus explicit `shutdown()` on teardown.
 
 ### [ ] Finding 446 — CWE-117
 
-- Function context: `./scripts/findings/functions/446.txt`
+- Function context: `scripts/logxide/findings/functions/446.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration.py:105:17`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -3332,7 +3332,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 457 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/457.txt`
+- Function context: `scripts/logxide/findings/functions/457.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:20:1`
 - Checklist pattern: try/except is a defensive guard, not a failure expectation
 
@@ -3351,7 +3351,7 @@ Checklist evidence: the except branch reports the failure rather than asserting 
 
 ### [ ] Finding 460 — CWE-489
 
-- Function context: `./scripts/findings/functions/460.txt`
+- Function context: `scripts/logxide/findings/functions/460.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:69:1`
 - Checklist pattern: debug flag set inside a test, not application source
 
@@ -3370,7 +3370,7 @@ Checklist evidence: the construct is test code configuring a fake settings/SDK o
 
 ### [ ] Finding 461 — CWE-756
 
-- Function context: `./scripts/findings/functions/461.txt`
+- Function context: `scripts/logxide/findings/functions/461.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:69:1`
 - Checklist pattern: debug flag set inside a test, not a deployed application
 
@@ -3389,7 +3389,7 @@ Checklist evidence: the construct is test code, not application source.
 
 ### [ ] Finding 467 — CWE-117
 
-- Function context: `./scripts/findings/functions/467.txt`
+- Function context: `scripts/logxide/findings/functions/467.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:159:13`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -3408,7 +3408,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 490 — BP-PY-7
 
-- Function context: `./scripts/findings/functions/490.txt`
+- Function context: `scripts/logxide/findings/functions/490.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_python315_compat.py:187:51`
 - Checklist pattern: `open(` token appears in docstring prose, not a call
 
@@ -3427,7 +3427,7 @@ Checklist evidence: the flagged token is documentation text, not an `open` call.
 
 ### [ ] Finding 491 — CWE-489
 
-- Function context: `./scripts/findings/functions/491.txt`
+- Function context: `scripts/logxide/findings/functions/491.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_sentry_integration.py:353:1`
 - Checklist pattern: debug flag set inside a test, not application source
 
@@ -3446,7 +3446,7 @@ Checklist evidence: the construct is test code configuring a fake settings/SDK o
 
 ### [ ] Finding 492 — CWE-756
 
-- Function context: `./scripts/findings/functions/492.txt`
+- Function context: `scripts/logxide/findings/functions/492.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_sentry_integration.py:353:1`
 - Checklist pattern: debug flag set inside a test, not a deployed application
 
@@ -3465,7 +3465,7 @@ Checklist evidence: the construct is test code, not application source.
 
 ### [ ] Finding 498 — CWE-117
 
-- Function context: `./scripts/findings/functions/498.txt`
+- Function context: `scripts/logxide/findings/functions/498.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_timed_rotation.py:70:13`
 - Checklist pattern: interpolated value is not externally influenced input
 
@@ -3484,7 +3484,7 @@ Checklist evidence: the interpolated expression derives from a local counter/lit
 
 ### [ ] Finding 500 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/500.txt`
+- Function context: `scripts/logxide/findings/functions/500.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:10:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -3503,7 +3503,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 501 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/501.txt`
+- Function context: `scripts/logxide/findings/functions/501.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:13:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -3522,7 +3522,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 502 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/502.txt`
+- Function context: `scripts/logxide/findings/functions/502.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:15:5`
 - Checklist pattern: print in a script module, not a library module
 
@@ -3541,7 +3541,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 503 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/503.txt`
+- Function context: `scripts/logxide/findings/functions/503.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:18:1`
 - Checklist pattern: print in a script module, not a library module
 
@@ -3560,7 +3560,7 @@ Checklist evidence: the file is a runnable script (the rule's own exception for 
 
 ### [ ] Finding 286 — CWE-1121
 
-- Function context: `./scripts/findings/functions/286.txt`
+- Function context: `scripts/logxide/findings/functions/286.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/config.py:21:24`
 - Checklist pattern: branch count below threshold of 12
 
@@ -4047,6 +4047,6 @@ None. Finding 286 (CWE-1121 on `dictConfig`) reclassified as a false positive: m
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/logxide/chunks`
+- Function evidence: `scripts/logxide/findings/functions`
 - Validation: `git diff --check` — pass (exit 0, no whitespace errors)

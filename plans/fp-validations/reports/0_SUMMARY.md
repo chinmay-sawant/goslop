@@ -44,7 +44,7 @@ Pricing varies by provider/plan (API list price vs subscription); treat as an or
 
 - 41 per-repo reports at `plans/fp-validations/reports/<name>.md` (~59,400 lines), each following the false-positive-audit template: run metadata, classification summary, per-finding false-positive subsections with source excerpts, uncertain findings, `git diff --check` validation (all pass)
 - Master report `reports/MASTER.md` with cross-repo root-cause analysis
-- Evidence per repo under `real-repos/<name>/scripts/{chunks,findings/functions}` (re-scanned with `-chunks-dir`/`-context-dir` after the first run's exports collided in the root)
+- Evidence per repo under `scripts/<name>/{chunks,findings/functions}` (re-scanned with `-chunks-dir`/`-context-dir` after the first run's exports collided in the root)
 
 ## Verdict across 6,964 findings
 

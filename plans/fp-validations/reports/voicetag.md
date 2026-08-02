@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voiceta
 branch: main
 commit: d5ddf73a2ceb644674f7091a7efa7e9c29e6d621
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/voicetag/chunks
+function_context_path: scripts/voicetag/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/voicetag/scripts/chunks -context-dir real-repos/voicetag/scripts/findings/functions real-repos/voicetag`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/voicetag/chunks -context-dir scripts/voicetag/findings/functions real-repos/voicetag`
 - Findings: `42`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_42.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` … `42.txt` (all)
+- Chunks reviewed: `scripts/voicetag/chunks/Chunk_1_25.txt`, `scripts/voicetag/chunks/Chunk_26_42.txt`
+- Function contexts reviewed: `scripts/voicetag/findings/functions/1.txt` … `42.txt` (all)
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/voicetag/chunks`.
+- [x] Read `scripts/voicetag/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ All false positives share one checklist pattern: the flagged call is an intentio
 
 ### [ ] Finding 1 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/voicetag/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:105:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -64,7 +64,7 @@ Checklist evidence: the module is a script (Typer app + `if __name__ == "__main_
 
 ### [ ] Finding 2 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/voicetag/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:107:25`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -82,7 +82,7 @@ Checklist evidence: `err_console` is `Console(stderr=True)` (cli.py:41) and the 
 
 ### [ ] Finding 3 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/voicetag/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:134:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -102,7 +102,7 @@ Checklist evidence: the `Panel` title is `[green]Enrollment complete[/green]` (c
 
 ### [ ] Finding 4 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/4.txt`
+- Function context: `scripts/voicetag/findings/functions/4.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:144:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -120,7 +120,7 @@ Checklist evidence: `err_console` (stderr console) renders a styled error panel;
 
 ### [ ] Finding 5 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/5.txt`
+- Function context: `scripts/voicetag/findings/functions/5.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:187:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -139,7 +139,7 @@ Checklist evidence: Rich `[dim]` status formatting inside a command function of 
 
 ### [ ] Finding 6 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/voicetag/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:234:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -156,7 +156,7 @@ Checklist evidence: part of the result-table rendering sequence (cli.py:234-236)
 
 ### [ ] Finding 7 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/voicetag/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:235:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -172,7 +172,7 @@ Checklist evidence: `table` is a Rich `Table` built for display (cli.py:199-232)
 
 ### [ ] Finding 8 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/8.txt`
+- Function context: `scripts/voicetag/findings/functions/8.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:236:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -189,7 +189,7 @@ Checklist evidence: same table-rendering sequence as findings 6-7; presentation 
 
 ### [ ] Finding 9 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/9.txt`
+- Function context: `scripts/voicetag/findings/functions/9.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:250:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -208,7 +208,7 @@ Checklist evidence: `summary_lines` are user-facing stats (duration, speakers, s
 
 ### [ ] Finding 10 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/voicetag/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:263:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -224,7 +224,7 @@ Checklist evidence: status output adjacent to the `json.dump` write in `identify
 
 ### [ ] Finding 11 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/11.txt`
+- Function context: `scripts/voicetag/findings/functions/11.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:266:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -242,7 +242,7 @@ Checklist evidence: `err_console` stderr rendering of the caught `VoiceTagError`
 
 ### [ ] Finding 12 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/12.txt`
+- Function context: `scripts/voicetag/findings/functions/12.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:283:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -262,7 +262,7 @@ Checklist evidence: panel explains how to enroll speakers first (cli.py:283-291)
 
 ### [ ] Finding 13 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/13.txt`
+- Function context: `scripts/voicetag/findings/functions/13.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:297:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -280,7 +280,7 @@ Checklist evidence: `err_console` stderr error rendering followed by `typer.Exit
 
 ### [ ] Finding 14 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/14.txt`
+- Function context: `scripts/voicetag/findings/functions/14.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:302:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -297,7 +297,7 @@ Checklist evidence: styled `[yellow]` informational line; presentation output.
 
 ### [ ] Finding 15 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/15.txt`
+- Function context: `scripts/voicetag/findings/functions/15.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:318:13`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -313,7 +313,7 @@ Checklist evidence: `table` is a Rich `Table` titled "Enrolled Speakers" (cli.py
 
 ### [ ] Finding 16 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/16.txt`
+- Function context: `scripts/voicetag/findings/functions/16.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:319:13`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -329,7 +329,7 @@ Checklist evidence: Rich `[dim]` summary under the table; user-facing.
 
 ### [ ] Finding 17 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/17.txt`
+- Function context: `scripts/voicetag/findings/functions/17.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:335:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -349,7 +349,7 @@ Checklist evidence: `err_console` stderr rendering of a styled error panel; erro
 
 ### [ ] Finding 18 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/voicetag/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:350:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -367,7 +367,7 @@ Checklist evidence: `Panel` title `[green]Speaker Removed[/green]` (cli.py:354);
 
 ### [ ] Finding 19 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/19.txt`
+- Function context: `scripts/voicetag/findings/functions/19.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:359:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -385,7 +385,7 @@ Checklist evidence: `err_console` stderr error rendering followed by `typer.Exit
 
 ### [ ] Finding 20 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/voicetag/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:411:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -404,7 +404,7 @@ Checklist evidence: Rich `[dim]` status formatting inside a command function of 
 
 ### [ ] Finding 21 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/voicetag/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:447:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -421,7 +421,7 @@ Checklist evidence: part of the result-table rendering sequence (cli.py:447-449)
 
 ### [ ] Finding 22 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/22.txt`
+- Function context: `scripts/voicetag/findings/functions/22.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:448:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -437,7 +437,7 @@ Checklist evidence: `table` is a Rich `Table` titled `Transcript — …` (cli.p
 
 ### [ ] Finding 23 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/voicetag/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:449:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -454,7 +454,7 @@ Checklist evidence: same table-rendering sequence as findings 21-22; presentatio
 
 ### [ ] Finding 24 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/voicetag/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:461:17`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -473,7 +473,7 @@ Checklist evidence: `summary_lines` are user-facing stats (duration, speakers, p
 
 ### [ ] Finding 25 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/25.txt`
+- Function context: `scripts/voicetag/findings/functions/25.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:474:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -489,7 +489,7 @@ Checklist evidence: status output adjacent to the `json.dump` write in `transcri
 
 ### [ ] Finding 26 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/26.txt`
+- Function context: `scripts/voicetag/findings/functions/26.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:477:21`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -507,7 +507,7 @@ Checklist evidence: `err_console` stderr rendering of the caught `VoiceTagError`
 
 ### [ ] Finding 27 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/27.txt`
+- Function context: `scripts/voicetag/findings/functions/27.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:493:13`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -526,7 +526,7 @@ Checklist evidence: `table` is a Rich `Table` titled "Available STT Providers" (
 
 ### [ ] Finding 28 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/28.txt`
+- Function context: `scripts/voicetag/findings/functions/28.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:494:13`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -542,7 +542,7 @@ Checklist evidence: Rich `[dim]` summary under the table; user-facing.
 
 ### [ ] Finding 29 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/29.txt`
+- Function context: `scripts/voicetag/findings/functions/29.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag/voicetag/cli.py:500:13`
 - Checklist pattern: print call is intentional user-facing output in a Typer CLI command function of a script module with a `__main__` guard
 
@@ -601,6 +601,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/voicetag/chunks`
+- Function evidence: `scripts/voicetag/findings/functions`
 - Validation: `git diff --check` — `pass`

@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/request
 branch: main
 commit: 60626f3d548258a76c8df962db1b26aa9baa0e87
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/requestSpeedTest/chunks
+function_context_path: scripts/requestSpeedTest/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop` (goslop binary used: `./bin/goslop`)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/requestSpeedTest/scripts/chunks -context-dir real-repos/requestSpeedTest/scripts/findings/functions real-repos/requestSpeedTest`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/requestSpeedTest/chunks -context-dir scripts/requestSpeedTest/findings/functions real-repos/requestSpeedTest`
 - Findings: `13`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_13.txt`
-- Function contexts reviewed: `./scripts/findings/functions/1.txt` .. `./scripts/findings/functions/13.txt`
+- Chunks reviewed: `scripts/requestSpeedTest/chunks/Chunk_1_13.txt`
+- Function contexts reviewed: `scripts/requestSpeedTest/findings/functions/1.txt` .. `scripts/requestSpeedTest/findings/functions/13.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/requestSpeedTest/chunks`.
+- [x] Read `scripts/requestSpeedTest/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [x] Finding `1` — BP-PY-42
 
-- Function context: `./scripts/findings/functions/1.txt`
+- Function context: `scripts/requestSpeedTest/findings/functions/1.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest/send_request/httpx_test.py:11:1`
 - Checklist pattern: rule condition not satisfied — the try/except is not used "instead of assertRaises/pytest.raises"
 
@@ -65,7 +65,7 @@ Checklist evidence: the except handler re-raises (`raise e`), so the construct i
 
 ### [x] Finding `2` — BP-PY-42
 
-- Function context: `./scripts/findings/functions/2.txt`
+- Function context: `scripts/requestSpeedTest/findings/functions/2.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest/send_request/rnet_test.py:32:1`
 - Checklist pattern: rule condition not satisfied — the try/except is error accounting, not an expectation assertion
 
@@ -91,7 +91,7 @@ Checklist evidence: the except suite records error statistics and logs the first
 
 ### [x] Finding `3` — BP-PY-1
 
-- Function context: `./scripts/findings/functions/3.txt`
+- Function context: `scripts/requestSpeedTest/findings/functions/3.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest/send_request/rnet_test.py:37:1`
 - Checklist pattern: rule condition not satisfied — the handler actively handles the exception instead of swallowing it
 
@@ -113,7 +113,7 @@ Checklist evidence: the except suite performs explicit error handling (accountin
 
 ### [x] Finding `10` — BP-PY-1
 
-- Function context: `./scripts/findings/functions/10.txt`
+- Function context: `scripts/requestSpeedTest/findings/functions/10.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest/utils/increase_limits.py:38:1`
 - Checklist pattern: rule condition not satisfied — the handler surfaces the error instead of swallowing it
 
@@ -159,6 +159,6 @@ Checklist evidence: the except suite prints the failure message, i.e., the excep
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks/Chunk_1_13.txt`
-- Function evidence: `./scripts/findings/functions/1.txt` .. `13.txt`
+- Chunk evidence: `scripts/requestSpeedTest/chunks/Chunk_1_13.txt`
+- Function evidence: `scripts/requestSpeedTest/findings/functions/1.txt` .. `13.txt`
 - Validation: `git diff --check` — pass

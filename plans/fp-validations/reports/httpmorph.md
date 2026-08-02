@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmor
 branch: main
 commit: 608decb1f5b82da9d13f01920bbd50d7e1a2a196
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/httpmorph/chunks
+function_context_path: scripts/httpmorph/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `go build -o bin/goslop ./cmd/goslop`
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/httpmorph/scripts/chunks -context-dir real-repos/httpmorph/scripts/findings/functions real-repos/httpmorph`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/httpmorph/chunks -context-dir scripts/httpmorph/findings/functions real-repos/httpmorph`
 - Findings: `714`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt` … `./scripts/chunks/Chunk_701_714.txt` (all 29 chunk files)
-- Function contexts reviewed: `./scripts/findings/functions/<id>.txt` for every proposed false positive
+- Chunks reviewed: `scripts/httpmorph/chunks/Chunk_1_25.txt` … `scripts/httpmorph/chunks/Chunk_701_714.txt` (all 29 chunk files)
+- Function contexts reviewed: `scripts/httpmorph/findings/functions/<id>.txt` for every proposed false positive
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/httpmorph/chunks`.
+- [x] Read `scripts/httpmorph/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -45,7 +45,7 @@ The 272 BP-PY-46 findings below share one checklist pattern: the flagged `print`
 
 ### [ ] Finding 225 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/225.txt`
+- Function context: `scripts/httpmorph/findings/functions/225.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:19:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -61,7 +61,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 226 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/226.txt`
+- Function context: `scripts/httpmorph/findings/functions/226.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:20:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -77,7 +77,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 227 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/227.txt`
+- Function context: `scripts/httpmorph/findings/functions/227.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:21:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -93,7 +93,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 229 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/229.txt`
+- Function context: `scripts/httpmorph/findings/functions/229.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:29:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -109,7 +109,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 230 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/230.txt`
+- Function context: `scripts/httpmorph/findings/functions/230.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:30:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -125,7 +125,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 231 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/231.txt`
+- Function context: `scripts/httpmorph/findings/functions/231.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:31:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -141,7 +141,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 232 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/232.txt`
+- Function context: `scripts/httpmorph/findings/functions/232.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:32:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -157,7 +157,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 233 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/233.txt`
+- Function context: `scripts/httpmorph/findings/functions/233.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:33:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -173,7 +173,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 234 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/234.txt`
+- Function context: `scripts/httpmorph/findings/functions/234.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:34:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -189,7 +189,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 235 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/235.txt`
+- Function context: `scripts/httpmorph/findings/functions/235.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:39:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -205,7 +205,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 236 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/236.txt`
+- Function context: `scripts/httpmorph/findings/functions/236.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:40:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -221,7 +221,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 237 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/237.txt`
+- Function context: `scripts/httpmorph/findings/functions/237.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:41:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -237,7 +237,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 238 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/238.txt`
+- Function context: `scripts/httpmorph/findings/functions/238.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:45:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -253,7 +253,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 239 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/239.txt`
+- Function context: `scripts/httpmorph/findings/functions/239.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:46:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -269,7 +269,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 240 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/240.txt`
+- Function context: `scripts/httpmorph/findings/functions/240.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:47:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -285,7 +285,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 241 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/241.txt`
+- Function context: `scripts/httpmorph/findings/functions/241.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:48:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -301,7 +301,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 242 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/242.txt`
+- Function context: `scripts/httpmorph/findings/functions/242.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:49:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -317,7 +317,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 243 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/243.txt`
+- Function context: `scripts/httpmorph/findings/functions/243.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:54:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -333,7 +333,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 244 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/244.txt`
+- Function context: `scripts/httpmorph/findings/functions/244.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:55:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -349,7 +349,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 245 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/245.txt`
+- Function context: `scripts/httpmorph/findings/functions/245.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:56:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -365,7 +365,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 247 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/247.txt`
+- Function context: `scripts/httpmorph/findings/functions/247.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:64:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -381,7 +381,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 248 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/248.txt`
+- Function context: `scripts/httpmorph/findings/functions/248.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:65:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -397,7 +397,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 249 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/249.txt`
+- Function context: `scripts/httpmorph/findings/functions/249.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:66:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -413,7 +413,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 250 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/250.txt`
+- Function context: `scripts/httpmorph/findings/functions/250.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:67:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -429,7 +429,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 251 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/251.txt`
+- Function context: `scripts/httpmorph/findings/functions/251.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:72:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -445,7 +445,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 252 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/252.txt`
+- Function context: `scripts/httpmorph/findings/functions/252.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:73:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -461,7 +461,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 253 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/253.txt`
+- Function context: `scripts/httpmorph/findings/functions/253.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:74:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -477,7 +477,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 254 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/254.txt`
+- Function context: `scripts/httpmorph/findings/functions/254.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:78:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -493,7 +493,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 255 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/255.txt`
+- Function context: `scripts/httpmorph/findings/functions/255.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:79:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -509,7 +509,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 256 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/256.txt`
+- Function context: `scripts/httpmorph/findings/functions/256.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:80:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -525,7 +525,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 257 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/257.txt`
+- Function context: `scripts/httpmorph/findings/functions/257.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:89:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -541,7 +541,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 258 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/258.txt`
+- Function context: `scripts/httpmorph/findings/functions/258.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:90:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -557,7 +557,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 259 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/259.txt`
+- Function context: `scripts/httpmorph/findings/functions/259.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:91:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -573,7 +573,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 260 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/260.txt`
+- Function context: `scripts/httpmorph/findings/functions/260.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:100:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -589,7 +589,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 262 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/262.txt`
+- Function context: `scripts/httpmorph/findings/functions/262.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:106:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -605,7 +605,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 263 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/263.txt`
+- Function context: `scripts/httpmorph/findings/functions/263.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:111:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -621,7 +621,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 264 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/264.txt`
+- Function context: `scripts/httpmorph/findings/functions/264.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:112:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -637,7 +637,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 265 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/265.txt`
+- Function context: `scripts/httpmorph/findings/functions/265.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:113:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -653,7 +653,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 266 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/266.txt`
+- Function context: `scripts/httpmorph/findings/functions/266.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:117:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -669,7 +669,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 267 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/267.txt`
+- Function context: `scripts/httpmorph/findings/functions/267.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:118:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -685,7 +685,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 268 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/268.txt`
+- Function context: `scripts/httpmorph/findings/functions/268.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:119:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -701,7 +701,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 269 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/269.txt`
+- Function context: `scripts/httpmorph/findings/functions/269.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:120:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -717,7 +717,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 270 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/270.txt`
+- Function context: `scripts/httpmorph/findings/functions/270.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/advanced_features.py:121:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -733,7 +733,7 @@ Checklist evidence: examples/advanced_features.py is a script module (guarded by
 
 ### [ ] Finding 275 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/275.txt`
+- Function context: `scripts/httpmorph/findings/functions/275.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:69:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -749,7 +749,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 276 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/276.txt`
+- Function context: `scripts/httpmorph/findings/functions/276.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:82:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -765,7 +765,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 277 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/277.txt`
+- Function context: `scripts/httpmorph/findings/functions/277.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:95:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -781,7 +781,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 278 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/278.txt`
+- Function context: `scripts/httpmorph/findings/functions/278.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:99:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -797,7 +797,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 279 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/279.txt`
+- Function context: `scripts/httpmorph/findings/functions/279.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:101:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -813,7 +813,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 280 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/280.txt`
+- Function context: `scripts/httpmorph/findings/functions/280.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:105:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -829,7 +829,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 281 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/281.txt`
+- Function context: `scripts/httpmorph/findings/functions/281.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/async_example.py:106:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -845,7 +845,7 @@ Checklist evidence: examples/async_example.py is a script module (guarded by `if
 
 ### [ ] Finding 282 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/282.txt`
+- Function context: `scripts/httpmorph/findings/functions/282.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:14:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -861,7 +861,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 283 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/283.txt`
+- Function context: `scripts/httpmorph/findings/functions/283.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:18:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -877,7 +877,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 284 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/284.txt`
+- Function context: `scripts/httpmorph/findings/functions/284.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:19:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -893,7 +893,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 285 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/285.txt`
+- Function context: `scripts/httpmorph/findings/functions/285.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:21:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -909,7 +909,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 286 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/286.txt`
+- Function context: `scripts/httpmorph/findings/functions/286.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:26:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -925,7 +925,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 289 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/289.txt`
+- Function context: `scripts/httpmorph/findings/functions/289.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:36:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -941,7 +941,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 290 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/290.txt`
+- Function context: `scripts/httpmorph/findings/functions/290.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:37:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -957,7 +957,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 291 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/291.txt`
+- Function context: `scripts/httpmorph/findings/functions/291.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:38:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -973,7 +973,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 292 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/292.txt`
+- Function context: `scripts/httpmorph/findings/functions/292.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:40:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -989,7 +989,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 293 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/293.txt`
+- Function context: `scripts/httpmorph/findings/functions/293.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:45:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1005,7 +1005,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 294 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/294.txt`
+- Function context: `scripts/httpmorph/findings/functions/294.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:49:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1021,7 +1021,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 295 — BP-PY-14
 
-- Function context: `./scripts/findings/functions/295.txt`
+- Function context: `scripts/httpmorph/findings/functions/295.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:50:22`
 - Checklist pattern: flagged HTTP call is inside a comment, not an executable statement
 
@@ -1037,7 +1037,7 @@ Checklist evidence: `requestsCallRe`/`sessionHTTPCallRe` match raw source text i
 
 ### [ ] Finding 296 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/296.txt`
+- Function context: `scripts/httpmorph/findings/functions/296.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:53:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1053,7 +1053,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 297 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/297.txt`
+- Function context: `scripts/httpmorph/findings/functions/297.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:58:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1069,7 +1069,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 298 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/298.txt`
+- Function context: `scripts/httpmorph/findings/functions/298.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:67:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1085,7 +1085,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 299 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/299.txt`
+- Function context: `scripts/httpmorph/findings/functions/299.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:68:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1101,7 +1101,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 300 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/300.txt`
+- Function context: `scripts/httpmorph/findings/functions/300.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:70:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1117,7 +1117,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 301 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/301.txt`
+- Function context: `scripts/httpmorph/findings/functions/301.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:75:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1133,7 +1133,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 303 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/303.txt`
+- Function context: `scripts/httpmorph/findings/functions/303.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:87:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1149,7 +1149,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 304 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/304.txt`
+- Function context: `scripts/httpmorph/findings/functions/304.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:89:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1165,7 +1165,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 305 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/305.txt`
+- Function context: `scripts/httpmorph/findings/functions/305.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:94:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1181,7 +1181,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 306 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/306.txt`
+- Function context: `scripts/httpmorph/findings/functions/306.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:102:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1197,7 +1197,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 307 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/307.txt`
+- Function context: `scripts/httpmorph/findings/functions/307.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:106:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1213,7 +1213,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 308 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/308.txt`
+- Function context: `scripts/httpmorph/findings/functions/308.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:111:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1229,7 +1229,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 309 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/309.txt`
+- Function context: `scripts/httpmorph/findings/functions/309.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:125:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1245,7 +1245,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 310 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/310.txt`
+- Function context: `scripts/httpmorph/findings/functions/310.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:126:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1261,7 +1261,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 312 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/312.txt`
+- Function context: `scripts/httpmorph/findings/functions/312.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:137:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1277,7 +1277,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 313 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/313.txt`
+- Function context: `scripts/httpmorph/findings/functions/313.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:138:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1293,7 +1293,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 314 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/314.txt`
+- Function context: `scripts/httpmorph/findings/functions/314.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:139:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1309,7 +1309,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 315 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/315.txt`
+- Function context: `scripts/httpmorph/findings/functions/315.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:141:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1325,7 +1325,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 316 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/316.txt`
+- Function context: `scripts/httpmorph/findings/functions/316.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:144:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1341,7 +1341,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 317 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/317.txt`
+- Function context: `scripts/httpmorph/findings/functions/317.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:149:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1357,7 +1357,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 318 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/318.txt`
+- Function context: `scripts/httpmorph/findings/functions/318.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:150:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1373,7 +1373,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 319 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/319.txt`
+- Function context: `scripts/httpmorph/findings/functions/319.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:151:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1389,7 +1389,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 320 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/320.txt`
+- Function context: `scripts/httpmorph/findings/functions/320.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:152:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1405,7 +1405,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 321 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/321.txt`
+- Function context: `scripts/httpmorph/findings/functions/321.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:153:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1421,7 +1421,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 322 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/322.txt`
+- Function context: `scripts/httpmorph/findings/functions/322.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:154:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1437,7 +1437,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 323 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/323.txt`
+- Function context: `scripts/httpmorph/findings/functions/323.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:155:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1453,7 +1453,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 324 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/324.txt`
+- Function context: `scripts/httpmorph/findings/functions/324.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:156:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1469,7 +1469,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 325 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/325.txt`
+- Function context: `scripts/httpmorph/findings/functions/325.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:157:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1485,7 +1485,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 326 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/326.txt`
+- Function context: `scripts/httpmorph/findings/functions/326.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/basic_usage.py:158:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1501,7 +1501,7 @@ Checklist evidence: examples/basic_usage.py is a script module (guarded by `if _
 
 ### [ ] Finding 327 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/327.txt`
+- Function context: `scripts/httpmorph/findings/functions/327.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:11:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1517,7 +1517,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 328 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/328.txt`
+- Function context: `scripts/httpmorph/findings/functions/328.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:12:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1533,7 +1533,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 329 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/329.txt`
+- Function context: `scripts/httpmorph/findings/functions/329.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:17:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1549,7 +1549,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 330 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/330.txt`
+- Function context: `scripts/httpmorph/findings/functions/330.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:18:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1565,7 +1565,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 331 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/331.txt`
+- Function context: `scripts/httpmorph/findings/functions/331.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:19:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1581,7 +1581,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 332 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/332.txt`
+- Function context: `scripts/httpmorph/findings/functions/332.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:23:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1597,7 +1597,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 333 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/333.txt`
+- Function context: `scripts/httpmorph/findings/functions/333.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:24:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1613,7 +1613,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 335 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/335.txt`
+- Function context: `scripts/httpmorph/findings/functions/335.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:28:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1629,7 +1629,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 336 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/336.txt`
+- Function context: `scripts/httpmorph/findings/functions/336.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:29:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1645,7 +1645,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 337 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/337.txt`
+- Function context: `scripts/httpmorph/findings/functions/337.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:30:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1661,7 +1661,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 338 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/338.txt`
+- Function context: `scripts/httpmorph/findings/functions/338.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:34:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1677,7 +1677,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 339 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/339.txt`
+- Function context: `scripts/httpmorph/findings/functions/339.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:35:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1693,7 +1693,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 340 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/340.txt`
+- Function context: `scripts/httpmorph/findings/functions/340.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:42:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1709,7 +1709,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 341 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/341.txt`
+- Function context: `scripts/httpmorph/findings/functions/341.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:43:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1725,7 +1725,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 342 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/342.txt`
+- Function context: `scripts/httpmorph/findings/functions/342.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:47:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1741,7 +1741,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 343 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/343.txt`
+- Function context: `scripts/httpmorph/findings/functions/343.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:48:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1757,7 +1757,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 344 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/344.txt`
+- Function context: `scripts/httpmorph/findings/functions/344.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/http2_example.py:49:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1773,7 +1773,7 @@ Checklist evidence: examples/http2_example.py is a script module (a module-level
 
 ### [ ] Finding 345 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/345.txt`
+- Function context: `scripts/httpmorph/findings/functions/345.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:31:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1789,7 +1789,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 346 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/346.txt`
+- Function context: `scripts/httpmorph/findings/functions/346.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:32:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1805,7 +1805,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 348 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/348.txt`
+- Function context: `scripts/httpmorph/findings/functions/348.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:57:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1821,7 +1821,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 349 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/349.txt`
+- Function context: `scripts/httpmorph/findings/functions/349.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:60:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1837,7 +1837,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 350 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/350.txt`
+- Function context: `scripts/httpmorph/findings/functions/350.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:61:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1853,7 +1853,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 352 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/352.txt`
+- Function context: `scripts/httpmorph/findings/functions/352.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:72:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1869,7 +1869,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 353 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/353.txt`
+- Function context: `scripts/httpmorph/findings/functions/353.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:73:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1885,7 +1885,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 354 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/354.txt`
+- Function context: `scripts/httpmorph/findings/functions/354.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:74:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1901,7 +1901,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 356 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/356.txt`
+- Function context: `scripts/httpmorph/findings/functions/356.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:81:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1917,7 +1917,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 357 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/357.txt`
+- Function context: `scripts/httpmorph/findings/functions/357.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:82:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1933,7 +1933,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 358 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/358.txt`
+- Function context: `scripts/httpmorph/findings/functions/358.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:83:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1949,7 +1949,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 359 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/359.txt`
+- Function context: `scripts/httpmorph/findings/functions/359.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:86:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1965,7 +1965,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 360 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/360.txt`
+- Function context: `scripts/httpmorph/findings/functions/360.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:88:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1981,7 +1981,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 361 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/361.txt`
+- Function context: `scripts/httpmorph/findings/functions/361.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:91:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -1997,7 +1997,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 364 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/364.txt`
+- Function context: `scripts/httpmorph/findings/functions/364.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:94:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2013,7 +2013,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 366 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/366.txt`
+- Function context: `scripts/httpmorph/findings/functions/366.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:100:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2029,7 +2029,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 367 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/367.txt`
+- Function context: `scripts/httpmorph/findings/functions/367.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:101:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2045,7 +2045,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 368 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/368.txt`
+- Function context: `scripts/httpmorph/findings/functions/368.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:102:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2061,7 +2061,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 369 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/369.txt`
+- Function context: `scripts/httpmorph/findings/functions/369.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:103:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2077,7 +2077,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 370 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/370.txt`
+- Function context: `scripts/httpmorph/findings/functions/370.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:105:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2093,7 +2093,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 372 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/372.txt`
+- Function context: `scripts/httpmorph/findings/functions/372.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:115:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2109,7 +2109,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 373 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/373.txt`
+- Function context: `scripts/httpmorph/findings/functions/373.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:117:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2125,7 +2125,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 374 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/374.txt`
+- Function context: `scripts/httpmorph/findings/functions/374.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:120:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2141,7 +2141,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 375 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/375.txt`
+- Function context: `scripts/httpmorph/findings/functions/375.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:122:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2157,7 +2157,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 376 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/376.txt`
+- Function context: `scripts/httpmorph/findings/functions/376.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:125:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2173,7 +2173,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 378 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/378.txt`
+- Function context: `scripts/httpmorph/findings/functions/378.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:128:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2189,7 +2189,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 380 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/380.txt`
+- Function context: `scripts/httpmorph/findings/functions/380.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:134:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2205,7 +2205,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 381 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/381.txt`
+- Function context: `scripts/httpmorph/findings/functions/381.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:135:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2221,7 +2221,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 382 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/382.txt`
+- Function context: `scripts/httpmorph/findings/functions/382.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:136:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2237,7 +2237,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 383 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/383.txt`
+- Function context: `scripts/httpmorph/findings/functions/383.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:137:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2253,7 +2253,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 384 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/384.txt`
+- Function context: `scripts/httpmorph/findings/functions/384.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:139:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2269,7 +2269,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 385 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/385.txt`
+- Function context: `scripts/httpmorph/findings/functions/385.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:149:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2285,7 +2285,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 386 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/386.txt`
+- Function context: `scripts/httpmorph/findings/functions/386.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:151:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2301,7 +2301,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 387 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/387.txt`
+- Function context: `scripts/httpmorph/findings/functions/387.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:152:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2317,7 +2317,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 388 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/388.txt`
+- Function context: `scripts/httpmorph/findings/functions/388.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:153:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2333,7 +2333,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 389 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/389.txt`
+- Function context: `scripts/httpmorph/findings/functions/389.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:156:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2349,7 +2349,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 390 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/390.txt`
+- Function context: `scripts/httpmorph/findings/functions/390.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:158:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2365,7 +2365,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 391 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/391.txt`
+- Function context: `scripts/httpmorph/findings/functions/391.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:161:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2381,7 +2381,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 393 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/393.txt`
+- Function context: `scripts/httpmorph/findings/functions/393.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:164:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2397,7 +2397,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 395 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/395.txt`
+- Function context: `scripts/httpmorph/findings/functions/395.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:170:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2413,7 +2413,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 396 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/396.txt`
+- Function context: `scripts/httpmorph/findings/functions/396.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:171:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2429,7 +2429,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 397 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/397.txt`
+- Function context: `scripts/httpmorph/findings/functions/397.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:172:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2445,7 +2445,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 398 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/398.txt`
+- Function context: `scripts/httpmorph/findings/functions/398.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:175:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2461,7 +2461,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 399 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/399.txt`
+- Function context: `scripts/httpmorph/findings/functions/399.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:185:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2477,7 +2477,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 400 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/400.txt`
+- Function context: `scripts/httpmorph/findings/functions/400.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:187:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2493,7 +2493,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 401 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/401.txt`
+- Function context: `scripts/httpmorph/findings/functions/401.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:190:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2509,7 +2509,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 402 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/402.txt`
+- Function context: `scripts/httpmorph/findings/functions/402.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:193:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2525,7 +2525,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 404 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/404.txt`
+- Function context: `scripts/httpmorph/findings/functions/404.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:196:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2541,7 +2541,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 406 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/406.txt`
+- Function context: `scripts/httpmorph/findings/functions/406.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:202:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2557,7 +2557,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 407 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/407.txt`
+- Function context: `scripts/httpmorph/findings/functions/407.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:203:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2573,7 +2573,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 408 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/408.txt`
+- Function context: `scripts/httpmorph/findings/functions/408.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:204:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2589,7 +2589,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 409 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/409.txt`
+- Function context: `scripts/httpmorph/findings/functions/409.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:217:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2605,7 +2605,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 410 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/410.txt`
+- Function context: `scripts/httpmorph/findings/functions/410.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:220:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2621,7 +2621,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 412 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/412.txt`
+- Function context: `scripts/httpmorph/findings/functions/412.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:222:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2637,7 +2637,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 413 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/413.txt`
+- Function context: `scripts/httpmorph/findings/functions/413.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:224:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2653,7 +2653,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 415 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/415.txt`
+- Function context: `scripts/httpmorph/findings/functions/415.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:230:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2669,7 +2669,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 416 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/416.txt`
+- Function context: `scripts/httpmorph/findings/functions/416.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:231:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2685,7 +2685,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 417 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/417.txt`
+- Function context: `scripts/httpmorph/findings/functions/417.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:232:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2701,7 +2701,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 418 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/418.txt`
+- Function context: `scripts/httpmorph/findings/functions/418.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:240:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2717,7 +2717,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 419 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/419.txt`
+- Function context: `scripts/httpmorph/findings/functions/419.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:241:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2733,7 +2733,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 420 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/420.txt`
+- Function context: `scripts/httpmorph/findings/functions/420.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:245:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2749,7 +2749,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 421 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/421.txt`
+- Function context: `scripts/httpmorph/findings/functions/421.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:249:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2765,7 +2765,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 422 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/422.txt`
+- Function context: `scripts/httpmorph/findings/functions/422.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:251:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2781,7 +2781,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 423 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/423.txt`
+- Function context: `scripts/httpmorph/findings/functions/423.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:255:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2797,7 +2797,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 424 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/424.txt`
+- Function context: `scripts/httpmorph/findings/functions/424.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:259:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2813,7 +2813,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 425 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/425.txt`
+- Function context: `scripts/httpmorph/findings/functions/425.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:263:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2829,7 +2829,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 426 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/426.txt`
+- Function context: `scripts/httpmorph/findings/functions/426.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:265:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2845,7 +2845,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 427 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/427.txt`
+- Function context: `scripts/httpmorph/findings/functions/427.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:268:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2861,7 +2861,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 428 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/428.txt`
+- Function context: `scripts/httpmorph/findings/functions/428.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:269:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2877,7 +2877,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 429 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/429.txt`
+- Function context: `scripts/httpmorph/findings/functions/429.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:273:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2893,7 +2893,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 430 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/430.txt`
+- Function context: `scripts/httpmorph/findings/functions/430.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:277:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2909,7 +2909,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 431 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/431.txt`
+- Function context: `scripts/httpmorph/findings/functions/431.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:279:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2925,7 +2925,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 432 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/432.txt`
+- Function context: `scripts/httpmorph/findings/functions/432.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:283:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2941,7 +2941,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 433 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/433.txt`
+- Function context: `scripts/httpmorph/findings/functions/433.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:287:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2957,7 +2957,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 434 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/434.txt`
+- Function context: `scripts/httpmorph/findings/functions/434.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:291:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2973,7 +2973,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 435 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/435.txt`
+- Function context: `scripts/httpmorph/findings/functions/435.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:293:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -2989,7 +2989,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 436 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/436.txt`
+- Function context: `scripts/httpmorph/findings/functions/436.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:297:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3005,7 +3005,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 437 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/437.txt`
+- Function context: `scripts/httpmorph/findings/functions/437.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:298:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3021,7 +3021,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 438 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/438.txt`
+- Function context: `scripts/httpmorph/findings/functions/438.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:299:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3037,7 +3037,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 439 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/439.txt`
+- Function context: `scripts/httpmorph/findings/functions/439.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:302:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3053,7 +3053,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 440 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/440.txt`
+- Function context: `scripts/httpmorph/findings/functions/440.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:305:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3069,7 +3069,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 442 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/442.txt`
+- Function context: `scripts/httpmorph/findings/functions/442.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:309:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3085,7 +3085,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 444 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/444.txt`
+- Function context: `scripts/httpmorph/findings/functions/444.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:315:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3101,7 +3101,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 445 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/445.txt`
+- Function context: `scripts/httpmorph/findings/functions/445.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:316:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3117,7 +3117,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 446 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/446.txt`
+- Function context: `scripts/httpmorph/findings/functions/446.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:317:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3133,7 +3133,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 447 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/447.txt`
+- Function context: `scripts/httpmorph/findings/functions/447.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:329:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3149,7 +3149,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 448 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/448.txt`
+- Function context: `scripts/httpmorph/findings/functions/448.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:330:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3165,7 +3165,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 449 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/449.txt`
+- Function context: `scripts/httpmorph/findings/functions/449.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:337:21`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3181,7 +3181,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 454 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/454.txt`
+- Function context: `scripts/httpmorph/findings/functions/454.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:342:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3197,7 +3197,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 456 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/456.txt`
+- Function context: `scripts/httpmorph/findings/functions/456.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/examples/proxy_example.py:345:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3213,7 +3213,7 @@ Checklist evidence: examples/proxy_example.py is a script module (guarded by `if
 
 ### [ ] Finding 458 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/458.txt`
+- Function context: `scripts/httpmorph/findings/functions/458.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:31:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3229,7 +3229,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 459 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/459.txt`
+- Function context: `scripts/httpmorph/findings/functions/459.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:35:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3245,7 +3245,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 461 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/461.txt`
+- Function context: `scripts/httpmorph/findings/functions/461.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:40:29`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3261,7 +3261,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 465 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/465.txt`
+- Function context: `scripts/httpmorph/findings/functions/465.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:44:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3277,7 +3277,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 466 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/466.txt`
+- Function context: `scripts/httpmorph/findings/functions/466.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:45:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3293,7 +3293,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 467 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/467.txt`
+- Function context: `scripts/httpmorph/findings/functions/467.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:50:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3309,7 +3309,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 468 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/468.txt`
+- Function context: `scripts/httpmorph/findings/functions/468.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:53:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3325,7 +3325,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 469 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/469.txt`
+- Function context: `scripts/httpmorph/findings/functions/469.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:57:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3341,7 +3341,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 470 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/470.txt`
+- Function context: `scripts/httpmorph/findings/functions/470.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/darwin/setup.py:62:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3357,7 +3357,7 @@ Checklist evidence: scripts/darwin/setup.py is a script module (a build helper s
 
 ### [ ] Finding 471 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/471.txt`
+- Function context: `scripts/httpmorph/findings/functions/471.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:38:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3373,7 +3373,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 472 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/472.txt`
+- Function context: `scripts/httpmorph/findings/functions/472.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:45:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3389,7 +3389,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 475 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/475.txt`
+- Function context: `scripts/httpmorph/findings/functions/475.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:93:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3405,7 +3405,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 476 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/476.txt`
+- Function context: `scripts/httpmorph/findings/functions/476.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:118:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3421,7 +3421,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 477 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/477.txt`
+- Function context: `scripts/httpmorph/findings/functions/477.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:120:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3437,7 +3437,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 478 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/478.txt`
+- Function context: `scripts/httpmorph/findings/functions/478.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:153:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3453,7 +3453,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 479 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/479.txt`
+- Function context: `scripts/httpmorph/findings/functions/479.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:155:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3469,7 +3469,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 480 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/480.txt`
+- Function context: `scripts/httpmorph/findings/functions/480.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:158:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3485,7 +3485,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 481 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/481.txt`
+- Function context: `scripts/httpmorph/findings/functions/481.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/linux/setup.py:161:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3501,7 +3501,7 @@ Checklist evidence: scripts/linux/setup.py is a script module (a build helper sc
 
 ### [ ] Finding 500 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/500.txt`
+- Function context: `scripts/httpmorph/findings/functions/500.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:31:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3517,7 +3517,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 501 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/501.txt`
+- Function context: `scripts/httpmorph/findings/functions/501.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:35:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3533,7 +3533,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 502 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/502.txt`
+- Function context: `scripts/httpmorph/findings/functions/502.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:39:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3549,7 +3549,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 503 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/503.txt`
+- Function context: `scripts/httpmorph/findings/functions/503.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:46:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3565,7 +3565,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 504 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/504.txt`
+- Function context: `scripts/httpmorph/findings/functions/504.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:47:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3581,7 +3581,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 505 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/505.txt`
+- Function context: `scripts/httpmorph/findings/functions/505.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:55:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3597,7 +3597,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 506 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/506.txt`
+- Function context: `scripts/httpmorph/findings/functions/506.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:60:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3613,7 +3613,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 507 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/507.txt`
+- Function context: `scripts/httpmorph/findings/functions/507.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:65:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3629,7 +3629,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 508 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/508.txt`
+- Function context: `scripts/httpmorph/findings/functions/508.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:74:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3645,7 +3645,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 509 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/509.txt`
+- Function context: `scripts/httpmorph/findings/functions/509.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:78:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3661,7 +3661,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 510 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/510.txt`
+- Function context: `scripts/httpmorph/findings/functions/510.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:83:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3677,7 +3677,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 511 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/511.txt`
+- Function context: `scripts/httpmorph/findings/functions/511.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:93:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3693,7 +3693,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 512 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/512.txt`
+- Function context: `scripts/httpmorph/findings/functions/512.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:98:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3709,7 +3709,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 513 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/513.txt`
+- Function context: `scripts/httpmorph/findings/functions/513.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/scripts/windows/setup.py:102:9`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3725,7 +3725,7 @@ Checklist evidence: scripts/windows/setup.py is a script module (a build helper 
 
 ### [ ] Finding 517 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/517.txt`
+- Function context: `scripts/httpmorph/findings/functions/517.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:75:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3741,7 +3741,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 518 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/518.txt`
+- Function context: `scripts/httpmorph/findings/functions/518.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:76:1`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3757,7 +3757,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 519 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/519.txt`
+- Function context: `scripts/httpmorph/findings/functions/519.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:156:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3773,7 +3773,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 520 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/520.txt`
+- Function context: `scripts/httpmorph/findings/functions/520.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:157:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3789,7 +3789,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 521 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/521.txt`
+- Function context: `scripts/httpmorph/findings/functions/521.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:158:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3805,7 +3805,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 522 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/522.txt`
+- Function context: `scripts/httpmorph/findings/functions/522.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:159:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3821,7 +3821,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 523 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/523.txt`
+- Function context: `scripts/httpmorph/findings/functions/523.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:160:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3837,7 +3837,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 524 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/524.txt`
+- Function context: `scripts/httpmorph/findings/functions/524.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:161:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3853,7 +3853,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 525 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/525.txt`
+- Function context: `scripts/httpmorph/findings/functions/525.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:162:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3869,7 +3869,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 526 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/526.txt`
+- Function context: `scripts/httpmorph/findings/functions/526.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:163:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3885,7 +3885,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 527 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/527.txt`
+- Function context: `scripts/httpmorph/findings/functions/527.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:164:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3901,7 +3901,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 529 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/529.txt`
+- Function context: `scripts/httpmorph/findings/functions/529.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:185:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3917,7 +3917,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 530 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/530.txt`
+- Function context: `scripts/httpmorph/findings/functions/530.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:200:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3933,7 +3933,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 531 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/531.txt`
+- Function context: `scripts/httpmorph/findings/functions/531.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:207:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3949,7 +3949,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 532 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/532.txt`
+- Function context: `scripts/httpmorph/findings/functions/532.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:222:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3965,7 +3965,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 533 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/533.txt`
+- Function context: `scripts/httpmorph/findings/functions/533.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:240:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3981,7 +3981,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 534 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/534.txt`
+- Function context: `scripts/httpmorph/findings/functions/534.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:250:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -3997,7 +3997,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 538 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/538.txt`
+- Function context: `scripts/httpmorph/findings/functions/538.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:347:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4013,7 +4013,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 539 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/539.txt`
+- Function context: `scripts/httpmorph/findings/functions/539.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:352:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4029,7 +4029,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 540 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/540.txt`
+- Function context: `scripts/httpmorph/findings/functions/540.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:377:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4045,7 +4045,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 541 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/541.txt`
+- Function context: `scripts/httpmorph/findings/functions/541.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:378:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4061,7 +4061,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 542 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/542.txt`
+- Function context: `scripts/httpmorph/findings/functions/542.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:385:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4077,7 +4077,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 543 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/543.txt`
+- Function context: `scripts/httpmorph/findings/functions/543.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:390:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4093,7 +4093,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 544 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/544.txt`
+- Function context: `scripts/httpmorph/findings/functions/544.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:399:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4109,7 +4109,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 545 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/545.txt`
+- Function context: `scripts/httpmorph/findings/functions/545.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:403:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4125,7 +4125,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 546 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/546.txt`
+- Function context: `scripts/httpmorph/findings/functions/546.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:408:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4141,7 +4141,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 547 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/547.txt`
+- Function context: `scripts/httpmorph/findings/functions/547.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:418:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4157,7 +4157,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 548 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/548.txt`
+- Function context: `scripts/httpmorph/findings/functions/548.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:423:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4173,7 +4173,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 549 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/549.txt`
+- Function context: `scripts/httpmorph/findings/functions/549.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:427:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4189,7 +4189,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 550 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/550.txt`
+- Function context: `scripts/httpmorph/findings/functions/550.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:433:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4205,7 +4205,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 551 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/551.txt`
+- Function context: `scripts/httpmorph/findings/functions/551.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:437:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4221,7 +4221,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 552 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/552.txt`
+- Function context: `scripts/httpmorph/findings/functions/552.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:465:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4237,7 +4237,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 553 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/553.txt`
+- Function context: `scripts/httpmorph/findings/functions/553.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:466:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4253,7 +4253,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 554 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/554.txt`
+- Function context: `scripts/httpmorph/findings/functions/554.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:467:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4269,7 +4269,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 555 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/555.txt`
+- Function context: `scripts/httpmorph/findings/functions/555.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:468:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4285,7 +4285,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 556 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/556.txt`
+- Function context: `scripts/httpmorph/findings/functions/556.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:469:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4301,7 +4301,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 557 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/557.txt`
+- Function context: `scripts/httpmorph/findings/functions/557.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:470:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4317,7 +4317,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 558 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/558.txt`
+- Function context: `scripts/httpmorph/findings/functions/558.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:569:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4333,7 +4333,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 559 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/559.txt`
+- Function context: `scripts/httpmorph/findings/functions/559.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:579:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4349,7 +4349,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 560 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/560.txt`
+- Function context: `scripts/httpmorph/findings/functions/560.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:648:13`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4365,7 +4365,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 561 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/561.txt`
+- Function context: `scripts/httpmorph/findings/functions/561.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:650:17`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4381,7 +4381,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 562 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/562.txt`
+- Function context: `scripts/httpmorph/findings/functions/562.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/setup.py:755:5`
 - Checklist pattern: print statement is user-facing/CLI or build-status output in a script module, not operational logging in a non-script (library) module
 
@@ -4397,7 +4397,7 @@ Checklist evidence: setup.py is a script module (guarded by `if __name__ == "__m
 
 ### [ ] Finding 563 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/563.txt`
+- Function context: `scripts/httpmorph/findings/functions/563.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/src/httpmorph/_async_client.py:145:13`
 - Checklist pattern: print call appears inside a docstring, not in executable code
 
@@ -4414,7 +4414,7 @@ Checklist evidence: Line 145 sits between the docstring opener (line 130) and cl
 
 ### [ ] Finding 570 — CWE-829
 
-- Function context: `./scripts/findings/functions/570.txt`
+- Function context: `scripts/httpmorph/findings/functions/570.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/src/httpmorph/_client_c.py:61:12`
 - Checklist pattern: module path is selected from a package-controlled glob of the package's own directory
 
@@ -4432,7 +4432,7 @@ Checklist evidence: `so_files` is the result of a literal glob in the package's 
 
 ### [ ] Finding 594 — CWE-256
 
-- Function context: `./scripts/findings/functions/594.txt`
+- Function context: `scripts/httpmorph/findings/functions/594.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/tests/test_edge_cases_security.py:208:1`
 - Checklist pattern: assignment is synthetic test input, not a stored password literal
 
@@ -4450,7 +4450,7 @@ Checklist evidence: The value is the expression `"b" * 300`, not a plaintext lit
 
 ### [ ] Finding 680 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/680.txt`
+- Function context: `scripts/httpmorph/findings/functions/680.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/tests/test_proxy_server.py:31:1`
 - Checklist pattern: try/except is server-implementation error handling, not a test asserting failure
 
@@ -4474,7 +4474,7 @@ Checklist evidence: `test_proxy_server.py` contains no `def test_*` functions, s
 
 ### [ ] Finding 684 — CWE-1341
 
-- Function context: `./scripts/findings/functions/684.txt`
+- Function context: `scripts/httpmorph/findings/functions/684.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/tests/test_proxy_server.py:87:29`
 - Checklist pattern: each close() terminates its own execution path — the handle is never released twice
 
@@ -4499,7 +4499,7 @@ Checklist evidence: `pyTierBDoubleCloseRE` matches any two `.close()` calls with
 
 ### [ ] Finding 697 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/697.txt`
+- Function context: `scripts/httpmorph/findings/functions/697.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph/tests/test_server.py:83:1`
 - Checklist pattern: try/except is server-implementation error handling, not a test asserting failure
 
@@ -5068,6 +5068,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/httpmorph/chunks`
+- Function evidence: `scripts/httpmorph/findings/functions`
 - Validation: `git diff --check` — `pass`

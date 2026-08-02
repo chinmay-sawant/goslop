@@ -9,22 +9,22 @@ repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToW
 branch: main
 commit: 96a90a2b14d667c9fa5957bff4405912e31b0462
 scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb
-chunk_path: ./scripts/chunks
-function_context_path: ./scripts/findings/functions
+chunk_path: scripts/FuncToWeb/chunks
+function_context_path: scripts/FuncToWeb/findings/functions
 ```
 
 ## Scan evidence
 
 - Build command: `n/a` (pure Python package, no build step)
-- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir real-repos/FuncToWeb/scripts/chunks -context-dir real-repos/FuncToWeb/scripts/findings/functions real-repos/FuncToWeb`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/FuncToWeb/chunks -context-dir scripts/FuncToWeb/findings/functions real-repos/FuncToWeb`
 - Findings: `57`
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_57.txt`
-- Function contexts reviewed: `./scripts/findings/functions/{6,7,18,20,21,23,24,31,32,33,35,36,42,44,45,47,48,49,57}.txt`
+- Chunks reviewed: `scripts/FuncToWeb/chunks/Chunk_1_25.txt`, `scripts/FuncToWeb/chunks/Chunk_26_50.txt`, `scripts/FuncToWeb/chunks/Chunk_51_57.txt`
+- Function contexts reviewed: `scripts/FuncToWeb/findings/functions/{6,7,18,20,21,23,24,31,32,33,35,36,42,44,45,47,48,49,57}.txt`
 
 ## Audit checklist
 
-- [x] Read every assigned chunk under `./scripts/chunks`.
-- [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Read every assigned chunk under `scripts/FuncToWeb/chunks`.
+- [x] Read `scripts/FuncToWeb/findings/functions/<finding-id>.txt` for every proposed false positive.
 - [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
 - [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
 - [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
@@ -43,7 +43,7 @@ function_context_path: ./scripts/findings/functions
 
 ### [ ] Finding 7 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/7.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/7.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/project/gallery.py:101:11`
 - Checklist pattern: `print(...)` call token inside a string literal
 
@@ -64,7 +64,7 @@ Checklist evidence: BP-PY-46 matches `print(...)` calls in non-`__main__` module
 
 ### [ ] Finding 6 — CWE-22
 
-- Function context: `./scripts/findings/functions/6.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/6.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/project/gallery.py:62:27`
 - Checklist pattern: pathlib join with dynamic segment; segment is typed integer
 
@@ -87,7 +87,7 @@ Checklist evidence: CWE-22 requires a user-influenced pathname that can escape a
 
 ### [ ] Finding 18 — CWE-1333
 
-- Function context: `./scripts/findings/functions/18.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/18.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/models/function.py:17:16`
 - Checklist pattern: nested quantifier `(?:-[…]+)*`; repetition disambiguated by literal separator
 
@@ -103,7 +103,7 @@ Checklist evidence: CWE-1333 requires worst-case inefficient/exponential matchin
 
 ### [ ] Finding 20 — CWE-89
 
-- Function context: `./scripts/findings/functions/20.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/20.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/execution.py:33:11`
 - Checklist pattern: identifier `execute` is a user-defined async function, not a DB cursor
 
@@ -125,7 +125,7 @@ Checklist evidence: CWE-89 requires a dynamic SQL string reaching `execute`/`exe
 
 ### [ ] Finding 31 — CWE-89
 
-- Function context: `./scripts/findings/functions/31.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/31.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/router.py:105:34`
 - Checklist pattern: call to the custom `execute` wrapper, not a DB cursor call
 
@@ -143,7 +143,7 @@ Checklist evidence: CWE-89 requires a dynamic SQL string; the call passes a `Web
 
 ### [ ] Finding 35 — CWE-89
 
-- Function context: `./scripts/findings/functions/35.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/35.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/stream.py:56:40`
 - Checklist pattern: call to the custom `execute` wrapper, not a DB cursor call
 
@@ -162,7 +162,7 @@ Checklist evidence: CWE-89 requires a dynamic SQL string reaching a DB sink; the
 
 ### [ ] Finding 32 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/32.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/32.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/router.py:188:20`
 - Checklist pattern: FileResponse path already confined by `segment_of` + `stored_of` resolve/prefix checks
 
@@ -184,7 +184,7 @@ Checklist evidence: BP-PY-32 requires a user-input path without resolve+prefix c
 
 ### [ ] Finding 33 — BP-PY-32
 
-- Function context: `./scripts/findings/functions/33.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/33.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/router.py:204:20`
 - Checklist pattern: FileResponse path confined by `static_asset` resolve+prefix checks
 
@@ -211,7 +211,7 @@ Checklist evidence: BP-PY-32 requires no resolve+prefix check; the shown source 
 
 ### [ ] Finding 36 — BP-PY-40
 
-- Function context: `./scripts/findings/functions/36.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/36.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/upload.py:210:17`
 - Checklist pattern: thread is explicitly `daemon=True`; rule targets non-daemon workers
 
@@ -229,7 +229,7 @@ Checklist evidence: BP-PY-40 matches `Thread(...).start()` without a join/daemon
 
 ### [ ] Finding 42 — CWE-1341
 
-- Function context: `./scripts/findings/functions/42.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/42.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/e2e/conftest.py:34:5`
 - Checklist pattern: single `close()` in fixture teardown; no second release in the shown source
 
@@ -252,7 +252,7 @@ Checklist evidence: CWE-1341 requires the same handle to be released twice; the 
 
 ### [ ] Finding 44 — CWE-93
 
-- Function context: `./scripts/findings/functions/44.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/44.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/integration/test_http_invoke.py:238:19`
 - Checklist pattern: header read inside an `assert`, not a header write
 
@@ -271,7 +271,7 @@ Checklist evidence: CWE-93 requires a dynamic value written to an HTTP response 
 
 ### [ ] Finding 45 — CWE-93
 
-- Function context: `./scripts/findings/functions/45.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/45.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/integration/test_http_stream.py:307:20`
 - Checklist pattern: header read inside an `assert`, not a header write
 
@@ -289,7 +289,7 @@ Checklist evidence: CWE-93 requires a header-write sink; the shown source only r
 
 ### [ ] Finding 47 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/47.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/47.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/integration/test_http_stream.py:479:1`
 - Checklist pattern: handler records the exception and re-raises it after the thread joins
 
@@ -312,7 +312,7 @@ Checklist evidence: BP-PY-1 matches handlers that pass, only log without re-rais
 
 ### [ ] Finding 48 — CWE-93
 
-- Function context: `./scripts/findings/functions/48.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/48.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/integration/test_prefix.py:120:20`
 - Checklist pattern: header read inside an `assert`, not a header write
 
@@ -329,7 +329,7 @@ Checklist evidence: CWE-93 requires a dynamic value written to an HTTP response 
 
 ### [ ] Finding 49 — BP-PY-42
 
-- Function context: `./scripts/findings/functions/49.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/49.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/shared.py:23:1`
 - Checklist pattern: helper `warm_uvicorn()`, not a `test_*` function expecting failure
 
@@ -355,7 +355,7 @@ Checklist evidence: BP-PY-42 matches test functions using bare try/except instea
 
 ### [ ] Finding 57 — CWE-93
 
-- Function context: `./scripts/findings/functions/57.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/57.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/tests/unit/test_outputs_downloads.py:272:20`
 - Checklist pattern: header read inside an `assert`, not a header write
 
@@ -373,7 +373,7 @@ Checklist evidence: CWE-93 requires a dynamic value written to an HTTP response 
 
 ### [ ] Finding 21 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/21.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/21.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/execution.py:45:1`
 - Checklist pattern: handler records the exception type in the failure envelope returned to the caller
 
@@ -395,7 +395,7 @@ Checklist evidence: BP-PY-1 matches handlers that pass, only log without re-rais
 
 ### [ ] Finding 23 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/23.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/23.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/execution.py:50:1`
 - Checklist pattern: handler records the exception type in the failure envelope returned to the caller
 
@@ -414,7 +414,7 @@ Checklist evidence: BP-PY-1's swallow patterns (pass, log-without-reraise, conti
 
 ### [ ] Finding 24 — BP-PY-1
 
-- Function context: `./scripts/findings/functions/24.txt`
+- Function context: `scripts/FuncToWeb/findings/functions/24.txt`
 - Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/web/execution.py:61:1`
 - Checklist pattern: handler records the exception type in the failure envelope returned to the caller
 
@@ -532,6 +532,6 @@ None.
 ## Final evidence
 
 - Delegated reviewers: none
-- Chunk evidence: `./scripts/chunks`
-- Function evidence: `./scripts/findings/functions`
+- Chunk evidence: `scripts/FuncToWeb/chunks`
+- Function evidence: `scripts/FuncToWeb/findings/functions`
 - Validation: `git diff --check` — pass
