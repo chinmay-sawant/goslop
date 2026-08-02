@@ -65,6 +65,26 @@ func isPythonTestFile(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isPythonTestDirPath reports modules under a tests/ or test/ directory tree.
+// Unlike isPythonTestFile, this does not match scripts merely named *_test.py
+// (Project_Parva backend/tools/load_test.py).
+func isPythonTestDirPath(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, p := range []string{fileDisplayPath(unit), unit.Path} {
+		if p == "" {
+			continue
+		}
+		norm := filepath.ToSlash(p)
+		if strings.Contains(norm, "/tests/") || strings.Contains(norm, "/test/") ||
+			strings.HasPrefix(norm, "tests/") || strings.HasPrefix(norm, "test/") {
+			return true
+		}
+	}
+	return false
+}
+
 // isPythonOfflineScriptPath reports offline tooling / release / validation
 // scripts where broad-except noise is expected batch-job noise (Project_Parva
 // tools/, scripts/release, public-benchmark runners). Does NOT match generic

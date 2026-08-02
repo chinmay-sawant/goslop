@@ -1,0 +1,28 @@
+# goslop text fixture — niquests unicode_/redirect pure-call smoke (no assert;
+# intentional "does not raise on encoding/redirect").
+lang: python
+file: tests/test_requests.py
+---
+import niquests
+
+
+def test_unicode_get(httpbin, url, params):
+    niquests.get(httpbin(url), params=params)
+
+
+def test_unicode_header_name(httpbin):
+    niquests.put(
+        httpbin("put"),
+        headers={"Content-Type": "application/octet-stream"},
+        data="\xff",
+    )
+
+
+def test_pyopenssl_redirect(httpbin_secure, httpbin_ca_bundle):
+    niquests.get(httpbin_secure("status", "301"), verify=httpbin_ca_bundle)
+
+
+def test_redirect_with_wrong_gzipped_header(httpbin):
+    s = niquests.Session()
+    url = httpbin("redirect/1")
+    s.get(url)

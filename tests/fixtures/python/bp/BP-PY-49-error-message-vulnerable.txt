@@ -1,0 +1,9 @@
+# goslop text fixture — live verify=False kwarg disables TLS
+lang: python
+file: extensions/wasi/_utils.py
+---
+import requests
+
+
+def fetch(url):
+    return requests.get(url, verify=False)

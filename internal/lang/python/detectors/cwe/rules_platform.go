@@ -38,6 +38,9 @@ var (
 
 // isPythonOfflineScriptPathCWE mirrors bad_practices offline tooling skip
 // (tools/, scripts/release/, public-benchmark/) for CWE-396 batch-job noise.
+// Also covers Project_Parva offline verify runners under scripts/
+// (parva_*_verify.py, run_*smoke*.py) without matching WeThePeople
+// scripts/seed_*.py or jobs/*.py operational TPs.
 func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 	if unit == nil {
 		return false
@@ -47,11 +50,9 @@ func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 			continue
 		}
 		norm := path
-		// filepath.ToSlash without import cycle — paths are already slash-ish.
-		for i := 0; i < len(norm); i++ {
-			if norm[i] == '\\' {
-				// rare on this corpus
-			}
+		// Normalize backslashes so Windows-style paths still match markers.
+		if strings.IndexByte(norm, '\\') >= 0 {
+			norm = strings.ReplaceAll(norm, "\\", "/")
 		}
 		if strings.Contains(norm, "/backend/tools/") ||
 			strings.Contains(norm, "/scripts/release/") ||
@@ -64,6 +65,19 @@ func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 			strings.HasPrefix(norm, "tools/validate") ||
 			strings.HasPrefix(norm, "tools/release/") {
 			return true
+		}
+		// Offline verify / smoke runners under scripts/ only (not jobs/).
+		if strings.Contains(norm, "/scripts/") || strings.HasPrefix(norm, "scripts/") {
+			base := norm
+			if i := strings.LastIndex(norm, "/"); i >= 0 {
+				base = norm[i+1:]
+			}
+			if strings.HasPrefix(base, "parva_") && strings.HasSuffix(base, "_verify.py") {
+				return true
+			}
+			if strings.HasPrefix(base, "run_") && strings.Contains(base, "smoke") && strings.HasSuffix(base, ".py") {
+				return true
+			}
 		}
 	}
 	return false
@@ -86,6 +100,12 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	// Offline tooling / release / benchmark runners (Project_Parva tools/,
 	// scripts/release, public-benchmark) — same offline-noise cut as BP-PY-1.
 	if isPythonOfflineScriptPathCWE(unit) {
+		return
+	}
+	// Dual-mode SSL helpers (verify_ssl switch → default context vs CERT_NONE)
+	// are intentional TLS-diagnostic APIs; generic catch inside them is
+	// compatibility plumbing, not hidden application failure (httptap utils).
+	if dualModeTLSHelper(unit.Source) {
 		return
 	}
 	if !containsAnyNeedle(unit.Source, "except Exception", "except BaseException") {
@@ -133,7 +153,12 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 //     onlymaps _types.py:189);
 //   - multi-statement suites that never reference the exception and neither
 //     log nor print are documented fallback paths (niquests
-//     wasi/_async/_adapter.py:99).
+//     wasi/_async/_adapter.py:99);
+//   - JS/pyodide bridge probes with pass-only or constant-assign fallback
+//     after a try body that touches getReader/to_py/run_sync/_js_ (niquests
+//     extensions/pyodide) — wrap-raise after the same bridge stays reportable;
+//   - logger.exception (or equivalent) followed by a process exit-code return
+//     surfaces the failure to the CLI operator (httptap cli.py:589).
 func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 	if exceptIdx < 0 || exceptIdx >= len(lines) {
 		return false
@@ -236,6 +261,16 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 		return false
 	}
 
+	// JS/pyodide bridge best-effort: pass-only or constant-assign/return after
+	// a try body that touches the bridge API. Ordinary Exception:pass and
+	// wrap-raise stay reportable (hasRaise already returned above).
+	// Use bodyRaw so string-literal constants survive pythonCodeMask.
+	if tryIdx := enclosingTryIdx(lines, exceptIdx); tryIdx >= 0 &&
+		tryBlockHasJSBridgeSignal(lines, tryIdx) &&
+		suiteIsPassOrConstantFallback(bodyRaw) {
+		return true
+	}
+
 	// Retry machinery: failure fed into retries.increment then continue/sleep
 	// (niquests sgi/__init__.py:129 audited FP). Nested MaxRetryError raise is
 	// not a suite-level raise (handled above).
@@ -265,6 +300,13 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 		}
 	}
 	if errorAttr && stmtCount >= 2 {
+		return true
+	}
+
+	// logger.exception / exc_info log then return a process exit code — the
+	// CLI surfaces the failure and terminates (httptap cli.py:589). Bare log
+	// without an exit return stays reportable.
+	if hasLog && suiteLogsThenReturnsExitCode(body) {
 		return true
 	}
 
@@ -310,6 +352,64 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 		}
 	}
 	return false
+}
+
+// suiteIsPassOrConstantFallback reports pass-only or constant-assign/return
+// suites used as defined JS-bridge fallbacks (None/""/b""/False/0).
+func suiteIsPassOrConstantFallback(body []string) bool {
+	if len(body) == 0 {
+		return false
+	}
+	saw := false
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" || t == "continue" || t == "break" {
+			saw = true
+			continue
+		}
+		if strings.HasPrefix(t, "return ") {
+			rest := strings.TrimSpace(t[len("return "):])
+			if isDefinedConstantExprCWE(rest) {
+				saw = true
+				continue
+			}
+			return false
+		}
+		if _, rhs, ok := splitAssignmentEq(t); ok {
+			if isDefinedConstantExprCWE(strings.TrimSpace(rhs)) {
+				saw = true
+				continue
+			}
+			return false
+		}
+		return false
+	}
+	return saw
+}
+
+// suiteLogsThenReturnsExitCode reports a suite that logs the failure and
+// returns a named process exit constant (EXIT_* / UNIX_*). Bare `return 1`
+// after logger.exception stays reportable (WeThePeople jobs audited TPs).
+func suiteLogsThenReturnsExitCode(body []string) bool {
+	hasLog := false
+	hasExitReturn := false
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if strings.Contains(t, "exc_info") || strings.Contains(t, ".exception(") ||
+			strings.Contains(t, "log.") || strings.Contains(t, "logger.") ||
+			strings.Contains(t, "logging.") || strings.Contains(t, "traceback.print_exc") {
+			hasLog = true
+		}
+		if strings.HasPrefix(t, "return ") {
+			rest := strings.TrimSpace(t[len("return "):])
+			if strings.HasPrefix(rest, "EXIT_") ||
+				strings.HasPrefix(rest, "UNIX_") ||
+				strings.Contains(rest, "EXIT_") {
+				hasExitReturn = true
+			}
+		}
+	}
+	return hasLog && hasExitReturn
 }
 
 // selfCallDelegation reports a single-statement suite that delegates to a

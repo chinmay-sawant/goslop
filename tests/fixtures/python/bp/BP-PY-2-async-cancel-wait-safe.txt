@@ -1,0 +1,16 @@
+# goslop text fixture — CancelledError/GeneratorExit:pass after await Future
+# (niquests sgi lifespan shutdown FP)
+lang: python
+file: asgi_adapter.py
+---
+import asyncio
+
+
+async def run_lifespan(receive_queue, shutdown_complete):
+    try:
+        await asyncio.Future()  # Wait forever until canceled
+    except (asyncio.CancelledError, GeneratorExit):
+        pass
+    if receive_queue is not None:
+        await receive_queue.put({"type": "lifespan.shutdown"})
+        await shutdown_complete.wait()

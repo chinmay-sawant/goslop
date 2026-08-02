@@ -247,6 +247,12 @@ func sameHandleDoubleCloseStart(masked string) int {
 			if closeSitesInMutuallyExclusiveBranches(between) {
 				continue
 			}
+			// First close is on an early-exit arm (raise/return/continue/break)
+			// so the second close is a different path — one release per path
+			// (niquests wasi adapter retry: close then raise vs close then continue).
+			if closeFollowedByPathExit(between) {
+				continue
+			}
 			if closeSiteInLifecycleHook(masked, matches[i][0]) || closeSiteInLifecycleHook(masked, start2) {
 				continue
 			}
@@ -288,6 +294,27 @@ func closeSitesInMutuallyExclusiveBranches(between string) bool {
 		return false
 	}
 	return true
+}
+
+// closeFollowedByPathExit reports that the first significant statement after
+// a close() exits the path (raise/return/continue/break), so a later close of
+// the same name is on a different control-flow path (retry-loop one-close-per-
+// iteration, or if/raise vs fall-through close).
+func closeFollowedByPathExit(between string) bool {
+	for _, line := range strings.Split(between, "\n") {
+		t := strings.TrimSpace(line)
+		if t == "" || strings.HasPrefix(t, "#") {
+			continue
+		}
+		if strings.HasPrefix(t, "raise") || strings.HasPrefix(t, "return") ||
+			t == "continue" || strings.HasPrefix(t, "continue ") ||
+			t == "break" || strings.HasPrefix(t, "break ") {
+			return true
+		}
+		// First non-exit statement means the path continues toward the second close.
+		return false
+	}
+	return false
 }
 
 func closeSiteInLifecycleHook(src string, offset int) bool {

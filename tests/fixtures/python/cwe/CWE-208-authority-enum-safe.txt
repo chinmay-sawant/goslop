@@ -1,0 +1,14 @@
+# goslop text fixture — AuthorityTaint enum ranking is not a secret timing compare
+lang: python
+file: backend/app/policy/vm.py
+---
+class AuthorityTaint:
+    STATIC_REFERENCE = "static"
+
+
+def rank(candidate, resolution):
+    if candidate.authority == AuthorityTaint.STATIC_REFERENCE:
+        return resolution
+    if resolution.authority == AuthorityTaint.STATIC_REFERENCE:
+        return resolution
+    return candidate

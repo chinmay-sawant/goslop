@@ -1,0 +1,13 @@
+# goslop text fixture — CancelledError:pass after a cleanup close call is not
+# a cancel-wait probe (wse-style teardown TP)
+lang: python
+file: connection.py
+---
+import asyncio
+
+
+async def close_ws(ws):
+    try:
+        await ws.close()
+    except asyncio.CancelledError:
+        pass

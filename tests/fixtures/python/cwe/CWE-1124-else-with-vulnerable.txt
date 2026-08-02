@@ -1,0 +1,11 @@
+# goslop text fixture — six nested if frames stay reportable
+lang: python
+file: CWE-1124-else-with-vulnerable.py
+---
+if a:
+    if b:
+        if c:
+            if d:
+                if e:
+                    if f:
+                        action()

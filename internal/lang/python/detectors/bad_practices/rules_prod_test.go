@@ -35,6 +35,7 @@ func TestBPPY49TLSVerificationDisabled(t *testing.T) {
 	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-default")
 	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-ca-path")
 	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-test-path")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-error-message")
 
 	// Explicit: this detector must not fire BP-PY-14 (not implemented in this batch).
 	missDefault := loadBPFixture(t, "BP-PY-49-default", false)

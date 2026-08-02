@@ -1,0 +1,18 @@
+# goslop text fixture — try/except/else plus with resource scopes should not
+# count as nesting (niquests OCSP optional import + Session() FP shape)
+lang: python
+file: ocsp_optional.py
+---
+def verify(conn_info, proxies):
+    if conn_info.issuer_certificate_der is None:
+        if issuer_certificate is None and hint_ca_issuers:
+            with Session() as session:
+                try:
+                    raw = session.get(hint_ca_issuers[0])
+                except RequestException:
+                    pass
+                else:
+                    if raw.status_code and 300 > raw.status_code >= 200:
+                        if raw.content is not None:
+                            if b"BEGIN" not in raw.content:
+                                issuer_certificate = Certificate(raw.content)

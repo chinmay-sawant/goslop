@@ -1,0 +1,17 @@
+# goslop text fixture — shebang-less standalone data script with only
+# module-level prints (FlashySurf data-process.py shape). Not a package module.
+lang: python
+file: data-process.py
+---
+import json
+
+output = {"math": [], "english": []}
+
+with open("questions.json", "r") as f:
+    data = json.load(f)
+
+for item in data:
+    output["math"].append(item)
+
+print(f"Math questions: {len(output['math'])}")
+print(f"English questions: {len(output['english'])}")

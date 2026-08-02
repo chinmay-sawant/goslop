@@ -347,6 +347,8 @@ func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if loc == nil {
 			continue
 		}
+		// LHS name (for *_NAME / env-key holders).
+		lhs := strings.TrimSpace(t[loc[0] : loc[0]+strings.Index(t[loc[0]:], "=")])
 		// RHS after =
 		eq := strings.Index(t[loc[0]:], "=")
 		if eq < 0 {
@@ -357,21 +359,132 @@ func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if rhs == "" {
 			continue
 		}
-		// Only string literals.
-		if !isStringLiteral(rhs) {
-			// RHS might be "foo" + something — still skip non-pure for conservative.
+		// Only pure string literals — reject concatenations like
+		// token = "{" + key + "}" (Project_Parva route binder) and f-strings
+		// that interpolate runtime values (secret = f"…{secrets.token_…}").
+		val, ok := pureHardcodedSecretLiteral(rhs)
+		if !ok {
 			continue
 		}
 		if looksLikePlaceholderSecret(rhs) {
 			continue
 		}
+		// Env-var *name* holders (OPENAI_API_KEY_NAME = "PYCAPS_OPENAI_API_KEY")
+		// are configuration keys, not committed credentials (pycaps).
+		if secretAssignLooksLikeEnvKeyName(lhs, val) {
+			continue
+		}
 		// Very short literals often placeholders.
-		val := unwrapStringLiteral(rhs)
 		if len(val) < 6 {
 			continue
 		}
 		pushAt(unit, meta, line.byte+loc[0], "hardcoded secret-like string in source; load from environment or a secret manager", out)
 	}
+}
+
+// pureHardcodedSecretLiteral accepts only a single static string literal RHS
+// (optional b/r/u/f prefixes). Concatenation, calls, and f-string
+// interpolations (`{…}`) are rejected — those are not hardcoded secrets.
+func pureHardcodedSecretLiteral(rhs string) (string, bool) {
+	s := strings.TrimSpace(rhs)
+	if s == "" {
+		return "", false
+	}
+	isF := false
+	for {
+		if len(s) < 2 {
+			return "", false
+		}
+		c0 := s[0]
+		if c0 == 'f' || c0 == 'F' {
+			isF = true
+			s = s[1:]
+			continue
+		}
+		if c0 == 'r' || c0 == 'R' || c0 == 'u' || c0 == 'U' || c0 == 'b' || c0 == 'B' {
+			s = s[1:]
+			continue
+		}
+		break
+	}
+	if len(s) < 2 {
+		return "", false
+	}
+	q := s[0]
+	if q != '"' && q != '\'' {
+		return "", false
+	}
+	// Triple-quoted: require exact triple open/close and nothing after.
+	if len(s) >= 6 && s[1] == q && s[2] == q {
+		close := string([]byte{q, q, q})
+		if !strings.HasSuffix(s, close) {
+			return "", false
+		}
+		inner := s[3 : len(s)-3]
+		if isF && strings.Contains(inner, "{") {
+			return "", false
+		}
+		return inner, true
+	}
+	// Single-quoted: find matching end quote with escapes; refuse trailing junk.
+	escaped := false
+	end := -1
+	for i := 1; i < len(s); i++ {
+		c := s[i]
+		if escaped {
+			escaped = false
+			continue
+		}
+		if c == '\\' {
+			escaped = true
+			continue
+		}
+		if c == q {
+			end = i
+			break
+		}
+	}
+	if end < 0 {
+		return "", false
+	}
+	if strings.TrimSpace(s[end+1:]) != "" {
+		// e.g. "{" + key + "}" — not a pure literal.
+		return "", false
+	}
+	inner := s[1:end]
+	if isF && strings.Contains(inner, "{") {
+		return "", false
+	}
+	return inner, true
+}
+
+// secretAssignLooksLikeEnvKeyName reports env-var name holders / ALL_CAPS key
+// strings (configuration indirection), not committed secret values.
+func secretAssignLooksLikeEnvKeyName(lhs, val string) bool {
+	l := strings.ToUpper(strings.TrimSpace(lhs))
+	if strings.HasSuffix(l, "_NAME") || strings.HasSuffix(l, "_ENV") ||
+		strings.HasSuffix(l, "_ENV_VAR") || strings.HasSuffix(l, "_VAR") ||
+		strings.Contains(l, "_KEY_NAME") || strings.Contains(l, "ENV_KEY") {
+		return true
+	}
+	// Value is an env-style name: ALL_CAPS / digits / underscores only, with _.
+	if val == "" {
+		return false
+	}
+	hasUnderscore := false
+	for i := 0; i < len(val); i++ {
+		c := val[i]
+		if c == '_' {
+			hasUnderscore = true
+			continue
+		}
+		if (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') {
+			continue
+		}
+		return false
+	}
+	// Require underscore + reasonable length so "SECRET" alone still flags.
+	return hasUnderscore && len(val) >= 8
 }
 
 func unwrapStringLiteral(s string) string {

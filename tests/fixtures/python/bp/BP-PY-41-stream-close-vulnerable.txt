@@ -1,0 +1,11 @@
+# goslop text fixture — resource close alone is not an assertion (movielite
+# clip.close() benchmark shape must keep firing).
+lang: python
+file: benchmarks/compare_moviepy.py
+---
+def test_no_processing_movielite(input_path: str, output_path: str):
+    clip = ml.VideoClip(input_path)
+    writer = ml.VideoWriter(output_path, fps=clip.fps)
+    writer.add_clip(clip)
+    writer.write()
+    clip.close()

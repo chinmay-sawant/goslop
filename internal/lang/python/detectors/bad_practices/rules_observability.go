@@ -1,6 +1,8 @@
 package badpractices
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -35,6 +37,12 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	if isPythonScriptModule(unit) {
+		return
+	}
+	// Shebang-less standalone data scripts whose only prints sit at module
+	// top level (FlashySurf data-process.py / semantic-classification.py).
+	// Package modules and function-body printers keep firing.
+	if pythonIsLooseStandaloneModulePrintScript(unit) {
 		return
 	}
 	if isRequirementsPath(unit) {
@@ -526,6 +534,12 @@ func detectBPPY47(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isRequirementsPath(unit) {
 		return
 	}
+	// Eager format in tests is not a production logging-hot-path concern
+	// (logxide test_* f-string message construction FPs). Production modules
+	// and examples keep firing (CourtScrapper / logxide examples TPs).
+	if isPythonTestFile(unit) {
+		return
+	}
 	if !facts.hasAny("logger.", "logging.") &&
 		!strings.Contains(unit.Source, "logger.") && !strings.Contains(unit.Source, "logging.") {
 		return
@@ -579,6 +593,8 @@ func isEagerLogFormat(arg string) bool {
 	// Common f-string prefixes
 	for _, p := range []string{"f", "F", "rf", "Rf", "rF", "RF", "fr", "Fr", "fR", "FR"} {
 		if strings.HasPrefix(a, p+"\"") || strings.HasPrefix(a, p+"'") {
+			// All f-strings are flagged — including constant f"hello" without
+			// braces (among-llms audited TPs). Lazy logging still prefers %s.
 			return true
 		}
 	}
@@ -593,6 +609,111 @@ func isEagerLogFormat(arg string) bool {
 	}
 	_ = lower
 	return false
+}
+
+// fStringHasInterpolation reports an f/rf/fr-string first arg that actually
+// interpolates ({...}). Constant f"hello" is not eager formatting work.
+func fStringHasInterpolation(arg string) bool {
+	arg = strings.TrimSpace(arg)
+	// Strip prefix to the opening quote.
+	i := 0
+	for i < len(arg) && (arg[i] == 'f' || arg[i] == 'F' || arg[i] == 'r' || arg[i] == 'R' ||
+		arg[i] == 'b' || arg[i] == 'B' || arg[i] == 'u' || arg[i] == 'U') {
+		i++
+	}
+	if i >= len(arg) || (arg[i] != '"' && arg[i] != '\'') {
+		return true // not a plain string; be conservative
+	}
+	quote := arg[i]
+	// Triple?
+	if i+2 < len(arg) && arg[i+1] == quote && arg[i+2] == quote {
+		body := arg[i+3:]
+		if end := strings.Index(body, string([]byte{quote, quote, quote})); end >= 0 {
+			body = body[:end]
+		}
+		return strings.Contains(body, "{")
+	}
+	body := arg[i+1:]
+	escape := false
+	for j := 0; j < len(body); j++ {
+		c := body[j]
+		if escape {
+			escape = false
+			continue
+		}
+		if c == '\\' {
+			escape = true
+			continue
+		}
+		if c == quote {
+			return false
+		}
+		if c == '{' {
+			// {{ is escaped brace, not interpolation
+			if j+1 < len(body) && body[j+1] == '{' {
+				j++
+				continue
+			}
+			return true
+		}
+	}
+	return false
+}
+
+// pythonIsLooseStandaloneModulePrintScript reports a non-package file whose
+// every print( is at column 0 (module top level). Covers shebang-less one-shot
+// data scripts (FlashySurf data-process.py) without silencing package modules
+// or function-body printers (Cronboard / WHEN-Language / WeThePeople).
+func pythonIsLooseStandaloneModulePrintScript(unit *core.ParsedUnit) bool {
+	if unit == nil || unit.Source == "" {
+		return false
+	}
+	if !pythonAllPrintsModuleLevel(unit.Source) {
+		return false
+	}
+	// Must actually print something.
+	if !strings.Contains(unit.Source, "print(") {
+		return false
+	}
+	return pythonPathOutsidePackage(unit)
+}
+
+// pythonPathOutsidePackage reports that the unit does not live inside a Python
+// package (no __init__.py in the file's directory or parent directories up to a
+// few hops). Repo-root scripts qualify; src/pkg/module.py does not.
+func pythonPathOutsidePackage(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	path := unit.Path
+	if path == "" {
+		path = fileDisplayPath(unit)
+	}
+	if path == "" {
+		return false
+	}
+	dir := filepath.Dir(path)
+	for hops := 0; hops < 8; hops++ {
+		if dir == "" || dir == "." || dir == string(filepath.Separator) {
+			break
+		}
+		initPath := filepath.Join(dir, "__init__.py")
+		if st, err := os.Stat(initPath); err == nil && !st.IsDir() {
+			return false
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		// Stop at common project roots so we do not walk into unrelated trees.
+		base := filepath.Base(dir)
+		if base == "src" || base == "lib" || base == "site-packages" {
+			dir = parent
+			continue
+		}
+		dir = parent
+	}
+	return true
 }
 
 func isPercentFormattedArg(arg string) bool {

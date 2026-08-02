@@ -1,0 +1,10 @@
+# goslop text fixture — same generic catch under jobs/ stays reportable
+# (WeThePeople jobs/sync_* operational TP shape; path must not skip)
+lang: python
+file: jobs/sync_finance_data.py
+---
+def sync_batch(rows):
+    try:
+        return write_rows(rows)
+    except Exception:
+        return None

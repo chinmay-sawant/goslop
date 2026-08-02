@@ -1,0 +1,6 @@
+# goslop text fixture — real hardcoded api key literal
+lang: python
+file: ai/gpt.py
+---
+class Gpt:
+    OPENAI_API_KEY = "sk-live-not-a-real-key-but-long-enough"

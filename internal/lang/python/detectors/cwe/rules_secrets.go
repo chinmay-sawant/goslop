@@ -158,6 +158,11 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	masked := facts.Masked
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
+			// assert ctx.verify_mode == ssl.CERT_NONE is test/state comparison,
+			// not an unprotected credential transport (httptap dual-mode tests).
+			if marker == "ssl.CERT_NONE" && tlsMarkerIsStateComparison(masked, start) {
+				continue
+			}
 			pushSecretFinding(unit, &MetaCWE523, start, "TLS certificate verification is explicitly disabled", confidence82, out)
 			return
 		}

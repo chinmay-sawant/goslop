@@ -114,7 +114,20 @@ func detectCWE1124(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 			// Exception-handler clauses belong to the preceding try control flow;
 			// counting them as an additional nesting level overstates ordinary
 			// recovery and retry paths.
-			if !strings.HasPrefix(trimmed, "except") && !strings.HasPrefix(trimmed, "finally") {
+			// else/elif are mutually exclusive arms of an already-counted if/try
+			// frame (niquests OCSP optional import else:).
+			// with/async with open a resource scope, not algorithmic nesting
+			// (niquests wasi adapter / OCSP Session() paths).
+			header := trimmed
+			if strings.HasPrefix(header, "async ") {
+				header = strings.TrimSpace(header[len("async "):])
+			}
+			skipFrame := strings.HasPrefix(trimmed, "except") ||
+				strings.HasPrefix(trimmed, "finally") ||
+				trimmed == "else:" || strings.HasPrefix(trimmed, "else:") ||
+				strings.HasPrefix(trimmed, "elif ") ||
+				strings.HasPrefix(header, "with ")
+			if !skipFrame {
 				frames = append(frames, controlFrame{indent: indent})
 			}
 			offset += len(line) + 1

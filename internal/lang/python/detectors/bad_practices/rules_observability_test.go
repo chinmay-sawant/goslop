@@ -37,6 +37,7 @@ func TestBPPY46PrintInLibrary(t *testing.T) {
 		"BP-PY-46-demo-script-examples",
 		"BP-PY-46-demo-guard-local",
 		"BP-PY-46-script-completion",
+		"BP-PY-46-standalone-module-print",
 	} {
 		vulnCase := loadBPFixture(t, caseName, true)
 		safeCase := loadBPFixture(t, caseName, false)
@@ -63,6 +64,16 @@ func TestBPPY47EagerLogFormat(t *testing.T) {
 	assertRule(t, "BP-PY-47", vulnLogging.path, vulnLogging.body, true)
 	assertRule(t, "BP-PY-47", safe.path, safe.body, false)
 	assertRule(t, "BP-PY-47", safeLogging.path, safeLogging.body, false)
+	// f-string logs in tests / constant f-strings without interpolation
+	for _, caseName := range []string{
+		"BP-PY-47-test-path",
+		"BP-PY-47-constant-fstring",
+	} {
+		safeCase := loadBPFixture(t, caseName, false)
+		vulnCase := loadBPFixture(t, caseName, true)
+		assertRule(t, "BP-PY-47", safeCase.path, safeCase.body, false)
+		assertRule(t, "BP-PY-47", vulnCase.path, vulnCase.body, true)
+	}
 	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-47" && f.Severity != rules.SeverityInfo {

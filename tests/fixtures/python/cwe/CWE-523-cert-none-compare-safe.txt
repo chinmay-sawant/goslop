@@ -1,0 +1,10 @@
+# goslop text fixture — CERT_NONE equality check is not unprotected transport
+lang: python
+file: tests/test_ssl_context.py
+---
+import ssl
+
+
+def test_legacy_mode_disables_verification():
+    ctx = create_ssl_context(verify_ssl=False)
+    assert ctx.verify_mode == ssl.CERT_NONE

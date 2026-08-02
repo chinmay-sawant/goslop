@@ -1,0 +1,7 @@
+# goslop text fixture — hardcoded token string
+lang: python
+file: tools/langchain.py
+---
+def defaults():
+    token = "prod-service-token-abcdef123456"
+    return token

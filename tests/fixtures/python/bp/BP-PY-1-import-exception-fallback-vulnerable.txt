@@ -1,0 +1,13 @@
+# goslop text fixture — Exception around import + side-effect call is not an
+# optional-import fallback (httpmorph dotenv bootstrap TP shape); must fire
+lang: python
+file: bootstrap.py
+---
+def load_env():
+    try:
+        import dotenv
+
+        dotenv.load_dotenv()
+    except Exception:
+        return None
+    return True

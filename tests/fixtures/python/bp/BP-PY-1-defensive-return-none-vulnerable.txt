@@ -1,0 +1,10 @@
+# goslop text fixture — Exception: return None after a network call without a
+# defensive marker stays reportable
+lang: python
+file: client.py
+---
+def fetch_json(url):
+    try:
+        return requests.get(url).json()
+    except Exception:
+        return None

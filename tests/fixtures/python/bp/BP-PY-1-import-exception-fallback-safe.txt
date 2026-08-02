@@ -1,0 +1,16 @@
+# goslop text fixture — Exception around import-only try with list fallback
+# (Project_Parva langchain/llamaindex optional dependency FP)
+lang: python
+file: langchain_tools.py
+---
+def build_langchain_tools(client=None):
+    validate_tool_specs()
+    try:
+        from langchain_core.tools import StructuredTool
+    except Exception:
+        return [_fallback_descriptor(spec) for spec in TOOL_SPECS]
+
+    tools = []
+    for spec in TOOL_SPECS:
+        tools.append(StructuredTool.from_function(name=spec.name, func=_callable_for(spec, client)))
+    return tools

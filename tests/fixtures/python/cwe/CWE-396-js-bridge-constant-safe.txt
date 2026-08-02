@@ -1,0 +1,19 @@
+# goslop text fixture — constant-assign / return fallback after a JS/pyodide
+# bridge try body (niquests extensions/pyodide status_text / bytes() FPs)
+lang: python
+file: pyodide_bridge_constant.py
+---
+def read_status(js_response):
+    try:
+        reason = js_response.status_text or ""
+        return reason
+    except Exception:
+        return ""
+
+
+def read_body(js_response):
+    try:
+        return run_sync(js_response.bytes())
+    except Exception:
+        response_body = b""
+        return b""

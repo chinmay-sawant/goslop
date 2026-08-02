@@ -1,0 +1,17 @@
+# goslop text fixture — rendercv hypothesis "never crashes" property tests.
+lang: python
+file: tests/renderer/test_markdown_parser.py
+---
+from hypothesis import given, settings
+import hypothesis.strategies as st
+
+
+@settings(deadline=None)
+@given(text=st.text(min_size=0, max_size=50))
+def test_never_crashes_on_arbitrary_input(text: str) -> None:
+    escape_typst_characters(text)
+
+
+def test_silently_ignores_os_error(monkeypatch):
+    monkeypatch.setattr("pkg.get_cache", lambda: "/nonexistent/path")
+    write_version_cache("2.0.0")

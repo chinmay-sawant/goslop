@@ -1,0 +1,7 @@
+# goslop text fixture — same handle closed twice on one sequential path
+lang: python
+file: CWE-1341-retry-close-vulnerable.py
+---
+def teardown(connection):
+    connection.close()
+    connection.close()

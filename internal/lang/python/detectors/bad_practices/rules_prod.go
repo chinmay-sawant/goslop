@@ -195,7 +195,8 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	src := unit.Source
 	msg := "TLS verification disabled; do not use verify=False or CERT_NONE in production"
 
-	// Line-oriented reporting for clear locations; also covers multi-kwarg calls on one line.
+	// Raw lines: Mask blanks string contents and would hide cert_reqs="CERT_NONE"
+	// (httpmorph urllib3_bench TPs). Prose is filtered with stripPythonStringLiterals.
 	lines := codeLinesFacts(facts, src)
 	seen := map[int]struct{}{}
 	report := func(byteOff int) {
@@ -209,11 +210,12 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
-		if t == "" {
+		if t == "" || strings.HasPrefix(t, "#") {
 			continue
 		}
-		if verifyFalseRe.MatchString(t) {
-			// Fingerprint pinning assigns verify=False next to assert_fingerprint.
+		// Code-only view: string/prose mentions of verify=False drop out.
+		code := stripPythonStringLiterals(t)
+		if verifyFalseRe.MatchString(code) {
 			if tlsFingerprintPinNearby(lines, line) || tlsVerifyFalseIsLocalAssign(t) {
 				continue
 			}
@@ -222,7 +224,7 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			continue
 		}
-		if unverifiedContextRe.MatchString(t) {
+		if unverifiedContextRe.MatchString(code) {
 			if loc := unverifiedContextRe.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
@@ -230,9 +232,10 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		if certNoneRe.MatchString(t) {
 			// State comparisons (cert_reqs != "CERT_NONE") are not disables.
-			if strings.Contains(t, "!=") || strings.Contains(t, "==") {
+			if strings.Contains(code, "!=") || strings.Contains(code, "==") {
 				continue
 			}
+			// Real disable: CERT_NONE as kwarg/assignment value (keep quotes).
 			if tlsFingerprintPinNearby(lines, line) {
 				continue
 			}
@@ -241,19 +244,49 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			continue
 		}
-		if assertHostnameFalse.MatchString(t) {
+		if assertHostnameFalse.MatchString(code) {
 			if loc := assertHostnameFalse.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
 		}
 	}
 
-	// Multi-line call: verify=False may sit alone on a continued line already covered above.
-	// Also catch source-wide when only multi-line patterns exist without line trim issues.
-	// Do not resurrect fingerprint-pinning or local verify=False assignments skipped above.
 	if len(seen) == 0 {
 		reportTLSFallbackHit(src, report)
 	}
+}
+
+// stripPythonStringLiterals blanks quoted regions so prose like
+// raise SSLError("use verify=False") does not look like a kwarg.
+func stripPythonStringLiterals(s string) string {
+	b := []byte(s)
+	in := byte(0)
+	esc := false
+	for i := 0; i < len(b); i++ {
+		c := b[i]
+		if in != 0 {
+			if esc {
+				esc = false
+				b[i] = ' '
+				continue
+			}
+			if c == '\\' {
+				esc = true
+				b[i] = ' '
+				continue
+			}
+			if c == in {
+				in = 0
+			}
+			b[i] = ' '
+			continue
+		}
+		if c == '"' || c == '\'' {
+			in = c
+			b[i] = ' '
+		}
+	}
+	return string(b)
 }
 
 func reportTLSFallbackHit(src string, report func(int)) {

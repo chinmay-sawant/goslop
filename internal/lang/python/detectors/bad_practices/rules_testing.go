@@ -48,11 +48,17 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if !strings.HasPrefix(t, "def test_") && !strings.HasPrefix(t, "async def test_") {
 			continue
 		}
+		name, hasName := pythonDefFuncName(t)
 		// Entry-point / import smoke tests only touch API symbols (niquests
 		// test_entry_points) — audited FPs; not placeholder tests.
-		if name, ok := pythonDefFuncName(t); ok {
+		if hasName {
 			if strings.Contains(name, "entry_point") || strings.Contains(name, "import_smoke") ||
 				name == "test_imports" || name == "test_public_api" {
+				continue
+			}
+			// Property / no-raise names are intentional "must not crash" checks
+			// (rendercv test_never_crashes_*, test_silently_ignores_*).
+			if isNoRaiseSmokeTestName(name) {
 				continue
 			}
 		}
@@ -61,6 +67,10 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		hasAssert := false
 		hasCall := false
 		bodyIndent := -1
+		hasRetryLoop := false
+		hasPytestFail := false
+		hasSocketInfra := false
+		hasServerInfra := false
 		var strCarry pyTripleQuoteCarry
 		for j := i + 1; j < len(lines); j++ {
 			raw := lines[j].raw
@@ -100,6 +110,19 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				hasAssert = true
 				break
 			}
+			if strings.HasPrefix(st, "for ") || strings.HasPrefix(st, "while ") {
+				hasRetryLoop = true
+			}
+			if strings.Contains(st, "pytest.fail(") {
+				hasPytestFail = true
+			}
+			if strings.Contains(st, "socket.") || strings.Contains(st, "socket(") {
+				hasSocketInfra = true
+			}
+			if strings.Contains(st, "Server.") || strings.Contains(st, "threading.Event") ||
+				strings.Contains(st, "wait_to_close") {
+				hasServerInfra = true
+			}
 			if looksLikeSideEffectCall(st) {
 				hasCall = true
 			}
@@ -111,6 +134,16 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		// niquests.Session / niquests.get without call parens) have no
 		// side-effect call and should not fire; only call-shaped bodies do.
 		if hasCall && !hasAssert {
+			// niquests unicode_/redirect pure-call smokes: no retry loop and no
+			// pytest.fail. httpmorph test_*_redirect with for+pytest.fail keep firing.
+			if hasName && isHTTPClientEncodingSmokeName(name) && !hasRetryLoop && !hasPytestFail {
+				continue
+			}
+			// Server wait infrastructure (niquests test_basic_waiting_server):
+			// socket + Event/Server only, no product assert required.
+			if hasSocketInfra && hasServerInfra && !hasPytestFail {
+				continue
+			}
 			pushAt(unit, meta, line.byte,
 				"test function appears to only perform side effects without assertions (heuristic/info); add assert or pytest.raises",
 				out)
@@ -118,10 +151,39 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
+// isNoRaiseSmokeTestName reports intentional "must not crash / silently ignore"
+// tests (rendercv hypothesis never_crashes, silently_ignores OSError).
+func isNoRaiseSmokeTestName(name string) bool {
+	n := strings.ToLower(name)
+	for _, m := range []string{
+		"never_crash", "does_not_raise", "doesnt_raise", "no_raise",
+		"without_raising", "silently_ignore", "should_not_raise",
+	} {
+		if strings.Contains(n, m) {
+			return true
+		}
+	}
+	return false
+}
+
+// isHTTPClientEncodingSmokeName reports niquests-style encoding/redirect API
+// smokes whose body is a pure client call (or close) with no assert. Does not
+// alone silence retry+pytest.fail redirect tests (httpmorph TPs).
+func isHTTPClientEncodingSmokeName(name string) bool {
+	n := strings.ToLower(name)
+	return strings.Contains(n, "unicode") ||
+		strings.Contains(n, "pyopenssl") ||
+		strings.Contains(n, "redirect") ||
+		strings.Contains(n, "explicit_close") ||
+		strings.Contains(n, "streaming_response")
+}
+
 // isHTTPResponseAssertion reports a pure expression that inspects the response
 // body (niquests test_decompress_gzip: r.content.decode(...)). Assignments
 // like data = response.json() inside retry loops are not assertions
 // (httpmorph test_async_post_via_real_proxy TP).
+// Note: bare .close() is NOT an assertion — movielite benchmark clip.close()
+// bodies remain TPs; niquests stream-close smokes are name-gated instead.
 func isHTTPResponseAssertion(st string) bool {
 	if strings.HasPrefix(st, "if ") || strings.HasPrefix(st, "elif ") ||
 		strings.HasPrefix(st, "while ") || strings.HasPrefix(st, "for ") {

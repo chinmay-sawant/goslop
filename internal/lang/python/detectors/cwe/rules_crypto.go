@@ -62,6 +62,12 @@ func detectCWE295(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	masked := facts.Masked
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
+			// assert verify_mode == ssl.CERT_NONE (httptap tests) is state
+			// comparison, not a production disable. Real disables assign
+			// verify_mode = CERT_NONE (httpmorph mock-server / urllib benches).
+			if marker == "ssl.CERT_NONE" && tlsMarkerIsStateComparison(masked, start) {
+				continue
+			}
 			emitCryptoFinding(unit, &MetaCWE295, start, "TLS certificate validation is explicitly disabled", confidence84, out)
 			return
 		}
@@ -89,6 +95,21 @@ func dualModeTLSHelper(src string) bool {
 		strings.Contains(src, "if verify_tls") || strings.Contains(src, "if not verify_tls") ||
 		strings.Contains(src, "if ssl_verify") || strings.Contains(src, "if not ssl_verify")
 	return hasSwitch && hasSecureBranch && hasBranch
+}
+
+// tlsMarkerIsStateComparison reports CERT_NONE / similar markers used only in
+// equality checks (== / !=), not as verification disables (x = CERT_NONE).
+func tlsMarkerIsStateComparison(src string, offset int) bool {
+	if offset < 0 || offset >= len(src) {
+		return false
+	}
+	lineStart := strings.LastIndex(src[:offset], "\n") + 1
+	lineEnd := len(src)
+	if next := strings.IndexByte(src[offset:], '\n'); next >= 0 {
+		lineEnd = offset + next
+	}
+	line := src[lineStart:lineEnd]
+	return strings.Contains(line, "==") || strings.Contains(line, "!=")
 }
 
 // CWE-328 reports legacy MD5 and SHA-1 hash construction only when the call

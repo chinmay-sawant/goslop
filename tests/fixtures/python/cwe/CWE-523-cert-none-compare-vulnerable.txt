@@ -1,0 +1,12 @@
+# goslop text fixture — CERT_NONE assignment disables TLS verification
+lang: python
+file: client.py
+---
+import ssl
+
+
+def open_insecure(url):
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return urllib.request.urlopen(url, context=ctx)

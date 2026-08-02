@@ -253,7 +253,7 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 	hasLog := strings.Contains(allText, "exc_info") || strings.Contains(allText, ".exception(") ||
 		strings.Contains(allText, "log.") || strings.Contains(allText, "logger.") ||
 		strings.Contains(allText, "logging.") || strings.Contains(allText, "traceback.print_exc")
-	hasPrint := strings.Contains(allText, "print(")
+	hasPrint := strings.Contains(allText, "print(") || strings.Contains(allText, "console.print(")
 	hasExitFlow := false
 	for _, rt := range bodyRaw {
 		if strings.HasPrefix(rt, "continue") || strings.HasPrefix(rt, "break") ||
@@ -261,6 +261,11 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 			strings.Contains(rt, "sys.exit(") {
 			hasExitFlow = true
 		}
+	}
+	// Nested returns under if/for inside the suite also exit the enclosing
+	// function (WeThePeople orchestrator veritas_strict path).
+	if !hasExitFlow && suiteLineReturnRE.MatchString(allText) {
+		hasExitFlow = true
 	}
 
 	// Suite-level raise: raise-only handlers stay reportable; cleanup /
@@ -304,12 +309,14 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 	}
 
 	// Print of the exception. Only stderr reporting followed by an exit
-	// flow, or a lone print inside an except ladder, is safe; every other
-	// print handler stays reportable.
+	// flow, a lone print inside an except ladder, or logger.exception +
+	// user-facing print + exit (httptap cli.py:589) is safe; every other
+	// print handler stays reportable. logger.exception + return None
+	// without print stays reportable (WeThePeople veritas_bridge).
 	printStmts := 0
 	stderrPrint := false
 	for i := range body {
-		if strings.Contains(body[i], "print(") {
+		if strings.Contains(body[i], "print(") || strings.Contains(body[i], "console.print(") {
 			printStmts++
 			if strings.Contains(bodyRaw[i], "file=sys.stderr") {
 				stderrPrint = true
@@ -323,7 +330,24 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 		if stmtCount == 1 && printStmts == 1 && exceptNestedInExceptSuite(lines, exceptIdx) {
 			return true
 		}
+		if strings.Contains(allText, ".exception(") && hasExitFlow {
+			return true
+		}
 		return false
+	}
+
+	// Soft best-effort log after overriding a pre-initialized local via a
+	// path-gated optional-import enrichment try (Project_Parva middleware:794
+	// — if path: import + override default, logger.warning, flow continues).
+	// Unconditional lazy-import + warning (WeThePeople token signing) and
+	// warning after non-import work stay reportable.
+	tryIdxSoft := enclosingTryIdx(lines, exceptIdx)
+	if softBestEffortLogContinue(allText) && !hasRaise && !hasExitFlow &&
+		suiteHasContinuationAfter(lines, after, exceptIndent) &&
+		tryIdxSoft >= 0 && tryNestedUnderIf(lines, tryIdxSoft) &&
+		tryBlockHasImportStmt(lines, tryIdxSoft) &&
+		tryBlockOverridesPreinitializedLocal(lines, tryIdxSoft) {
+		return true
 	}
 
 	// Exception-type extraction feeding a failure counter (rnet_test.py:37):
@@ -337,8 +361,30 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 		if strings.Contains(joinedRaw, "error="+caughtVar) {
 			return true
 		}
+		// error=str(exc) only when transported via append payload — bare
+		// return ApiResult(error=str(e)) stays reportable (WeThePeople
+		// regulationsgov / connectors).
+		if strings.Contains(joinedRaw, "error=str("+caughtVar+")") &&
+			strings.Contains(allRaw, ".append(") {
+			return true
+		}
 		if strings.Contains(allRaw, "append("+caughtVar) {
 			return true
+		}
+		// Structured result recording "error": str(exc):
+		//   - results.append({name, passed, error}) (rulelang run_rule_tests)
+		//   - multi-statement outcome build without return/exit (rulelang
+		//     validate_date: value/warnings/confidence then fall through)
+		// Health-check appends without name=, return {"error": str(e)}, and
+		// rejection_detail={"error":...}; return stay reportable (WeThePeople).
+		if (strings.Contains(allRaw, `"error":`) || strings.Contains(allRaw, `'error':`)) &&
+			lineReferencesVar(allRaw, caughtVar) {
+			namedAppend := strings.Contains(allRaw, ".append(") &&
+				(strings.Contains(allRaw, `"name":`) || strings.Contains(allRaw, `'name':`) ||
+					strings.Contains(allRaw, `"name" :`) || strings.Contains(allRaw, `'name' :`))
+			if namedAppend || (stmtCount >= 2 && !hasExitFlow) {
+				return true
+			}
 		}
 		// Single-statement raw capture x = e (evidence capture / transport).
 		if stmtCount == 1 && assignsRawVar(bodyRaw[0], caughtVar) {
@@ -354,14 +400,21 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 		}
 	}
 	// Optional-import fallback: ImportError/ModuleNotFoundError + import-only
-	// try + return fallback. Broad Exception around import stays reportable
+	// try + return fallback. Broad Exception around import-only with a
+	// constant/list fallback is the langchain/llamaindex optional-deps shape;
+	// Exception around import + non-fallback body stays reportable
 	// (pdf_oxide / violit / WeThePeople optional-import TPs).
 	if stmtCount == 1 && strings.HasPrefix(strings.TrimSpace(bodyRaw[0]), "return") {
 		tryIdxImp := enclosingTryIdx(lines, exceptIdx)
 		exceptLine := strings.TrimSpace(lines[exceptIdx].text)
-		if tryIdxImp >= 0 && tryBlockIsImportOnly(lines, tryIdxImp) &&
-			importErrorCatch(exceptCatchTypes(exceptLine)) {
-			return true
+		catchTypesImp := exceptCatchTypes(exceptLine)
+		if tryIdxImp >= 0 && tryBlockIsImportOnly(lines, tryIdxImp) {
+			if importErrorCatch(catchTypesImp) {
+				return true
+			}
+			if broadExceptionCatch(catchTypesImp) && isImportOptionalFallbackReturn(bodyRaw[0]) {
+				return true
+			}
 		}
 	}
 
@@ -372,13 +425,24 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 		return true
 	}
 	// Documented defensive constant fallback after a pure probe try
-	// (httptap: cert_info = None with "defensive"/"best effort" marker).
-	// Without a marker, Exception: x = None stays reportable.
-	if stmtCount == 1 && isDefinedConstantAssign(bodyRaw[0]) {
+	// (httptap: cert_info = None / return None with "defensive"/"best effort"
+	// marker). Without a marker, Exception: x = None stays reportable.
+	if stmtCount == 1 && (isDefinedConstantAssign(bodyRaw[0]) || isDefinedConstantReturn(bodyRaw[0])) {
 		tryIdxProbe := enclosingTryIdx(lines, exceptIdx)
-		exceptIndent := indentWidth(lines[exceptIdx].raw)
+		exceptIndentProbe := indentWidth(lines[exceptIdx].raw)
 		if tryIdxProbe >= 0 && tryBlockIsProbe(lines, tryIdxProbe) &&
-			exceptLineHasFallbackMarker(rawLines, exceptIdx, exceptIndent) {
+			exceptLineHasFallbackMarker(rawLines, exceptIdx, exceptIndentProbe) {
+			return true
+		}
+	}
+
+	// Documented defensive multi-statement cleanup that never logs/prints/
+	// re-raises and does not bind the exception (niquests wasi upload
+	// cleanup: failed = True; notify callback). Only the narrow "defensive"
+	// / "no cover" markers — not generic "fallback" comments (WeThePeople).
+	if !hasLog && !hasPrint && !hasRaise &&
+		exceptLineHasDefensiveMarker(rawLines, exceptIdx, exceptIndent) {
+		if caughtVar == "" || !lineReferencesVar(allRaw, caughtVar) {
 			return true
 		}
 	}
@@ -387,23 +451,238 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 	// pass swallow (niquests extensions/pyodide getReader / to_py FPs).
 	// Requires an explicit JS-bridge signal so ordinary Exception:pass handlers
 	// (WeThePeople TPs) stay reportable. CWE-396 is intentionally not mirrored.
+	// Constant return is accepted even when the try body nests async with
+	// timeout (pyodide _get_next_chunk) — the bridge signal is the gate.
 	tryIdx := enclosingTryIdx(lines, exceptIdx)
-	if tryIdx >= 0 && tryBlockIsProbe(lines, tryIdx) && tryBlockHasJSBridgeSignal(lines, tryIdx) {
-		if !suiteNotPassOnly(body) {
-			return true
-		}
-		// Use raw suite text: pytext.Mask blanks string literals, so
-		// `response.reason = ""` / `body = b""` look non-constant on masked lines.
+	if tryIdx >= 0 && tryBlockHasJSBridgeSignal(lines, tryIdx) {
 		if stmtCount == 1 && isDefinedConstantReturn(bodyRaw[0]) {
 			return true
 		}
-		// `except Exception: response.reason = ""` / `body = b""` after a
-		// status_text / bytes() JS probe (niquests pyodide send path).
-		if stmtCount == 1 && isDefinedConstantAssign(bodyRaw[0]) {
+		if tryBlockIsProbe(lines, tryIdx) {
+			if !suiteNotPassOnly(body) {
+				return true
+			}
+			// Use raw suite text: pytext.Mask blanks string literals, so
+			// `response.reason = ""` / `body = b""` look non-constant on masked lines.
+			if stmtCount == 1 && isDefinedConstantAssign(bodyRaw[0]) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// softBestEffortLogContinue reports logger.warning-only handlers (not info/
+// debug, not .exception/.error/.critical/exc_info). Optional non-fatal surfaces.
+// info/debug alone stays reportable (WeThePeople claims/database lookup TPs).
+func softBestEffortLogContinue(allText string) bool {
+	if !strings.Contains(allText, ".warning(") {
+		return false
+	}
+	for _, hard := range []string{".exception(", ".error(", ".critical(", "exc_info", "traceback.print_exc",
+		".info(", ".debug("} {
+		if hard == ".warning(" {
+			continue
+		}
+		if strings.Contains(allText, hard) {
+			return false
+		}
+	}
+	return strings.Contains(allText, "logger.") ||
+		strings.Contains(allText, "log.") ||
+		strings.Contains(allText, "logging.")
+}
+
+// suiteHasContinuationAfter reports that more code runs after the except suite
+// at the try/except indentation level (or outer), i.e. the handler is not the
+// terminal body of the enclosing function.
+func suiteHasContinuationAfter(lines []codeLine, after, exceptIndent int) bool {
+	for j := after; j < len(lines); j++ {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind > exceptIndent {
+			continue
+		}
+		if ind < exceptIndent {
+			if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") ||
+				strings.HasPrefix(t, "class ") {
+				return false
+			}
+			return true
+		}
+		// Same indent as except: sibling clause or next statement after try.
+		if strings.HasPrefix(t, "except") || strings.HasPrefix(t, "finally:") ||
+			t == "else:" || strings.HasPrefix(t, "else:") {
+			continue
+		}
+		if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") ||
+			strings.HasPrefix(t, "class ") {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+// tryNestedUnderIf reports that the try header sits inside an if/elif suite
+// (conditional optional surface), not at the bare function body level.
+func tryNestedUnderIf(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	for j := tryIdx - 1; j >= 0; j-- {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind >= tryIndent {
+			continue
+		}
+		return strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ")
+	}
+	return false
+}
+
+// tryBlockHasImportStmt reports that the try body contains an import / from
+// / import_module statement.
+func tryBlockHasImportStmt(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			return false
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		if importLikeStmt(stmt) {
 			return true
 		}
 	}
 	return false
+}
+
+// tryBlockOverridesPreinitializedLocal reports a try body that assigns to a
+// simple name which was already assigned before the try (best-effort override
+// of a default). Used with soft-log continue for optional surfaces.
+func tryBlockOverridesPreinitializedLocal(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	// Names assigned inside the try (direct body).
+	assigned := map[string]bool{}
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			break
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		if stmtHasSideEffectSink(stmt) {
+			return false
+		}
+		if lhs, _, ok := splitAssignmentEq(stmt); ok {
+			name := strings.TrimSpace(lhs)
+			if i := strings.Index(name, ":"); i >= 0 {
+				name = strings.TrimSpace(name[:i])
+			}
+			if isSimpleIdent(name) {
+				assigned[name] = true
+			}
+		}
+	}
+	if len(assigned) == 0 {
+		return false
+	}
+	// Look upward for a prior assignment of the same simple name at a
+	// strictly outer indent (pre-initialized default before this try).
+	// Same-indent assignments are sibling try bodies / loop peers and must
+	// not count (WeThePeople detect_stories multi-detector loop TPs).
+	for j := tryIdx - 1; j >= 0; j-- {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind >= tryIndent {
+			continue
+		}
+		if strings.HasPrefix(mt, "def ") || strings.HasPrefix(mt, "async def ") ||
+			strings.HasPrefix(mt, "class ") {
+			break
+		}
+		if lhs, _, ok := splitAssignmentEq(mt); ok {
+			name := strings.TrimSpace(lhs)
+			if i := strings.Index(name, ":"); i >= 0 {
+				name = strings.TrimSpace(name[:i])
+			}
+			if assigned[name] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// exceptLineHasDefensiveMarker is a narrow subset of fallback markers used for
+// multi-statement cleanup exemptions. Generic "fallback"/"best effort" prose
+// is too common in WeThePeople comments to gate BP-PY-1 alone.
+func exceptLineHasDefensiveMarker(rawLines []codeLine, exceptIdx, exceptIndent int) bool {
+	// Intentionally omits "fallback"/"best effort"/"non-fatal" — those appear
+	// in ordinary WeThePeople comments and log messages.
+	markers := []string{"no cover", "defensive"}
+	if lineHasFallbackMarkerText(rawLines[exceptIdx].raw, markers) {
+		return true
+	}
+	for j := exceptIdx + 1; j < len(rawLines); j++ {
+		if strings.TrimSpace(rawLines[j].raw) == "" {
+			continue
+		}
+		if indentWidth(rawLines[j].raw) <= exceptIndent {
+			break
+		}
+		if lineHasFallbackMarkerText(rawLines[j].raw, markers) {
+			return true
+		}
+	}
+	return false
+}
+
+// isImportOptionalFallbackReturn reports return None/[]/{}/list-comp fallbacks
+// used when an optional framework import is missing (langchain/llamaindex).
+func isImportOptionalFallbackReturn(stmt string) bool {
+	if isDefinedConstantReturn(stmt) {
+		return true
+	}
+	t := strings.TrimSpace(stmt)
+	if !strings.HasPrefix(t, "return ") {
+		return t == "return"
+	}
+	rest := strings.TrimSpace(t[len("return "):])
+	// list / dict / tuple display forms and comprehensions
+	return strings.HasPrefix(rest, "[") || strings.HasPrefix(rest, "{") || strings.HasPrefix(rest, "(")
 }
 
 // isDefinedConstantAssign reports `name = <constant>` (or attr = constant).
@@ -449,6 +728,10 @@ func suiteNotPassOnly(body []string) bool {
 
 // suiteLineRaiseRE matches a suite statement that is a raise.
 var suiteLineRaiseRE = regexp.MustCompile(`(?m)^raise\b`)
+
+// suiteLineReturnRE matches a suite statement that is a return (any indent in
+// the joined suite text which has already been left-trimmed per line).
+var suiteLineReturnRE = regexp.MustCompile(`(?m)^return\b`)
 
 // wrappedRaiseStatement reports a raise of a newly constructed exception
 // (`raise Type(...)`, `raise X from e`) — a translation, not a bare
@@ -656,6 +939,9 @@ func tryBlockDeliberatelyRaises(lines []codeLine, exceptIdx int) bool {
 //     that terminate their method (connection.py:459) stay reportable;
 //   - pure conversion guards (int/float/bool) whose invalid input is non-fatal
 //     and the enclosing flow continues (parva-mcp content-length parse);
+//   - sole ValueError after a pure .index()/.find() lookup probe (kiss_headers
+//     header_strip); fromisoformat/ipaddress ValueError:pass stays reportable
+//     (WeThePeople TPs);
 //   - try/except/else recovery where pass is the failure arm and else is the
 //     success arm (re-validate-then-redownload FPs);
 //   - best-effort Exception/BaseException probes whose try body is a pure
@@ -664,11 +950,14 @@ func tryBlockDeliberatelyRaises(lines []codeLine, exceptIdx int) bool {
 //     (__aexit__/close) stay reportable (wse connection.py);
 //   - best-effort RequestException fetches (single-statement try block);
 //   - documented optional/defensive fallbacks (httptap / "Fall back" markers);
-//   - expected-exception tests whose try block deliberately raises.
+//   - expected-exception tests whose try block deliberately raises;
+//   - expected-exception async tests whose try is a single await call with a
+//     specific (non-broad) catch (niquests wasi_guest edge_cases); bare /
+//     Exception:pass in tests stay reportable (httpmorph test_proxy).
 //
 // Generic ValueError:pass after fromisoformat/strptime stays reportable
 // (WeThePeople TPs).
-func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest bool) bool {
+func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest, isTestDir bool) bool {
 	exceptLine := strings.TrimSpace(lines[exceptIdx].text)
 	if isTest && tryBlockDeliberatelyRaises(lines, exceptIdx) {
 		return true
@@ -700,6 +989,10 @@ func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest bool) 
 	if tryIdx >= 0 && terminationCatchOnly(catchTypes) && tryBlockIsIteratorNextProbe(lines, tryIdx) {
 		return true
 	}
+	// Pure cancel/generator-exit wait (sgi lifespan await Future forever).
+	if tryIdx >= 0 && terminationCatchOnly(catchTypes) && tryBlockIsAsyncCancelWait(lines, tryIdx) {
+		return true
+	}
 	if asyncShutdownCatch(catchTypes) {
 		return true
 	}
@@ -709,6 +1002,14 @@ func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest bool) 
 	}
 	// Best-effort close()/aclose() that ignores OSError (testserver teardown).
 	if osErrorCatch(catchTypes) && tryIdx >= 0 && tryBlockIsCloseOnly(lines, tryIdx) {
+		return true
+	}
+	// Expected-exception async test paths: single await call, specific catch,
+	// only under tests/ directories (niquests wasi_guest edge_cases).
+	// Scripts named *_test.py (Project_Parva load_test) and bare/Exception:pass
+	// tests (httpmorph test_proxy) stay reportable; sync chaos swallows stay.
+	if isTestDir && tryIdx >= 0 && tryBlockIsSingleAwaitCall(lines, tryIdx) &&
+		!broadExceptionCatch(catchTypes) && !isBareExceptClause(exceptLine) {
 		return true
 	}
 	if probeCatch(catchTypes) {
@@ -738,6 +1039,11 @@ func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest bool) 
 			(onlyTypeErrorCatch(catchTypes) || onlyOSErrorCatch(catchTypes)) {
 			return true
 		}
+		// Sole ValueError after a pure .index()/.find() lookup (kiss_headers
+		// header_strip). ipaddress/fromisoformat ValueError:pass stay reportable.
+		if tryIdx >= 0 && onlyValueErrorCatch(catchTypes) && tryBlockIsIndexLookupProbe(lines, tryIdx) {
+			return true
+		}
 		// Best-effort network/JSON enrichment (single-stmt RequestException, or
 		// multi-stmt RequestException+JSONDecodeError+HTTPError update checks).
 		if bestEffortNetworkCatch(catchTypes) && tryIdx >= 0 &&
@@ -754,6 +1060,151 @@ func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest bool) 
 		return true
 	}
 	return false
+}
+
+// isBareExceptClause reports `except:` / `except :` with no type list.
+func isBareExceptClause(t string) bool {
+	t = strings.TrimSpace(t)
+	if !strings.HasPrefix(t, "except") {
+		return false
+	}
+	rest := strings.TrimSpace(strings.TrimPrefix(t, "except"))
+	return rest == ":" || strings.HasPrefix(rest, ":")
+}
+
+// onlyValueErrorCatch reports a catch list that is exactly ValueError.
+func onlyValueErrorCatch(types []string) bool {
+	return len(types) == 1 && types[0] == "ValueError"
+}
+
+// tryBlockIsIndexLookupProbe reports a single-statement try body that only
+// probes str/list membership via .index()/.find()/.rindex()/.rfind().
+func tryBlockIsIndexLookupProbe(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	stmts := 0
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			break
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		stmts++
+		if stmts > 1 {
+			return false
+		}
+		if stmtHasSideEffectSink(stmt) {
+			return false
+		}
+		// Assignment preferred: x = s.index(...)
+		_, rhs, ok := splitAssignmentEq(stmt)
+		if !ok {
+			rhs = stmt
+		}
+		if !indexLookupCallIn(rhs) {
+			return false
+		}
+	}
+	return stmts == 1
+}
+
+func indexLookupCallIn(expr string) bool {
+	for _, m := range []string{".index(", ".rindex(", ".find(", ".rfind("} {
+		if strings.Contains(expr, m) {
+			return true
+		}
+	}
+	return false
+}
+
+// tryBlockIsAsyncCancelWait reports a single-await try body that waits on a
+// Future/Event/sleep until cancelled (sgi lifespan shutdown path).
+func tryBlockIsAsyncCancelWait(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	stmts := 0
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			break
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		stmts++
+		if stmts > 1 {
+			return false
+		}
+		if !strings.HasPrefix(stmt, "await ") {
+			return false
+		}
+		rest := strings.TrimSpace(stmt[len("await "):])
+		// asyncio.Future() / loop.create_future() / event.wait() / asyncio.sleep
+		if strings.Contains(rest, "Future(") || strings.Contains(rest, "create_future(") ||
+			strings.HasSuffix(rest, ".wait()") || strings.Contains(rest, ".wait(") ||
+			strings.Contains(rest, "asyncio.sleep(") || strings.Contains(rest, "sleep(") {
+			continue
+		}
+		return false
+	}
+	return stmts == 1
+}
+
+// tryBlockIsSingleAwaitCall reports a try body that is exactly one await
+// expression (no assert) — expected-exception async test shape.
+func tryBlockIsSingleAwaitCall(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	stmts := 0
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			break
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		stmts++
+		if stmts > 1 {
+			return false
+		}
+		if strings.HasPrefix(stmt, "assert ") || strings.Contains(stmt, ".assert") {
+			return false
+		}
+		if strings.HasPrefix(stmt, "raise ") || stmt == "raise" {
+			return false
+		}
+		if !strings.HasPrefix(stmt, "await ") {
+			return false
+		}
+	}
+	return stmts == 1
 }
 
 // exceptFollowedByElse reports a try/except/else where the except suite is
@@ -1796,6 +2247,7 @@ func detectBPPY2(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	lines := buildCodeLines(pytext.Mask(unit.Source))
 	rawLines := codeLinesFacts(facts, unit.Source)
 	isTest := isPythonTestFile(unit)
+	isTestDir := isPythonTestDirPath(unit)
 	for i, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if !strings.HasPrefix(t, "except") || !strings.Contains(t, ":") {
@@ -1825,7 +2277,7 @@ func detectBPPY2(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				break
 			}
 		}
-		if len(suite) == 1 && suite[0] == "pass" && !exceptPassIsSafeBP(lines, rawLines, i, isTest) {
+		if len(suite) == 1 && suite[0] == "pass" && !exceptPassIsSafeBP(lines, rawLines, i, isTest, isTestDir) {
 			pushAt(unit, meta, line.byte, "except handler body is only pass; failures are discarded silently", out)
 		}
 	}

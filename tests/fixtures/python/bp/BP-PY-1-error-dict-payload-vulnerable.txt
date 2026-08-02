@@ -1,0 +1,13 @@
+# goslop text fixture — broad except with only a local flag, no error payload
+# transport; must fire BP-PY-1
+lang: python
+file: rule_runner.py
+---
+def run_rule_tests(rule, tests):
+    results = []
+    for test_case in tests:
+        try:
+            results.append(execute_rule(rule, test_case))
+        except Exception:
+            failed = True
+    return results

@@ -69,6 +69,20 @@ func TestBPPY41TestWithoutAssert(t *testing.T) {
 	raisesHelperVuln := loadBPFixture(t, "BP-PY-41-pytest-raises-helper", true)
 	assertRule(t, "BP-PY-41", raisesHelperVuln.path, raisesHelperVuln.body, true)
 
+	// niquests unicode_/redirect pure-call smokes; stream close; server wait;
+	// rendercv never_crashes / silently_ignores names
+	for _, caseName := range []string{
+		"BP-PY-41-http-encoding-smoke",
+		"BP-PY-41-stream-close",
+		"BP-PY-41-server-wait-smoke",
+		"BP-PY-41-never-crashes",
+	} {
+		safeCase := loadBPFixture(t, caseName, false)
+		vulnCase := loadBPFixture(t, caseName, true)
+		assertRule(t, "BP-PY-41", safeCase.path, safeCase.body, false)
+		assertRule(t, "BP-PY-41", vulnCase.path, vulnCase.body, true)
+	}
+
 	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-41" && f.Severity != rules.SeverityInfo {

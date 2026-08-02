@@ -1,0 +1,8 @@
+# goslop text fixture — package module with function-body print (library debug).
+lang: python
+file: src/mypkg/worker.py
+---
+def process_batch(items):
+    for item in items:
+        print(f"processing {item}")
+    return len(items)

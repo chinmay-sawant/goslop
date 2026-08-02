@@ -1,0 +1,10 @@
+# goslop text fixture — generic catch without dual-mode SSL helper stays
+# reportable (no verify_ssl switch / CERT_NONE pair)
+lang: python
+file: plain_service.py
+---
+def load_settings(path):
+    try:
+        return open(path).read()
+    except Exception:
+        return "defaults"

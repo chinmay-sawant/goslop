@@ -32,6 +32,11 @@ func TestBPFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "BP-PY-1", caseName: "BP-PY-1-log-reraise"},
 		{rule: "BP-PY-1", caseName: "BP-PY-1-js-bridge-probe"},
 		{rule: "BP-PY-1", caseName: "BP-PY-1-return-constant-fallback"},
+		{rule: "BP-PY-1", caseName: "BP-PY-1-soft-warning-continue"},
+		{rule: "BP-PY-1", caseName: "BP-PY-1-error-dict-payload"},
+		{rule: "BP-PY-1", caseName: "BP-PY-1-import-exception-fallback"},
+		{rule: "BP-PY-1", caseName: "BP-PY-1-exception-print-exit"},
+		{rule: "BP-PY-1", caseName: "BP-PY-1-defensive-return-none"},
 		{rule: "BP-PY-2", caseName: "BP-PY-2-import-fallback"},
 		{rule: "BP-PY-2", caseName: "BP-PY-2-parsing-fallback"},
 		{rule: "BP-PY-2", caseName: "BP-PY-2-expected-exception"},
@@ -40,6 +45,9 @@ func TestBPFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "BP-PY-2", caseName: "BP-PY-2-fall-back-marker"},
 		{rule: "BP-PY-2", caseName: "BP-PY-2-conversion-guard"},
 		{rule: "BP-PY-2", caseName: "BP-PY-2-except-else"},
+		{rule: "BP-PY-2", caseName: "BP-PY-2-index-lookup-pass"},
+		{rule: "BP-PY-2", caseName: "BP-PY-2-async-cancel-wait"},
+		{rule: "BP-PY-2", caseName: "BP-PY-2-await-expected-exception"},
 		{rule: "BP-PY-32", caseName: "BP-PY-32-confined-basename"},
 		{rule: "BP-PY-32", caseName: "BP-PY-32-constant-dir"},
 		{rule: "BP-PY-2", caseName: "BP-PY-2-attr-probe"},
@@ -96,7 +104,11 @@ func TestBPFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "BP-PY-12", caseName: "BP-PY-12-builtins-exec"},
 		{rule: "BP-PY-11", caseName: "BP-PY-11-ruamel"},
 		{rule: "BP-PY-13", caseName: "BP-PY-13-bench-secret"},
+		{rule: "BP-PY-13", caseName: "BP-PY-13-env-key-name"},
+		{rule: "BP-PY-13", caseName: "BP-PY-13-concat-token"},
+		{rule: "BP-PY-13", caseName: "BP-PY-13-fstring-secret"},
 		{rule: "BP-PY-49", caseName: "BP-PY-49-fingerprint-pin"},
+		{rule: "BP-PY-49", caseName: "BP-PY-49-error-message"},
 	} {
 		tc := tc
 		t.Run(tc.caseName, func(t *testing.T) {

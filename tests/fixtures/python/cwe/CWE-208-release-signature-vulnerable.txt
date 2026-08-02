@@ -1,0 +1,6 @@
+# goslop text fixture — live auth signature compare outside release tooling
+lang: python
+file: backend/app/auth/verify.py
+---
+def verify_request(request_signature, expected_signature):
+    return request_signature == expected_signature

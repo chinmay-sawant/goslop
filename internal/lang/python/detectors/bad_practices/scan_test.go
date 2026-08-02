@@ -216,6 +216,9 @@ func TestBPPY13HardcodedSecret(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13")
 	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-placeholder")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-env-key-name")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-concat-token")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-fstring-secret")
 }
 
 func TestBPPY16FlaskDebug(t *testing.T) {

@@ -1,0 +1,16 @@
+# goslop text fixture — logger.exception + return swallows network failures
+# (WeThePeople veritas_bridge TP); must fire BP-PY-1
+lang: python
+file: veritas_bridge.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def fetch_claim(endpoint):
+    try:
+        return client.get(endpoint)
+    except Exception:
+        logger.exception("Veritas API request failed before sending: %s", endpoint)
+        return None

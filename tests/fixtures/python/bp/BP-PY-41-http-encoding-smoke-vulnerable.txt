@@ -1,0 +1,7 @@
+# goslop text fixture — plain placeholder HTTP call (no encoding/redirect name).
+# Must keep firing (canonical BP-PY-41 TP).
+lang: python
+file: tests/test_login_vuln.py
+---
+def test_login():
+    client.post("/login", json={"u": "a"})
