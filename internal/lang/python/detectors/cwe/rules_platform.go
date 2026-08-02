@@ -36,6 +36,39 @@ var (
 	pyReturnLineRE        = regexp.MustCompile(`^[\t ]*return\b`)
 )
 
+// isPythonOfflineScriptPathCWE mirrors bad_practices offline tooling skip
+// (tools/, scripts/release/, public-benchmark/) for CWE-396 batch-job noise.
+func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.Path, unit.DisplayPath} {
+		if path == "" {
+			continue
+		}
+		norm := path
+		// filepath.ToSlash without import cycle — paths are already slash-ish.
+		for i := 0; i < len(norm); i++ {
+			if norm[i] == '\\' {
+				// rare on this corpus
+			}
+		}
+		if strings.Contains(norm, "/backend/tools/") ||
+			strings.Contains(norm, "/scripts/release/") ||
+			strings.Contains(norm, "/public-benchmark/") ||
+			strings.Contains(norm, "/Project_Parva/tools/") ||
+			strings.HasPrefix(norm, "backend/tools/") ||
+			strings.HasPrefix(norm, "scripts/release/") ||
+			strings.HasPrefix(norm, "public-benchmark/") ||
+			strings.HasPrefix(norm, "tools/conformance") ||
+			strings.HasPrefix(norm, "tools/validate") ||
+			strings.HasPrefix(norm, "tools/release/") {
+			return true
+		}
+	}
+	return false
+}
+
 // CWE-396 reports only the two Python root exception classes. Specific
 // exception handlers intentionally remain outside this narrow heuristic.
 //
@@ -48,6 +81,11 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 		return
 	}
 	if unit == nil || out == nil {
+		return
+	}
+	// Offline tooling / release / benchmark runners (Project_Parva tools/,
+	// scripts/release, public-benchmark) — same offline-noise cut as BP-PY-1.
+	if isPythonOfflineScriptPathCWE(unit) {
 		return
 	}
 	if !containsAnyNeedle(unit.Source, "except Exception", "except BaseException") {

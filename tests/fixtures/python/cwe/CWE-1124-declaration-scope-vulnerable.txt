@@ -2,11 +2,10 @@
 lang: python
 file: CWE-1124-declaration-scope-vulnerable.py
 ---
-def deeply_nested(a, b, c, d, e, f):
-    if a:
-        if b:
-            if c:
-                if d:
-                    if e:
-                        if f:
-                            result = 1
+if a:
+    if b:
+        if c:
+            if d:
+                if e:
+                    if f:
+                        action()

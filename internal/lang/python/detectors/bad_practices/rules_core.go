@@ -353,18 +353,22 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 			return true
 		}
 	}
+	// Optional-import fallback: ImportError/ModuleNotFoundError + import-only
+	// try + return fallback. Broad Exception around import stays reportable
+	// (pdf_oxide / violit / WeThePeople optional-import TPs).
+	if stmtCount == 1 && strings.HasPrefix(strings.TrimSpace(bodyRaw[0]), "return") {
+		tryIdxImp := enclosingTryIdx(lines, exceptIdx)
+		exceptLine := strings.TrimSpace(lines[exceptIdx].text)
+		if tryIdxImp >= 0 && tryBlockIsImportOnly(lines, tryIdxImp) &&
+			importErrorCatch(exceptCatchTypes(exceptLine)) {
+			return true
+		}
+	}
 
 	// Soft recording into a warnings list is the Project_Parva rulelang
 	// evidence-packet fallback (warnings.append(...exc...)) — failure is
-	// retained on the result, not swallowed.
-	if strings.Contains(allText, "warnings.append(") || strings.Contains(allText, ".warnings.append(") {
-		return true
-	}
-	// Result-row recording: results.append({..., "error": str(exc), ...})
-	// (Project_Parva rulelang test runner) feeds the failure into the payload.
-	if caughtVar != "" && strings.Contains(allText, "append(") &&
-		(strings.Contains(allText, `"error"`) || strings.Contains(allText, "'error'")) &&
-		(strings.Contains(allText, caughtVar) || strings.Contains(allText, "str("+caughtVar)) {
+	// retained on the result, not swallowed. Use raw text: Mask blanks strings.
+	if strings.Contains(allRaw, "warnings.append(") || strings.Contains(allRaw, ".warnings.append(") {
 		return true
 	}
 	// Documented defensive constant fallback after a pure probe try

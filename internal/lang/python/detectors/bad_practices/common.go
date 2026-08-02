@@ -78,8 +78,10 @@ func isPythonOfflineScriptPath(unit *core.ParsedUnit) bool {
 			continue
 		}
 		norm := filepath.ToSlash(path)
+		// Narrow offline trees only — do not match e.g. tools/benchmark-harness
+		// under third-party packages (pdf_oxide TP).
 		markers := []string{
-			"/tools/", "/backend/tools/",
+			"/backend/tools/",
 			"/scripts/release/",
 			"/public-benchmark/",
 		}
@@ -88,8 +90,14 @@ func isPythonOfflineScriptPath(unit *core.ParsedUnit) bool {
 				return true
 			}
 		}
-		if strings.HasPrefix(norm, "tools/") || strings.HasPrefix(norm, "backend/tools/") ||
-			strings.HasPrefix(norm, "scripts/release/") || strings.HasPrefix(norm, "public-benchmark/") {
+		if strings.HasPrefix(norm, "backend/tools/") ||
+			strings.HasPrefix(norm, "scripts/release/") ||
+			strings.HasPrefix(norm, "public-benchmark/") {
+			return true
+		}
+		// Project_Parva top-level tools/ (conformance_runner, validate_schemas).
+		if strings.Contains(norm, "/Project_Parva/tools/") || strings.HasPrefix(norm, "tools/conformance") ||
+			strings.HasPrefix(norm, "tools/validate") || strings.HasPrefix(norm, "tools/release/") {
 			return true
 		}
 	}

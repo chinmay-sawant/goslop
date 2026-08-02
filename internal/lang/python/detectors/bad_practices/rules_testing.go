@@ -94,6 +94,12 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				hasAssert = true
 				break
 			}
+			// HTTP client response inspection is the assertion (niquests
+			// test_decompress_gzip / unicode_get smoke FPs).
+			if isHTTPResponseAssertion(st) {
+				hasAssert = true
+				break
+			}
 			if looksLikeSideEffectCall(st) {
 				hasCall = true
 			}
@@ -110,6 +116,29 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				out)
 		}
 	}
+}
+
+// isHTTPResponseAssertion reports a pure expression that inspects the response
+// body (niquests test_decompress_gzip: r.content.decode(...)). Assignments
+// like data = response.json() inside retry loops are not assertions
+// (httpmorph test_async_post_via_real_proxy TP).
+func isHTTPResponseAssertion(st string) bool {
+	if strings.HasPrefix(st, "if ") || strings.HasPrefix(st, "elif ") ||
+		strings.HasPrefix(st, "while ") || strings.HasPrefix(st, "for ") {
+		return false
+	}
+	// Assignment of response data is control flow, not a bare assertion.
+	if strings.Contains(st, "=") && !strings.Contains(st, "==") && !strings.Contains(st, "!=") &&
+		!strings.Contains(st, ">=") && !strings.Contains(st, "<=") {
+		return false
+	}
+	needles := []string{".content", ".text", ".json("}
+	for _, n := range needles {
+		if strings.Contains(st, n) {
+			return true
+		}
+	}
+	return false
 }
 
 func isTestAssertion(st string, helpers map[string]struct{}, nestedSuite bool) bool {
