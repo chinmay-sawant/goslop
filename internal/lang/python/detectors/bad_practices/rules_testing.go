@@ -153,8 +153,8 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 // body (niquests test_decompress_gzip: r.content.decode(...)). Assignments
 // like data = response.json() inside retry loops are not assertions
 // (httpmorph test_async_post_via_real_proxy TP).
-// Note: bare .close() is NOT an assertion — movielite benchmark clip.close()
-// bodies remain TPs; niquests stream-close smokes are name-gated instead.
+// Note: bare .close() is NOT an assertion alone; stream=True + close is
+// treated as resource-lifecycle verification in the BP-PY-41 body loop.
 func isHTTPResponseAssertion(st string) bool {
 	if strings.HasPrefix(st, "if ") || strings.HasPrefix(st, "elif ") ||
 		strings.HasPrefix(st, "while ") || strings.HasPrefix(st, "for ") {

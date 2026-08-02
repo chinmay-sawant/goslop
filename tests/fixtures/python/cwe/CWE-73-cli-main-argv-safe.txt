@@ -1,6 +1,6 @@
 # goslop text fixture — CWE-73 CLI main() with Path(sys.argv[1]) under __main__
 lang: python
-file: scripts/parva_offline_verify.py
+file: scripts/offline_verify.py
 ---
 import sys
 from pathlib import Path

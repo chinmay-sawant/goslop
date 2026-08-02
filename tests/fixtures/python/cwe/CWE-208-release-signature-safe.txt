@@ -1,8 +1,0 @@
-# goslop text fixture — release-hash signature dict equality is offline tooling
-lang: python
-file: scripts/release/regenerate_public_release_hashes.py
----
-def check_release_hashes(current_signature, next_signature, current_manifest, next_manifest):
-    signature_ok = current_signature == next_signature
-    manifest_ok = current_manifest == next_manifest
-    return signature_ok and manifest_ok

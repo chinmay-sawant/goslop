@@ -406,8 +406,8 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 			return true
 		}
 	}
-	// Soft warning collector: warn_unexpected_error / warn_* only (html2pic
-	// cascade/applicators). Pure wrap-raise stays reportable (voicetag TP).
+	// Soft warning collector: warnings.warn / warn_* only. Pure wrap-raise
+	// stays reportable.
 	if !hasRaise && suiteIsSoftWarningCollector(body, allRaw) {
 		return true
 	}

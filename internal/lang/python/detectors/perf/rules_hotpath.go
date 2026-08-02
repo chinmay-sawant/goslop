@@ -303,9 +303,8 @@ func perfLineIsLightweightDecode(text string) bool {
 // and that the path expression is not the loop variable or a callee parameter
 // (once-per-distinct-path loads are not "repeated same path").
 //
-// Note: backend/tools/ is NOT path-skipped — Project_Parva week3_ground_truth_pipeline
-// reloads an invariant festival_rules_v3.json via a helper called from a loop (audited TP).
-// Unique-path / loop-derived receivers still suppress once-per-input tool ETL shapes.
+// Seed/migrate helpers are skipped (not hot request paths). Unique-path /
+// loop-derived receivers still suppress once-per-input ETL shapes.
 //
 // Intermediate path bindings derived from the loop variable
 // (validation_path = triad_paths(rule.festival_id)["validation"]; path.read_text())

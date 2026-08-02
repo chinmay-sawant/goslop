@@ -1,6 +1,6 @@
 # goslop text fixture — CWE-1071 mirrors BP-PY-2 pure conversion pass
 lang: python
-file: parva_mcp_server/client.py
+file: mcp_server/client.py
 ---
 def _read_bounded(response, maximum):
     declared = response.headers.get("content-length")

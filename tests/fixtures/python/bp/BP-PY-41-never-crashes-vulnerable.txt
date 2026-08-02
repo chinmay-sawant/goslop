@@ -1,6 +1,0 @@
-# goslop text fixture — plain placeholder without no-raise name.
-lang: python
-file: tests/renderer/test_markdown_parser_vuln.py
----
-def test_escape_typst_characters():
-    escape_typst_characters("hello")

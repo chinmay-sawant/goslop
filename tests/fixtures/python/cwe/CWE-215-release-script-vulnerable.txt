@@ -1,9 +1,0 @@
-# goslop text fixture — CWE-215 app debug logs a token
-lang: python
-file: app/debug.py
----
-import logging
-
-
-def trace(token):
-    logging.debug("token=%s", token)

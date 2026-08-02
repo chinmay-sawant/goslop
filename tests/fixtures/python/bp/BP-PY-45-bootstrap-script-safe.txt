@@ -10,7 +10,7 @@ BACKEND_ROOT = PROJECT_ROOT / "backend"
 if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
-from app.services.future_bs_service import main  # noqa: E402
+from app.services.offline_service import main  # noqa: E402
 
 if __name__ == "__main__":
     raise SystemExit(main())

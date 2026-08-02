@@ -1,7 +1,7 @@
 # goslop text fixture — int conversion then pure counter/append enrichment
 # (Project_Parva backtest ingress hour bucket; timegraph fact-id parse FPs)
 lang: python
-file: app/research/future_bs/backtest.py
+file: app/research/backtest.py
 ---
 def record_mismatch(diagnostics, mismatch_by_ingress_hour, fact_ids, bs):
     if diagnostics["ingress_time"]:
