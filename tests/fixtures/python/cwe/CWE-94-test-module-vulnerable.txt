@@ -1,0 +1,18 @@
+# goslop text fixture
+lang: python
+file: doc_codeblocks.py
+---
+def check_syntax(block_id: str, code: str):
+    try:
+        compile(code, block_id, "exec")
+    except SyntaxError as exc:
+        raise SystemExit(f"Syntax error in {block_id}: {exc}")
+
+
+def check_imports(code: str):
+    needed = _needs_framework(code)
+    for framework in needed:
+        try:
+            __import__(framework)
+        except ImportError:
+            raise SystemExit(f"Requires {framework}")

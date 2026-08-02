@@ -914,3 +914,59 @@ None.
 $ git diff --check   # run in goslop repo root after writing this report
 <no output — pass>
 ```
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T12:40:41Z
+repository: CourtScrapper
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper
+branch: master
+commit: c1377ced4655f51eb59d685959080fd1a55f03af (source unchanged)
+chunk_path: scripts/CourtScrapper/chunks
+function_context_path: scripts/CourtScrapper/findings/functions
+binary: latest rebuild via `make build` (bin/goslop 2026-08-02 17:56); chunks/contexts re-exported 17:58
+```
+
+### Scan evidence (latest binary)
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/CourtScrapper/chunks -context-dir scripts/CourtScrapper/findings/functions real-repos/CourtScrapper`
+- Findings: `337`
+- Chunks reviewed: all 14 fresh chunk files (`Chunk_1_25.txt` … `Chunk_326_337.txt`).
+- Classification method: every fresh finding matched by `Source:` (file:line:col) + rule against the audited TP tables / FP sections above (original + Mode B appends); no fresh finding needed re-verification beyond the Source match. Enclosing source re-read for the three regressed CWE-396 locations (`scraper.py:67`, `scraper_pool.py:74`, `utils.py:136`) to confirm the constructs are unchanged.
+
+### Classification summary (fresh, latest binary)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 10 | 26, 102, 148, 151, 274, 277, 282, 295, 299, 302 |
+| True positive | 327 | all other fresh IDs |
+| Uncertain | 0 | — |
+
+Fresh TP breakdown by rule: BP-PY-1 (72), BP-PY-2 (11), BP-PY-46 (26), BP-PY-47 (192), CWE-1071 (4), CWE-1121 (6), CWE-1124 (4), CWE-117 (4: 41, 61, 129, 139), CWE-390 (4), CWE-396 (4: 9, 59, 121, 127). Fresh FP breakdown by rule: CWE-779 (26), CWE-117 (102, 151, 274, 295), CWE-396 (148, 277, 299), CWE-88 (302), PERF-PY-28 (282).
+
+Relative to the Mode B (b5b8fde) scan: the Mode-B-suppressed CWE-396 FPs 149 (`scraper.py:67:1` log+re-raise), 280 (`scraper_pool.py:74:1` log `exc_info=True`+return error tuple) and 302 (`utils.py:136:1` chained `raise ... from e`) are **flagged again** — the CWE-396 fix from the previous round regressed. Conversely the Mode B FP 286 (CWE-396 @ `scraper_pool.py:141:1`) is suppressed; that location now shows only BP-PY-1 (fresh 286, audited TP). Two Mode B CWE-396 TPs (`scraper.py:109:1`, `utils.py:192:1`) are no longer flagged — potential over-suppression, same watch-list status as the Mode B BP-PY-1 note (`captcha_handler.py:502:1`, `scraper_pool.py:74:1` BP-PY-1 still suppressed in the latest scan).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | CWE-779 | `logger.info("Captcha solved! Token received (length: %d)", len(token))` — regex keyword "Token" fires on static text but only a numeric `len()` is logged, not the token | 1 | captcha_handler.py:229:17 (26) |
+| 2 | CWE-117 | f-string interpolates a function parameter whose every call site passes a developer string literal (`f"Inspecting: {page_name}"`; call sites pass "Initial Search Page" etc.) | 1 | inspect_website.py:15:5 (102) |
+| 3 | CWE-117 | f-string interpolates only numerics / config constants / pool-generated names — no externally controlled string segment can carry CRLF | 3 | scraper.py:82:13 (151), scraper_pool.py:51:5 (274), utils.py:90:13 (295) |
+| 4 | CWE-396 | generic handler that logs **and** propagates: `logger.error(...)` + bare `raise`, or `raise X from e`, or `logger.error(..., exc_info=True)` + return of the exception object — the safe-vs-unsafe condition is whether the failure is surfaced (log/re-raise/propagate) vs swallowed; fix regressed from Mode B | 3 | scraper.py:67:1 (148), scraper_pool.py:74:1 (277), utils.py:136:1 (299) |
+| 5 | PERF-PY-28 | `with ThreadPoolExecutor(...)` created once at the top of the single batch function invoked once per run, not per unit of work | 1 | scraper_pool.py:112:24 (282) |
+| 6 | CWE-88 | argv segments are an OS-assigned integer port, `tempfile.mkdtemp` path, and a config constant — no untrusted string that could become an option | 1 | utils.py:148:24 (302) |
+
+## New findings
+
+None — every fresh finding matched a prior audit classification by `Source:` + rule; no unclassified fresh finding. Watch-list only: the three pattern-4 CWE-396 FPs regressed back into the scan (Mode B had them suppressed), and two audited CWE-396 TPs (`scraper.py:109:1`, `utils.py:192:1`) dropped out of the scan.
+
+Validation: `git diff --check` — `pass` (see below).
+
+```
+$ git diff --check   # run in goslop repo root after writing this report
+<no output — pass>
+```

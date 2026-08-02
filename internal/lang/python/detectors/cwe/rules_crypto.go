@@ -53,6 +53,12 @@ func detectCWE295(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 			}
 		}
 	}
+	// Dual-mode SSL helpers (verify_ssl: bool → default context vs legacy
+	// CERT_NONE) are intentional compatibility APIs (httptap utils), not
+	// unconditional production bypasses. Audited FPs.
+	if dualModeTLSHelper(unit.Source) {
+		return
+	}
 	masked := facts.Masked
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
@@ -63,6 +69,26 @@ func detectCWE295(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if match := pyCheckHostnameFalseRE.FindStringIndex(masked); match != nil {
 		emitCryptoFinding(unit, &MetaCWE295, match[0], "TLS hostname verification is explicitly disabled", confidence84, out)
 	}
+}
+
+// dualModeTLSHelper reports SSL context factories that take an explicit
+// verify_ssl (or similar) switch and only disable verification on the
+// opt-out branch (httptap create_ssl_context(verify_ssl=...)).
+func dualModeTLSHelper(src string) bool {
+	if !strings.Contains(src, "CERT_NONE") && !strings.Contains(src, "check_hostname") {
+		return false
+	}
+	// Explicit dual-mode parameter (not bare verify_mode=CERT_NONE disables).
+	hasSwitch := strings.Contains(src, "verify_ssl") || strings.Contains(src, "verify_tls") ||
+		strings.Contains(src, "enable_ssl_verify") || strings.Contains(src, "ssl_verify")
+	// Secure branch builds a default/required context when the switch is on.
+	hasSecureBranch := strings.Contains(src, "create_default_context") ||
+		strings.Contains(src, "CERT_REQUIRED")
+	// Must branch on the switch (if verify_ssl / if not verify_ssl).
+	hasBranch := strings.Contains(src, "if verify_ssl") || strings.Contains(src, "if not verify_ssl") ||
+		strings.Contains(src, "if verify_tls") || strings.Contains(src, "if not verify_tls") ||
+		strings.Contains(src, "if ssl_verify") || strings.Contains(src, "if not ssl_verify")
+	return hasSwitch && hasSecureBranch && hasBranch
 }
 
 // CWE-328 reports legacy MD5 and SHA-1 hash construction only when the call

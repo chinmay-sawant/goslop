@@ -31,6 +31,7 @@ func TestBPPY37ExecutePercentFormat(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-37", "BP-PY-37")
 	assertBPFixtureCase(t, "BP-PY-37", "BP-PY-37-fstring")
+	assertBPFixtureCase(t, "BP-PY-37", "BP-PY-37-param-placeholder")
 
 	vuln := loadBPFixture(t, "BP-PY-37", true)
 	findings := runBP(t, nil, vuln.body, vuln.path)

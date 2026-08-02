@@ -1821,6 +1821,40 @@ None.
 
 ---
 
+# Post-fix v2 audit (latest binary)
+
+## Run metadata
+
+- Build: `make build` (bin/goslop rebuilt 2026-08-02 17:56, commit 3407305)
+- Scan: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache real-repos/movielite`
+- Findings: `147`; chunks reviewed: `scripts/movielite/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_147.txt`
+
+## Classification summary (fresh)
+
+| Classification | Count | Notes |
+| --- | ---: | --- |
+| True positive | 58 | All match prior TP tables by `Source:` (BP-PY-1/2/7/9/41/45, CWE-78/252/390/396/584/772/1071/1124, PERF-PY-25) |
+| False positive | 89 | 87 × BP-PY-46 (examples prints, prior FPs 49–138), 1 × CWE-1046 (prior FP 43/40), 1 × CWE-367 (prior FP 143/50) |
+| Uncertain | 0 | — |
+
+Matching method: every fresh finding matched a prior audit entry by `Source:` (file:line[:col]); prior reasons reused verbatim. The 7 CWE-1341 adjacent-`.close()` FPs (old 11/26/52/116/139/150/154) no longer fire — fix effective. Fresh IDs are re-numbered (e.g. fresh 41 = old 43); sources are identical, so the two remaining FPs are re-appearances, not new findings.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | `print(...)` in files under `examples/` (runnable demo scripts with `if __name__ == "__main__"` or straight-line module scope); condition to add: skip when file path contains `examples/` (or the module is a script, not an importable library module) | 87 | `examples/basic_editing.py:12:5`, `examples/composite_clips.py:16:5`, `examples/effects_showcase.py:12:5`, `examples/masking_effects.py:14:5`, `examples/text_animations.py:14:5`, `examples/transitions.py:12:5`, `examples/video_audio_control.py:12:1` |
+| 2 | CWE-1046 | `total_text_width += clip.size[0]` — name-heuristic fires on "text" but RHS is an int attribute, no string-literal/`str()` initializer for the accumulator; condition to add: only flag `+=` when RHS is a string expression or the accumulator's prior assignments are string-typed | 1 | `docs/icon/movielite_gif.py:55:1` |
+| 3 | CWE-367 | `if os.path.exists(x): os.remove(x)` — teardown guard on the function's own temp file inside `finally`; race has no consequence; condition to add: skip exists-check when the path is a locally created temp file in a `finally` cleanup | 1 | `src/movielite/core/video_writer.py:403:20` |
+
+## New findings
+
+None — all 147 fresh findings have a prior classification (58 TP / 89 FP); no fresh finding is unmatched, so nothing is classified here.
+
+- Validation: `git diff --check` — see below
+
+---
+
 # Post-fix remaining-FP audit (2026-08-02)
 
 ## Run metadata

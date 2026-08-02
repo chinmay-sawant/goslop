@@ -1,0 +1,10 @@
+# goslop text fixture — pickle.loads(pickle.dumps(x)) round-trip in tests
+lang: python
+file: test_pickle.py
+---
+import pickle
+import niquests
+
+def test_request_pickleable(httpbin):
+    r = niquests.get(httpbin("get"))
+    assert pickle.loads(pickle.dumps(r.request))

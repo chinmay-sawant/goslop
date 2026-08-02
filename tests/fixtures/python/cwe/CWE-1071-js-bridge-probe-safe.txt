@@ -1,0 +1,18 @@
+# goslop text fixture — best-effort JS/attr probe with pass; reader stays None
+# (niquests extensions/pyodide getReader FP shape)
+lang: python
+file: pyodide_bridge.py
+---
+class RawIO:
+    def __init__(self):
+        self._reader = None
+        self._js_response = None
+
+    def _ensure_reader(self):
+        if self._reader is None and self._js_response is not None:
+            try:
+                body = self._js_response.body
+                if body is not None:
+                    self._reader = body.getReader()
+            except Exception:
+                pass

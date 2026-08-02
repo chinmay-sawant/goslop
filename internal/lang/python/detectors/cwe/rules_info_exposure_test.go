@@ -21,3 +21,8 @@ func TestCWEInfoExposureFixturePairs(t *testing.T) {
 		})
 	}
 }
+
+func TestCWE208TestModuleAssertSkipped(t *testing.T) {
+	t.Parallel()
+	assertCWEFixtureCase(t, "CWE-208", "CWE-208-test-assert")
+}

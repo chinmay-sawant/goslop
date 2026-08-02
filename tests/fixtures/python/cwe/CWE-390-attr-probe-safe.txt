@@ -1,0 +1,12 @@
+# goslop text fixture — AttributeError after pure super().__getattribute__
+# probe (niquests models.py:_gather FP)
+lang: python
+file: CWE-390-attr-probe-safe.py
+---
+class Response:
+    def _gather(self) -> None:
+        try:
+            super().__getattribute__("_promise")
+            super().__getattribute__("connection").gather(self)
+        except AttributeError:
+            pass

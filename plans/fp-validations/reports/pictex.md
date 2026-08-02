@@ -3151,7 +3151,32 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 
 ---
 
-## Post-fix over-suppression audit (2026-08-02)
+## Post-fix v2 audit (latest binary)
+
+Run metadata: binary rebuilt via `make build` ~2026-08-02 17:56 (fix commit b5b8fde + follow-ups); scan of `real-repos/pictex` re-exported fresh chunks/contexts (`scripts/pictex/chunks/Chunk_1_25.txt`, `Chunk_26_43.txt`); 43 fresh findings; every fresh `Source:` matched a prior classification in the original audit or Mode B — no fresh re-classification against rule conditions was required.
+
+### Classification summary (fresh counts)
+
+| Classification | Count | Fresh finding IDs |
+| --- | ---: | --- |
+| True positive (matched audited TP) | 42 | 1, 3–43 |
+| False positive (matched audited FP #2) | 1 | 2 |
+| Uncertain | 0 | — |
+| New (no prior classification) | 0 | — |
+
+Note: fresh #10 (BP-PY-46, `examples/github_card/github_card.py:143`) and fresh #21 (CWE-396, `src/pictex/models/public/background.py:23`) are exactly the two TPs the Mode B audit flagged as over-suppressed by the b5b8fde binary; the latest binary re-emits both — the over-suppression is fixed.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-7 | Temporary one-liner `open("...", encoding=...).read()` at module level; file object dereferenced inline by `.read()` in the same expression, closed by refcount (no handle survives the statement) | 1 | examples/code_to_image/code_to_image.py:32 |
+
+Condition to distinguish safe from vulnerable for pattern 1: skip `open(...)` calls whose result is consumed inline by `.read()` in the same expression (no surviving file handle) — matches the rule's own detection note "Ignore temporary open().read() one-liners if closed by GC policy"; only flag `open` without `with` when the returned handle can outlive the statement (bound to a name, passed elsewhere, or held open).
+
+## New findings
+
+None — all 43 fresh findings have a prior classification by `Source:` match (42 audited TPs, 1 audited FP). No fresh classification was required. (BP-PY-41, PERF-PY-26, CWE-367, and the other 165 prior FPs produce no fresh findings.)
 
 ### Run metadata
 

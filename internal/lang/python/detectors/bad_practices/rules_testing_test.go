@@ -45,6 +45,30 @@ func TestBPPY41TestWithoutAssert(t *testing.T) {
 	strVuln := loadBPFixture(t, "BP-PY-41-string-body-scan", true)
 	assertRule(t, "BP-PY-41", strVuln.path, strVuln.body, true)
 
+	// explicit raise AssertionError verifies the rejection outcome (httptap)
+	raiseAssert := loadBPFixture(t, "BP-PY-41-raise-assertion", false)
+	assertRule(t, "BP-PY-41", raiseAssert.path, raiseAssert.body, false)
+	raiseAssertVuln := loadBPFixture(t, "BP-PY-41-raise-assertion", true)
+	assertRule(t, "BP-PY-41", raiseAssertVuln.path, raiseAssertVuln.body, true)
+
+	// top-level pytest.fail after a retry loop is a bare fallback, not an
+	// assertion (httpmorph test_proxy TPs must keep firing)
+	retryVuln := loadBPFixture(t, "BP-PY-41-retry-fallback", true)
+	assertRule(t, "BP-PY-41", retryVuln.path, retryVuln.body, true)
+	// pytest.fail inside an except suite verifies the guarded call (logxide)
+	retrySafe := loadBPFixture(t, "BP-PY-41-retry-fallback", false)
+	assertRule(t, "BP-PY-41", retrySafe.path, retrySafe.body, false)
+
+	// noxfile session runners and pytest.raises-bearing helpers are not placeholders
+	nox := loadBPFixture(t, "BP-PY-41-noxfile", false)
+	assertRule(t, "BP-PY-41", nox.path, nox.body, false)
+	noxVuln := loadBPFixture(t, "BP-PY-41-noxfile", true)
+	assertRule(t, "BP-PY-41", noxVuln.path, noxVuln.body, true)
+	raisesHelper := loadBPFixture(t, "BP-PY-41-pytest-raises-helper", false)
+	assertRule(t, "BP-PY-41", raisesHelper.path, raisesHelper.body, false)
+	raisesHelperVuln := loadBPFixture(t, "BP-PY-41-pytest-raises-helper", true)
+	assertRule(t, "BP-PY-41", raisesHelperVuln.path, raisesHelperVuln.body, true)
+
 	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-41" && f.Severity != rules.SeverityInfo {

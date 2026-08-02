@@ -1,0 +1,16 @@
+# goslop text fixture
+lang: python
+file: scripts/veritas_patch.py
+---
+from pathlib import Path
+
+p = Path("/srv/app/routes.py")
+src = p.read_text()
+
+if "V7-applied" in src:
+    print("Already patched.")
+    raise SystemExit(0)
+
+src = src.replace("old_segments", "new_segments")
+p.write_text(src)
+print("OK patched")

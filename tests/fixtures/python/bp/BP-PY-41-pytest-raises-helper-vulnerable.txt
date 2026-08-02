@@ -1,0 +1,9 @@
+# goslop text fixture — helper without assert; caller stays reportable
+lang: python
+file: test_emscripten_vuln.py
+---
+def _inner_run(session):
+    session.send("payload")
+
+def test_send(session):
+    _inner_run(session)

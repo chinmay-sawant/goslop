@@ -1,0 +1,10 @@
+# goslop text fixture — only str() of the exception extracted; failure detail hidden (WeThePeople llm/client.py TP shape)
+lang: python
+file: str_capture.py
+---
+def run_worker():
+    try:
+        step()
+    except Exception as exc:
+        worker_error = str(exc)
+    return worker_error

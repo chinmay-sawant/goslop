@@ -1,4 +1,5 @@
-# Fixture for PERF-PY-28 (vulnerable)
+# Fixture for PERF-PY-28 (vulnerable): executor created per iteration inside
+# the unit-of-work loop, not once per batch run.
 lang: python
 file: app/parallel.py
 ---
@@ -9,8 +10,11 @@ def compress_chunks(chunks):
     def task(index):
         return zlib.compress(chunks[index])
 
-    with ThreadPoolExecutor(max_workers=8) as executor:
-        return list(executor.map(task, range(len(chunks))))
+    results = []
+    for start in range(0, len(chunks), 16):
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            results.extend(executor.map(task, range(start, min(start + 16, len(chunks)))))
+    return results
 
 def handle_request(payloads):
     return compress_chunks(payloads)

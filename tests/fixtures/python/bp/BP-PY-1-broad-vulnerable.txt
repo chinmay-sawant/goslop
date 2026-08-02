@@ -1,4 +1,5 @@
-# goslop text fixture
+# goslop text fixture — bare re-raise-only handler still hides nothing but stays
+# reportable: a generic catch is the weakness itself (WeThePeople tracing.py:76 TP)
 lang: python
 file: broad.py
 ---
@@ -6,4 +7,4 @@ def f():
     try:
         x()
     except Exception:
-        log()
+        raise

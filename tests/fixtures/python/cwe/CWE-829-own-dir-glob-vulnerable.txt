@@ -1,0 +1,14 @@
+# goslop text fixture
+lang: python
+file: CWE-829-own-dir-glob-vulnerable.py
+---
+import importlib.util
+
+
+def load_from_path(path):
+    spec = importlib.util.spec_from_file_location("plugin", path)
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    return None

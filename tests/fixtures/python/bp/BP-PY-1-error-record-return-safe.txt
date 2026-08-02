@@ -1,0 +1,14 @@
+# goslop text fixture — the raw exception is returned to the caller inside an
+# error payload helper (calgebra gcsa.py:440 FP shape)
+lang: python
+file: error_result.py
+---
+def _error_result(exc):
+    return {"success": False, "error": exc}
+
+
+def write_event(payload):
+    try:
+        return do_write(payload)
+    except Exception as e:
+        return _error_result(e)

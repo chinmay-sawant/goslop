@@ -1,0 +1,8 @@
+# Fixture for BP-PY-45 (safe) — packaged library module; no sys.path mutation
+lang: python
+file: services/planner.py
+---
+from models.database import SessionLocal
+
+def make_session():
+    return SessionLocal()

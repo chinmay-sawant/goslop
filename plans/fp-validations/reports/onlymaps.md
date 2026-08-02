@@ -1862,3 +1862,64 @@ None.
 - Chunk evidence: `scripts/onlymaps/chunks`
 - Function evidence: `scripts/onlymaps/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:05:00Z
+repository: onlymaps
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps
+branch: main
+commit: 6444a59
+scanner_commit: 3407305 (binary rebuilt 2026-08-02 17:56)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps
+chunk_path: scripts/onlymaps/chunks (exported 17:58)
+function_context_path: scripts/onlymaps/findings/functions (60 contexts)
+```
+
+### Scan evidence
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/onlymaps/chunks -context-dir scripts/onlymaps/findings/functions real-repos/onlymaps`
+- Findings: `60` (unchanged from the b5b8fde run)
+- Chunks reviewed: `scripts/onlymaps/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_60.txt`
+- Matching: every fresh `Source:` (file:line:col) matched an audited TP or FP entry from the Mode A/B audit above; no fresh classification decisions were needed beyond reuse.
+
+### Classification summary (fresh run)
+
+| Classification | Count | Fresh finding IDs |
+| --- | ---: | --- |
+| False positive | 24 | 2, 3, 4, 5, 6, 15, 16, 17, 18, 19, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 36, 41, 57, 59 |
+| True positive | 36 | 1, 7, 8, 9, 10, 11, 12, 13, 14, 20, 21, 22, 23, 29, 31, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 58, 60 |
+| Uncertain | 0 | — |
+
+New findings (never classified before): none.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-12, CWE-94 | `exec` token inside a `def`/`@overload` signature (method named `exec`, incl. type-only overloads) flagged as code-exec sink | 9 | `_connection.py:232`, `_pool.py:280`, `_query.py:52`, `_spec.py:153`, `_spec.py:170` |
+| 2 | BP-PY-1 | bare `except:` whose suite ends with bare `raise` (rollback/counter/close first) flagged as swallowing | 5 | `_connection.py:215`, `_connection.py:376`, `_connection.py:408`, `_pool.py:215`, `_pool.py:443` |
+| 3 | BP-PY-46 | `print` in `tasks.py` (invoke `@task` CLI runner) flagged as library logging | 5 | `tasks.py:6`, `tasks.py:12`, `tasks.py:20`, `tasks.py:23`, `tasks.py:25` |
+| 4 | BP-PY-1 | `except Exception as exc:` in a test that assigns the exception to a result variable later asserted — flagged as hiding failures | 2 | `tests/test_pool.py:63`, `tests/test_query.py:78` |
+| 5 | CWE-478 | `match` with no `case _` but an unconditional fallback statement immediately following the match | 2 | `_drivers.py:403` (`return None`), `_types.py:307` (`return value`) |
+| 6 | CWE-89 | `conn.execute(<module-level SQL constant attr>)` — non-dynamic first argument flagged as injection | 1 | `tests/fixtures/containers.py:180` |
+
+Distinguishing condition per pattern:
+1. Only flag `exec`/`eval` when it is an actual call expression whose callee is the builtin — never a `def`/`@overload` parameter list.
+2. A bare/broad except is not "swallowing" when its suite's final statement is `raise` (failure propagates).
+3. Treat invoke-style CLI task files (all module functions `@task`-decorated) as CLI/script modules, like the existing `if __name__ == "__main__"` exemption.
+4. In test files, a broad except that binds the exception into a name later asserted is evidence capture, not swallowing.
+5. CWE-478: treat a match as having a default when an unconditional return/fallback statement immediately follows it (no intervening control flow).
+6. CWE-89: only flag when the `execute`/`executemany` first argument is dynamic (interpolation, concatenation, or non-constant expression).
+
+## New findings
+
+None — every fresh finding matched a prior audited classification; no new sources, no Uncertain.
+
+## Final evidence
+
+- Delegated reviewers: none (single-reviewer audit)
+- Validation: `git diff --check` — pass

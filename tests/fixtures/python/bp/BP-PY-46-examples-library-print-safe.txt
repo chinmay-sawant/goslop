@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: examples/streaming/basic_prints.py
+---
+def announce(name):
+    return name
+
+
+if __name__ == "__main__":
+    print(f"hello {announce('world')}")

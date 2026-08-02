@@ -1,0 +1,11 @@
+# goslop text fixture — single-statement pass-through return of the input
+# value: the parse fallback loses nothing and reports no side effects
+# (onlymaps _types.py:189 FP shape)
+lang: python
+file: documented_fallback.py
+---
+def inspect(value):
+    try:
+        return extract_certificate_info(value)
+    except Exception:
+        return value

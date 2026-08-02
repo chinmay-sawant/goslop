@@ -40,14 +40,13 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isRequirementsPath(unit) {
 		return
 	}
-	if isPythonShebangScript(unit.Source) {
+	// Shebang alone is not an entry-script signal (vestigial #! on libraries).
+	if pythonShebangIsEntryScript(unit.Source) {
 		return
 	}
-	// `from rich import print` rebinds the builtin for terminal UX — presentation,
-	// not library operational logging (caniscrape telemetry/upload/diff CLI output).
-	if pythonUsesRichPrint(unit.Source) {
-		return
-	}
+	// Do NOT whole-module-skip on `from rich import print` — that over-suppressed
+	// caniscrape upload_handler/telemetry audited TPs. Rich is only a CLI signal
+	// inside pythonHasClickishCLI / presentation-name skips below.
 	if !facts.has("print(") && !strings.Contains(unit.Source, "print(") {
 		return
 	}
@@ -204,6 +203,167 @@ func pythonMainGuardInvokesMain(lines []codeLine) bool {
 	return false
 }
 
+// pythonModuleDefNames collects module-level (indent-0) function names.
+func pythonModuleDefNames(src string) map[string]struct{} {
+	out := make(map[string]struct{})
+	for _, raw := range strings.Split(src, "\n") {
+		if indentWidth(raw) != 0 {
+			continue
+		}
+		t := strings.TrimSpace(raw)
+		for _, pref := range []string{"async def ", "def "} {
+			if !strings.HasPrefix(t, pref) {
+				continue
+			}
+			if name := pythonLeadingIdent(t[len(pref):]); name != "" {
+				out[name] = struct{}{}
+			}
+			break
+		}
+	}
+	return out
+}
+
+// pythonCallNames extracts bare identifiers immediately followed by '(' from a
+// raw line. Attribute-qualified calls (module.fn( / obj.method() are skipped;
+// commented-out calls are included so demo scripts with disabled example calls
+// still count as self-running.
+func pythonCallNames(line string) []string {
+	var out []string
+	seen := make(map[string]struct{})
+	for i := 0; i < len(line); i++ {
+		if line[i] != '(' {
+			continue
+		}
+		j := i - 1
+		for j >= 0 && isIdentByte(line[j]) {
+			j--
+		}
+		if j >= 0 && line[j] == '.' {
+			continue // attribute call (module.fn( / obj.method()
+		}
+		name := line[j+1 : i]
+		if name == "" || (name[0] >= '0' && name[0] <= '9') {
+			continue
+		}
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	return out
+}
+
+// pythonMainGuardCallsLocal reports that the module's own __main__ guard body
+// calls a function defined at module level in this file — the shape of a
+// self-running entry script whose prints are the program's own output.
+func pythonMainGuardCallsLocal(src string) bool {
+	defs := pythonModuleDefNames(src)
+	if len(defs) == 0 {
+		return false
+	}
+	mainIndent := -1
+	for _, raw := range strings.Split(src, "\n") {
+		t := strings.TrimSpace(raw)
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(raw)
+		if mainIndent >= 0 && ind <= mainIndent {
+			mainIndent = -1
+		}
+		if isMainGuard(t) {
+			mainIndent = ind
+			continue
+		}
+		if mainIndent >= 0 && ind > mainIndent {
+			for _, name := range pythonCallNames(raw) {
+				if _, ok := defs[name]; ok {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// pythonHasMainGuard reports the presence of an if __name__ == "__main__" guard.
+func pythonHasMainGuard(src string) bool {
+	for _, raw := range strings.Split(src, "\n") {
+		if isMainGuard(strings.TrimSpace(raw)) {
+			return true
+		}
+	}
+	return false
+}
+
+// pythonHasTopLevelPrint reports an executable print( call at module top level
+// (indent 0) — the shape of a runnable script whose prints are its program
+// output rather than library logging. Strings/comments are masked.
+func pythonHasTopLevelPrint(src string) bool {
+	for _, raw := range strings.Split(pytext.Mask(src), "\n") {
+		if strings.HasPrefix(raw, "print(") {
+			return true
+		}
+	}
+	return false
+}
+
+// pythonSingleTopLevelCompletionPrint reports a dev-tool script whose only
+// print call is a single top-level completion message. Any other print
+// anywhere in the module disqualifies it, so operational scripts that log via
+// print (WeThePeople scripts/veritas_*_patch.py) keep firing.
+func pythonSingleTopLevelCompletionPrint(src string) bool {
+	found := false
+	for _, raw := range strings.Split(pytext.Mask(src), "\n") {
+		if !strings.Contains(raw, "print(") {
+			continue
+		}
+		if !strings.HasPrefix(raw, "print(") {
+			return false
+		}
+		if found {
+			return false
+		}
+		found = true
+	}
+	return found
+}
+
+// pythonAllPrintsModuleLevel reports that every print( call is at column 0
+// (module top level). Used for shebang debug/CLI scripts under scripts/tools
+// that print progress at module scope (pdf_oxide scripts/*). Function-body
+// prints (WeThePeople operational scripts) return false.
+func pythonAllPrintsModuleLevel(src string) bool {
+	saw := false
+	for _, raw := range strings.Split(pytext.Mask(src), "\n") {
+		if !strings.Contains(raw, "print(") {
+			continue
+		}
+		if !strings.HasPrefix(raw, "print(") {
+			return false
+		}
+		saw = true
+	}
+	return saw
+}
+
+// pythonIsPureModuleScript reports a file with no def/class/async def — a
+// linear module-level script (pdf_oxide scripts/check_span_spacing.py). Prints
+// may sit under module-level if/else. WeThePeople operational scripts define
+// functions and return false.
+func pythonIsPureModuleScript(src string) bool {
+	for _, raw := range strings.Split(pytext.Mask(src), "\n") {
+		t := strings.TrimSpace(raw)
+		if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") ||
+			strings.HasPrefix(t, "class ") {
+			return false
+		}
+	}
+	return strings.Contains(src, "print(")
+}
+
 // pythonArgparseSetDefaultsFuncs collects names from set_defaults(func=...).
 func pythonArgparseSetDefaultsFuncs(src string) map[string]struct{} {
 	out := make(map[string]struct{})
@@ -297,6 +457,20 @@ func pythonCLIPrintSkipFunc(
 	if hasClickishCLI && strings.HasSuffix(name, "_command") {
 		return true
 	}
+	// Presentation helpers under a CLI framework (rich/click/typer/cyclopts):
+	// prompt/show/enable/disable/display/request_ are user-facing UX flow, not
+	// library operational logging. Worker printers (contribute_*/try_*/upload_*)
+	// stay reportable (caniscrape contribute_scan / try_upload_scan TPs).
+	if hasClickishCLI {
+		for _, prefix := range []string{
+			"prompt_", "show_", "enable_", "disable_", "display_",
+			"request_", "confirm_", "ask_", "warn_if_",
+		} {
+			if strings.HasPrefix(name, prefix) {
+				return true
+			}
+		}
+	}
 	return false
 }
 
@@ -338,7 +512,7 @@ func printCallOutsideString(line string) bool {
 			continue
 		}
 		if c == 'p' && i+6 <= len(line) && line[i:i+6] == "print(" {
-			if i == 0 || !isIdentByte(line[i-1]) {
+			if i == 0 || (line[i-1] != '.' && !isIdentByte(line[i-1])) {
 				return true
 			}
 		}

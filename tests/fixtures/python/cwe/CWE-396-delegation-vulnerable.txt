@@ -1,0 +1,14 @@
+# goslop text fixture — logging-only handler hides the failure (voicetag encoder.py TP shape)
+lang: python
+file: log_only.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def emit(record):
+    try:
+        self._inner.emit(record)
+    except Exception:
+        logger.warning("emit failed")

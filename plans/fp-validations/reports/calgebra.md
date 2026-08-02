@@ -651,6 +651,65 @@ None.
 - Function evidence: `scripts/calgebra/findings/functions`
 - Validation: `git diff --check` — pass
 
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:05:00Z
+repository: calgebra
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra
+branch: main
+commit: 476c3e6
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra
+chunk_path: scripts/calgebra/chunks
+function_context_path: scripts/calgebra/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `bin/goslop` prebuilt (`make build`, rebuilt 2026-08-02 17:56, mtime confirms)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/calgebra/chunks -context-dir scripts/calgebra/findings/functions real-repos/calgebra`
+- Findings: `34`
+- Chunks reviewed: `scripts/calgebra/chunks/Chunk_1_25.txt`, `Chunk_26_34.txt` (all 34 read)
+- Function contexts reviewed: `scripts/calgebra/findings/functions/1.txt` … `34.txt` (enclosing source re-read for `gcal.py:14`, `gcal.py:221`, `gcsa.py:440`)
+
+### Classification summary
+
+Every fresh finding matched a prior audit by `Source:` (file:line:col) — no fresh classification was needed beyond reuse. Fresh finding 11 (`CWE-396` at `gcsa.py:440:1`) is a **regression**: it matches original-audit FP 17 (generic catch returns the exception to the caller via `_error_result(e)`), was absent in the Mode A/B append (b5b8fde fix removed it), and the latest binary re-flags it.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 15 | 7, 8, 9, 10, 11, 16, 22, 24, 25, 26, 27, 29, 30, 31, 34 |
+| True positive | 19 | 1, 2, 3, 4, 5, 6, 12, 13, 14, 15, 17, 18, 19, 20, 21, 23, 28, 32, 33 |
+| Uncertain | 0 | — |
+
+New findings (no prior classification anywhere): **0**. Regression vs Mode A/B append: `gcsa.py:440:1` CWE-396 re-appeared (append FPs did not include it).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-13 | secret-like name assigned a string literal inside a module docstring doctest line (`>>> access_token = "ya29...."`) | 1 | `calgebra/gcal.py:14:5` |
+| 2 | BP-PY-1, CWE-396 | `except Exception:` (or `as e`) whose suite only builds `msg`, immediately followed by `raise RuntimeError(...)` / `raise ... from e` — failure re-raised, nothing hidden | 3 | `calgebra/gcal.py:221:1` (×2), `calgebra/gcal.py:245:1` |
+| 3 | BP-PY-1, CWE-396 | `except Exception as e: return _error_result(e)` or `return [WriteResult(success=False, error=e) ...]` — exception returned to caller as error payload, not discarded | 2 | `calgebra/gcsa.py:440:1`, `calgebra/gcsa.py:1117:1` |
+| 4 | BP-PY-1 | `except Exception as e: print(f"Warning: ... {e}", file=sys.stderr); continue` — failure reported to user with detail | 1 | `calgebra/ical.py:384:1` |
+| 5 | BP-PY-46 | `print` is the function's documented output (docstring declares printing to stdout) — `pprint()` helper, not operational logging | 1 | `calgebra/interval.py:134:9` |
+| 6 | BP-PY-2, CWE-390, CWE-1071 | `except ValueError: pass` where control falls through to an unconditional `raise ValueError(...)` in the enclosing flow — handler is a fall-through, not a silent discard | 3 | `calgebra/recurrence.py:437:1` (×2), `:437:25` |
+| 7 | BP-PY-2, CWE-390, CWE-1071 | test expected-exception idiom `try: <call>; assert False, "..."` / `except ValueError: pass  # Expected` — pass is the verification branch | 3 | `tests/test_gcsa.py:1062:1` (×2), `:1062:5` |
+| 8 | CWE-1121 | branch threshold ≥12 met only by counting `if `/`for ` tokens inside comments (10 real branch headers) | 1 | `tests/test_recurrence_fuzz.py:17:70` |
+
+## New findings
+
+None — every fresh finding has a prior classification by `Source:`. Regression to note: pattern 3's `gcsa.py:440:1` CWE-396 was suppressed by fix b5b8fde (absent in the Mode A/B append) and the latest binary flags it again; the detector fix must restore that suppression.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/calgebra/chunks`
+- Function evidence: `scripts/calgebra/findings/functions`
+- Validation: `git diff --check` — pass
+
 ## Post-fix remaining-FP audit (2026-08-02)
 
 ### Run metadata

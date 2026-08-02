@@ -269,8 +269,23 @@ func detectCWE1067(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 }
 
 func detectCWE1071(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBEmptyExceptRE); start >= 0 {
-		emitTierBFinding(unit, &MetaCWE1071, start, "exception handler silently contains only pass", confidence78, out)
+	if unit == nil || out == nil {
+		return
+	}
+	lines := facts.MaskedLines()
+	rawLines := buildMaskedPythonLines(unit.Source)
+	for i, line := range lines {
+		if !pyExceptStartRE.MatchString(line.text) {
+			continue
+		}
+		if !exceptPassOnly(lines, i) {
+			continue
+		}
+		if exceptPassIsSafe(unit, lines, rawLines, i) {
+			continue
+		}
+		emitTierBFinding(unit, &MetaCWE1071, line.start, "exception handler silently contains only pass", confidence78, out)
+		return
 	}
 }
 

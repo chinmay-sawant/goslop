@@ -1,0 +1,14 @@
+# goslop text fixture — ImportError pass after import plus side-effectful call
+# (httpmorph dotenv bootstrap TP shape)
+lang: python
+file: function_import_pass.py
+---
+def connect():
+    try:
+        from dotenv import load_dotenv
+
+        if Path(".env").exists():
+            load_dotenv(".env")
+    except ImportError:
+        pass
+    return None

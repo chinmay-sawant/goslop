@@ -1,0 +1,16 @@
+# goslop text fixture — optional load_extension plus pure uses of the loaded
+# name; ImportError leaves the caller to raise InvalidSchema (niquests
+# async_session.py:620 FP shape)
+lang: python
+file: async_session.py
+---
+def get_adapter(self, url):
+    scheme = parse_scheme(url)
+    try:
+        extension = load_extension(scheme, implementation=None)
+        for prefix, adapter in self.adapters.items():
+            if scheme in extension.supported_schemes() and extension.scheme_to_http_scheme(scheme) == parse_scheme(prefix):
+                return adapter
+    except ImportError:
+        pass
+    raise InvalidSchema(f"No connection adapters were found for {url!r}")

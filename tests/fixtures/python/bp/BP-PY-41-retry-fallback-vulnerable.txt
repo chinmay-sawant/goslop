@@ -1,0 +1,24 @@
+# Fixture for BP-PY-41 (safe) — top-level pytest.fail after retry loop guards the
+# loop outcome; the call results are verified via the loop return path (httpmorph
+# test_proxy TP shape must keep firing, so this shape is the vulnerable one).
+# This is the vulnerable variant: side-effect calls with a bare top-level
+# pytest.fail fallback, no verification of the response.
+lang: python
+file: tests/test_proxy_retry_vuln.py
+---
+def test_http_via_real_proxy(proxy_url):
+    max_attempts = 5
+    min_successes = 2
+    successes = 0
+
+    for attempt in range(max_attempts):
+        try:
+            response = httpmorph.get("http://example.com", proxy=proxy_url, timeout=30)
+            if response.status_code in [200, 301, 302]:
+                successes += 1
+                if successes >= min_successes:
+                    return
+        except Exception:
+            pass
+
+    pytest.fail(f"Test failed: only {successes}/{max_attempts} attempts succeeded (needed {min_successes})")

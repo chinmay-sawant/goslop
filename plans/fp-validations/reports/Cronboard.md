@@ -261,6 +261,57 @@ None.
 - Function evidence: `scripts/Cronboard/findings/functions`
 - Validation: `git diff --check` — pass
 
+## Post-fix v2 audit (latest binary)
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:00:00Z
+repository: Cronboard
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard
+branch: main
+commit: 3407305
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard
+chunk_path: scripts/Cronboard/chunks
+function_context_path: scripts/Cronboard/findings/functions
+build: make build (binary rebuilt 2026-08-02 17:56)
+```
+
+## Scan evidence
+
+- Findings: 66
+- Chunks reviewed: `scripts/Cronboard/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_66.txt`
+- Function contexts reviewed: `scripts/Cronboard/findings/functions/66.txt` (the sole FP); all other findings classified by prior `Source:` match
+- Rules present in fresh scan: BP-PY-1, BP-PY-2, BP-PY-46, CWE-257, CWE-260, CWE-367, CWE-390, CWE-396, CWE-1071, CWE-1124 (no CWE-215 / PERF-PY-25 / CWE-88 — those FPs remain fixed)
+
+## Classification summary (fresh)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 1 | 66 |
+| True positive | 65 | 1–65 |
+| Uncertain | 0 | — |
+| New (unmatched) | 0 | — |
+
+Notes: all 66 fresh findings matched a prior classification by `Source:`. Findings 1–65 map one-to-one to audited TPs (same constructs as Mode A/B). Finding 66 re-matches the audited CWE-260 test-fixture FP (prior 69 / Mode A-B 66). Previously-eliminated FPs (CWE-215 `cron_servers.py:236:33`, PERF-PY-25 `cron_logger.py:31:1`, CWE-88 `cron_encrypt.py:74:12`) still absent. No new findings.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | CWE-260 | literal `"password": "password"` (any `"password": "…"` dict entry) inside `tests/**` mock-assertion fixture dict — detector's `pyConfigPasswordRE` fires on any dict key/value match with no test-scope exclusion; safe condition: dict is a unit-test expected-call argument (no config file, no credential exposure) | 1 (66) | `tests/screens/test_cron_ssh_modal.py:96:13` |
+
+## New findings
+
+None — every fresh finding already had a prior classification.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/Cronboard/chunks`
+- Function evidence: `scripts/Cronboard/findings/functions`
+- Validation: `git diff --check` — pass
+
 ## Post-fix remaining-FP audit (2026-08-02)
 
 ## Run metadata

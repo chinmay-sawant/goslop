@@ -1,0 +1,9 @@
+# goslop text fixture — CWE-88 untrusted free-operand argv (vulnerable)
+lang: python
+file: CWE-88-internal-argv-vulnerable.py
+---
+import subprocess
+
+
+def run_tool(user_flag: str, path: str) -> None:
+    subprocess.run(["tool", user_flag, path], check=False)

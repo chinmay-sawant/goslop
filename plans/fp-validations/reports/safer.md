@@ -983,3 +983,52 @@ None.
 - Function evidence: `scripts/safer/findings/functions/1.txt` .. `13.txt`
 - Validation: `git diff --check` — pass
 - Note: audited TP 31 (`test_dump.py:51:32`, BP-PY-7) did not re-fire in the fresh scan; out of Mode A scope (potential over-suppression, not assessed here).
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02 (v2 audit)
+repository: safer
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer
+branch: main
+commit: eae83f7df824752540ad1e67d50099e13c86a647 (unchanged)
+chunk_path: scripts/safer/chunks
+function_context_path: scripts/safer/findings/functions
+scanner_binary: bin/goslop (rebuilt ~2026-08-02 17:56)
+```
+
+### Scan evidence
+
+- Findings: `13` (chunk `scripts/safer/chunks/Chunk_1_13.txt`; contexts 1..13 all read; enclosing source re-checked at `safer/__init__.py:312,573` for the re-raise shapes)
+- All 13 findings match a prior audit classification by `Source:` — no fresh classification needed beyond reuse; re-verified each source is unchanged from the audited construct.
+
+### Classification summary
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 7 | 1, 2, 3, 4, 8, 12, 13 |
+| True positive | 6 | 5, 6, 7, 9, 10, 11 |
+| Uncertain | 0 | — |
+
+Matches: 1→FP6, 2→FP7, 3→FP14, 4→FP15, 5→TP22, 6→TP23, 7→TP25, 8→FP26, 9→TP27, 10→TP36, 11→TP38, 12→FP39, 13→FP40.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-1 | `except Exception:` token inside module docstring example — `detectBPPY1` scans unmasked source (`codeLinesFacts(..., unit.Source)`), only strips comments; fix: mask string/docstring content like BP-PY-7 does (`pytext.Mask`, rules_core.go:356) so a literal-in-string cannot be a handler | 2 | `safer/__init__.py:87:1`, `:97:1` |
+| 2 | BP-PY-7 | bare `open(` that resolves to the module's own `open` replacement — non-builtin kwargs (`delete_failures`/`dry_run`/`enabled`) prove callee is `def open` at `__init__.py:323`, and its result is returned to the caller, not leaked; fix: skip bare `open(` when the callee is module-defined or kwargs are non-builtin, or when the result is a return value owned by the caller | 1 | `safer/__init__.py:225:16` |
+| 3 | CWE-396 | generic `except Exception:` whose suite re-raises (cleanup + bare `raise`) — current `detectCWE396` (rules_platform.go:41-60) has no suite/re-raise exemption and Mode A's b5b8fde build skipped this handler, so this re-fire is a regression; fix: restore exemption for suites containing a bare `raise` | 1 | `safer/__init__.py:312:1` |
+| 4 | CWE-459 | `tempfile.mkstemp` in class `__init__` whose file is disposed by sibling class methods (`_failure` → `os.remove`, `_success` → `os.replace`) — same-function heuristic can't see same-class lifecycle; fix: skip when the owning class has both removal and replace paths for the temp file | 1 | `safer/__init__.py:621:29` |
+| 5 | CWE-772 + BP-PY-7 | resource assigned (`fp = open(...)`) then handed to a `with`-managed wrapper on the next statement (`with safer.writer(fp, close_on_exit=True)` closes it via `with stream:`) — neither rule looks ahead to the downstream context-manager release; fix: treat a same-function context-manager release as satisfying cleanup/leak conditions (one shared shape, two rules) | 2 | `test/test_writer.py:191:1`, `:192:10` |
+
+## New findings
+
+None — every fresh finding (13/13) had a prior audit classification at the identical `Source:`; no unclassified constructs.
+
+Coverage observations for the fix phase (not new findings):
+
+- Mode A TP 7 (CWE-396 @ `573:1`, non-re-raising handler) is no longer emitted: `detectCWE396` returns after the first match per module (rules_platform.go:59), and 312 precedes 573 — the earlier FP location shadows the real one.
+- Audited TP 31 (`test_dump.py:51:32`, BP-PY-7) still does not re-fire; out of v2 scope.

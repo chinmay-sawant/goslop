@@ -1,0 +1,13 @@
+# goslop text fixture — user path param without confinement
+lang: python
+file: api/files.py
+---
+from fastapi import FastAPI
+from starlette.responses import FileResponse
+
+app = FastAPI()
+
+
+@app.get("/files/{name}")
+def files(name: str):
+    return FileResponse(name)

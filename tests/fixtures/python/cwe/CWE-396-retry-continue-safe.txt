@@ -1,0 +1,17 @@
+# goslop text fixture — retry-loop handler: the failure feeds the retry
+# machinery and the loop continues (niquests sgi/__init__.py:129 FP shape)
+lang: python
+file: retry_loop.py
+---
+def send(request):
+    retries = Retry(total=3)
+    while True:
+        try:
+            return do_send(request)
+        except Exception as err:
+            try:
+                retries = retries.increment(request.url, error=err)
+            except MaxRetryError:
+                raise
+            retries.sleep()
+            continue

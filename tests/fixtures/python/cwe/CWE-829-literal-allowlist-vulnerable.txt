@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: CWE-829-literal-allowlist-vulnerable.py
+---
+def load_user_module(module_name):
+    return __import__(module_name)
+
+
+def load_request_module(request):
+    return __import__(request.query_params["module"])

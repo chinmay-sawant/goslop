@@ -1,0 +1,23 @@
+# goslop text fixture
+lang: python
+file: test_doc_codeblocks.py
+---
+import pytest
+
+
+@pytest.mark.parametrize("block_id,code", ALL_CODEBLOCKS, ids=[b[0] for b in ALL_CODEBLOCKS])
+def test_doc_codeblock_syntax(block_id: str, code: str):
+    """Every Python code block in docs must be syntactically valid."""
+    try:
+        compile(code, block_id, "exec")
+    except SyntaxError as exc:
+        pytest.fail(f"Syntax error in {block_id}: {exc}")
+
+
+def test_doc_codeblock_exec(block_id: str, code: str):
+    needed = _needs_framework(code)
+    for framework in needed:
+        try:
+            __import__(framework)
+        except ImportError:
+            pytest.skip(f"Requires {framework}")

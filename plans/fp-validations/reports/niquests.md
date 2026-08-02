@@ -10594,3 +10594,70 @@ The `parse_scheme(prefix)` call still runs inside the loop on the request path w
 - Chunk evidence: `scripts/niquests/chunks`
 - Function evidence: `scripts/niquests/findings/functions`
 - Validation: `git diff --check` — pass (run in the goslop repo root after appending this report)
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02 (latest-binary scan, binary rebuilt ~17:56 via make build)
+repository: niquests
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/niquests
+commit: 7633aa3f1f9fcdb7790192ffd8cfacb69ca2c807 (unchanged)
+scan_target: real-repos/niquests
+chunk_path: scripts/niquests/chunks
+function_context_path: scripts/niquests/findings/functions
+```
+
+### Scan evidence
+
+- Build: `make build` → `bin/goslop` (~17:56); scan command as in the Mode A append (`--profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache`)
+- Findings: `275`; chunks `Chunk_1_25.txt`–`Chunk_251_275.txt` (all 11); contexts `findings/functions/1.txt`–`275.txt`
+- Classification by `Source:` (file:line:col) + rule against the audited TP list and the audited FP subsections (original audit + Mode A append)
+
+### Classification summary (fresh counts)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| True positive | 34 | 19, 20, 21, 26, 27, 28, 35, 38, 40, 43, 44, 99, 103, 104, 105, 106, 110, 111, 112, 124, 125, 130, 131, 141, 142, 161, 163, 166, 167, 168, 169, 170, 171, 177 |
+| False positive | 241 | 1–18, 22–25, 29–34, 36–37, 39, 41–42, 45–98, 100–102, 107–109, 113–123, 126–129, 132–160, 162, 164–165, 172–176, 178–216, 217–275 (all other IDs) |
+| Uncertain | 0 | — |
+| New findings | 0 | — |
+
+Every fresh finding matched a prior classification (34 audited TP sources + 241 audited FP source/rule pairs); no fresh rule firing on an audited line and no unclassified source. All 34 TP sources are the same audited set as Mode A; audited TP `48` (`PERF-PY-26` at `src/niquests/async_session.py:618`, `parse_scheme(prefix)` in the adapter-mount loop) is still absent from the fresh scan while the source is unchanged — the fix still over-suppresses it (regression note carried over from Mode A).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule(s) | Trigger shape (safe condition in bold) | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-2, CWE-390, CWE-1071 | `except ImportError:\n pass` around an optional-dependency import / `load_extension` / `importlib.import_module` — **safe iff the imported name is optional and callers guard the unbound state** | 56 | adapters.py:1075, sessions.py:115, utils.py:815, conftest.py:107, wasi_guest/*/app.py |
+| 2 | BP-PY-1, BP-PY-2, CWE-390, CWE-396, CWE-1071 | Pyodide JS-bridge probes (`except Exception: pass` or fallback return): `getReader()` setup, reader-cancel / `_ws.close()` / `proxy.destroy()` teardown, `to_py()` conversion, `js_headers.entries()`, `status_text`/`bytes()` — **safe iff best-effort bridge with defined fallback (None/""/b""/unset reader)** | 51 | extensions/pyodide/__init__.py:57,131,299; _async/_ws.py:123; _sse.py:151 |
+| 3 | BP-PY-14, BP-PY-46 | `requests.get(...)` / `session.get(...)` / `print(` inside `>>>` docstring doctest lines — **safe iff the token is documentation text, not executable code** | 3 | kiss_headers/__init__.py:11,27; auth.py:399 |
+| 4 | BP-PY-14 | requests/session call that passes `timeout` positionally — **safe iff the call carries a timeout argument; rule only sees `timeout=` keyword form** | 1 | async_api.py:183 |
+| 5 | BP-PY-41, BP-PY-46, CWE-22, CWE-409, BP-PY-5 | noxfile.py dev/CI scripts and `# noqa` re-export shims: print progress, test delegation, constant path join, `extractall(filter="data")`, `from .x import *` — **safe iff the file is a build/CI script or the wildcard is the module's designed re-export** | 7 | noxfile.py:95,147,157,237; _async.py:14; _typing.py:14 |
+| 6 | CWE-829, CWE-94 | `__import__`/`locals()[pkg] = __import__(...)`/`importlib.import_module` over the project's own fixed package list (packages.py) or `pkgutil.walk_packages` of its own tree (wasi_guest) — **safe iff the imported names derive from the repo's own package, not request input** | 22 | packages.py:42; wasi_guest/*/app.py |
+| 7 | BP-PY-41 | `def test_...` whose body only delegates / is a smoke or expected-exception test — **safe iff assertions live in the delegated helper or `pytest.raises` guards the outcome; suppress in tests/ paths** | 11 | test_requests.py:79,1030,2163; test_emscripten.py:684; test_async.py:195 |
+| 8 | BP-PY-10, CWE-502 | `pickle.loads(pickle.dumps(x))` round-trip in tests — **safe iff the unpickled data is produced in the same test** | 7 | test_requests.py:1651,1655,1663,1679,1694,1724 |
+| 9 | BP-PY-2, CWE-390, CWE-1071 | expected-exception tests: `except ReadTimeout/ConnectTimeout/ValueError/OSError/Err: pass` with a preceding `pytest.fail(...)` — **safe iff the handler is the asserted positive outcome** | 9 | test_requests.py:2630,2647; wasi_guest/async/edge_cases.py:297,305 |
+| 10 | CWE-1341 | intentional double `close()` in edge-case tests — **safe iff the test asserts idempotent close** | 2 | wasi_guest/async/edge_cases.py:335; sync/test_edges.py:377 |
+| 11 | CWE-617, CWE-397, CWE-208, CWE-770, CWE-772, BP-PY-1 | misc test-harness firings: reachable assert, `raise Exception()`, `==` on auth objects, request-body read, test sockets — **safe iff inside the tests/ harness** | 10 | test_async.py:30; test_testserver.py:41,220; test_wsgi.py:59; testserver/server.py:90 |
+| 12 | BP-PY-49 | `verify=False`/`CERT_NONE` token inside an error-message string literal — **safe iff the marker is a string, not a disabling assignment** | 1 | wasi/_utils.py:63 |
+| 13 | CWE-1341 | `close()` in mutually exclusive branches (isinstance if/else, retry-raise path) — **safe iff each execution path releases the handle exactly once** | 3 | async_session.py:1015; wasi/_adapter.py:235; _async/_adapter.py:256 |
+| 14 | CWE-396, BP-PY-1 | generic `except Exception/BaseException` that propagates: `retries.increment` + MaxRetryError re-raise, `app_exception` capture/re-raise, `future.set_exception(e)`, re-raise of non-expected types, cleanup-then-propagate — **safe iff the failure is fed forward or translated, not swallowed** | 12 | sgi/__init__.py:129; sgi/_async/__init__.py:355,661; utils.py:256; sgi/_sse.py:153; sgi/_ws.py:44 |
+| 15 | BP-PY-2, CWE-390, CWE-1071 | parsing/attr probes with `except ValueError/TypeError/OSError/AttributeError/UnsupportedOperation: pass` — **safe iff a defined fallback state results (property falls through, `_body_position`/`content_length` stays unset/None)** | 29 | kiss_headers/builder.py:350; models.py:1065,1233; utils.py:157,1196; wasi/_async/_sse.py:62 |
+| 16 | BP-PY-2, CWE-390 | iterator-exhaustion and async shutdown: `except StopIteration/StopAsyncIteration/CancelledError/GeneratorExit/TimeoutError: pass` in generator loops and lifespan-server teardown — **safe iff these are designed termination signals** | 5 | async_session.py:957; sessions.py:1709; sgi/_async/__init__.py:679,687 |
+| 17 | BP-PY-2, CWE-390, CWE-1071 | best-effort issuer-certificate fetch: `except RequestException: pass` — **safe iff the fetch is optional enrichment with a defined fallback (no issuer hint)** | 6 | revocation/_crl/__init__.py:259; _ocsp/__init__.py:325 |
+| 18 | CWE-93 | header write into outgoing request headers (Authorization, PreparedRequest.headers dict) — **safe iff the target is a client-side request header, not a response header** | 2 | auth.py:75; models.py:488 |
+| 19 | CWE-772 | socket created and ownership transferred to the connection object (closed by owner lifecycle) or test sockets under `pytest.raises` — **safe iff the resource is released by its owner** | 3 | unixsocket/__init__.py:47; test_testserver.py:41; testserver/server.py:81 |
+| 20 | BP-PY-36 | module-level `pypi_session = Session()` in help.py — **safe iff `Session` is the package's own HTTP session class, not SQLAlchemy** | 1 | help.py:176 |
+
+## New findings
+
+None — all 275 fresh findings matched a prior classification by `Source:` (+rule); the only gap is the still over-suppressed audited TP `PERF-PY-26` at `src/niquests/async_session.py:618` (documented above, carried over from Mode A).
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/niquests/chunks`
+- Function evidence: `scripts/niquests/findings/functions`
+- Validation: `git diff --check` — pass (run in the goslop repo root after appending this report)

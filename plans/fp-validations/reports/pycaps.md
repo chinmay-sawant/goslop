@@ -810,3 +810,52 @@ Finding 29 (CWE-396, `src/pycaps/video/video_generator.py:127:1`) is a new true 
 - Chunk evidence: `scripts/pycaps/chunks`
 - Function evidence: `scripts/pycaps/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+build: make build ~2026-08-02 17:56 (post-b5b8fde latest binary)
+repository: pycaps
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps
+chunk_path: scripts/pycaps/chunks
+function_context_path: scripts/pycaps/findings/functions
+```
+
+### Scan evidence
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pycaps/chunks -context-dir scripts/pycaps/findings/functions real-repos/pycaps`
+- Findings: `34` (up from 29 in the b5b8fde run)
+- Chunks reviewed: `scripts/pycaps/chunks/Chunk_1_25.txt`, `Chunk_26_34.txt`
+- Function contexts reviewed: `scripts/pycaps/findings/functions/1.txt … 34.txt`
+
+### Classification summary (fresh counts)
+
+Every fresh `Source:` matched a prior audit entry; no unmatched sources, so no rule re-evaluation was needed.
+
+| Classification | Count | Fresh finding IDs |
+| --- | ---: | --- |
+| False positive | 6 | 1, 10, 14, 18, 25, 29 |
+| True positive | 28 | 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 16, 17, 19, 20, 21, 22, 23, 24, 26, 27, 28, 30, 31, 32, 33, 34 |
+| Uncertain | 0 | — |
+
+FP set is identical to the b5b8fde run (fresh 1/10/14/18/25/29 = prior FPs 1/9/12/16/22/25). The 6 FPs and all 28 TPs reuse the prior reasons verbatim by source match.
+
+Note: 5 findings re-appeared vs the b5b8fde run (findings went 29 → 34). All 5 are CWE-396 sites that were TP in the original audit and absent in the Mode A run: gpt.py:31, caps_pipeline.py:224, css_subtitle_renderer.py:73, google_audio_transcriber.py:99, whisper_audio_transcriber.py:84. Their generic `except Exception as e:` handlers (wrapping into `RuntimeError(...) [from e]`, or log-and-reraise) are genuine — the b5b8fde suppression of that shape regressed in the latest build.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-13 | Secret-like identifier (e.g. containing `api_key`) assigned a string literal that is an environment-variable *name* read via `os.getenv(IDENT)` — distinguish by: literal is a lookup key for `os.getenv`, never a credential value | 1 | gpt.py:6 |
+| 2 | CWE-409 | `zipfile.ZipFile(...).extractall(...)` — distinguish by: archive bytes come solely from a compile-time constant URL (project's own pinned release asset); no user input reaches the extraction sink | 1 | animate_segment_emojis_effect.py:71 |
+| 3 | CWE-367 | `os.path.exists(path)` checked before later separate `open(path)`/`os.remove(path)` — distinguish by: check only feeds a user-facing error and the race fails benignly (FileNotFoundError); no privilege/integrity boundary or attacker-controlled state. (Test-teardown guard variant `exists and remove` in tests is already suppressed by the fix.) | 1 | caps_pipeline_builder.py:49 |
+| 4 | CWE-478 | `match` with 2+ cases and no `case _` — distinguish by: matched domain is a pydantic `Literal` union whose every member is branched (invalid values rejected by `ValidationError` before the match) or a Python `Enum` whose members are all branched (invalid values cannot construct) | 2 | json_config_loader.py:93, time_event_selector.py:28 |
+| 5 | CWE-186 | `re.compile` with a fixed `\d{n}` quantifier — distinguish by: the regex *extracts* a standards-fixed format (VTT inline timestamp `[HH:]MM:SS.mmm`), it is not a validator that rejects valid user identifiers | 1 | transcript_loader.py:14 |
+
+Total: 5 patterns covering 6 FPs.
+
+## New findings
+
+None — every fresh finding (34/34) matched a prior audited classification by `Source:`; 5 re-appeared CWE-396 TPs (see note above) are previously audited, not new.

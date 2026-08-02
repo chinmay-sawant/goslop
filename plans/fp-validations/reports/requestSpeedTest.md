@@ -273,3 +273,54 @@ None.
 - Chunk evidence: `scripts/requestSpeedTest/chunks/Chunk_1_11.txt`
 - Function evidence: `scripts/requestSpeedTest/findings/functions/1.txt` .. `11.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T17:56Z
+repository: requestSpeedTest
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest
+branch: main
+commit: 60626f3d548258a76c8df962db1b26aa9baa0e87
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest
+chunk_path: scripts/requestSpeedTest/chunks
+function_context_path: scripts/requestSpeedTest/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (bin/goslop rebuilt ~2026-08-02 17:56)
+- Findings: `11`
+- Chunks reviewed: `scripts/requestSpeedTest/chunks/Chunk_1_11.txt`
+- Function contexts reviewed: `scripts/requestSpeedTest/findings/functions/1.txt` .. `11.txt`
+
+### Classification summary
+
+Fresh findings are identical to the Mode A/B (b5b8fde) scan — same 11 sources, no new or dropped findings. All classified by `Source:` match against the prior audits; no rule needed `-explain`.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 2 | 1 (BP-PY-1), 8 (BP-PY-1) |
+| True positive | 9 | 2, 3, 4, 5, 6, 7, 9, 10, 11 |
+| Uncertain | 0 | — |
+
+Reused reasons: F1 = prior FP (`rnet_test.py:37:1`, except suite accounts+logs the failure, not a swallow); F8 = prior FP (`increase_limits.py:38:1`, except suite prints the failure detail, error surfaced). F2–F7, F9–F11 = prior TPs (CWE-117 log injection, seven BP-PY-46 prints in library function, CWE-396 generic catch merging ValueError/OSError).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-1 | `except Exception as e:` whose suite **uses `e` to surface the failure** (logs `e`, prints `{e}`, or records error type/counters returned to caller) — flagged despite the rule's "without handling or re-raise" clause. Condition to fix: exempt except suites that reference the caught exception variable or aggregate failure metrics (only flag `except Exception:` with empty/silent suites) | 2 | `send_request/rnet_test.py:37:1`, `utils/increase_limits.py:38:1` |
+
+## New findings
+
+None — every fresh finding matched a prior classification by `Source:`; no unclassified findings in this scan. Both audited FPs (old 1, 2 — BP-PY-42) remain suppressed by the fix.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/requestSpeedTest/chunks/Chunk_1_11.txt`
+- Function evidence: `scripts/requestSpeedTest/findings/functions/1.txt` .. `11.txt`
+- Validation: `git diff --check` — pass

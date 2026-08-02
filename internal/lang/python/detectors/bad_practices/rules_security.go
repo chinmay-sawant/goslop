@@ -74,7 +74,8 @@ func detectBPPY9(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 // BP-PY-10: pickle.load / pickle.loads / _pickle / cloudpickle on non-constant /
 // untrusted-looking sources (request body, user path, generic payload names).
-// Trusted/local cache-style constant loads are missed.
+// Trusted/local cache-style constant loads and same-process pickle.dumps
+// round-trips (especially in tests) are missed.
 func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-10")
 	if !facts.hasAny("pickle.", "cloudpickle.", "_pickle.") {
@@ -103,12 +104,25 @@ func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				}
 				inner = src[abs:windowEnd]
 			}
+			// Same-process round-trip: pickle.loads(pickle.dumps(x)) is trusted
+			// (niquests pickleability tests).
+			if pickleArgIsRoundTrip(inner) {
+				start = abs + len(n)
+				continue
+			}
 			if pickleArgLooksUntrusted(inner) {
 				pushAt(unit, meta, abs, "pickle load can execute arbitrary code; avoid on untrusted data", out)
 			}
 			start = abs + len(n)
 		}
 	}
+}
+
+// pickleArgIsRoundTrip reports pickle.loads(pickle.dumps(...)) style args.
+func pickleArgIsRoundTrip(arg string) bool {
+	lower := strings.ToLower(arg)
+	return strings.Contains(lower, "pickle.dumps(") || strings.Contains(lower, "cloudpickle.dumps(") ||
+		strings.Contains(lower, "_pickle.dumps(")
 }
 
 func pickleArgLooksUntrusted(arg string) bool {
@@ -187,8 +201,10 @@ func detectBPPY11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 // BP-PY-12: eval( / exec( / compile(..., 'exec')
 // Only the builtins are in scope. Attribute methods such as session.exec /
-// app.exec / db.exec are SQL/Qt/container APIs, not the exec builtin. Matches
-// inside comments and string literals are ignored via pytext.Mask.
+// app.exec / db.exec are SQL/Qt/container APIs, not the exec builtin, unless
+// the receiver is the explicit builtins module. def/async def signatures that
+// merely declare a method named exec/eval are not call sites. Matches inside
+// comments and string literals are ignored via pytext.Mask.
 func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-12")
 	if !facts.hasAny("eval(", "exec(", "compile(") {
@@ -199,10 +215,15 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	for _, name := range []string{"eval", "exec"} {
 		for _, off := range findAllIdent(masked, name) {
 			if off > 0 && masked[off-1] == '.' {
-				continue
+				if !bpReceiverIsBuiltins(masked, off) {
+					continue
+				}
 			}
 			end := off + len(name)
 			if end >= len(src) || src[end] != '(' {
+				continue
+			}
+			if bpIsDefHeaderIdent(src, off) {
 				continue
 			}
 			arg, ok := firstCallArg(src, end)
@@ -227,6 +248,9 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if end >= len(src) || src[end] != '(' {
 			continue
 		}
+		if bpIsDefHeaderIdent(src, off) {
+			continue
+		}
 		inner, ok := callArgsRegion(src, end)
 		if !ok {
 			continue
@@ -241,6 +265,42 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			pushAt(unit, meta, off, "compile with exec/eval mode on dynamic input is unsafe", out)
 		}
 	}
+}
+
+// bpIsDefHeaderIdent reports whether the identifier at off is the declared
+// name of a def/async def signature (e.g. `def exec(self, sql): ...`), not a
+// call site.
+func bpIsDefHeaderIdent(src string, off int) bool {
+	if off <= 0 || off > len(src) {
+		return false
+	}
+	lineStart := off
+	for lineStart > 0 && src[lineStart-1] != '\n' {
+		lineStart--
+	}
+	prefix := strings.TrimSpace(src[lineStart:off])
+	return prefix == "def" || prefix == "async def"
+}
+
+// bpReceiverIsBuiltins reports whether the attribute receiver immediately left
+// of the identifier at identAt is the explicit builtins module (builtins.exec
+// / builtins.eval are the builtin, unlike session.exec / app.exec).
+func bpReceiverIsBuiltins(masked string, identAt int) bool {
+	dot := identAt - 1
+	if dot <= 0 || masked[dot] != '.' {
+		return false
+	}
+	end := dot
+	start := end
+	for start > 0 {
+		c := masked[start-1]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+			start--
+			continue
+		}
+		break
+	}
+	return masked[start:end] == "builtins"
 }
 
 var secretNameRe = regexp.MustCompile(`(?i)\b([A-Za-z_][A-Za-z0-9_]*(?:password|passwd|secret|api_key|apikey|token|private_key|access_key)[A-Za-z0-9_]*)\s*=\s*`)

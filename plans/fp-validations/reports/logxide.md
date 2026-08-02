@@ -5400,3 +5400,69 @@ Note: fresh finding 125 (`examples/flask_integration.py:137:1`, CWE-396) is a ne
 - Chunk evidence: `scripts/logxide/chunks` (all 15 files)
 - Function evidence: `scripts/logxide/findings/functions` (context files for all 67 FPs and finding 125)
 - Validation: `git diff --check` — pass (exit 0, no whitespace errors)
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata (fresh scan, latest binary)
+
+```yaml
+timestamp: 2026-08-02T18:00:00Z
+repository: logxide
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide
+branch: main
+commit: 136f7a4c3bc593488cd1e2c62bd74956265533d6
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide
+chunk_path: scripts/logxide/chunks
+function_context_path: scripts/logxide/findings/functions
+binary: ./bin/goslop rebuilt 2026-08-02 17:56 (latest, post-b5b8fde; detector worktree changes uncommitted)
+```
+
+### Scan evidence (fresh run)
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/logxide/chunks -context-dir scripts/logxide/findings/functions real-repos/logxide`
+- Findings: `408`
+- Chunks reviewed: `scripts/logxide/chunks/Chunk_1_25.txt` .. `scripts/logxide/chunks/Chunk_401_408.txt` (all 17 chunk files)
+- Function contexts reviewed: `scripts/logxide/findings/functions/<id>.txt` (408 files; source files followed up where the excerpt was insufficient)
+
+### Classification summary (fresh run)
+
+Fresh findings matched to prior audits by `Source:` (`file:line:col`) + rule: audited TP → TP, audited FP (original 503-run and/or b5b8fde append) → FP reusing the prior reason. 408 fresh = 316 TP + 92 FP + 0 Uncertain + 0 new (every fresh (rule, source) pair has a prior classification; note fresh finding 133 `examples/flask_integration.py:137:1` BP-PY-1 matches the audited TP — the CWE-396 twin from the b5b8fde run no longer fires, so no new finding).
+
+| Classification | Count |
+| --- | ---: |
+| False positive | 92 |
+| True positive | 316 |
+| Uncertain | 0 |
+| New (no prior classification) | 0 |
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | `print(...)` in a runnable script module (examples/ demos, repo-root scratch `tmp_test_intercept.py`); condition: file is a script/demo (not an imported library module) | 26 | examples/minimal_dropin.py:15:5, examples/format_minimal.py:3:1, tmp_test_intercept.py:10:1 |
+| 2 | BP-PY-1 (7) + CWE-396 (2) | `except Exception:` in `Handler.emit()` whose body is exactly `self.handleError(record)` (stdlib emit contract, often after `except RecursionError: raise`); condition: body routes to handleError vs empty/pass | 9 | logxide/handlers.py:191:1, logxide/compat_handlers.py:361:1 |
+| 3 | BP-PY-1 (3) + CWE-396 (3) | `except Exception:` with explicit fallback assignment (`old_level = None`, `message = str(record.msg)`, safe defaults); condition: fallback value assigned vs bare swallow | 6 | logxide/interceptor.py:42:1, logxide/fast_logger_wrapper.py:55:1, logxide/testing.py:163:1 |
+| 4 | BP-PY-1 | catch-all in web handler converting failure into a modeled outcome: HTTP 500 response (3), health-check status (3), `db.session.rollback()` (1); condition: handler body models the failure outcome | 7 | examples/django_integration.py:317:1, examples/flask_integration.py:219:1 |
+| 5 | BP-PY-1 (2) + CWE-396 (2) | catch-all delegates to full exception reporting: `logger.exception(...)`/`exc_info=True` or `self._handle_error(e)` | 4 | examples/sentry_integration.py:111:1, logxide/sentry_integration.py:85:1, tests/test_compatibility.py:12:1 |
+| 6 | CWE-396 | catch-all converts failure into a recorded benchmark result (`result.ok = False`/`result.error`/traceback) | 2 | benchmark/basic_handlers_benchmark.py:117:1, benchmark/perf_micro.py:79:1 |
+| 7 | CWE-117 | f-string interpolated into log message where the value is a local loop counter / inline literal / internally generated name (no request/network/env input); condition: interpolated expression is externally influenced | 15 | benchmark/compare_loggers.py:138:26, tests/test_integration.py:105:17 |
+| 8 | CWE-88 | dynamic value passed as its own argv element as the value of a named option (`--library`, `--scenario`, `-n`) in list-form `subprocess.run` (no shell); condition: named-option value vs free operand | 4 | benchmark/compare_loggers.py:162:12 |
+| 9 | BP-PY-42 | try/except guarding an import/smoke check in test scripts where the except branch reports failure instead of asserting a raise (defensive guard, not expected-failure); condition: `pytest.raises`-shaped expectation | 4 | tests/test_examples.py:55:1, scripts/verify_package.py:16:1 |
+| 10 | BP-PY-40 | `Thread(..., daemon=True).start()` with explicit synchronization (`Event.wait(timeout)`, `server.shutdown()` on teardown); condition: non-daemon fire-and-forget | 3 | tests/conftest.py:36:6, tests/test_http_auth.py:41:11 |
+| 11 | CWE-489 (3) + CWE-756 (3) | `DEBUG=True` inside pytest test scaffolding (`settings.configure(...)`, `sentry_sdk.init(debug=True)`); condition: deployed application source, not test code | 6 | tests/test_examples.py:137:1, tests/test_sentry_integration.py:353:1 |
+| 12 | CWE-829 | dynamic `__import__`/importlib load where the name/path derives from repo-committed content (docs-code scan, `examples/` listing); condition: untrusted control sphere | 2 | tests/test_doc_codeblocks.py:215:13, tests/test_examples.py:25:16 |
+| 13 | CWE-94 | `compile(code, ...)` where input is the repo's own committed docs and the code object is never executed | 1 | tests/test_doc_codeblocks.py:68:9 |
+| 14 | CWE-1046 | `message_count += 1` integer increment misread as immutable string concatenation | 1 | examples/fastapi_advanced.py:656:1 |
+| 15 | CWE-1121 | `dictConfig` measured at 9 control-flow branches, below the rule threshold of 12 | 1 | logxide/config.py:21:24 |
+| 16 | CWE-1333 | `(\.\w+|\[[^]]+\])*` repetition anchored by disjoint literal delimiters (linear-time); condition: ambiguous overlapping repetition | 1 | logxide/compat_handlers.py:65:18 |
+
+## New findings
+
+None — all 408 fresh (rule, source) pairs match a prior audit classification (316 TP, 92 FP). No fresh finding lacks a prior classification.
+
+### Final evidence (v2)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/logxide/chunks` (all 17 files)
+- Function evidence: `scripts/logxide/findings/functions` (all 408 context files)
+- Validation: `git diff --check` — pass (exit 0, no whitespace errors)

@@ -1,0 +1,14 @@
+# goslop text fixture — exception-type extraction embedded in the returned
+# value: the failure state is surfaced but the broad catch still merges
+# distinct failure conditions (WeThePeople jobs/warm_politician_cache.py:60
+# TP shape)
+lang: python
+file: type_surfaced.py
+---
+def probe(person_id):
+    t0 = time.time()
+    try:
+        resp = fetch(person_id)
+        return (person_id, time.time() - t0, resp)
+    except Exception as exc:
+        return (person_id, time.time() - t0, f"ERR:{type(exc).__name__}")

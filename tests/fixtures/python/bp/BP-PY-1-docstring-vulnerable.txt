@@ -1,0 +1,9 @@
+# goslop text fixture — real swallowing handler must fire
+lang: python
+file: swallowing_handler.py
+---
+def risky():
+    try:
+        dangerous()
+    except Exception:
+        pass

@@ -1,0 +1,18 @@
+# goslop text fixture
+lang: python
+file: CWE-89-allowlist-fstring-safe.py
+---
+HR_FIELDS = {"is_active", "title", "salary"}
+PROJECT_FIELDS = {"status", "owner", "milestone"}
+
+
+def persist_editor_change(event: dict, conn) -> str:
+    field = event.get("field")
+    if field not in HR_FIELDS | PROJECT_FIELDS:
+        raise ValueError(f"Unsupported field: {field}")
+    value = event["value"]
+    if field in HR_FIELDS:
+        conn.execute(f"UPDATE employees SET {field} = ? WHERE emp_id = ?", (value, 1))
+        return f"employees.{field} updated"
+    conn.execute(f"UPDATE assignments SET {field} = ? WHERE emp_id = ?", (value, 1))
+    return f"assignments.{field} updated"

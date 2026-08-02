@@ -1,0 +1,22 @@
+# goslop text fixture
+lang: python
+file: examples/standalone_basic.py
+---
+import threading
+
+
+def event_loop(server, stop):
+    for event in server.events():
+        print(f"[+] user connected")
+    stop.wait(1.0)
+
+
+def main():
+    stop = threading.Event()
+    thread = threading.Thread(target=event_loop, args=(server, stop), daemon=True)
+    thread.start()
+    stop.wait(1.0)
+
+
+if __name__ == "__main__":
+    main()

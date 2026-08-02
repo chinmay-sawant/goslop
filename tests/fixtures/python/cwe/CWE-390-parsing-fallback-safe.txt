@@ -1,0 +1,10 @@
+# goslop text fixture — parsing probe pass followed by a defined fallback return (niquests builder.py:350 FP)
+lang: python
+file: parsing_fallback.py
+---
+def parse_value(value):
+    try:
+        return int(value)
+    except ValueError:
+        pass
+    return 0

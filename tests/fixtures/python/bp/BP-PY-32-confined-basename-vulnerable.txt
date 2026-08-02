@@ -1,0 +1,13 @@
+# goslop text fixture — bare route param into FileResponse without confinement
+lang: python
+file: api/public_artifacts_routes.py
+---
+from fastapi import APIRouter
+from fastapi.responses import FileResponse
+
+router = APIRouter()
+
+
+@router.get("/artifacts/precomputed/{filename}")
+async def get_precomputed_artifact(filename: str):
+    return FileResponse(filename, media_type="application/json", filename=filename)

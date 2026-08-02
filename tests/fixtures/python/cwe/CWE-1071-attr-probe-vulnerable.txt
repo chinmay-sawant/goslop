@@ -1,0 +1,10 @@
+# goslop text fixture — empty except block after side-effect stays reportable
+lang: python
+file: CWE-1071-attr-probe-vulnerable.py
+---
+def load_config(path):
+    try:
+        data = open(path).read()
+        return data
+    except AttributeError:
+        pass

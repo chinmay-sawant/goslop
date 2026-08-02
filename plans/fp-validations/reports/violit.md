@@ -1463,3 +1463,73 @@ None — every fresh finding was matched to an audited TP or an audited FP by ex
 - Chunk evidence: `scripts/violit/chunks` (fresh scan, 9 chunk files)
 - Function evidence: `scripts/violit/findings/functions` (fresh scan)
 - Validation: `git diff --check` — `pass`
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:00:00+05:30 (latest binary rebuild ~17:56)
+repository: violit
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit
+branch: main
+commit: 8fae080f49f374b062172ed6ac71042539ad1f7a (unchanged across all audits)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit
+chunk_path: scripts/violit/chunks (10 files, fresh 17:58)
+function_context_path: scripts/violit/findings/functions (fresh 17:58)
+```
+
+### Scan evidence
+
+- Build command: `make build` (`go build -o bin/goslop ./cmd/goslop`), binary rebuilt ~2026-08-02 17:56
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/violit/chunks -context-dir scripts/violit/findings/functions real-repos/violit`
+- Findings: `229` (was `224` in Mode A; repo commit unchanged)
+- Chunks reviewed: `scripts/violit/chunks/Chunk_1_25.txt` … `Chunk_226_229.txt` (all 10)
+- Function contexts reviewed: `scripts/violit/findings/functions/` for every fresh finding matched to a prior audited FP (2, 10, 11, 12, 26, 27, 63, 82, 86, 106, 119, 135, 144, 145, 146, 161, 195, 207, 216) plus spot-checks on returned TPs
+- Matching: every fresh finding was matched to the prior audits by `Source:` (file:line[:col]); a source path is present in at least one prior classification for all 229 fresh findings
+
+### Classification summary (fresh run)
+
+All 229 fresh findings matched an audited classification by exact `Source:`; the flagged constructs were re-verified in the current source (line numbers unchanged) and re-checked against the rule condition. The 19 fresh findings matching audited FPs remain false positives; the 210 matching audited TPs remain true positives.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 19 | 2, 10, 11, 12, 26, 27, 63, 82, 86, 106, 119, 135, 144, 145, 146, 161, 195, 207, 216 |
+| True positive | 210 | all other fresh finding IDs (1–229) |
+| Uncertain | 0 | — |
+
+Observations vs Mode A:
+- 5 Mode-A-suppressed TPs are firing again in the latest binary (constructs unchanged in source): old 7/10 (`print` at module level in `violit_advanced_blog.py:349` / `violit_blog.py:299`) and old 25/26/27 (`sys.path.insert` bootstrap in the three `examples/99_github_issues/*.py:4`) — re-classified TP.
+- Still suppressed (construct present, no finding): old 32 (CWE-215 at `app.py:177`), old 129/137–142 (`cli.py` prints), old 221 (CWE-367 at `form_widgets.py:543`).
+- All 10 Mode-A-fixed FPs stay fixed (no fresh finding at old 5/8/28/90/148/157/159/160/161/164 sources).
+- All 19 Mode-A remaining FPs re-fire at identical `Source:` locations; each was re-verified against its rule condition and remains a false positive.
+
+### False positives (remaining, 19)
+
+Every one re-appears at the exact `Source:` audited as FP in the pre-fix run and re-verified unchanged; the reasons are identical to the prior audit entries (old 2, 12/13/14, 29, 30, 67, 86, 91, 111, 124, 147, 158/162/163, 179, 213, 226, 235).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | CWE-1121 | substring `if `/`for `/`while `/`except ` counter treats ternaries (`x if y else z`), comprehension/generator clauses (`for item in …`, `if …` inside `[...]`/`{...}`/`any(...)`), and nested def/class bodies as branches; real AST branch count < 12 | 7 | old_archive_demo_showcase.py:178, app.py:124 (`__init__`), background.py:188 (`_run`), chart_widgets.py:19 (`_normalize`), form_widgets.py:67, input_widgets.py:415, layout_widgets.py:326 (`builder` closures) |
+| 2 | BP-PY-37 + CWE-89 | `conn.execute(f"UPDATE … SET {field} = ? …", (v, id))` where the interpolated token `field` is allowlist-constrained by a same-function `if field not in HR_FIELDS \| PROJECT_FIELDS: raise`; values travel via bound params | 3 | demo_multi_db_sqlite_editor.py:230:17 (×2 rules), :234:13 |
+| 3 | CWE-93 | header assignment `response.headers["Cache-Control"] = self._cache_control_for_scope(scope)` where the callee returns only fixed string literals (trigger is the call expression, not external data) | 1 | src/violit/app.py:85:21 |
+| 4 | BP-PY-40 | `thread = threading.Thread(…, daemon=True)` on line N, `thread.start()` on line N+1; the `daemon=True` exemption inspects only the `.start(` line | 1 | app_launcher.py:298:15 (constructor at :297) |
+| 5 | BP-PY-13 | regex matches `window._csrf_token = ` — JavaScript identifier text *inside* an f-string/HTML template, whose RHS is a runtime-generated value, not a hardcoded literal | 1 | app_runtime.py:414:32 |
+| 6 | BP-PY-32 | `FileResponse(path=media_path)` where `media_path` comes from the app-populated session/media registry (`registry.get(media_id)`), not from request params | 1 | app_runtime.py:553:24 |
+| 7 | CWE-117 | log f-strings interpolating only internally generated values — `len(dirty)` (int), `sid[:8]` (truncated server id), `table_name` (SQLModel metadata) — which cannot carry CR/LF | 2 | background.py:312:17, db.py:129:17 |
+| 8 | BP-PY-14 | `session.get(model, pk)` / `session.delete(managed)` where `session` is a SQLModel `Session` (imported from `sqlmodel`, bound to `self._engine`), not a `requests.Session`; name-based regex match | 3 | db.py:279:20, :353:13, :369:17 |
+
+Condition to distinguish safe from vulnerable (per pattern): 1 — count AST `If/For/While/Try` statements of the function body only, excluding ternaries, comprehensions, and nested defs; 2 — require the interpolated SQL token to pass an in-scope allowlist membership check before the call (else flag); 3 — only flag header writes whose value can actually contain externally influenced data (resolve callee literal-only returns as constant); 4 — resolve the `Thread(...)` constructor (previous line / AST) for the `daemon=True` exemption; 5 — skip matches whose text lies inside a string literal and whose RHS is not a literal; 6 — only flag FileResponse paths derived from request input, not framework registry lookups; 7 — only flag log f-strings that interpolate externally controlled string values; 8 — resolve the receiver type/import (SQLModel `Session` = miss), flag only `requests` sessions.
+
+## New findings
+
+None — every fresh finding (229/229) matched a prior audited classification by exact `Source:`; no fresh finding lacked a prior classification.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/violit/chunks` (fresh scan, 10 chunk files)
+- Function evidence: `scripts/violit/findings/functions` (fresh scan)
+- Validation: `git diff --check` — `pass`

@@ -1,0 +1,11 @@
+# goslop text fixture — generic catch swallows; no raise follows (CWE-396-vulnerable shape)
+lang: python
+file: fallthrough_return.py
+---
+def make_request():
+    try:
+        xhr = send()
+        return parse(xhr)
+    except Exception:
+        msg = "request failed"
+    return msg

@@ -1,9 +1,0 @@
-# goslop text fixture — generic except returns default without surfacing failure
-lang: python
-file: CWE-396-batch3-exc-info-vulnerable.py
----
-def scrape_one(name):
-    try:
-        return do_scrape(name)
-    except Exception:
-        return (False, None)

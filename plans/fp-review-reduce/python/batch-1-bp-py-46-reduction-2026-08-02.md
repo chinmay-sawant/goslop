@@ -23,9 +23,9 @@ Library TPs (e.g. httpmorph `src/httpmorph/_async_client.py`, pytogether middlew
 
 | Guardrail | Behavior |
 | --- | --- |
-| `isPythonScriptModule` | Early-return for path dirs `examples|example|scripts|script|tools|tool|demos|demo|commands` and basenames `setup.py`, `__main__.py`, `cli.py` |
+| `isPythonScriptModule` | Early-return for path dir `commands` and basenames `setup.py`, `__main__.py`, `cli.py`. **Narrowed 2026-08-02** (dropped `examples|scripts|tools|demos` — over-suppressed FuncToWeb/WeThePeople TPs); see `over-suppress-fix-script-path-2026-08-02.md` |
 | `isPythonShebangScript` | Early-return when source starts with `#!` |
-| `pythonUsesRichPrint` | Early-return when module does `from rich import print` |
+| `pythonUsesRichPrint` | ~~Early-return when module does `from rich import print`~~ — **reverted** (over-suppressed contribute/try_upload TPs); now only feeds `pythonHasClickishCLI` + presentation name skips. See `over-suppress-fix-rich-print-2026-08-02.md` |
 | `isPythonCLIDecorator` | Recognize Click/Typer/Cyclopts/Flask: `.cli.command(`, `click.command/group(`, `cli.command/group(`, `.command(`, `.default(`, `.callback(` |
 | Masked twin lines (`pytext.Mask`) | Skip wholly blanked lines for indent tracking; only flag `print(` that survives masking |
 | `pythonCLIPrintSkipFunc` | Also skip `show_*` when `__main__` invokes `main`; `run_*` with argparse; `*_command` when Clickish CLI imports present |
@@ -49,7 +49,8 @@ Library TPs (e.g. httpmorph `src/httpmorph/_async_client.py`, pytogether middlew
 
 All under `tests/fixtures/python/bp/`:
 
-- `BP-PY-46-script-path-{safe,vulnerable}.txt`
+- `BP-PY-46-script-path-{safe,vulnerable}.txt` (safe rewritten to shebang; no longer relies on `examples/` path skip)
+- `BP-PY-46-examples-library-print-{safe,vulnerable}.txt` (FuncToWeb over-suppression non-regression; added 2026-08-02)
 - `BP-PY-46-click-cli-{safe,vulnerable}.txt`
 - `BP-PY-46-typer-cli-{safe,vulnerable}.txt`
 - `BP-PY-46-cyclopts-cli-{safe,vulnerable}.txt`
@@ -97,5 +98,5 @@ Full package / full python integration currently also surface **unrelated** para
 1. **FlashySurf** root scripts (`data-process.py`, `semantic-classification.py`) — no shebang, not under script dirs; hyphenated basenames were not exempted (would break fixture `file:` paths).
 2. **caniscrape** 12 leftovers in `analyzers/*`, `utils/*`, `config.py` — audit called them CLI presentation, but they lack decorators/rich-print/commands-path; skipped as too broad without stronger evidence.
 3. **WHEN-Language `interpreter.py`** prints — not in the when.py FP cluster; left alone (possible TPs).
-4. **`from rich import print` whole-module skip** — correct for audited CLIs; a library that rebinds rich.print for debug would be silenced (rare; note for follow-up).
+4. **`from rich import print` whole-module skip** — **fixed** in `over-suppress-fix-rich-print-2026-08-02.md` (presentation-name skips only; contribute/try_upload fire again).
 5. Parallel agents may still be editing shared `audit_variants_test.go` / BP matrix inventory thresholds.

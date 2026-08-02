@@ -20,17 +20,23 @@ func TestBPPY46PrintInLibrary(t *testing.T) {
 	// Script-path / CLI decorator / docstring masking variants
 	for _, caseName := range []string{
 		"BP-PY-46-script-path",
+		"BP-PY-46-examples-library-print",
 		"BP-PY-46-click-cli",
 		"BP-PY-46-typer-cli",
 		"BP-PY-46-cyclopts-cli",
 		"BP-PY-46-docstring-print",
 		"BP-PY-46-main-epilog",
 		"BP-PY-46-shebang-script",
+		"BP-PY-46-shebang-vestigial-library",
 		"BP-PY-46-setup-script",
 		"BP-PY-46-string-template",
 		"BP-PY-46-cli-module",
 		"BP-PY-46-commands-path",
 		"BP-PY-46-rich-print",
+		"BP-PY-46-console-method",
+		"BP-PY-46-demo-script-examples",
+		"BP-PY-46-demo-guard-local",
+		"BP-PY-46-script-completion",
 	} {
 		vulnCase := loadBPFixture(t, caseName, true)
 		safeCase := loadBPFixture(t, caseName, false)

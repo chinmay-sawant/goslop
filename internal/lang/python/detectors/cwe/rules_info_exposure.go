@@ -88,10 +88,16 @@ func authResponseDiscrepancy(source, masked string) (bool, bool, int) {
 // authentication-sensitive values. hmac.compare_digest and ordinary equality
 // comparisons without two such identifiers are not reported.
 //
+// Test modules are skipped: assert token/authority comparisons and fixture
+// constant checks are not deployed authentication sinks.
+//
 // Two-pass hot path: only lines containing "==" are checked with the timing
 // compare RE (avoids FindAllStringIndex over the whole file).
 func detectCWE208(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if isPythonTestModule(unit) {
 		return
 	}
 	src := unit.Source

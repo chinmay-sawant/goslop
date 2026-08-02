@@ -8,3 +8,19 @@ from rich import print
 def prompt_usage_telemetry():
     print("Help us improve!")
     return True
+
+
+def show_status():
+    print("Telemetry status ok")
+
+
+def enable_usage_telemetry():
+    print("Usage telemetry enabled.")
+
+
+def disable_usage_telemetry():
+    print("Usage telemetry disabled.")
+
+
+def display_diff(diff):
+    print("Diff summary")

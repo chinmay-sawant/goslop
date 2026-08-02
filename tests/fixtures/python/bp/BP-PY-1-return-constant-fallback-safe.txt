@@ -1,0 +1,16 @@
+# goslop text fixture — best-effort probe with defined return-None fallback
+# (niquests extensions/pyodide to_py / read FP shape)
+lang: python
+file: pyodide_read.py
+---
+def get_next_chunk(reader):
+    try:
+        result = run_sync(reader.read())
+        if result.done:
+            return None
+        value = result.value
+        if value is not None:
+            return bytes(value.to_py())
+        return None
+    except Exception:
+        return None

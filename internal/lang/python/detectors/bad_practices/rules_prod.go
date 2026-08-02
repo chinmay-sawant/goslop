@@ -174,6 +174,13 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonTestFile(unit) {
 		return
 	}
+	// Dual-mode SSL context factories (verify_ssl switch + create_default_context
+	// vs CERT_NONE) are intentional (httptap utils) — audited FPs.
+	if strings.Contains(unit.Source, "create_default_context") &&
+		(strings.Contains(unit.Source, "verify_ssl") || strings.Contains(unit.Source, "legacy")) &&
+		(strings.Contains(unit.Source, "CERT_NONE") || strings.Contains(unit.Source, "check_hostname")) {
+		return
+	}
 	if !facts.hasAny("verify=False", "_create_unverified_context", "CERT_NONE", "assert_hostname") {
 		srcQuick := unit.Source
 		if !strings.Contains(srcQuick, "verify=False") &&

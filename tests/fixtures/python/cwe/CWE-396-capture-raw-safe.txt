@@ -1,0 +1,10 @@
+# goslop text fixture — raw exception object captured and propagated after join (niquests dns.py:83 FP)
+lang: python
+file: worker_capture.py
+---
+def run_worker():
+    try:
+        step()
+    except Exception as exc:
+        worker_error = exc
+    raise worker_error

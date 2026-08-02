@@ -1,0 +1,14 @@
+# goslop text fixture — lone print inside the innermost except of an
+# error-handling ladder: the primary handler already dealt with the expected
+# failure (requestSpeedTest increase_limits.py:38 FP shape)
+lang: python
+file: ladder_print.py
+---
+def set_max_open_files():
+    try:
+        setrlimit(RLIMIT_NOFILE, (hard, hard))
+    except ValueError:
+        try:
+            setrlimit(RLIMIT_NOFILE, (65536, 65536))
+        except Exception as e:
+            print(f"Failed to set a high limit: {e}")

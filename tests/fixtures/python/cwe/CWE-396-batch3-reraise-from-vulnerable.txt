@@ -1,10 +1,13 @@
-# goslop text fixture — generic except swallows distinct failures
+# goslop text fixture — same-type re-raise of the caught exception stays
+# reportable (WeThePeople middleware/tracing.py:76 TP shape)
 lang: python
 file: CWE-396-batch3-reraise-from-vulnerable.py
 ---
-def render(tree):
+class DomainError(Exception):
+    pass
+
+def load_pipeline(name):
     try:
-        return translate(tree)
-    except Exception as e:
-        warn(str(e))
-        return None
+        return build(name)
+    except Exception as exc:
+        raise exc

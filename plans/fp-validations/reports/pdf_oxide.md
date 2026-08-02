@@ -8244,3 +8244,57 @@ None.
 - Chunk evidence: `scripts/pdf_oxide/chunks` (9 chunk files, fresh findings 1-202)
 - Function evidence: `scripts/pdf_oxide/findings/functions` (per-finding context files for fresh findings 1-202)
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+Re-audit of the fresh scan from the latest binary (rebuilt `make build` ~2026-08-02 17:56). Every fresh finding was matched by exact `Source:` (file:line:col) + `Rule` against the prior classifications in this report (original audit + Mode A append); prior FP reasons reused verbatim.
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:05:00Z
+repository: pdf_oxide
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide
+branch: main
+commit: 10b87f153200cd5c4d4a4defee471757091e6559 (unchanged)
+goslop_binary: bin/goslop rebuilt ~2026-08-02 17:56 (latest)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide
+chunk_path: scripts/pdf_oxide/chunks (Chunk_1_25 .. Chunk_251_267, 11 files)
+function_context_path: scripts/pdf_oxide/findings/functions
+```
+
+### Scan evidence
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pdf_oxide/chunks -context-dir scripts/pdf_oxide/findings/functions real-repos/pdf_oxide`
+- Findings: `267` (Mode A fresh scan: 202; original audit: 636)
+- Chunks reviewed: all 11 fresh chunk files (`Chunk_1_25.txt .. Chunk_251_267.txt`), every finding read
+- Matching method: fresh (Source, Rule) ↔ prior report classifications; 0 conflicts (no source classified both TP and FP), 0 duplicate (Source, Rule) pairs in the fresh set; function contexts/enclosing source read where a fresh FP's prior reason needed re-verification (all reused prior reasons, none re-classified fresh)
+
+### Classification summary (fresh counts)
+
+| Classification | Count |
+| --- | ---: |
+| True positive | 186 |
+| False positive | 81 |
+| Uncertain | 0 |
+| New findings | 0 |
+
+Notes: The 186 TPs are the same Source+Rule set as the Mode A fresh scan (no TP churn). The 81 FPs = the 16 Mode-A FPs (all still present at the same sources) plus 65 re-surfaced original-audit FPs — almost all BP-PY-46 `print` hits in standalone `scripts/*.py` debug/CLI files. Over-suppression unchanged from Mode A: 2 audited TPs still absent although their constructs are unchanged (old TP 37 BP-PY-41 `python/tests/test_feature_guard.py:93:1`; old TP 403 PERF-PY-25 `scripts/diagnose_character_order.py:132:1`).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | Top-level `print` in standalone CLI/debug script (scripts/, examples/); file is a script (argparse `main()` / direct top-level execution), not a library module — suppress print when the enclosing file is a standalone script, keep the hit only for library modules (imported, `__init__.py` package code) | 65 | `scripts/debug_font_encoding.py:14:1`, `scripts/check_span_spacing.py:8:1`, `scripts/inspect_tj_array.py:34:1`, `scripts/convert_pdf_spec.py:7:1`, `scripts/move_large_pdfs.py:61:13`, `examples/python/09-new-features/ocr_scanned_pdf/main.py:76:9`, `examples/python/09-new-features/image_embedding/main.py:196:1` |
+| 2 | PERF-PY-28 | Executor created once per batch run or per object `__init__` lifetime (`with ProcessPoolExecutor() as pool:` at top of `main()`/batch fn, `self._executor = ThreadPoolExecutor(...)` in `__init__`) — not per unit of work; only flag executors created inside the per-task loop | 3 | `examples/python/08-batch-processing/main.py:31:21`, `python/pdf_oxide/_async.py:118:36`, `scripts/regtest_branch_vs_main.py:270:53` |
+| 3 | PERF-PY-27 | Path derived per loop element from distinct values (list/row-specific), so the same path is never loaded repeatedly; only flag a path loaded in ≥2 iterations with no cache | 4 | `scripts/fetch_real_fixtures.py:33:1`, `scripts/regtest_branch_vs_main.py:404:1`, `scripts/regtest_branch_vs_main.py:568:1`, `scripts/sync_version.py:120:1` |
+| 4 | CWE-88 | subprocess argv operands are internal repo paths / fixed literals (`[str(binary), str(pdf)]`, `[python_bin, "-c", code, str(pdf_path)]`) — no externally influenced option-bearing input; only flag when an external value can become an option token | 3 | `scripts/regression_harness.py:111:16`, `scripts/regtest_branch_vs_main.py:193:13`, `tools/benchmark-harness/olmocr/run_olmocr_bench.py:49:13` |
+| 5 | CWE-829, CWE-94 | `__import__(import_name)` fed only by hardcoded literal module names in a source-level dict — no untrusted control sphere; only flag dynamic import of request/externally-derived names | 2 | `scripts/benchmark_all_libraries.py:50:13` |
+| 6 | BP-PY-6 | `assert` on own-output sanity check (file the script itself just wrote), not request/CLI/authz/path input validation; only flag assert on external input boundaries | 1 | `examples/python/09-new-features/image_embedding/main.py:197:1` |
+| 7 | CWE-22 | `open()` path built from module constants + string literals (`os.path.join(OUT_DIR, "output.docx")`) — no external segment reaches the sink | 1 | `examples/python/09-new-features/office_conversion/main.py:37:10` |
+| 8 | PERF-PY-23 | `json.dumps` of freshly produced per-iteration result data that cannot be hoisted out of the loop | 1 | `scripts/regtest_branch_vs_main.py:284:1` |
+| 9 | CWE-1046 | Accumulator re-initialized at top of each iteration; no repeated in-loop string concatenation growth | 1 | `scripts/regtest_branch_vs_main.py:473:1` |
+
+## New findings
+
+None — all 267 fresh findings have a prior classification (186 audited TP sources, 81 audited FP sources); there is no fresh finding without prior coverage, so nothing required fresh classification.

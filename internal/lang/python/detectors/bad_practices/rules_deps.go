@@ -278,7 +278,7 @@ func importedDeprecatedModule(t string) (string, bool) {
 	return "", false
 }
 
-// BP-PY-45: sys.path.insert/append/extend at runtime (skip test files / bootstrap).
+// BP-PY-45: sys.path.insert/append/extend at runtime (skip test files / Sphinx docs conf).
 func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-45")
 	if isRequirementsPath(unit) {
@@ -307,8 +307,7 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		kind   byte // 'd' def/class, 'i' if/for/while/with
 	}
 	var stack []scope
-	prevNonEmpty := ""
-	prevIndent := -1
+	prev := ""
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if t == "" {
@@ -328,7 +327,7 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		isPathMut := strings.Contains(t, "sys.path.insert(") || strings.Contains(t, "sys.path.append(") ||
 			strings.Contains(t, "sys.path.extend(") ||
 			strings.Contains(t, "sys.path.insert (") || strings.Contains(t, "sys.path.append (")
-		if isPathMut && !isSysPathBootstrap(t, ind, inFunc, prevNonEmpty, prevIndent) {
+		if isPathMut && !isSysPathBootstrap(t, inFunc, prev) {
 			off := line.byte
 			for _, n := range []string{"sys.path.insert", "sys.path.append", "sys.path.extend"} {
 				if i := strings.Index(line.text, n); i >= 0 {
@@ -351,9 +350,24 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				strings.HasPrefix(t, "finally:") || strings.HasPrefix(t, "match ")) {
 			stack = append(stack, scope{indent: ind, kind: 'i'})
 		}
-		prevNonEmpty = t
-		prevIndent = ind
+		prev = t
 	}
+}
+
+// isSysPathBootstrap reports import-time in-tree bootstraps that are not runtime library mutations.
+// Exempts module-level (a) guarded bootstraps — `if <root> not in sys.path:` on the preceding
+// line — and (b) inserts whose argument is built from `Path(__file__)`: the standalone in-tree
+// script/tool pattern that imports the uninstalled package. In-function inserts (lazy bootstrap
+// inside library code) and unguarded hard-coded vendor inserts stay reportable.
+func isSysPathBootstrap(t string, inFunc bool, prev string) bool {
+	if inFunc {
+		return false
+	}
+	if strings.Contains(t, "Path(__file__") {
+		return true
+	}
+	p := strings.TrimSpace(prev)
+	return strings.HasPrefix(p, "if ") && strings.Contains(p, "not in sys.path")
 }
 
 // isSphinxDocsConfPath reports docs/**/conf.py (Sphinx build configuration).
@@ -367,20 +381,4 @@ func isSphinxDocsConfPath(p string) bool {
 		return false
 	}
 	return strings.Contains(norm, "/docs/") || strings.HasPrefix(norm, "docs/")
-}
-
-// isSysPathBootstrap reports import-time path fixes that are not runtime library mutations.
-// Keeps in-function path inserts and module-level hard-coded vendor inserts reportable.
-func isSysPathBootstrap(t string, ind int, inFunc bool, prev string, prevIndent int) bool {
-	if strings.Contains(t, "__file__") {
-		return true
-	}
-	if inFunc {
-		return false
-	}
-	// Module-level: if <root> not in sys.path: sys.path.insert(...)
-	if prevIndent >= 0 && ind > prevIndent && strings.Contains(prev, "not in sys.path") {
-		return true
-	}
-	return false
 }

@@ -1,4 +1,5 @@
-# goslop text fixture
+# goslop text fixture — cleanup-then-propagate handler; the failure is re-raised
+# after resource cleanup (niquests utils.py:256, safer __init__.py:312 FP shape)
 lang: python
 file: broad.py
 ---
@@ -6,4 +7,5 @@ def f():
     try:
         x()
     except Exception:
+        cleanup()
         raise

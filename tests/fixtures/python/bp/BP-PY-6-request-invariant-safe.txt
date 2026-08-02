@@ -1,0 +1,10 @@
+# goslop text fixture
+# Safe: library PreparedRequest shape/invariant checks — not user-input validation.
+# Stripping these with python -O does not weaken authz or request-boundary checks.
+lang: python
+file: adapters.py
+---
+def send(self, request, stream=False):
+    assert request.url is not None
+    assert request.url is not None and request.headers is not None and request.method is not None
+    return self._send(request, stream=stream)

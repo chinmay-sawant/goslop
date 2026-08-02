@@ -1,0 +1,18 @@
+# goslop text fixture — offline tools/ ETL builds records once per run (Project_Parva tools/ FPs)
+lang: python
+file: tools/validate_schemas.py
+---
+class SchemaValidationError(Exception):
+    pass
+
+
+def _validate(instance, schema, root_schema, root_path, path):
+    if isinstance(instance, dict):
+        required = schema.get("required", [])
+        for key in required:
+            if key not in instance:
+                raise SchemaValidationError(f"{path}: missing required key {key!r}")
+        properties = schema.get("properties", {})
+        for key, value in instance.items():
+            if key in properties:
+                _validate(value, properties[key], root_schema, root_path, f"{path}.{key}")

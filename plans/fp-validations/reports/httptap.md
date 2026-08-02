@@ -2271,3 +2271,61 @@ None. All 45 fresh findings were classified as false positives with rule conditi
 - Chunk evidence: `scripts/httptap/chunks`
 - Function evidence: `scripts/httptap/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:xx:xxZ
+repository: httptap
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap
+branch: main
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap
+chunk_path: scripts/httptap/chunks
+function_context_path: scripts/httptap/findings/functions
+binary: ./bin/goslop (latest rebuild ~2026-08-02 17:56)
+```
+
+### Scan evidence (fresh run)
+
+- Build: `make build` (~17:56; `bin/goslop` mtime 2026-08-02 17:56)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/httptap/chunks -context-dir scripts/httptap/findings/functions real-repos/httptap`
+- Findings: `49`
+- Chunks reviewed: `scripts/httptap/chunks/Chunk_1_25.txt`, `scripts/httptap/chunks/Chunk_26_49.txt`
+- Function contexts reviewed: `scripts/httptap/findings/functions/1.txt` .. `49.txt` (all 49)
+
+### Classification summary (fresh run)
+
+Matching method: prior audits contain 0 audited true positives. All 49 fresh findings match an audited-FP source exactly (file:line[:col] from the original 103-finding audit); none are new. The CWE-396 findings at `analyzer.py:262`, `cli.py:589`, `http_client.py:628`, `tls.py:59`, `tls_inspector.py:159` re-appeared after being absent from the 16:29 run, but each was already classified FP (old 6, 16, 27, 32, 58).
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 49 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49 |
+| True positive | 0 | — |
+| Uncertain | 0 | — |
+
+Remaining false positives after latest fix: `49` (up from 45 in the 16:29 run — the 5 re-appeared CWE-396 sites are reclassified FPs by prior source match).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | CWE-396 | `except Exception` whose suite re-raises a wrapped typed error (`raise XError(...) from exc`), logs+displays (`logger.exception` + user panel + non-zero exit), records into a step result, or transports a worker error to a post-`join` re-raise. Safe condition: failure is surfaced/propagated, not hidden. | 6 | analyzer.py:262:1, cli.py:589:1, http_client.py:628:1, dns.py:83:1, tls.py:59:1, tls_inspector.py:159:1 |
+| 2 | BP-PY-1 | Bare `except Exception` with documented defensive fallback (`cert_info = None`, `return None`, `# pragma: no cover - defensive`) or error-collection for re-raise (`worker_error = exc` + `raise ... after join`). Safe condition: handler defines a fallback state or propagates. | 3 | http_client.py:655:1, http_client.py:697:1, implementations/dns.py:83:1 |
+| 3 | BP-PY-2 / CWE-390 / CWE-1071 | `except <typed>:` + `pass` with `# pragma: no cover - best effort` / "non-fatal" comment, optional metadata probe (TLS/socket enrichment). Safe condition: discarded exception is an expected, documented optional-probe outcome. | 6 | http_client.py:616:1/:13, implementations/tls.py:79:1/:9 |
+| 4 | BP-PY-46 | `self.console.print(...)` Rich `Console` call in CLI-only rendering/output modules (injected console, report/timeline/export UI). Safe condition: call is user-facing product output, not operational logging; module is not a general library. | 21 | exporter.py:171:22, render.py:123..269 (17 lines), visualizer.py:39:22, 88:22, 152:22 |
+| 5 | CWE-93 | Header assignment on an **outgoing** `httpx` client request with a constant value (`client.headers["User-Agent"] = USER_AGENT`). Safe condition: rule should require a *response* header write of an externally influenced value. | 1 | http_client.py:576:19 |
+| 6 | BP-PY-49 / CWE-295 / CWE-523 | `ssl.CERT_NONE` / `check_hostname = False` inside a branch gated by explicit opt-in parameter (`verify_ssl=False`, CLI `--ignore-ssl`); default path uses `ssl.create_default_context()`. Safe condition: disablement is operator-chosen and the tool performs no credential exchange. | 3 | utils.py:185:23, :185:27, :185:27 |
+| 7 | CWE-617 / CWE-295 / CWE-523 / CWE-208 / BP-PY-41 | Assertions or `==` comparisons inside `tests/` (mock-handler asserts, ssl-context behavior asserts, pkg-meta equality, `raise AssertionError` rejection tests). Safe condition: detector should suppress in test code or recognize `raise AssertionError` as an assertion. | 9 | test_http_client.py:93:1, 1073:42 (×2), test_pkgmeta.py:60:12, test_property_based.py:117:1, 126:1, 142:1, test_utils.py:341:35 (×2) |
+
+## New findings
+
+None — every fresh finding (49/49) matched an audited-FP `Source:` exactly; no fresh finding lacks a prior classification.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/httptap/chunks`
+- Function evidence: `scripts/httptap/findings/functions`
+- Validation: `git diff --check` — `pass`

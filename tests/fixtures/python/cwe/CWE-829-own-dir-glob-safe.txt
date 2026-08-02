@@ -1,0 +1,23 @@
+# goslop text fixture
+lang: python
+file: CWE-829-own-dir-glob-safe.py
+---
+import glob
+import importlib.util
+import os
+import sys
+
+
+def load_native_extension():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    so_files = glob.glob(os.path.join(current_dir, "_httpmorph*.so"))
+    if not so_files:
+        so_files = glob.glob(os.path.join(current_dir, "_httpmorph*.pyd"))
+    if not so_files:
+        raise ImportError(f"C extension not found in {current_dir}")
+    spec = importlib.util.spec_from_file_location("_httpmorph", so_files[0])
+    if spec and spec.loader:
+        _httpmorph = importlib.util.module_from_spec(spec)
+        sys.modules["_httpmorph"] = _httpmorph
+        spec.loader.exec_module(_httpmorph)
+    return _httpmorph

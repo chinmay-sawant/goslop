@@ -1,0 +1,14 @@
+# goslop text fixture — try/except/else success arm silences CWE-390
+lang: python
+file: scripts/download_jpl_kernel.py
+---
+def download(url, output):
+    if output.exists():
+        try:
+            validate_planetary_spk(output)
+        except OSError:
+            pass
+        else:
+            return output
+    fetch_and_write(url, output)
+    return output

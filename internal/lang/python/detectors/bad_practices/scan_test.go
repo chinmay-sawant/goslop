@@ -157,6 +157,7 @@ func TestBPPY6AssertValidation(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6")
 	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-invariant")
+	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-request-invariant")
 	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-test-path")
 	// Extra test-path filename shapes reuse the vulnerable body.
 	vuln := loadBPFixture(t, "BP-PY-6", true)
@@ -194,6 +195,7 @@ func TestBPPY10Pickle(t *testing.T) {
 	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10")
 	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-local-cache")
 	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-cache-blob")
+	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-roundtrip")
 }
 
 func TestBPPY11YamlLoad(t *testing.T) {

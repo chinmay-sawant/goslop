@@ -1,0 +1,19 @@
+# goslop text fixture
+lang: python
+file: CWE-94-builtins-exec-safe.py
+---
+from sqlmodel import Session, select
+
+import js
+
+
+def load_all(session: Session, model):
+    return list(session.exec(select(model)).all())
+
+
+def run_app(app):
+    app.exec()
+
+
+def run_js_bridge(code):
+    return js.window.exec(code)

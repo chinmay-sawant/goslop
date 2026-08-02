@@ -1,0 +1,7 @@
+# Fixture for BP-PY-41 (vulnerable) — side-effect calls, no assertions anywhere
+lang: python
+file: tests/test_property_based_vuln.py
+---
+def test_parses_slo(value):
+    result = parse_slo_spec(f"total={value}")
+    normalize_result(result)

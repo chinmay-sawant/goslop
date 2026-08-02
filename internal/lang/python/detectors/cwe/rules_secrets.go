@@ -143,6 +143,10 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
+	// Dual-mode SSL helpers (httptap create_ssl_context(verify_ssl=...)).
+	if dualModeTLSHelper(unit.Source) {
+		return
+	}
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.request"} {
 		for _, call := range findCalls(facts, unit.Source, name) {
 			if hasKwargFalse(call.ArgsText, "verify") {

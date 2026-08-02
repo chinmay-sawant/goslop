@@ -10472,3 +10472,68 @@ None — every fresh finding was classifiable from the rule condition and the sh
 - Chunk evidence: `scripts/Project_Parva/chunks`
 - Function evidence: `scripts/Project_Parva/findings/functions`
 - Validation: `git diff --check` — pass (exit 0)
+
+## Post-fix v2 audit (latest binary)
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:10:00Z
+repository: Project_Parva
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva
+branch: main
+commit: d05f6111bb0a39ce8dc3c82330297b60ae82c7c5
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva
+chunk_path: scripts/Project_Parva/chunks
+function_context_path: scripts/Project_Parva/findings/functions
+audit_mode: v2 (all fresh findings vs prior classifications by Source)
+build: make build (~2026-08-02 17:56, latest binary)
+```
+
+## Scan evidence
+
+- Build command: `make build` (goslop binary at `./bin/goslop`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Project_Parva/chunks -context-dir scripts/Project_Parva/findings/functions real-repos/Project_Parva`
+- Findings: `316` (412 pre-fix → 171 on b5b8fde → 316 on latest)
+- Chunks reviewed: `scripts/Project_Parva/chunks/Chunk_1_25.txt` … `Chunk_301_316.txt` (13 files, findings 1–316)
+- Classification basis: every fresh finding matched a prior audit classification by exact `Source:` (file:line:col) — either the original 412-finding audit or the Mode A/B (171-finding) append; no fresh finding required a fresh rule-condition judgment.
+
+## Classification summary (fresh run)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| True positive | 11 | 40, 52, 60, 72, 86, 95, 96, 98, 99, 223, 256 |
+| False positive | 305 | 1–39, 41–51, 53–59, 61–71, 73–85, 87–94, 97, 100–222, 224–255, 257–316 (all remaining) |
+| Uncertain | 0 | — |
+| New (no prior classification) | 0 | — |
+
+- Fresh TP ids map 1:1 to the 11 audited TPs: 40=CWE-1124 bikram_sambat.py:614, 52=CWE-1121 rules/service.py:37, 60=BP-PY-1 rulelang_service.py:1362, 72=CWE-1046 tools/evaluate.py:383, 86=PERF-PY-27 week3_ground_truth_pipeline.py:263, 95/96=langchain.py:67 (BP-PY-1/CWE-396), 98/99=llamaindex.py:16 (BP-PY-1/CWE-396), 223=CWE-1124 check_public_claims.py:164, 256=CWE-1124 verify_clean_clone_assumptions.py:257.
+- All 305 FPs reuse a prior FP reason (same source construct, same rule): 159 also appear in the Mode A/B append, 146 more match the original 412-finding audit. No fresh finding is unclassified; the latest binary restores sources the b5b8fde filter had suppressed, but nothing new appears.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-45 | `sys.path.insert` guarded by `if <root> not in sys.path` at module top of a standalone in-tree script/tool importing the uninstalled package (scripts/, tools/, backend/tools/, public-benchmark/runners/, packages/*/examples, integrations/mcp) | 133 | scripts/future_bs/*.py:13–18, scripts/release/check_backend_smoke.py:13, tools/conformance_runner/run.py:22, backend/tools/benchmark_runner.py:19 |
+| 2 | CWE-396 + BP-PY-1 | broad `except Exception` whose body records the failure (logger.exception/warning with exc, `str(exc)` appended to results/warnings/failures, or `raise TypedError(...) from exc`) — nothing hidden | 21 + 18 | middleware.py:204, rulelang_service.py:415, run_against_parva.py:316, run_browser_smoke.py:195, conformance_runner/run.py:557, validate_schemas.py:245 |
+| 3 | BP-PY-37 + CWE-89 | f-string SQL where every `{}` is a `store.param()` placeholder token and values are bound params in `execute(sql, params)` | 20 + 3 | billing/service.py:112–788, billing/migrations.py:235 |
+| 4 | CWE-88 | `subprocess.run` with fixed allowlisted vector: constants, operator CLI args, or self re-exec of own `sys.argv` under guard | 17 | ingest_moha_pdfs.py:178, accuracy_lab.py:28, check_sdk_examples.py:30, run_browser_smoke.py:60 |
+| 5 | BP-PY-2 + CWE-390 + CWE-1071 | `except (typed, tuple): pass` implementing documented skip/fallback/default (malformed rows, unavailable overrides, expected test rejection) | 11 + 11 + 4 | calculator.py:366, backtest.py:282, rulelang_service.py:1384, test_client.py:69 |
+| 6 | CWE-829 + CWE-94 | lazy-attr `__getattr__` `__import__` shim; `spec_from_file_location` on repo-constant paths in tests | 10 + 2 | parva_mcp_server/__init__.py:30, tests/architecture/test_*.py:9, tests/unit/bootstrap/test_rate_limit.py:17 |
+| 7 | PERF-PY-25 + PERF-PY-23 + PERF-PY-27 | per-element construction/encode/parse in one-shot offline batch tooling; per-rule/per-file distinct paths | 9 + 2 + 4 | build_baseline_supplement.py:195, validate_schemas.py:186, storage.py:131, triad_pipeline.py:125 |
+| 8 | CWE-208 | `==` on enum members (AuthorityTaint/TaintFlag) or local signature dicts — not secrets/auth tokens | 7 | source_resolution.py:98, run_ceiling_climax_demos.py:61, test_taint_algebra.py:33 |
+| 9 | BP-PY-46 | `print` in standalone scripts/examples/CLI tools (stdout is the output mechanism) | 7 | examples/python/convert.py:15, clean_local_artifacts.py:66 |
+| 10 | BP-PY-32 | `FileResponse` with constant-dir + fixed filename, or basename/`.json`-confined request filename | 6 | public_artifacts_routes.py:100–134 |
+| 11 | CWE-22 + CWE-73 | path sinks fed by operator CLI args or test constants (no request boundary) | 3 + 3 | benchmark/harness.py:163, validate_pack.py:83, parva_offline_verify.py:20 |
+| 12 | Misc single-rule stragglers | CWE-93 (constant/flag-selected header), CWE-186 (intended fixed grammar), CWE-290 (trusted-proxy gated), CWE-772 (inline `urlopen(...).read()`), CWE-215 (CLI prints generated key), BP-PY-5 (compat re-export stub), BP-PY-12 (redis `.eval` Lua API / test fake), BP-PY-13 (runtime `token_urlsafe`/template placeholder), BP-PY-41 (FastAPI `test_rule` route / side-effect scripts) | 14 | middleware.py:61, notice_ingestion.py:14, middleware.py:181, ingest_pradhanlaw_2082.py:113, generate_partner_api_key.py:83, tithi.py:9, rate_limit.py:166, billing_routes.py:327, rules_routes.py:112 |
+
+## New findings
+
+None — every fresh finding (1–316) matched a previously audited source construct with the same rule; 0 fresh findings required a first-time classification.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/Project_Parva/chunks` (13 files)
+- Function evidence: `scripts/Project_Parva/findings/functions`
+- Validation: `git diff --check` — pass (exit 0)

@@ -293,3 +293,21 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 Same reasoning as finding 1.
 
 Final evidence: chunks `scripts/html2pic/chunks/Chunk_1_25.txt` + `Chunk_26_28.txt` contain no `examples/` finding; function contexts `scripts/html2pic/findings/functions/1.txt`..`28.txt`; source verification at `real-repos/html2pic/examples/*.py:12`; `git diff --check` — pass (see below).
+
+## Post-fix v2 audit (latest binary)
+
+Run metadata: binary rebuilt ~2026-08-02 17:56 (`make build`) on working tree at `b5b8fde` + uncommitted detector fixes (detectors modified, no new commit). Same scan command as prior runs; fresh chunks `scripts/html2pic/chunks/Chunk_1_25.txt` + `Chunk_26_36.txt` (36 findings, back up from 28).
+
+Classification summary — fresh: 36 findings = **32 TP / 4 FP / 0 Uncertain / 0 new**. Every fresh finding maps 1:1 to an old-audit classification by `Source:`: the 5 BP-PY-45 example-script findings (over-suppressed by b5b8fde) are re-detected and remain TPs; the 4 audited CWE-396 FPs (6, 7, 10, 32) re-appear with identical shapes and keep their FP reason; the 27 other audited TPs re-appear unchanged. The b5b8fde-era extra CWE-396 at `css_parser.py:128:1` no longer fires in this build.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | --- | --- |
+| 1 | CWE-396 | `except Exception as e:` whose suite re-raises as a domain error with the original chained — `raise <DomainError>(f"...{e}") from e` (immediately, or after `self._print_warnings()` side effect) | 4 | `html2pic.py:87`, `css_parser.py:56`, `html_parser.py:24`, `translator.py:49` |
+
+Distinguishing condition: CWE-396 fires when the broad catch *hides* distinct failure conditions; it must not fire when the suite re-raises the wrapped exception with `from e` (failure reaches the caller, `__cause__` preserved) — same intent as BP-PY-1's existing `suiteReraises` exemption.
+
+## New findings
+
+None — all 36 fresh findings have prior classifications. `git diff --check` — pass.

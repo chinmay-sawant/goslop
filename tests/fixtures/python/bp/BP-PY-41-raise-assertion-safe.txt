@@ -1,0 +1,11 @@
+# Fixture for BP-PY-41 (safe) — rejection test verifying via raise AssertionError (httptap audit FP)
+lang: python
+file: tests/test_property_based_safe.py
+---
+def test_non_positive_values_rejected(value):
+    try:
+        parse_slo_spec(f"total={value}")
+    except SLOSpecError:
+        return
+    msg = f"expected SLOSpecError for non-positive value {value!r}"
+    raise AssertionError(msg)

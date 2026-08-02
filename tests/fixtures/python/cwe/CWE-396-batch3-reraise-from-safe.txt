@@ -1,12 +1,15 @@
-# goslop text fixture — generic except re-raises domain error (html2pic FP)
+# goslop text fixture — specific exception type (not Exception/BaseException)
+# so CWE-396 (declaration of generic catch) is silent. A single wrapped raise
+# of a more specific type is still a CWE-396 hit when the catch is Exception
+# (see CWE-396-batch3-reraise-from-vulnerable / voicetag TPs).
 lang: python
 file: CWE-396-batch3-reraise-from-safe.py
 ---
-class RenderError(Exception):
+class DomainError(Exception):
     pass
 
-def render(tree):
+def load_pipeline(name):
     try:
-        return translate(tree)
-    except Exception as e:
-        raise RenderError(f"Failed to render: {e}") from e
+        return build(name)
+    except OSError as exc:
+        raise DomainError(f"Failed to load pipeline: {exc}") from exc

@@ -1,15 +1,18 @@
-# goslop text fixture — broad except logs with exc_info (calgebra/CourtScrapper FP)
+# goslop text fixture — log-with-exc_info handlers are reportable under the
+# reconciliation (WeThePeople sync_* jobs TP shape); this safe variant shows
+# the cleanup-then-propagate handler that stays exempt (niquests utils.py:256
+# FP shape)
 lang: python
 file: handled_exc_info.py
 ---
-import logging
+import os
 
-def fetch_timezone(cal_id):
+
+def write_atomic(tmp_descriptor, tmp_name, filename):
     try:
-        return load_tz(cal_id)
-    except Exception:
-        logging.getLogger("app").warning(
-            "Failed to fetch timezone for %s",
-            cal_id,
-            exc_info=True,
-        )
+        with os.fdopen(tmp_descriptor, "wb") as tmp_handler:
+            tmp_handler.write(b"data")
+        os.replace(tmp_name, filename)
+    except BaseException:
+        os.remove(tmp_name)
+        raise

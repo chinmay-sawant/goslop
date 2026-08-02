@@ -32,6 +32,26 @@ func isPythonTestFile(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isPythonOfflineToolsPath reports offline ETL/CLI tool scripts under tools/
+// or backend/tools/ (or scripts/tools/). These intentionally load and build
+// records once per run; hot-path allocation rules are not meaningful there.
+func isPythonOfflineToolsPath(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.Path, unit.DisplayPath} {
+		if path == "" {
+			continue
+		}
+		norm := filepath.ToSlash(path)
+		if strings.Contains(norm, "/tools/") || strings.HasPrefix(norm, "tools/") ||
+			strings.Contains(norm, "/backend/tools/") || strings.HasPrefix(norm, "backend/tools/") {
+			return true
+		}
+	}
+	return false
+}
+
 func pushAt(unit *core.ParsedUnit, ruleID string, offset int, message string, out *[]rules.Finding) {
 	meta := MetadataForID(ruleID)
 	if unit == nil || meta == nil || out == nil {

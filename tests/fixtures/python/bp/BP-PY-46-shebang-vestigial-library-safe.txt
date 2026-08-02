@@ -1,0 +1,18 @@
+# goslop text fixture
+lang: python
+file: shebang_argparse_cli.py
+---
+#!/usr/bin/env python3
+"""Shebang + argparse CLI without an explicit __main__ guard."""
+
+import argparse
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="run")
+    parser.add_argument("--msg", default="ok")
+    args = parser.parse_args()
+    print(args.msg)
+
+
+main()

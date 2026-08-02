@@ -1,0 +1,14 @@
+# goslop text fixture — broad catch that counts a failure and moves on stays
+# reportable (WeThePeople jobs/detect_story_outcomes.py:302 TP shape)
+lang: python
+file: count_continue.py
+---
+def run(items):
+    last_exc = None
+    for item in items:
+        try:
+            process(item)
+        except Exception as exc:
+            last_exc = exc
+            continue
+    return last_exc

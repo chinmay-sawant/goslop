@@ -1016,3 +1016,55 @@ None.
 - Chunk evidence: `scripts/tenso/chunks`
 - Function evidence: `scripts/tenso/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T17:58:00Z
+repository: tenso
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso
+branch: main
+commit: ee5d6eb7baba8aca90b1d63a5a176b0a7d37692e
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso
+chunk_path: scripts/tenso/chunks
+function_context_path: scripts/tenso/findings/functions
+build: make build (bin/goslop rebuilt ~2026-08-02 17:56)
+```
+
+### Scan evidence
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/tenso/chunks -context-dir scripts/tenso/findings/functions real-repos/tenso`
+- Findings: `111`
+- Chunks reviewed: `scripts/tenso/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_111.txt`
+- All findings matched by `Source:` (file:line:col) against the original audit + Mode A/B append TP/FP lists; no fresh function contexts were needed beyond the chunk excerpts.
+
+### Classification summary (fresh run)
+
+Fresh finding IDs are the new scan's IDs; matched by `Source:` against audited lists. All 111 matched a previously audited source: 70 match audited TPs, 41 re-appearing audited FPs, 0 Uncertain. No new findings (nothing with no prior classification).
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 41 | 1, 2, 8, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 51, 74, 77, 85, 86 |
+| True positive | 70 | 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 75, 76, 78, 79, 80, 81, 82, 83, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111 |
+| Uncertain | 0 | — |
+
+Re-appearing FPs vs the 9 at Mode A/B (b5b8fde): the fresh 111-finding run restores the audited examples/-script and benchmark FPs that the interim fix had suppressed (BP-PY-46 examples prints, PERF-PY-28, BP-PY-10/CWE-502 benchmark round-trips), plus the still-unfixed CWE-1341 idempotent-close, CWE-695 mmap, and CWE-93 header-value FPs.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | print at module/function top-level in `examples/` demo scripts (socket, gRPC, Ray) executed directly; detector only exempts functions literally named `main` and misses script modules/`__main__`-guarded `run()` | 32 | examples/client.py:13, 21, 26, 27, 29; client_grpc.py:21, 37–39; server_grpc.py:13, 43; ray_example.py:22, 26, 34–37, 41, 65–67, 71, 99, 103, 135, 136, 139; server.py:9, 12, 23, 29, 33 |
+| 2 | PERF-PY-28 | `futures.ThreadPoolExecutor(...)` constructed once inside gRPC `serve()` and handed to `grpc.server`, which owns it process-lifetime — not per unit of work | 2 | examples/grpc/bench_server.py:29:44; examples/grpc/server_grpc.py:37:44 |
+| 3 | BP-PY-10, CWE-502 | `pickle.loads` in a serialization benchmark round-tripping only bytes produced by the same function's `pickle.dumps` on `np.random` data — no untrusted-data source | 2 | benchmark.py:111:21 |
+| 4 | BP-PY-10 | `pickle.load(f)` reading the benchmark's own `tempfile.NamedTemporaryFile` path written by the same function — not a user-path file | 1 | benchmark.py:409:13 |
+| 5 | CWE-1341 | two `.close()` calls within the 180-char window where the callee is guarded idempotent (`if not self._closed` / `if self._sync_client is not None` + set-None) — no second release | 2 | src/tenso/cache.py:1385:9 (close in `__exit__` + `__del__`); src/tenso/client.py:168:9 (close in `aclose` + `__exit__`) |
+| 6 | CWE-695 | `mmap.mmap(` inside the library's own public `load(mmap_mode=True)` opt-in API — documented platform interface, not a bypass of prohibited low-level functionality | 1 | src/tenso/core.py:692:14 |
+| 7 | CWE-93 | `str(...)` header value that is structurally CRLF-free (`str(tensor.shape)`, a tuple of ints) written via `.headers[...] =` — extend the existing `str(int(...))`/`str(round(...))` neutralization exemption | 1 | src/tenso/fastapi.py:54:17 |
+
+## New findings
+
+None — every fresh finding matched a previously audited `Source:`; no fresh TP/FP/U classification was needed for any finding.

@@ -1,0 +1,13 @@
+# goslop text fixture — stdlib logging emit-contract delegation (logxide handlers.py:191 FP)
+lang: python
+file: handler_delegation.py
+---
+class Handler:
+    def handleError(self, record):
+        pass
+
+    def emit(self, record):
+        try:
+            self._inner.emit(record)
+        except Exception:
+            self.handleError(record)

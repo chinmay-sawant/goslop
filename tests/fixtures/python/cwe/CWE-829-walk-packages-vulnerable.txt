@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-829-walk-packages-vulnerable.py
+---
+import importlib
+
+
+def load(module_path):
+    return importlib.import_module(module_path)

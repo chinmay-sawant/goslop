@@ -1,0 +1,19 @@
+# goslop text fixture
+lang: python
+file: CWE-94-def-exec-safe.py
+---
+class Connection:
+    def exec(self, sql: str, /, *args: object, **kwargs: object) -> None:
+        """Library SQL-execution method; a declaration, not the exec builtin."""
+        raise NotImplementedError
+
+
+class AsyncConnection:
+    async def exec(self, sql: str, /, *args: object, **kwargs: object) -> None:
+        raise NotImplementedError
+
+
+class Pool:
+    @overload
+    def eval(self, expr: str, /, **kwargs: object) -> object:
+        raise NotImplementedError

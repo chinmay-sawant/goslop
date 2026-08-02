@@ -4771,3 +4771,53 @@ Checklist evidence: the "print is used for operational logging in non-script mod
 - Chunk evidence: `scripts/caniscrape/chunks`
 - Function evidence: `scripts/caniscrape/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T17:58:00+05:30
+repository: caniscrape
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/caniscrape
+branch: main
+commit: 3624e55
+build: bin/goslop rebuilt 2026-08-02 17:56
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/caniscrape
+chunk_path: scripts/caniscrape/chunks (Chunk_1_25.txt .. Chunk_76_88.txt, findings 1-88 of 88)
+function_context_path: scripts/caniscrape/findings/functions
+```
+
+### Scan evidence
+
+Fresh run reports 88 findings (prior b5b8fde binary: 67; original: 338). Every fresh finding was classified by `Source:` match against the original audit (79 TPs) and its 255-BP-PY-46/4-other FP lists; no function contexts were needed beyond the chunk excerpts, which carry the full `Source:` and enclosing lines for all 88.
+
+### Classification summary (fresh)
+
+| Classification | Count | Fresh finding IDs |
+| --- | ---: | --- |
+| True positive | 79 | 1-59, 69-88 |
+| False positive | 9 | 60, 61, 62, 63, 64, 65, 66, 67, 68 |
+| Uncertain | 0 | — |
+| New (no prior classification) | 0 | — |
+
+Notes: the 12 over-suppressed TPs from the Mode B audit (old 54, 245, 329, 290, 291, 318-325) are back and match audited TPs (fresh 31, 48, 79, 57, 58, 69-75). The latest binary also restored 9 audited FPs in `telemetry.py` (old 297-305) that the b5b8fde module-wide rich-print exemption had hidden; old FPs 296 (`telemetry.py:291`), 306-308 (`telemetry.py:343/346/348`) remain absent — the narrowed exemption now apparently spares only those specific functions, which does not change their prior FP classification.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-46 | `print` inside `request_data_deletion` (telemetry command implementation, invoked only from thin click wrappers `usage_on`/`usage_off`/`scans_on`/`scans_off`/`delete`/`telemetry_status` in `cli.py`) — user-facing CLI presentation output, not operational logging; function carries no decorator and its name matches no `print_*`/`cmd_*` carve-out | 9 | `caniscrape/telemetry.py:298`, `:305`, `:308`, `:309`, `:310`, `:315`, `:326`, `:330`, `:334` |
+
+Fix condition to distinguish safe from vulnerable: the flagged print's function is reachable only from click `@cli.command(...)`-registered wrappers (command-impl function), i.e., a `pythonIsCommandImplementation`-style predicate (call-graph parent is a decorator-registered command), whereas the audited TPs (fresh 7, 26, 47, 57, 58, 69-75, 80-88) are `print`s in worker/utility functions (`contribute_scan`, `try_upload_scan`, solver/parser/config workers) invoked from the scan flow — those must keep firing.
+
+## New findings
+
+None — every fresh finding (1-88) matches a prior classification by `Source:` path (79 audited TPs, 9 audited FPs).
+
+### Final evidence (v2)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/caniscrape/chunks`
+- Function evidence: `scripts/caniscrape/findings/functions`
+- Validation: `git diff --check` — pass

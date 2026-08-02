@@ -443,3 +443,22 @@ None.
 - Chunk evidence: `scripts/cylinder/chunks/Chunk_1_12.txt`
 - Function evidence: `scripts/cylinder/findings/functions/1.txt` … `12.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+Run metadata (build: `make build` ~17:56), scan evidence: `scripts/cylinder/chunks/Chunk_1_12.txt` (12 findings, ids 1–12, same scan command as prior runs), contexts `scripts/cylinder/findings/functions/1.txt`…`12.txt`.
+
+Classification summary (fresh counts): **12 fresh findings — TP 6 / FP 6 / U 0**. Every fresh finding matched a prior classification by `Source:`; no fresh Uncertain, no new findings (all 12 appear in the prior audit: 6 TPs from the original audit, 6 FPs from the Mode A/B appends). Fresh IDs → old IDs: 1→old TP 1, 2→old FP 2, 3→old TP 3, 4→old FP 4, 5→old TP 5, 6→old TP 6, 7→old FP 7, 8→old FP 8, 9→old TP 9, 10→old TP 10, 11→old FP 11, 12→old FP 17.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | CWE-396 | `except Exception as e:` whose suite **unconditionally re-raises** (`raise e` / `raise ...InternalServerError(original_exception=e)`); the CWE-396 "hides failure conditions" claim does not apply — condition to add: suppress generic-except when every path of the except suite raises (same as BP-PY-1's `suiteReraises`) | 1 | src/cylinder.py:268 |
+| 2 | CWE-93 | header value derived from a **numeric function call** (`os.path.getsize(...)` → integer file size, cannot contain CR/LF); condition to add: extend `headerValueIsInternalNumeric` beyond `int(...)`/`round(...)` literals to numeric-returning calls | 1 | src/cylinder.py:369 |
+| 3 | BP-PY-6 | `assert <obj>.attr == <literal>` on a **framework-internal attribute** (`request.shallow`) inside a hook/test-site fixture — internal invariant check, not validation of untrusted input; condition to add: skip assert when the asserted target is an attribute of a framework object whose value is set internally (or restrict to request-input-derived targets) | 3 | test_sites/foo_site.500.py:5, test_sites/foo_site.eh.default.py:13, test_sites/foo_site.lh.default.py:3 |
+| 4 | CWE-117 | f-string log message interpolating a **local integer loop counter** (`for num in range(10): log.error(f"...{num}")`) in a test file; not externally controlled, no CR/LF possible; condition to add: `looksLogFormatted` should ignore interpolations that resolve to local integer literals/counters (or suppress in test files) | 1 | tests/cylinder_test.py:396 |
+
+## New findings
+
+None — every fresh finding has a prior classification by `Source:` (6 TP / 6 FP as above); no unmatched finding needed fresh classification.

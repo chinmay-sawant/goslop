@@ -1,0 +1,8 @@
+# goslop text fixture
+# Vulnerable: f-string interpolates real data, not .param() placeholders.
+lang: python
+file: db.py
+---
+def q(cursor, user_id, name):
+    cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
+    cursor.execute(f"SELECT * FROM t WHERE name = {name}")

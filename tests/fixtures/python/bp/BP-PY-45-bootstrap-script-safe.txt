@@ -1,0 +1,16 @@
+# Fixture for BP-PY-45 (safe) — guarded module-top bootstrap in a standalone in-tree script
+lang: python
+file: scripts/check_data_target.py
+---
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+BACKEND_ROOT = PROJECT_ROOT / "backend"
+if str(BACKEND_ROOT) not in sys.path:
+    sys.path.insert(0, str(BACKEND_ROOT))
+
+from app.services.future_bs_service import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

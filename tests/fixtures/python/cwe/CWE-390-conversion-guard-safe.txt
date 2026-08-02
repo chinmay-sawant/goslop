@@ -1,0 +1,13 @@
+# goslop text fixture — CWE-390 mirrors BP-PY-2 pure int() conversion guard
+lang: python
+file: parva_mcp_server/client.py
+---
+def _read_bounded(response, maximum):
+    declared = response.headers.get("content-length")
+    if declared:
+        try:
+            if int(declared) > maximum:
+                raise RuntimeError("response too large")
+        except ValueError:
+            pass
+    return response.read()

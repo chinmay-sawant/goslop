@@ -805,3 +805,44 @@ Why it satisfies the rule condition: `except Exception as error` is a generic ca
 - Chunk evidence: `scripts/FuncToWeb/chunks/Chunk_1_25.txt`, `scripts/FuncToWeb/chunks/Chunk_26_32.txt`
 - Source evidence: current files at `real-repos/FuncToWeb` commit `96a90a2b14d667c9fa5957bff4405912e31b0462` (unchanged since the original audit)
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+Run metadata:
+
+```yaml
+timestamp: 2026-08-02T18:05:00Z
+repository: FuncToWeb
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb
+branch: main
+commit: 96a90a2b14d667c9fa5957bff4405912e31b0462
+scanner_binary: ./bin/goslop rebuilt 2026-08-02 17:56 (make build)
+chunk_path: scripts/FuncToWeb/chunks/Chunk_1_25.txt, Chunk_26_47.txt (47 fresh findings)
+function_context_path: scripts/FuncToWeb/findings/functions (47 contexts)
+```
+
+Classification summary (fresh): 47 findings — **38 TP / 9 FP / 0 Uncertain / 0 new**. Every fresh finding matches a prior classification by `Source:` (file:line + rule), so no fresh classification was needed beyond reuse. The 15 TPs over-suppressed by the b5b8fde binary (14 BP-PY-46 example prints + CWE-396 return_parser.py:486) are all restored (fresh 1, 2, 4, 5, 7–16, 18, 31); 9 previously-audited FPs are now absent from the scan (CWE-89 execution.py:33/router.py:105/stream.py:56, CWE-93 test_http_invoke.py:238/test_http_stream.py:307/test_prefix.py:120/test_outputs_downloads.py:272, CWE-1341 conftest.py:34, BP-PY-42 tests/shared.py:23) — fixed/suppressed correctly. The 9 remaining FPs are the detector fix targets.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-1 | `except Exception as error: return _failure(error, CODE)` — error-boundary wrapper that records exception type+message into the returned failure envelope; should not count as a swallow | 3 | src/func_to_web/web/execution.py:45, 50, 61 |
+| 2 | BP-PY-1 | `except BaseException as error: caught["error"] = error` — exception recorded in a dict, caller re-raises `caught["error"]` after join; not swallowed | 1 | tests/integration/test_http_stream.py:479 |
+| 3 | BP-PY-32 | `return FileResponse(path, ...)` where path already confined upstream (segment_of + resolve + `is_relative_to`/parent equality) — FP when the sink-side confinement the rule prescribes is proven in the same flow | 2 | src/func_to_web/web/router.py:188, 204 |
+| 4 | BP-PY-40 | `Thread(target=..., daemon=True).start()` — explicit daemon policy set at construction; rule should only fire on non-daemon fire-and-forget threads | 1 | src/func_to_web/web/upload.py:210 |
+| 5 | CWE-22 | `Path(mkdtemp()) / f"resized-{width}x{height}.png"` — dynamic segment is typed integer (`Annotated[int, Min/Max]`), cannot carry `/` or `..`; FP when the joined segment type cannot contain separators and the root is fresh mkdtemp | 1 | examples/project/gallery.py:62 |
+| 6 | CWE-1333 | `^[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*$` — nested quantifier whose inner group is disambiguated by a literal `-` separator not in the inner class; linear-time, should not flag | 1 | src/func_to_web/models/function.py:17 |
+
+Distinguishing conditions: patterns 1–2 must fire only when the exception type/message is never recorded nor re-raised (contrast the genuine TPs at pending.py:174/199 `except Exception: continue` and upload.py:233 sweeper continue); pattern 3 only when no resolve+prefix confinement exists in the path's flow; pattern 5 requires an unvalidated str-like segment; pattern 6 requires an ambiguous repetition split.
+
+## New findings
+
+None — all 47 fresh findings have a prior classification by `Source:` match (fresh 1–47 ↔ old audit findings 1–56). No previously unclassified construct appears in the latest-binary scan.
+
+## Final evidence (post-fix v2 audit)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/FuncToWeb/chunks/Chunk_1_25.txt`, `scripts/FuncToWeb/chunks/Chunk_26_47.txt`
+- Source evidence: current files at `real-repos/FuncToWeb` commit `96a90a2b14d667c9fa5957bff4405912e31b0462` (unchanged since the original audit)
+- Validation: `git diff --check` — pass

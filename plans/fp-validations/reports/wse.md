@@ -1303,3 +1303,52 @@ None — every fresh finding could be classified from the rule condition and the
 - Chunk evidence: `scripts/wse/chunks`
 - Function evidence: `scripts/wse/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T17:56:00Z
+repository: wse
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse
+branch: main
+commit: 90ebca1d1dfb9b9ae9efc03f55738bb6a3b42444 (unchanged since first audit)
+goslop_binary: ./bin/goslop rebuilt 2026-08-02 17:56 IST from commit 3407305 (latest)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse
+chunk_path: scripts/wse/chunks
+function_context_path: scripts/wse/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (goslop binary at `./bin/goslop`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/wse/chunks -context-dir scripts/wse/findings/functions real-repos/wse`
+- Findings: `193` (previous runs: 206, then 169)
+- Chunks reviewed: `scripts/wse/chunks/Chunk_1_25.txt` … `Chunk_176_193.txt` (all 8)
+- Classification: every fresh finding matched a prior audited `Source:` (file:line) in this report; no fresh finding required a new `-explain` consult or unclassified decision.
+
+### Classification summary
+
+Fresh finding IDs are per the fresh scan (1–193); matching to the audited runs is by `Source:` path (file:line).
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 36 | 1, 17, 39, 67, 68, 69, 70, 72, 73, 74, 75, 76, 77, 79, 80, 81, 82, 86, 87, 89, 90, 91, 92, 93, 94, 95, 96, 97, 99, 100, 102, 103, 105, 106, 107, 109 |
+| True positive | 157 | all remaining fresh IDs (2–16, 18–38, 40–66, 71, 78, 83–85, 88, 98, 101, 104, 108, 110–193) — each `Source:` matches an audited TP |
+| Uncertain | 0 | — |
+
+Notes: the 36 FPs all reuse prior FP reasons (BP-PY-40 daemon threads, BP-PY-13 `change-me` placeholders, BP-PY-46 `__main__`-guarded example prints, BP-PY-42 benchmark measurement helper). The latest binary re-flags the BP-PY-46 example-script prints (audited FPs — reuse reason) and the four CWE-396 sites at `bench_wse_multiprocess.py:96`, `circuit_breaker.py:84`, `connection.py:193`, `security.py:147` (audited TPs) that the Mode A/B binary had suppressed; both groups are classified by `Source:` match. The Mode A/B fixes that held: no BP-PY-46 docstring prints in `python-client/wse_client/*`, no CWE-88/89/1341, no bench/test-fixture BP-PY-13, and no BP-PY-40 sibling-`Thread` sites (only the `.start()` lines fire).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | `print(` in a `__main__`-guarded script under `examples/` (CLI presentation output, not library logging); docstring suppression held but the CLI-script exemption regressed vs the Mode A/B binary | 23 | examples/standalone_basic.py:67, standalone_broadcast.py:52, standalone_cluster.py:52, standalone_presence.py:61, standalone_recovery.py:54 |
+| 2 | BP-PY-40 | `.start()` line flagged while the `threading.Thread(...)` constructor on the immediately preceding line declares `daemon=True` (line-scoped check doesn't consult the constructor) | 7 | benchmarks/bench_battle_server.py:129, bench_fanout_server.py:113, examples/standalone_basic.py:111, standalone_broadcast.py:123, standalone_cluster.py:110, standalone_presence.py:145, standalone_recovery.py:190 |
+| 3 | BP-PY-13 | secret-named assignment whose literal starts with the `change-me` placeholder family in `examples/` (detector only excludes the exact token `change-me`, not the `change-me-…` prefix) | 5 | examples/standalone_basic.py:20, standalone_broadcast.py:24, standalone_cluster.py:25, standalone_presence.py:20, standalone_recovery.py:26 |
+| 4 | BP-PY-42 | try/except in a benchmark harness `_connect_timed`-style helper whose exception path returns a sentinel tallied as a failure measurement (not a failure-expectation test; rule should scope to test files / assert-adjacent code) | 1 | benchmarks/bench_brutal.py:224 |
+
+## New findings
+
+None — every fresh finding (193/193) has a prior classification in the original audit (206-finding run) or the Mode A/B append (169-finding run) by `Source:` match; no fresh finding is unclassified.

@@ -1,0 +1,9 @@
+# goslop text fixture — return None after side-effectful network try body
+lang: python
+file: swallow_get.py
+---
+def fetch(url):
+    try:
+        requests.get(url)
+    except Exception:
+        return None

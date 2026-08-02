@@ -1,0 +1,17 @@
+# goslop text fixture — session.request passes timeout positionally (niquests async_api)
+lang: python
+file: async_api.py
+---
+async def request(session, method, url, timeout):
+    return await session.request(
+        method,
+        url,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        timeout,
+        True,
+    )

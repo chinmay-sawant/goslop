@@ -1,10 +1,11 @@
-# Fixture for BP-PY-45 (safe) — __file__-relative module bootstrap (Project_Parva FP)
+# Fixture for BP-PY-45 (safe) — Sphinx docs/**/conf.py retained exemption
 lang: python
-file: backend/tools/benchmark_runner.py
+file: docs/source/conf.py
 ---
+import os
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, os.path.abspath("../.."))
 
-from app.calendar.bikram_sambat import gregorian_to_bs
+project = "example"
+extensions = []

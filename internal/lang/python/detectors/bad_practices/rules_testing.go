@@ -31,6 +31,10 @@ func init() {
 // BP-PY-41: test function has side-effect calls but no assertions (info / style).
 func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-41")
+	// nox/tox session runners orchestrate pytest; they are not placeholder tests.
+	if isPythonNoxOrToxFile(unit) {
+		return
+	}
 	// Scope: test files or functions named test_*.
 	inTestFile := isPythonTestFile(unit)
 	if !inTestFile && !strings.Contains(unit.Source, "def test_") {
@@ -44,10 +48,19 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if !strings.HasPrefix(t, "def test_") && !strings.HasPrefix(t, "async def test_") {
 			continue
 		}
+		// Entry-point / import smoke tests only touch API symbols (niquests
+		// test_entry_points) — audited FPs; not placeholder tests.
+		if name, ok := pythonDefFuncName(t); ok {
+			if strings.Contains(name, "entry_point") || strings.Contains(name, "import_smoke") ||
+				name == "test_imports" || name == "test_public_api" {
+				continue
+			}
+		}
 		// Only analyze test_* in test files, or any test_* anywhere (placeholder risk).
 		defIndent := indentWidth(line.raw)
 		hasAssert := false
 		hasCall := false
+		bodyIndent := -1
 		var strCarry pyTripleQuoteCarry
 		for j := i + 1; j < len(lines); j++ {
 			raw := lines[j].raw
@@ -64,6 +77,9 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			if ind <= defIndent {
 				break
 			}
+			if bodyIndent < 0 {
+				bodyIndent = ind
+			}
 			// Nested def/class ends our interest for simple bodies? Continue scanning body.
 			if strings.HasPrefix(st, "def ") || strings.HasPrefix(st, "async def ") || strings.HasPrefix(st, "class ") {
 				// nested — still part of outer until dedent of outer; keep going only for deeper.
@@ -71,7 +87,10 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					break
 				}
 			}
-			if isTestAssertion(st, helpers) {
+			// pytest.fail is an assertion only when it guards a call inside a suite
+			// (except/if); a top-level trailing pytest.fail after a retry loop is a
+			// bare fallback, not a verification (httpmorph test_proxy audit TPs).
+			if isTestAssertion(st, helpers, ind > bodyIndent) {
 				hasAssert = true
 				break
 			}
@@ -82,6 +101,9 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			// string content (e.g. chat samples, embedded YAML) does not abort the scan.
 			strCarry.feed(raw)
 		}
+		// Attribute-only smoke tests (niquests test_entry_points: bare
+		// niquests.Session / niquests.get without call parens) have no
+		// side-effect call and should not fire; only call-shaped bodies do.
 		if hasCall && !hasAssert {
 			pushAt(unit, meta, line.byte,
 				"test function appears to only perform side effects without assertions (heuristic/info); add assert or pytest.raises",
@@ -90,18 +112,28 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func isTestAssertion(st string, helpers map[string]struct{}) bool {
+func isTestAssertion(st string, helpers map[string]struct{}, nestedSuite bool) bool {
 	if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") {
 		return true
 	}
-	if strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") ||
-		strings.Contains(st, "pytest.fail(") {
+	if strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") {
+		return true
+	}
+	// pytest.fail only counts as an assertion when it guards a call inside a suite
+	// (except/if); a top-level trailing pytest.fail after a retry loop is a bare
+	// fallback, not a verification (httpmorph test_proxy audit TPs).
+	if strings.Contains(st, "pytest.fail(") && nestedSuite {
 		return true
 	}
 	if strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") {
 		return true
 	}
 	if strings.Contains(st, "unittest.") && strings.Contains(st, "assert") {
+		return true
+	}
+	// Explicit failure raise in the test body verifies outcomes (httptap
+	// test_property_based raise-AssertionError rejection tests).
+	if strings.Contains(st, "raise "+assertionErrorType) {
 		return true
 	}
 	// nose/pytest helpers
@@ -204,7 +236,9 @@ func sameFileAssertionHelpers(lines []codeLine) map[string]struct{} {
 			}
 			if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") ||
 				strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") ||
-				strings.Contains(st, "raise "+assertionErrorType) {
+				strings.Contains(st, "raise "+assertionErrorType) ||
+				strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") ||
+				strings.Contains(st, "pytest.fail(") {
 				out[name] = struct{}{}
 				break
 			}
@@ -414,7 +448,7 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					break
 				}
 				if ind == tryIndent && (st == "except:" || strings.HasPrefix(st, "except ") || strings.HasPrefix(st, "except:")) {
-					if isExpectFailureExcept(st) && !suiteSurfacesFailure(lines, j) {
+					if isExpectFailureExcept(st) && !suiteHandlesFailureForTesting(lines, j) {
 						// Miss handlers that re-raise / record / log the failure —
 						// those are not assertRaises substitutes.
 						pushAt(unit, meta, lines[i].byte,
@@ -462,13 +496,23 @@ func isExpectFailureExcept(st string) bool {
 	if i := strings.Index(rest, " as "); i >= 0 {
 		rest = strings.TrimSpace(rest[:i])
 	}
-	switch rest {
-	case "Exception", "BaseException", assertionErrorType, "Exception as e":
-		return true
+	return rest == assertionErrorType || rest == "Exception" || rest == "BaseException" ||
+		strings.HasPrefix(rest, assertionErrorType)
+}
+
+// suiteHandlesFailureForTesting reports an except suite that re-raises, logs,
+// or records the failure — such handlers are not assertRaises substitutes and
+// keep BP-PY-41 quiet (requestSpeedTest httpx_test.py re-raise shape).
+func suiteHandlesFailureForTesting(lines []codeLine, exceptIdx int) bool {
+	suiteIdx, _, _ := exceptSuiteLineIdx(lines, exceptIdx)
+	for _, i := range suiteIdx {
+		t := strings.TrimSpace(lines[i].text)
+		if strings.HasPrefix(t, "raise") || strings.Contains(t, "exc_info") ||
+			strings.Contains(t, ".exception(") || strings.Contains(t, "set_exception(") ||
+			strings.Contains(t, "_error_result(") || strings.Contains(t, ".error") ||
+			strings.Contains(t, "log.") || strings.Contains(t, "logger.") {
+			return true
+		}
 	}
-	// bare multi? keep conservative: only broad / AssertionError
-	if rest == assertionErrorType || rest == "Exception" || rest == "BaseException" {
-		return true
-	}
-	return rest == assertionErrorType || strings.HasPrefix(rest, assertionErrorType)
+	return false
 }

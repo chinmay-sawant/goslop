@@ -1,0 +1,20 @@
+# goslop text fixture — ValueError pass after pure int() conversion continues with stream measure (parva-mcp client)
+lang: python
+file: parva_mcp_server/client.py
+---
+def _read_bounded(response, maximum):
+    declared = response.headers.get("content-length")
+    if declared:
+        try:
+            if int(declared) > maximum:
+                raise RuntimeError("response too large")
+        except ValueError:
+            pass
+    chunks = []
+    total = 0
+    for chunk in response.iter_bytes():
+        total += len(chunk)
+        if total > maximum:
+            raise RuntimeError("response too large")
+        chunks.append(chunk)
+    return b"".join(chunks)

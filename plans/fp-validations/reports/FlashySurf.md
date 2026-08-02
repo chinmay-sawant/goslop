@@ -242,3 +242,50 @@ None.
 - Function evidence: `scripts/FlashySurf/findings/functions/1.txt`–`5.txt`
 - Rule conditions: `./bin/goslop -explain BP-PY-46 --config templates/goslop-python.toml` (non-script modules condition), `./bin/goslop -explain BP-PY-7 --config templates/goslop-python.toml` (open without `with`)
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:05:00Z
+repository: FlashySurf
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf
+branch: main
+commit: 3d14f8ca328e7f11d3fc6f2fe86bc15a2463184e
+scanner_revision: latest binary (make build ~17:56)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FlashySurf
+chunk_path: scripts/FlashySurf/chunks
+function_context_path: scripts/FlashySurf/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (bin/goslop rebuilt ~2026-08-02 17:56)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/FlashySurf/chunks -context-dir scripts/FlashySurf/findings/functions real-repos/FlashySurf`
+- Findings: `5`
+- Chunks reviewed: `scripts/FlashySurf/chunks/Chunk_1_5.txt`
+- Function contexts reviewed: `scripts/FlashySurf/findings/functions/1.txt`–`5.txt`
+
+### Classification summary (fresh counts)
+
+All 5 fresh findings match prior audited `Source:` paths exactly (verified against both source files — no line drift). Classifications reused from the original audit + Mode A/B appends.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| True positive | 1 | 3 |
+| False positive | 4 | 1, 2, 4, 5 |
+| Uncertain | 0 | — |
+
+- Fresh findings: `5`; fresh TP `1` / FP `4` / U `0`.
+- New findings (no prior classification): none — the latest binary changed no finding for this repo (same 5 sources as the b5b8fde audit; fingerprints now carry `goslop:2:` but sources/rules are identical).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | module-level (column 0) `print(` in a standalone top-to-bottom script with no `if __name__ == "__main__"` guard and no importable module API (whole body executes at import); rule targets "non-script modules" but detector lacks a script/library distinction — safe condition: print at module scope in a script file (no guard needed), vulnerable: print in an importable module with library API | 4 | `data-process.py:167:1`, `data-process.py:168:1`, `semantic-classification.py:42:1`, `semantic-classification.py:43:1` |
+
+## New findings
+
+None — every fresh finding has a prior classification; the latest binary produced no new findings for FlashySurf.

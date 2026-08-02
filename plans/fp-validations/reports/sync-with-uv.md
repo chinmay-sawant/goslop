@@ -453,3 +453,25 @@ None.
 - Chunk evidence: `scripts/sync-with-uv/chunks/Chunk_1_7.txt`
 - Function evidence: `scripts/sync-with-uv/findings/functions/1.txt` .. `7.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+Run metadata (build: `make build` ~17:56), scan evidence, classification summary (fresh counts):
+
+- Chunk: `scripts/sync-with-uv/chunks/Chunk_1_8.txt`; contexts `functions/1.txt`..`8.txt`; findings: `8`
+- Matching by `Source:`: fresh 1 → audited FP 1 (BP-PY-46, `gen_ref_pages.py:30:9`); fresh 2 → audited FP 3 / Mode-B FP 1 (BP-PY-1, `cli.py:161:1`); fresh 3 → audited TP 4 / Mode-B TP 2 (CWE-396, `cli.py:161:1`); fresh 4 → audited TP 16 / Mode-B TP 3 (BP-PY-2, `repo_data.py:106:1`); fresh 5 → audited TP 17 / Mode-B TP 4 (CWE-390, `repo_data.py:106:1`); fresh 6 → audited TP 18 / Mode-B TP 5 (CWE-1071, `repo_data.py:106:5`); fresh 7 → audited TP 19 / Mode-B TP 6 (BP-PY-2, `repo_data.py:110:1`); fresh 8 → audited FP 20 / Mode-B FP 7 (CWE-252, `test_precommit.py:54:9`).
+- Fresh classification: **False positive 3** (1, 2, 8) / **True positive 5** (3, 4, 5, 6, 7) / **Uncertain 0**. New findings: **0** (fresh 1 is a re-appeared audited FP — absent from the Mode B run, back under the latest binary).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | Module-scope `print("::: " + identifier, file=fd)` in a standalone top-to-bottom docs script (no `__main__` guard, no importable module API) writing generated content into a caller-opened file handle | 1 | `scripts/gen_ref_pages.py:30:9` |
+| 2 | BP-PY-1 | `except Exception as e:` whose suite surfaces the failure — `print("Error:", e, file=sys.stderr)` then `return 123` (non-zero); "hides failures" clause unmet | 1 | `src/sync_with_uv/cli.py:161:1` |
+| 3 | CWE-252 | `subprocess.run([...], check=True)` — the rule's own documented exemption ("use check=True"); status raises `CalledProcessError` handled by `try/except` | 1 | `tests/test_precommit.py:54:9` |
+
+## New findings (any fresh finding with no prior classification; classify each)
+
+None — every fresh finding matches an already-audited Source.
+
+Validation: `git diff --check` — see run below.

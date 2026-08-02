@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-94-builtins-exec-vulnerable.py
+---
+import builtins
+
+
+def run(code: str):
+    builtins.exec(code)

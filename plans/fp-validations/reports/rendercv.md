@@ -1346,3 +1346,25 @@ None.
 - Chunk evidence: `scripts/rendercv/chunks/Chunk_1_25.txt`, `scripts/rendercv/chunks/Chunk_26_36.txt`
 - Function evidence: `scripts/rendercv/findings/functions/4.txt`, `6.txt`, `7.txt`, `9.txt`, `10.txt`, `11.txt`, `16.txt`, `18.txt`, `19.txt`, `30.txt`, `36.txt`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix v2 audit (latest binary)
+
+Run metadata: binary rebuilt ~2026-08-02 17:56 (`make build`); scan: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/rendercv/chunks -context-dir scripts/rendercv/findings/functions real-repos/rendercv`; findings `47`; chunks `Chunk_1_25.txt` + `Chunk_26_47.txt`; repo unchanged (commit `1d4b87b`).
+
+Classification summary (fresh): TP **25** (1, 2, 3, 5, 8, 17, 18, 19, 20, 23, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 42, 43, 44, 45, 46) / FP **22** (4, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 24, 25, 26, 27, 28, 29, 30, 41, 47) / U **0**. Every fresh finding matched a prior audit entry 1:1 by `Source:` — no new findings. All 25 audited TPs re-detected. The 11 Mode-A FPs all persist; the latest binary re-flags the 11 BP-PY-46 CLI/script presentation prints that the b5b8fde fix had suppressed (fresh 12–16, 22, 26–30).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-1 | `except Exception as e:` whose body records the error (into result dict, or counter+print) — handled, not swallowed | 2 | `analyze_pdfs.py:143`, `submit_commercial.py:86` |
+| 2 | BP-PY-46 | print in standalone script (top-level completion message) or CLI command layer (typer `--version`/help, update notice, rich panels, welcome banner) — user-facing presentation, not library logging | 11 | `update_*.py:7/59/115`, `cli/app.py:40/43/130`, `cli/create_theme_command.py:59`, `cli/error_handler.py:41`, `cli/new_command/new_command.py:121`, `cli/new_command/print_welcome.py:14/32` |
+| 3 | CWE-88 | subprocess argv segment that looks dynamic but is a developer constant (module-level tuple member, `sys.executable`, in-process temp path) | 2 | `scripts/ats_proof/run_all.py:36`, `scripts/create_executable.py:35` |
+| 4 | PERF-PY-27 | `read_text`/`load` inside a loop where the path is derived from the loop binding (`f"{theme}.yaml"` or 2nd binding `path`) — distinct path per iteration | 2 | `scripts/rendercv_skill/generate.py:283/293` |
+| 5 | BP-PY-40 | `threading.Thread(..., daemon=True)` with `.start()` on a later line — daemon flag is the shutdown protocol; skip daemon across the multi-line construction, not only same line as `.start(` | 2 | `cli/app.py:123`, `tests/cli/render_command/test_watcher.py:41` |
+| 6 | CWE-829 / CWE-94 | `importlib.import_module` of names built from a deterministic `rglob` over the package's own `cli/` tree — package-controlled selection, no untrusted control sphere / no externally influenced text | 2 | `cli/app.py:149` |
+| 7 | CWE-94 | `eval(f"{entry_type}(**entry)")` where `entry_type` is a literal class name from the test's own `@pytest.mark.parametrize` list | 1 | `tests/schema/models/cv/test_section.py:59` |
+
+## New findings
+
+None — all 47 fresh findings match a prior classification by `Source:` (TP → prior TP, FP → prior FP with reused reason); 22 FP / 25 TP / 0 uncertain, no fresh-only constructs.

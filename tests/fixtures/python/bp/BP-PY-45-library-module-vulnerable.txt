@@ -1,0 +1,11 @@
+# Fixture for BP-PY-45 (vulnerable) — in-function sys.path insert in a library module (must fire)
+lang: python
+file: services/data_retention.py
+---
+import sys
+from pathlib import Path
+
+def main():
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from models.database import SessionLocal
+    return SessionLocal

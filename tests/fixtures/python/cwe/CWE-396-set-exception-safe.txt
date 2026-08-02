@@ -1,0 +1,20 @@
+# goslop text fixture — exception forwarded into a Future (niquests sgi/_ws.py:44 FP)
+lang: python
+file: future_forward.py
+---
+class Future:
+    def set_result(self, value):
+        pass
+
+    def set_exception(self, exc):
+        pass
+
+
+def run():
+    future = Future()
+    try:
+        result = work()
+        future.set_result(result)
+    except Exception as e:
+        future.set_exception(e)
+    return future

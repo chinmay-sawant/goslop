@@ -1,0 +1,10 @@
+# goslop text fixture — fromisoformat ValueError:pass continues without defined fallback
+lang: python
+file: services/dates.py
+---
+def parse_maybe(value):
+    try:
+        date = datetime.fromisoformat(value)
+    except ValueError:
+        pass
+    process(date)

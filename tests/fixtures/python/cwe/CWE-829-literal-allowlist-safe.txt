@@ -1,0 +1,28 @@
+# goslop text fixture
+lang: python
+file: CWE-829-literal-allowlist-safe.py
+---
+for package in ("certifi", "charset_normalizer", "idna", "chardet"):
+    to_be_imported = package
+    if package == "chardet":
+        to_be_imported = "charset_normalizer"
+    elif package == "urllib3":
+        to_be_imported = "urllib3_future"
+    try:
+        __import__(to_be_imported)
+    except ImportError:
+        continue
+
+
+def check_library_availability():
+    libraries = {
+        "pymupdf": "fitz",
+        "pypdf": "pypdf",
+        "pikepdf": "pikepdf",
+        "borb": "borb",
+    }
+    for name, import_name in libraries.items():
+        try:
+            __import__(import_name)
+        except ImportError:
+            continue

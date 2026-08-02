@@ -2,6 +2,12 @@
 lang: python
 file: package/telemetry.py
 ---
-def prompt_usage_telemetry():
-    print("debug help")
+def contribute_scan(url, silent=False):
+    if not silent:
+        print("Scan contributed to public database")
+    return True
+
+
+def try_upload_scan(url):
+    print("Results synced to project")
     return True

@@ -1,0 +1,11 @@
+# goslop text fixture — handler swallows and returns a message; failure hidden
+lang: python
+file: fallthrough_return.py
+---
+def make_request():
+    try:
+        xhr = send()
+        return parse(xhr)
+    except Exception:
+        msg = "request failed"
+    return msg

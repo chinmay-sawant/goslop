@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-94-def-exec-vulnerable.py
+---
+def run(code: str):
+    exec(code)

@@ -105,8 +105,9 @@ var perfHeavyCtorRE = regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\s*\(`)
 // Skips common exception/builtin constructors; requires lambda or alloc-like context.
 // Sort/min/max key= lambdas, light attribute lambdas, and construct-then-return
 // early-exit loop bodies are not per-element allocation smells.
+// Offline tools/ batch scripts load data once per run — skip path-based FPs.
 func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
-	if facts == nil || isPythonTestFile(unit) {
+	if facts == nil || isPythonTestFile(unit) || isPythonOfflineToolsPath(unit) {
 		return
 	}
 	for i, line := range facts.lines {
@@ -267,8 +268,9 @@ func perfLineIsDecodeOrImage(text string) bool {
 // Requires the load site to be in-loop or in a function directly called from a loop,
 // and that the path expression is not the loop variable or a callee parameter
 // (once-per-distinct-path loads are not "repeated same path").
+// Offline tools/ scripts intentionally read each input once per batch run.
 func detectPYPERF27(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
-	if facts == nil || isPythonTestFile(unit) {
+	if facts == nil || isPythonTestFile(unit) || isPythonOfflineToolsPath(unit) {
 		return
 	}
 	for i, line := range facts.lines {

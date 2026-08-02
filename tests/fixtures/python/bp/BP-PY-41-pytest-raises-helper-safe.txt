@@ -1,0 +1,13 @@
+# goslop text fixture — test delegates to helper that uses pytest.raises
+# (niquests test_emscripten _inner_* FP)
+lang: python
+file: test_emscripten.py
+---
+import pytest
+
+def _inner_test_send_raises(session):
+    with pytest.raises(NotImplementedError):
+        session.send("payload")
+
+def test_send_raises(session):
+    _inner_test_send_raises(session)

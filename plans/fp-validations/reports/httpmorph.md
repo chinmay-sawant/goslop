@@ -5176,3 +5176,55 @@ None — all 13 missing old TP sources still exist at their audited line in the 
 - Chunk evidence: `scripts/httpmorph/chunks` (18 files, 427 fresh findings; `test_proxy.py` still heavily reported at other lines, `benchmarks/benchmark.py`, `docs/source/conf.py` scanned)
 - Source evidence: `benchmarks/benchmark.py:47`, `docs/source/conf.py:9`, `examples/proxy_example.py:36`, `benchmarks/libs/httpmorph_bench.py:379/410/443`, `tests/test_proxy.py:285/354/411/439/528/1113/1151`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:10:00Z (approx; post-fix v2)
+repository: httpmorph
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph
+commit: 608decb1f5b82da9d13f01920bbd50d7e1a2a196 (unchanged since old audit)
+scanner: latest binary (make build ~2026-08-02 17:56), supersedes b5b8fde Mode A/B scans
+chunk_path: scripts/httpmorph/chunks (19 files, Chunk_1_25 .. Chunk_451_453)
+function_context_path: scripts/httpmorph/findings/functions (453 files)
+```
+
+### Scan evidence
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/httpmorph/chunks -context-dir scripts/httpmorph/findings/functions real-repos/httpmorph`
+- Fresh findings: `453` (vs 427 on b5b8fde, 714 on the original binary)
+- Every fresh finding classified by `Source:` (file:line:col) + rule against the prior audit's FP/TP lists; unmatched findings classified against the rule condition with function context + enclosing source.
+
+### Classification summary (fresh)
+
+| Classification | Count |
+| --- | ---: |
+| True positive | 425 |
+| False positive | 28 |
+| Uncertain | 0 |
+| New (no prior classification) | 0 |
+
+All 453 fresh findings match a prior audit classification by `(Source, rule)`; none are new sources/rules. The latest binary restored 2 of the 13 Mode-B over-suppressed TPs (`benchmarks/benchmark.py:47:1`, `examples/proxy_example.py:36:1` — both BP-PY-45, now TP); 11 remain suppressed-but-present (`docs/source/conf.py:9:1` BP-PY-45; `benchmarks/libs/httpmorph_bench.py:379/410/443` BP-PY-49; `tests/test_proxy.py:285/354/411/439/528/1113/1151` BP-PY-41 — verified present in source, construct unchanged).
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | `print(...)` at module/function scope in `examples/` demo script modules (with `if __name__ == "__main__":` guard) flagged as operational logging in a non-script module; detector exemption covers test/benchmark/`__main__`-guarded-print/argparse-Click, not demo-script prints | 24 | `examples/async_example.py:69:5` (#228, old 275), `examples/http2_example.py:11:1` (#240, old 327) |
+| 2 | BP-PY-14 | HTTP-call regex (`requestsCallRe`/`sessionHTTPCallRe`) matches a **commented-out** line (`# response = session.get(...)`) — no executable call, nothing that could omit `timeout=` | 1 | `examples/basic_usage.py:50:22` (#237, old 295) |
+| 3 | CWE-829 | Untrusted-path rule fires on `os.path.join(os.path.dirname(__file__), ...)` glob of the package's own directory (`_httpmorph*.so`) — package-controlled, CWE-829 suppresses package-controlled paths | 1 | `src/httpmorph/_client_c.py:61:12` (#318, old 570) |
+| 4 | CWE-256 | Plaintext-password regex matches the `long_password = "b"` prefix of a multiplied synthetic test fixture (`"b" * 300`) used for buffer overflow/truncation tests, not a stored password | 1 | `tests/test_edge_cases_security.py:208:1` (#342, old 594) |
+| 5 | CWE-1341 | Double-close rule fires on `sock.close()` statements that each terminate their own path via immediate `return` (or a single close after the relay loop) — handle never released twice | 1 | `tests/test_proxy_server.py:87:29` (#424, old 684) |
+
+## New findings
+
+None — every fresh finding (1–453) has a prior classification at the same `Source:`; 0 unmatched, 0 new.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/httpmorph/chunks` (19 files, 453 fresh findings)
+- Function evidence: `scripts/httpmorph/findings/functions/<id>.txt` (spot-verified `#162`, `#268`, `#292`, `#374` contexts match chunk sources)
+- Validation: `git diff --check` — `pass` (see below)

@@ -1410,3 +1410,55 @@ Why it still satisfies the rule condition: block-removal logging in `_update_blo
 - Chunk evidence: `scripts/WHEN-Language/chunks` (42 fresh findings)
 - Function evidence: `scripts/WHEN-Language/findings/functions` (42 contexts, not required for Mode B)
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:00:00Z (fresh scan run after the FP-reduction binary rebuild at 17:56)
+repository: WHEN-Language
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language
+branch: main
+commit: f9bf78d49c16c36d4eb98d5abd305a65f3252e32 (repository unchanged since the pre-fix audit)
+scanner_revision: 3407305ec959b71904492f510cebd3e43655d5a6 + uncommitted detector fixes (working tree)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language
+chunk_path: scripts/WHEN-Language/chunks
+function_context_path: scripts/WHEN-Language/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (binary rebuilt 2026-08-02 17:56)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/WHEN-Language/chunks -context-dir scripts/WHEN-Language/findings/functions real-repos/WHEN-Language`
+- Findings: `53` (pre-fix 104, Mode B 42)
+- Chunks reviewed: `scripts/WHEN-Language/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_53.txt` (all 53 fresh findings read)
+- Source matching: every fresh `Source:` matched an audited TP/FP source. All 46 audited-TP sources re-appear (including the 11 Mode-B-suppressed `hot_reload.py` prints — over-suppression fixed); 7 audited-FP sources re-appear (BP-PY-44 ×6, CWE-208 ×1). Absent: all PERF-PY-26 parser.py FPs, BP-PY-12, and all `when.py` BP-PY-46 CLI-print FPs — those detector fixes held.
+
+### Classification summary (fresh)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| True positive | 46 | 1–5, 7–21, 23–27, 29–39, 42–44, 46–48, 50–53 |
+| False positive | 7 | 6, 22, 28, 40, 41, 45, 49 |
+| Uncertain | 0 | — |
+
+All 7 FPs reuse prior classifications by `Source:` match (no re-review needed): 6 (old 6), 22 (old 22), 28 (old 29), 40 (old 41), 41 (old 42), 49 (old 85) — BP-PY-44 first-party `from parser import Parser`; 45 (old 46) — CWE-208 lexer enum comparison.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-44 | `from parser import Parser` where `parser` is a first-party module (sibling `parser.py`; imports usually adjacent to `from lexer import Lexer`). Deprecated-stdlib rule should resolve the import: fire only when the name resolves to stdlib, not to a local module/package. | 6 | hot_reload.py:91:1, interpreter.py:316:1, interpreter.py:971:1, interpreter.py:1492:1, interpreter.py:1636:1, when.py:23:1 |
+| 2 | CWE-208 | `token_type == TokenType.LBRACE` — `==` where one operand's name contains the sensitive-word `token`, but both operands are internal enums used for control flow (brace-depth tracking). Should fire only when a credential-like value (string literal secret, `password`/`secret`/auth-token variable) is compared. | 1 | lexer.py:714:20 |
+
+## New findings
+
+None — every fresh finding (53/53) matches a previously audited `Source:`; 0 new findings.
+
+## Final evidence
+
+- Over-suppression: resolved — all 11 previously suppressed `hot_reload.py` BP-PY-46 TPs are re-reported (fresh 1, 2, 5, 7, 9–12, 14–16)
+- Chunk evidence: `scripts/WHEN-Language/chunks` (53 fresh findings)
+- Function evidence: `scripts/WHEN-Language/findings/functions` (not required — all sources prior-audited)
+- Validation: `git diff --check` — pass

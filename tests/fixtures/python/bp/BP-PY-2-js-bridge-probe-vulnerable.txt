@@ -1,0 +1,11 @@
+# goslop text fixture — except Exception: pass after side-effectful open write
+lang: python
+file: swallow_write.py
+---
+def save(path, data):
+    try:
+        f = open(path, "w")
+        f.write(data)
+        f.close()
+    except Exception:
+        pass

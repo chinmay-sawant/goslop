@@ -60,6 +60,8 @@ func TestBPPY14RequestsWithoutTimeout(t *testing.T) {
 	assertBPFixtureCase(t, "BP-PY-14", "BP-PY-14-timeout-tuple")
 	assertBPFixtureCase(t, "BP-PY-14", "BP-PY-14-session")
 	assertBPFixtureCase(t, "BP-PY-14", "BP-PY-14-test-path")
+	assertBPFixtureCase(t, "BP-PY-14", "BP-PY-14-docstring")
+	assertBPFixtureCase(t, "BP-PY-14", "BP-PY-14-positional-timeout")
 }
 
 func TestBPPY15HttpxAsyncClientNotClosed(t *testing.T) {

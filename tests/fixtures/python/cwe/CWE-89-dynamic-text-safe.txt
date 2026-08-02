@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: CWE-89-dynamic-text-safe.py
+---
+from sqlalchemy import text
+
+
+def count_rows(db, params):
+    sql = "SELECT COUNT(*) FROM entity_search WHERE person_id = :id"
+    return db.execute(text(sql), params).scalar()

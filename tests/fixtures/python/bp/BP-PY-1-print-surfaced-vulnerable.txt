@@ -1,0 +1,12 @@
+# goslop text fixture — counts failures silently and continues; failure not surfaced (voicetag encoder.py TP shape)
+lang: python
+file: silent_failure_count.py
+---
+def run(urls):
+    failures = 0
+    for url in urls:
+        try:
+            fetch(url)
+        except Exception:
+            failures += 1
+    return failures

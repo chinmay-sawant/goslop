@@ -1,0 +1,10 @@
+# goslop text fixture — bare raise-only handler stays reportable (WeThePeople
+# middleware/tracing.py:76 TP shape)
+lang: python
+file: bare_raise.py
+---
+def dispatch(event):
+    try:
+        return handle(event)
+    except Exception:
+        raise

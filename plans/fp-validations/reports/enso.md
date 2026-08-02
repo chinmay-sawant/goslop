@@ -491,3 +491,48 @@ None.
 - Chunk evidence: `scripts/enso/chunks`
 - Function evidence: `scripts/enso/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T18:05:00Z (fresh scan; binary rebuilt 2026-08-02 17:56)
+repository: enso
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso
+branch: master
+commit: 516c06caa712e2e454e8673ef5f365616362a9a9
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso
+chunk_path: scripts/enso/chunks
+function_context_path: scripts/enso/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (~17:56)
+- Findings: `135`
+- Chunks reviewed: `scripts/enso/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_135.txt` (all fresh, read in full)
+- Function contexts reviewed: every fresh finding's exported context was in its chunk; enclosing source read for `Base.py:206`, `Structure.py:115`, `Macro.py:173-180`
+
+### Classification summary
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 9 | 13, 82, 92, 93, 94, 95, 96, 97, 98 |
+| True positive | 126 | all other fresh findings (1–12, 14–81, 83–91, 99–135) |
+| Uncertain | 0 | — |
+
+All 135 fresh findings were matched by `Source:` to prior audit entries; the 9 FPs are the same re-appearing audited FPs (old IDs 14, 85, 95–101; Mode B IDs 12, 81, 91–97). Per-rule counts are identical to Mode B (BP-PY-5 48, BP-PY-12 7, BP-PY-1 23, BP-PY-2 1, BP-PY-3 14, BP-PY-6 1, BP-PY-7 5, BP-PY-46 7TP/9FP, CWE-94 2, CWE-1333 1, CWE-397 6, CWE-390 1, CWE-1071 1, CWE-1046 1, CWE-1121 3) except CWE-396, now 5 (Mode B: 4). The delta is fresh finding `10` — CWE-396 `Base.py:206:1` (`except Exception as e: raise`) re-appearing as an audited TP (old TP 10); the Mode B "suppressed-but-present" over-suppression noted there is resolved by the latest binary (re-raise handlers are flagged again, matching the rule's intent). PERF-PY-26 `Macro.py:180` is still suppressed-but-present (construct in source at `parse_macro_file`, no fresh finding). CWE-89 (old FPs 11, 25) stays fixed — zero CWE-89 findings.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | BP-PY-46 | `print(` token inside a `def print(...)` header (declaration) matched as a call site | 1 | `Builtin.py:537:5` |
+| 2 | BP-PY-46 | `print(...)` in test files whose basename/path is a case-variant of `test` (`Test.py`, `Tests/`) — `isPythonTestFile` path/name check is case-sensitive and misses them | 8 | `Test.py:4:1`; `Tests/Testing.py:12:5`, `14:5`, `25:9`, `28:9`, `33:9`, `36:9`, `38:13` |
+
+Pattern 1 fix condition: skip tokens that are part of a `def`/`class` header (parameter list), i.e. only flag actual `print(` call expressions. Pattern 2 fix condition: the test exemption should match `test` case-insensitively in the basename (`Test.py`, `Testing.py`) and in path components (`Tests/`), or skip any file under a directory/basename whose lowercased form contains `test`.
+
+## New findings
+
+None — every fresh finding has a prior classification (9 re-appearing audited FPs, 126 audited TPs). Only delta vs Mode B: CWE-396 `Base.py:206:1` (old TP 10) recovered from the b5b8fde over-suppression; PERF-PY-26 `Macro.py:180` remains suppressed-but-present.

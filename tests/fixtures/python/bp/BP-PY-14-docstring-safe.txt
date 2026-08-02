@@ -1,0 +1,14 @@
+# goslop text fixture — requests.get inside module docstring doctest (kiss_headers)
+lang: python
+file: kiss_headers_init.py
+---
+"""
+Basic usage:
+
+   >>> import requests
+   >>> r = requests.get('https://www.python.org')
+   >>> print(r.status_code)
+"""
+
+def parse_it(value):
+    return value

@@ -331,3 +331,54 @@ None.
 - Chunk evidence: `scripts/astroz/chunks`
 - Function evidence: `scripts/astroz/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix v2 audit (latest binary)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T17:56:00Z
+repository: astroz
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz
+branch: main
+commit: d558933ec3a9c9ee826eb8de665b6e5d229ebecb (unchanged from prior audits)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz
+chunk_path: scripts/astroz/chunks
+function_context_path: scripts/astroz/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (binary rebuilt 2026-08-02 ~17:56)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/astroz/chunks -context-dir scripts/astroz/findings/functions real-repos/astroz`
+- Findings: `17` (same set as the 16:29-binary run)
+- Chunks reviewed: `scripts/astroz/chunks/Chunk_1_17.txt` (all 17)
+- Function contexts reviewed: `scripts/astroz/findings/functions/5.txt`, `6.txt` (FP candidates) — all other fresh findings matched audited sources by `Source:` path:line
+
+### Classification summary (fresh counts)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| True positive | 15 | 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 |
+| False positive | 2 | 5, 6 |
+| Uncertain | 0 | — |
+
+Matching method: every fresh finding's `Source:` was matched against the audited TP/FP lists in the original audit + Mode B append (by path:line). Fresh IDs 1, 2, 12 → audited TPs `jax_gpu_bench.py:51`, `python_sgp4_bench.py:39`, `__init__.py:203` (CWE-1121); 3, 4, 11 → audited TPs `sgp4_compat_test.py:18/66/165` (BP-PY-41); 7, 8, 9, 10 → audited TPs `sgp4_compat_test.py:107` (BP-PY-1/BP-PY-2/CWE-390/CWE-1071); 13–17 → audited TPs `cesium_fast.py:146` (BP-PY-1/BP-PY-2/CWE-390/CWE-396/CWE-1071). Fresh IDs 5 (`sgp4_compat_test.py:81`, CWE-772) and 6 (`sgp4_compat_test.py:103`, BP-PY-42) match audited FPs — reasons reused below. Repo commit unchanged, so all construct-level reasons remain valid. No NEW findings.
+
+## Fix checklist (FP patterns)
+
+| Pattern # | Rule | Trigger shape | Count | Example sources |
+| --- | --- | --- | ---: | --- |
+| 1 | CWE-772 | `\w+ = urllib.request.urlopen(...).read().decode("utf-8")` — regex fires on any assignment whose RHS starts with `urlopen(`, but the assigned target binds a `str`; the response object is an inline intermediate consumed by the chained `.read()`, so no resource handle is ever bound. Condition that distinguishes safe: only fire when the assignment target directly receives the resource-returning call (no `.read()`/`.read().decode()` chain consumed inline). | 1 | `benchmarks/sgp4_compat_test.py:81` |
+| 2 | BP-PY-42 | `try:` … `except: pass` inside a data-loading loop in a test file (`benchmarks/sgp4_compat_test.py`) — tolerant TLE filtering while building benchmark input, not an expect-failure assertion; function and file contain no assertions. Condition that distinguishes safe: only fire when the try/except expresses a failure expectation (e.g. except suite is not `pass`, or an assertion follows the caught call). | 1 | `benchmarks/sgp4_compat_test.py:103` |
+
+## New findings
+
+None — all 17 fresh findings map to previously audited sources; no finding appears that was not in the original audit or Mode B append.
+
+## Final evidence
+
+- Delegated reviewers: none (single-reviewer audit)
+- Chunk evidence: `scripts/astroz/chunks`
+- Function evidence: `scripts/astroz/findings/functions`
+- Validation: `git diff --check` — pass

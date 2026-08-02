@@ -548,6 +548,10 @@ func looksStaticStringList(expr string) bool {
 		return false
 	}
 	for _, p := range parts {
+		// Python permits a trailing comma; the empty tail element is not a value.
+		if strings.TrimSpace(p) == "" {
+			continue
+		}
 		if !isPureStringLiteral(p) {
 			return false
 		}
