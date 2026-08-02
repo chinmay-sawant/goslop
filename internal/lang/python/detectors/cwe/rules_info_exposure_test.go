@@ -27,8 +27,7 @@ func TestCWE208TestModuleAssertSkipped(t *testing.T) {
 	assertCWEFixtureCase(t, "CWE-208", "CWE-208-test-assert")
 }
 
-func TestCWE208AuthorityEnumAndReleaseScriptSkipped(t *testing.T) {
+func TestCWE208AuthorityEnumSkipped(t *testing.T) {
 	t.Parallel()
 	assertCWEFixtureCase(t, "CWE-208", "CWE-208-authority-enum")
-	assertCWEFixtureCase(t, "CWE-208", "CWE-208-release-signature")
 }

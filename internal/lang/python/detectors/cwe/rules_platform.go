@@ -36,65 +36,6 @@ var (
 	pyReturnLineRE        = regexp.MustCompile(`^[\t ]*return\b`)
 )
 
-// isPythonOfflineScriptPathCWE mirrors bad_practices offline tooling skip
-// (tools/, scripts/release/, public-benchmark/) for CWE-396 batch-job noise.
-// Also covers Project_Parva offline verify runners under scripts/
-// (parva_*_verify.py, run_*smoke*/journey/frontend/golden) without matching
-// WeThePeople scripts/seed_*.py, scripts/run_story_gates_audit.py, or jobs/*.py.
-func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
-	if unit == nil {
-		return false
-	}
-	for _, path := range []string{unit.Path, unit.DisplayPath} {
-		if path == "" {
-			continue
-		}
-		norm := path
-		// Normalize backslashes so Windows-style paths still match markers.
-		if strings.IndexByte(norm, '\\') >= 0 {
-			norm = strings.ReplaceAll(norm, "\\", "/")
-		}
-		// Demo/example handlers (logxide examples/*) are soft best-effort logging
-		// demos, not production catch policies.
-		if strings.Contains(norm, "/examples/") || strings.HasPrefix(norm, "examples/") {
-			return true
-		}
-		if strings.Contains(norm, "/backend/tools/") ||
-			strings.Contains(norm, "/scripts/release/") ||
-			strings.Contains(norm, "/public-benchmark/") ||
-			strings.Contains(norm, "/Project_Parva/tools/") ||
-			strings.HasPrefix(norm, "backend/tools/") ||
-			strings.HasPrefix(norm, "scripts/release/") ||
-			strings.HasPrefix(norm, "public-benchmark/") ||
-			strings.HasPrefix(norm, "tools/conformance") ||
-			strings.HasPrefix(norm, "tools/validate") ||
-			strings.HasPrefix(norm, "tools/release/") {
-			return true
-		}
-		// Offline verify / smoke / journey / frontend runners under scripts/
-		// only (not jobs/). Must NOT match WeThePeople run_story_gates_audit.py.
-		if strings.Contains(norm, "/scripts/") || strings.HasPrefix(norm, "scripts/") {
-			base := norm
-			if i := strings.LastIndex(norm, "/"); i >= 0 {
-				base = norm[i+1:]
-			}
-			if strings.HasPrefix(base, "parva_") && strings.HasSuffix(base, "_verify.py") {
-				return true
-			}
-			if strings.HasPrefix(base, "run_") && strings.HasSuffix(base, ".py") {
-				// Narrow markers only — blanket run_*.py killed WTP story-gate TPs.
-				if strings.Contains(base, "smoke") ||
-					strings.Contains(base, "journey") ||
-					strings.Contains(base, "frontend") ||
-					strings.Contains(base, "golden") {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
-
 // CWE-396 reports only the two Python root exception classes. Specific
 // exception handlers intentionally remain outside this narrow heuristic.
 //
@@ -107,11 +48,6 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 		return
 	}
 	if unit == nil || out == nil {
-		return
-	}
-	// Offline tooling / release / benchmark runners (Project_Parva tools/,
-	// scripts/release, public-benchmark) — same offline-noise cut as BP-PY-1.
-	if isPythonOfflineScriptPathCWE(unit) {
 		return
 	}
 	// Dual-mode SSL helpers (verify_ssl switch → default context vs CERT_NONE)
@@ -762,8 +698,8 @@ func suiteIsSoftValidationOutcome(bodyRaw []string, allRaw, caughtVar string) bo
 	return true
 }
 
-// suiteIsSoftWarningCollector reports warn_unexpected_error / .warn_ style
-// soft collectors without raise (html2pic styling FPs).
+// suiteIsSoftWarningCollector reports warnings.warn-style soft collectors
+// without re-raise (stdlib warnings module — not a project-specific API).
 func suiteIsSoftWarningCollector(body []string, allRaw string) bool {
 	if len(body) == 0 {
 		return false
@@ -777,12 +713,7 @@ func suiteIsSoftWarningCollector(body []string, allRaw string) bool {
 			return false
 		}
 	}
-	// Structural soft-warning API (html2pic WarningCollector).
-	if strings.Contains(allRaw, "warn_unexpected_error(") ||
-		strings.Contains(allRaw, ".warn_unexpected_error(") {
-		return true
-	}
-	// warnings.warn with unexpected-error style (not logger).
+	// stdlib warnings.warn (not logger).
 	if strings.Contains(allRaw, "warnings.warn(") &&
 		!strings.Contains(allRaw, "logger.") &&
 		!strings.Contains(allRaw, "log.") {
@@ -2479,11 +2410,10 @@ func isProbeStmt(stmt string) bool {
 	return false
 }
 
-// jsBridgeSignals mark a try body as a best-effort JS/pyodide bridge probe.
+// jsBridgeSignals mark a try body as a best-effort JS interop / stream probe
+// (web-API and common interop names only — no product-specific identifiers).
 var jsBridgeSignals = []string{
 	"getReader(",
-	"to_py(",
-	"run_sync(",
 	"pyfetch(",
 	"js_response",
 	"js_headers",
@@ -2491,7 +2421,6 @@ var jsBridgeSignals = []string{
 	".entries(",
 	"status_text",
 	".bytes()",
-	"pyodide",
 	"_js_",
 	"_ws.",
 	"_ws.close",
@@ -2504,11 +2433,9 @@ var jsBridgeSignals = []string{
 	"AbortSignal",
 	"WebSocket",
 	"SSEExtension",
-	"PyodideWebSocket",
-	"PyodideSSE",
 }
 
-// isJSBridgeExpr reports a statement that touches the JS/pyodide bridge API.
+// isJSBridgeExpr reports a statement that touches a JS interop / stream API.
 func isJSBridgeExpr(t string) bool {
 	for _, s := range jsBridgeSignals {
 		if strings.Contains(t, s) {
@@ -2883,12 +2810,8 @@ func detectCWE390(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
-	// Offline tooling only — do NOT skip test modules wholesale (WeThePeople
-	// chaos tests are audited TPs). Test expected-exception FPs use
-	// exceptPassIsSafe / tryBlockDeliberatelyRaises.
-	if isPythonOfflineScriptPathCWE(unit) {
-		return
-	}
+	// Do NOT skip test modules wholesale — chaos / expected-exception tests
+	// use exceptPassIsSafe / tryBlockDeliberatelyRaises for FP control.
 	lines := facts.MaskedLines()
 	rawLines := buildMaskedPythonLines(unit.Source)
 	for i, line := range lines {

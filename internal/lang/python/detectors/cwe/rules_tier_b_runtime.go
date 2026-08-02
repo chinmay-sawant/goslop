@@ -272,11 +272,8 @@ func detectCWE1071(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 	if unit == nil || out == nil {
 		return
 	}
-	// Mirror CWE-390: offline tooling only. Test modules keep chaos-test TPs
-	// (WeThePeople); expected-exception FPs use exceptPassIsSafe.
-	if isPythonOfflineScriptPathCWE(unit) {
-		return
-	}
+	// Expected-exception FPs use exceptPassIsSafe; do not path-skip modules.
+
 	lines := facts.MaskedLines()
 	rawLines := buildMaskedPythonLines(unit.Source)
 	for i, line := range lines {

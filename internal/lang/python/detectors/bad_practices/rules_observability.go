@@ -470,6 +470,7 @@ func pythonCLIPrintSkipFunc(
 	// library operational logging. Worker printers (contribute_*/try_*/upload_*)
 	// stay reportable (caniscrape contribute_scan / try_upload_scan TPs).
 	if hasClickishCLI {
+		// CLI UX verbs (framework-attached presentation helpers).
 		for _, prefix := range []string{
 			"prompt_", "show_", "enable_", "disable_", "display_",
 			"request_", "confirm_", "ask_", "warn_if_",
@@ -480,22 +481,17 @@ func pythonCLIPrintSkipFunc(
 		}
 	}
 	// Script-entry presentation helpers when this module's own __main__ invokes
-	// main(): print_*summary/report and display_* are console UX for the CLI
-	// script (CourtScrapper utils.display_config when main is local). Without
-	// mainInvoked, leave library printers alone so Court bulk TPs and caniscrape
-	// stay reportable.
+	// main(): print_*summary/report style names are console UX for CLI scripts.
 	if mainInvoked && isPresentationPrintFuncName(name) {
 		return true
 	}
 	return false
 }
 
-// isPresentationPrintFuncName reports dedicated console presentation helpers.
+// isPresentationPrintFuncName reports dedicated console presentation helpers
+// named print_* with a summary/report/help role (structural name shape).
 func isPresentationPrintFuncName(name string) bool {
 	n := strings.ToLower(name)
-	if strings.HasPrefix(n, "display_") {
-		return true
-	}
 	if strings.HasPrefix(n, "print_") {
 		for _, s := range []string{"summary", "report", "config", "help", "banner", "usage", "version"} {
 			if strings.Contains(n, s) {

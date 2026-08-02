@@ -39,9 +39,9 @@ var (
 )
 
 // PERF-PY-23: polymorphic encode/serialize per loop item.
-// Seed/migrate helpers and offline research scripts are not hot request paths.
+// Seed/migrate helpers (function-name structural skip below) are not hot paths.
 func detectPYPERF23(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
-	if facts == nil || isPythonTestFile(unit) || isPythonOfflineToolsPath(unit) || isPythonOfflineResearchScript(unit) {
+	if facts == nil || isPythonTestFile(unit) {
 		return
 	}
 	for i, line := range facts.lines {
@@ -125,9 +125,8 @@ var perfHeavyCtorRE = regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\s*\(`)
 // Skips common exception/builtin constructors; requires lambda or alloc-like context.
 // Sort/min/max key= lambdas, light attribute lambdas, and construct-then-return
 // early-exit loop bodies are not per-element allocation smells.
-// Offline tools/ batch scripts load data once per run — skip path-based FPs.
 func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
-	if facts == nil || isPythonTestFile(unit) || isPythonOfflineToolsPath(unit) {
+	if facts == nil || isPythonTestFile(unit) {
 		return
 	}
 	for i, line := range facts.lines {

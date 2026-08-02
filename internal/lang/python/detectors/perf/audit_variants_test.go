@@ -27,7 +27,6 @@ func TestPERFFalsePositiveAuditFixtureVariants(t *testing.T) {
 		{rule: "PERF-PY-26", caseName: "PERF-PY-26-field-decode"},
 		{rule: "PERF-PY-25", caseName: "PERF-PY-25-key-lambda"},
 		{rule: "PERF-PY-25", caseName: "PERF-PY-25-early-return"},
-		{rule: "PERF-PY-25", caseName: "PERF-PY-25-tools-path"},
 	} {
 		tc := tc
 		t.Run(tc.caseName, func(t *testing.T) {

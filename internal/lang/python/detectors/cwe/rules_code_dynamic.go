@@ -658,7 +658,7 @@ func detectCWE215(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
-	if isPythonOfflineScriptPathCWE(unit) || isPythonBenchmarkFile(unit) {
+	if isPythonBenchmarkFile(unit) {
 		return
 	}
 	for _, name := range []string{"print", "logging.debug", ".debug"} {

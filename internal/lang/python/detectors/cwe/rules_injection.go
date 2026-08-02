@@ -399,7 +399,7 @@ func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	if unit == nil || out == nil {
 		return
 	}
-	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) || isPythonOfflineScriptPathCWE(unit) {
+	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
 		return
 	}
 	ctx := buildPyFileCtx(facts, unit.Source)

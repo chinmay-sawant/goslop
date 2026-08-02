@@ -28,11 +28,6 @@ func init() {
 // with weak handling (pass / bare continue).
 func detectBPPY1(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-1")
-	// Offline tooling / release scripts: broad-except noise in batch jobs
-	// (Project_Parva tools/, scripts/release) is audited residual FP.
-	if isPythonOfflineScriptPath(unit) {
-		return
-	}
 	if !facts.has("except") {
 		return
 	}
@@ -322,13 +317,6 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 		return true
 	}
 
-	// Health-check catch-all that records unhealthy/degraded status after
-	// logging (logxide examples/* health endpoints). Generic fallback
-	// assigns after log stay reportable (WeThePeople rate-limit defaults).
-	if hasLog && suiteModelsUnhealthyStatus(joinedRaw) {
-		return true
-	}
-
 	// Print of the exception. Only stderr reporting followed by an exit
 	// flow, a lone print inside an except ladder, or logger.exception +
 	// user-facing print + exit (httptap cli.py:589) is safe; every other
@@ -580,16 +568,6 @@ func suiteReturnsHTTPErrorResponse(joinedRaw string) bool {
 		}
 	}
 	return false
-}
-
-// suiteModelsUnhealthyStatus reports a suite that assigns the conventional
-// health-check failure token "unhealthy" (raw text — Mask blanks string
-// literals). "degraded" alone is intentionally omitted: WeThePeople
-// routers/common.py health endpoint assigns status = "degraded" and is an
-// audited BP-PY-1 TP. Generic status/default assigns stay reportable.
-func suiteModelsUnhealthyStatus(joinedRaw string) bool {
-	return strings.Contains(joinedRaw, `= "unhealthy"`) ||
-		strings.Contains(joinedRaw, `= 'unhealthy'`)
 }
 
 // softBestEffortLogContinue reports logger.warning-only handlers (not info/
@@ -1872,19 +1850,16 @@ func isProbeStmt(stmt string) bool {
 	return false
 }
 
-// jsBridgeSignals are tokens that mark a try body as a best-effort JS/pyodide
-// bridge probe (niquests extensions/pyodide audited FPs).
+// jsBridgeSignals are tokens that mark a try body as a best-effort
+// JavaScript interop / stream probe (stdlib- and web-API-shaped names only).
 var jsBridgeSignals = []string{
 	"getReader(",
-	"to_py(",
-	"run_sync(",
 	"js_response",
 	"js_headers",
 	"js_body",
 	".entries(",
 	"status_text",
 	".bytes()",
-	"pyodide",
 	"_js_",
 	"_ws.",
 	"_proxies",
@@ -2483,11 +2458,6 @@ func probeCatch(types []string) bool {
 // BP-PY-2: except suite is solely pass (optional comment already stripped).
 func detectBPPY2(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-2")
-	// Offline tooling / release scripts: pass-only warmup and batch-job
-	// handlers (Project_Parva backend/tools/load_test) are audited residual FP.
-	if isPythonOfflineScriptPath(unit) {
-		return
-	}
 	if !facts.has("except") || !facts.has("pass") {
 		return
 	}

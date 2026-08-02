@@ -100,9 +100,7 @@ func detectCWE1124(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 	// Offline release tooling (Project_Parva scripts/release nested claim /
 	// import walks) — same path skip BP-PY-1 already applies. Keeps product
 	// calendar nesting (bikram_sambat) reportable.
-	if isPythonOfflineScriptPathCWE(unit) {
-		return
-	}
+	
 	type controlFrame struct{ indent int }
 	var frames []controlFrame
 	offset := 0

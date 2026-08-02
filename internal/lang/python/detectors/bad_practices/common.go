@@ -66,8 +66,7 @@ func isPythonTestFile(unit *core.ParsedUnit) bool {
 }
 
 // isPythonTestDirPath reports modules under a tests/ or test/ directory tree.
-// Unlike isPythonTestFile, this does not match scripts merely named *_test.py
-// (Project_Parva backend/tools/load_test.py).
+// Unlike isPythonTestFile, this does not match scripts merely named *_test.py.
 func isPythonTestDirPath(unit *core.ParsedUnit) bool {
 	if unit == nil {
 		return false
@@ -79,45 +78,6 @@ func isPythonTestDirPath(unit *core.ParsedUnit) bool {
 		norm := filepath.ToSlash(p)
 		if strings.Contains(norm, "/tests/") || strings.Contains(norm, "/test/") ||
 			strings.HasPrefix(norm, "tests/") || strings.HasPrefix(norm, "test/") {
-			return true
-		}
-	}
-	return false
-}
-
-// isPythonOfflineScriptPath reports offline tooling / release / validation
-// scripts where broad-except noise is expected batch-job noise (Project_Parva
-// tools/, scripts/release, public-benchmark runners). Does NOT match generic
-// scripts/ trees (WeThePeople operational scripts keep BP-PY-1).
-func isPythonOfflineScriptPath(unit *core.ParsedUnit) bool {
-	if unit == nil {
-		return false
-	}
-	for _, path := range []string{fileDisplayPath(unit), unit.Path} {
-		if path == "" {
-			continue
-		}
-		norm := filepath.ToSlash(path)
-		// Narrow offline trees only — do not match e.g. tools/benchmark-harness
-		// under third-party packages (pdf_oxide TP).
-		markers := []string{
-			"/backend/tools/",
-			"/scripts/release/",
-			"/public-benchmark/",
-		}
-		for _, m := range markers {
-			if strings.Contains(norm, m) {
-				return true
-			}
-		}
-		if strings.HasPrefix(norm, "backend/tools/") ||
-			strings.HasPrefix(norm, "scripts/release/") ||
-			strings.HasPrefix(norm, "public-benchmark/") {
-			return true
-		}
-		// Project_Parva top-level tools/ (conformance_runner, validate_schemas).
-		if strings.Contains(norm, "/Project_Parva/tools/") || strings.HasPrefix(norm, "tools/conformance") ||
-			strings.HasPrefix(norm, "tools/validate") || strings.HasPrefix(norm, "tools/release/") {
 			return true
 		}
 	}

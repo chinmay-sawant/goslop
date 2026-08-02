@@ -26,10 +26,8 @@ func init() {
 // Intentional __main__ CLI destinations (Path(sys.argv[1]) fixture generators)
 // are suppressed; request-controlled sinks remain reportable.
 //
-// Offline CLI verifiers (scripts/parva_*_verify.py, scripts/release/, tools/,
-// benchmark pack validators) use Path(sys.argv[1]) inside main() rather than
-// nested under the __main__ guard line — still operator-controlled, not web
-// request input.
+// Intentional __main__ CLI destinations and benchmark harnesses use
+// Path(sys.argv[1]) as operator-controlled input, not web request input.
 func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
@@ -42,7 +40,6 @@ func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 			}
 			if isArgvOnlyPathSource(args[0]) {
 				if underPythonMainGuard(unit.Source, call.Start) ||
-					isPythonOfflineScriptPathCWE(unit) ||
 					isPythonBenchmarkFile(unit) ||
 					cliMainInvokedFromMainGuard(unit.Source) {
 					continue

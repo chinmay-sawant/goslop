@@ -69,14 +69,11 @@ func TestBPPY41TestWithoutAssert(t *testing.T) {
 	raisesHelperVuln := loadBPFixture(t, "BP-PY-41-pytest-raises-helper", true)
 	assertRule(t, "BP-PY-41", raisesHelperVuln.path, raisesHelperVuln.body, true)
 
-	// niquests unicode_/redirect pure-call smokes; stream close; server wait;
-	// rendercv never_crashes / silently_ignores names
+	// Structural BP-PY-41 safe shapes (route handlers, check=True, validate_*,
+	// server wait infrastructure). Name-substring smoke gates removed.
 	for _, caseName := range []string{
-		"BP-PY-41-http-encoding-smoke",
 		"BP-PY-41-stream-close",
 		"BP-PY-41-server-wait-smoke",
-		"BP-PY-41-never-crashes",
-		// Project_Parva residual FPs: route handlers, check=True, validate_*
 		"BP-PY-41-route-handler",
 		"BP-PY-41-subprocess-check",
 		"BP-PY-41-validate-helper",

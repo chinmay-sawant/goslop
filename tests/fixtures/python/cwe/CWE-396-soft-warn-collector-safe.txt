@@ -1,15 +1,17 @@
-# goslop text fixture — soft warn_unexpected_error collector without re-raise
-# (html2pic cascade_resolver FP shape)
+# goslop text fixture — soft stdlib warnings.warn collector without re-raise
 lang: python
 file: cascade_resolver.py
 ---
+import warnings
+
+
 class CascadeResolver:
     def specificity(self, selector):
         try:
             parsed = ParsedSelector.parse(selector)
             return parsed.score
         except Exception as e:
-            self.warnings.warn_unexpected_error(
+            warnings.warn(
                 f"Failed to calculate specificity for selector '{selector}': {e}"
             )
             return 1

@@ -102,7 +102,7 @@ func detectCWE208(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
-	if isPythonTestModule(unit) || isPythonOfflineScriptPathCWE(unit) {
+	if isPythonTestModule(unit) {
 		return
 	}
 	src := unit.Source
