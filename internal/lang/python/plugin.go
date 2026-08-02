@@ -1,9 +1,10 @@
 // Package python implements the Python LanguagePlugin for goslop.
 //
-// Status: multi-language foundation (#39) plus priority CWE heuristics (#52)
-// and BP-PY bad-practice heuristics (#53). ParseSource is source-only (no
+// Status: multi-language foundation (#39) plus CWE (#52), BP-PY (#53), and
+// experimental PERF-PY (#54) heuristics. ParseSource is source-only (no
 // Python AST / CGO tree-sitter). Detectors scan unit.Source via pure-Go
-// patterns under detectors/{cwe,bad_practices}. PERF (#54) is deferred.
+// patterns under detectors/{cwe,bad_practices,perf}. PERF-PY remains
+// experimental and is not included in recommended/perf pack allow-lists.
 //
 // Production DefaultRegistry stays Go-only; include Python via
 // engine.NewRegistryWithLanguages or python.Register when intentionally

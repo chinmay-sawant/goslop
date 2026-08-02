@@ -1,0 +1,6 @@
+lang: python
+file: import_rows.py
+---
+def import_rows(rows):
+    for row in rows:
+        Event.objects.create(name=row["name"], body=row["body"])

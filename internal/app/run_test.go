@@ -215,9 +215,20 @@ languages = ["python"]
 	if strings.Contains(listed, "no rules registered") {
 		t.Fatalf("unexpected empty rule list for Python detectors: %q", listed)
 	}
-	// Python-only registry should not surface Go PERF catalogue.
-	if strings.Contains(listed, "PERF-") {
-		t.Fatalf("python-only list-rules should not include PERF: %q", listed)
+	// Python-only registry exposes PERF-PY, never a bare Go PERF id.
+	hasPythonPERF := false
+	for _, line := range strings.Split(listed, "\n") {
+		fields := strings.Split(line, "\t")
+		if len(fields) < 2 || !strings.HasPrefix(fields[1], "PERF-") {
+			continue
+		}
+		if !strings.HasPrefix(fields[1], "PERF-PY-") {
+			t.Fatalf("python-only list-rules surfaced bare Go PERF id %q", fields[1])
+		}
+		hasPythonPERF = true
+	}
+	if !hasPythonPERF {
+		t.Fatalf("expected PERF-PY rules for python languages config: %q", listed)
 	}
 
 	// languages=["go"] still lists Go rules.

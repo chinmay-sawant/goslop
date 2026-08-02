@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+app.config['SESSION_COOKIE_SECURE'] = False

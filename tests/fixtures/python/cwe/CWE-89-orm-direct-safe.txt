@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: batch/seed_db.py
+---
+from sqlalchemy import insert
+
+
+async def seed(session, rows):
+    await session.execute(insert(MetricSample), rows)

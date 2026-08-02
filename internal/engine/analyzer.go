@@ -346,13 +346,30 @@ func (a *Analyzer) scanOne(
 	store *cache.Store,
 	hits, misses *atomic.Int64,
 	suppressedTotal *atomic.Int64,
-) fileResult {
+) (result fileResult) {
+	display := scope.DisplayPath(entry.Path)
+	result.path = display
+	// Detector and plugin code runs in worker goroutines. Convert an unexpected
+	// panic into the same per-file error model as I/O and parse failures so one
+	// bad file cannot take down the whole scan or print a runtime stack trace.
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			result = fileResult{
+				err: &ScanError{
+					Path:    display,
+					Kind:    ScanErrorEngine,
+					Message: fmt.Sprintf("detector panic: %v", recovered),
+				},
+				path: display,
+			}
+		}
+	}()
+
 	source, err := ReadUTF8(entry.Path)
 	if err != nil {
 		return fileResult{err: err, path: entry.Path}
 	}
 
-	display := scope.DisplayPath(entry.Path)
 	cacheRel := scope.CacheKey(entry.Path)
 	contentHash := cache.ContentHash(source)
 

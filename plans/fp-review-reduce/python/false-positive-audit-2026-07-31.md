@@ -3,11 +3,11 @@
 ## Run metadata
 
 ```yaml
-timestamp: 2026-07-31T14:26:39Z
+timestamp: 2026-07-31T18:23:54Z
 repository: goslop
 repository_path: /home/chinmay/ChinmayPersonalProjects/goslop
-branch: main
-commit: 2f4dd861613deae37966f688a7fb3605627b0619
+branch: feat/python-perf-ruleset-plan
+commit: 25e0d61fb89e3173f72c2919823e2849b2f2c149
 scan_target: /home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets
 chunk_path: ./scripts/chunks
 function_context_path: ./scripts/findings/functions
@@ -15,535 +15,307 @@ function_context_path: ./scripts/findings/functions
 
 ## Scan evidence
 
-- Build command: Not run in this audit; existing exported evidence was reviewed.
-- Scan command: Not run in this audit; existing exported evidence was reviewed.
-- Findings: 49
-- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_49.txt`
-- Function contexts reviewed: `./scripts/findings/functions/<finding-id>.txt` for every false-positive candidate and both uncertain findings.
+- Build command: `go build -o bin/goslop ./cmd/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config "templates/goslop-python.toml" --export-context --export-chunks --no-cache "/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets"`
+- Findings: 56
+- Chunks reviewed: `./scripts/chunks/Chunk_1_25.txt`, `./scripts/chunks/Chunk_26_50.txt`, `./scripts/chunks/Chunk_51_56.txt`
+- Function contexts reviewed for every proposed false positive: `./scripts/findings/functions/1.txt`, `2.txt`, `3.txt`, `41.txt`–`46.txt`, and `50.txt`–`56.txt`
 
 ## Audit checklist
 
-- [x] Read both assigned chunks under `./scripts/chunks`.
+- [x] Read every assigned chunk under `./scripts/chunks`.
 - [x] Read `./scripts/findings/functions/<finding-id>.txt` for every proposed false positive.
-- [x] Followed each `Source:` path and inspected enclosing source where the exported context was insufficient.
-- [x] Classified all 49 findings as false positive, true positive, or uncertain.
-- [x] Used general software and security knowledge only; no application-specific assumptions were used.
-- [x] Reconciled independent reviews from a first-chunk auditor, second-chunk auditor, and full-set cross-checker.
-- [x] Kept unresolved reviewer disagreement as `Uncertain`.
-- [x] `git diff --check` passes after writing this report.
+- [x] Followed each proposed false positive's `Source:` path and inspected the enclosing source when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based each decision on the rule condition and the shown source, not on application-specific assumptions.
+- [x] Reconciled the chunk review with a full 56-finding cross-check; no delegated-review disagreement remained.
+- [x] Ran `git diff --check` after updating this report.
 
 ## Classification summary
 
 | Classification | Count | Finding IDs |
 | --- | ---: | --- |
-| False positive | 29 | 12–19, 21–25, 29–32, 36–43, 46–49 |
-| True positive | 20 | 1–11, 20, 26–28, 33–35, 44–45 |
+| False positive | 16 | 1–3, 41–46, 50–56 |
+| True positive | 40 | 4–40, 47–49 |
 | Uncertain | 0 | None |
 
 ## False positives
 
-### [x] Finding 12 — CWE-1124
+### [x] Finding 1 — CWE-89
 
-- Function context: `./scripts/findings/functions/12.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/flash_sale/settings.py:13:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-INSTALLED_APPS = [
-    'django.contrib.admin',
-]
-```
-
-Why this is a false positive: The reported line is a configuration-list element, not an executable statement nested through control flow.
-
-Checklist evidence: The indentation belongs to collection layout, so the nesting precondition is absent.
-
-### [x] Finding 13 — CWE-1124
-
-- Function context: `./scripts/findings/functions/13.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/inventory/services/availability.py:42:1`
-- Checklist pattern: Indentation/nesting
+- Function context: `./scripts/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/bench/reserve_bench.py:24:16`
+- Checklist pattern: SQL construction versus passthrough
 
 Source excerpt:
 
 ```
-for ws in qs:
-    result.append({
-        'sku_code': ws.sku.sku_code,
-    })
+def __call__(self, execute, sql, params, many, context):
+    self.count += 1
+    return execute(sql, params, many, context)
 ```
 
-Why this is a false positive: The additional indentation is a dictionary field inside one loop, not another executable control-flow level.
+Why this is a false positive: The benchmark wrapper forwards a callback-provided SQL/params pair; it does not construct or interpolate SQL text.
 
-Checklist evidence: Data-literal layout is being counted as nesting.
+Checklist evidence: No formatting, concatenation, or dynamic SQL construction appears in the reported statement.
 
-### [x] Finding 14 — CWE-1124
+### [x] Finding 2 — BP-PY-46
 
-- Function context: `./scripts/findings/functions/14.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/inventory/services/reservation.py:56:1`
-- Checklist pattern: Indentation/nesting
+- Function context: `./scripts/findings/functions/2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/bench/reserve_bench.py:37:5`
+- Checklist pattern: Intentional benchmark output
 
 Source excerpt:
 
 ```
-item_details.append({
-    'sku': sku,
-    'stock': stock,
-    'quantity': item['quantity'],
-})
+print(f"{label:<24}: {statistics.median(times) * 1000:9.1f} ms/op  queries={last_queries}  (median of {N_REPEATS})")
 ```
 
-Why this is a false positive: The finding points at a dictionary member; the indentation represents data layout, not deep control flow.
+Why this is a false positive: This print reports benchmark measurements from the `bench/` harness; it is intentional user-facing benchmark output, not library debugging.
 
-Checklist evidence: The reported construct is a multiline literal.
+Checklist evidence: The message is explicitly a timing/query summary, and the enclosing file is invoked through its benchmark `main()` entry point.
 
-### [x] Findings 15–17 — BP-PY-42, BP-PY-1, CWE-396
+### [x] Finding 3 — BP-PY-46
 
-- Function contexts: `./scripts/findings/functions/15.txt`, `./scripts/findings/functions/16.txt`, `./scripts/findings/functions/17.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/inventory/tests.py:379:1`
-- Checklist pattern: Test-only behavior
+- Function context: `./scripts/findings/functions/3.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/bench/reserve_bench.py:45:5`
+- Checklist pattern: Intentional benchmark output
 
 Source excerpt:
 
 ```
-try:
-    res = svc.reserve(sale, user_id, [{'sku_code': 'SKU001', 'quantity': 5}])
-    results.append(user_id)
-except Exception as e:
-    errors.append((user_id, type(e).__name__, str(e)))
-...
-self.assertEqual(len(errors), 1, ...)
-self.assertTrue(has_expected, ...)
+def main():
+    ...
+    print("== Django service-layer benchmarks (2026-07-31, sqlite file DB) ==")
+
+if __name__ == "__main__":
+    main()
 ```
 
-Why these are false positives: The worker captures its cross-thread outcome so the parent test can assert it after joining. The exception is retained and verified, not used as a direct assertion substitute or silently discarded.
+Why this is a false positive: The print is the banner for a benchmark CLI whose entry point is protected by the `__main__` guard.
 
-Checklist evidence: This is intentional concurrent-test coordination and error collection.
-
-### [x] Finding 18 — BP-PY-26
-
-- Function context: `./scripts/findings/functions/18.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/django-flash-sale-inventory/inventory/views.py:20:1`
-- Checklist pattern: Rule precondition
-
-Source excerpt:
-
-```
-@csrf_exempt
-@require_POST
-def batch_availability(request):
-    result = svc.get_batch_availability(sku_codes, region=region)
-    return JsonResponse(result)
-```
-
-Why this is a false positive: The handler reads request data and returns availability data; it does not change server state.
-
-Checklist evidence: The rule requires a state-changing view, which the enclosing function does not contain.
-
-### [x] Finding 19 — CWE-93
-
-- Function context: `./scripts/findings/functions/19.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/middleware.py:13:17`
-- Checklist pattern: Header/output encoding
-
-Source excerpt:
-
-```
-duration_ms = (time.monotonic() - start) * 1000
-response.headers["X-Request-Duration-Ms"] = str(int(duration_ms))
-```
-
-Why this is a false positive: The header value is an internally generated integer and cannot contain request-controlled CR or LF characters.
-
-Checklist evidence: No untrusted control-character path reaches the header.
-
-### [x] Finding 21 — CWE-89
-
-- Function context: `./scripts/findings/functions/21.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/services/aggregation.py:17:36`
-- Checklist pattern: Injection
-
-Source excerpt:
-
-```
-query = select(MetricSample.latency_ms).where(
-    MetricSample.tenant_id == tenant_id,
-)
-result = await self.session.execute(query)
-```
-
-Why this is a false positive: The sink receives an ORM expression with bound values, not an interpolated SQL string.
-
-Checklist evidence: The source uses a typed query builder rather than dynamic command text.
-
-### [x] Finding 22 — CWE-1124
-
-- Function context: `./scripts/findings/functions/22.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/services/aggregation.py:30:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-return {
-    "p95": round(p95, 2),
-    "total_samples": total_samples,
-}
-```
-
-Why this is a false positive: The flagged line is a dictionary value in a return literal, not executable control-flow nesting.
-
-Checklist evidence: Data layout accounts for the indentation.
-
-### [x] Finding 23 — CWE-89
-
-- Function context: `./scripts/findings/functions/23.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/services/ingest.py:80:36`
-- Checklist pattern: Injection
-
-Source excerpt:
-
-```
-stmt = select(IngestBatch).where(IngestBatch.idempotency_key == idempotency_key)
-result = await self.session.execute(stmt)
-```
-
-Why this is a false positive: The value is part of an ORM predicate rather than text interpolated into SQL.
-
-Checklist evidence: The execute call receives a bound query expression.
-
-### [x] Finding 24 — CWE-89
-
-- Function context: `./scripts/findings/functions/24.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/services/vendor_export.py:35:40`
-- Checklist pattern: Injection
-
-Source excerpt:
-
-```
-stmt = select(WindowAggregate).where(
-    WindowAggregate.tenant_id == tenant_id,
-    WindowAggregate.window_start >= window_start,
-)
-result = await self.session.execute(stmt)
-```
-
-Why this is a false positive: This is a typed query expression with comparisons, not dynamically assembled SQL text.
-
-Checklist evidence: No concatenated or interpolated command string reaches the sink.
-
-### [x] Finding 25 — CWE-1124
-
-- Function context: `./scripts/findings/functions/25.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/services/vendor_export.py:41:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-for agg in aggregates:
-    routes.append({
-        "route_label": agg.route_label,
-        "p50": agg.p50,
-    })
-```
-
-Why this is a false positive: The reported member is part of a dictionary literal in a single loop, not excessive executable nesting.
-
-Checklist evidence: Collection formatting creates the reported indentation.
-
-### [x] Findings 29–30 — BP-PY-38
-
-- Function contexts: `./scripts/findings/functions/29.txt`, `./scripts/findings/functions/30.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/tasks.py:22:21`
-- Checklist pattern: Async/task lifecycle
-
-Source excerpt:
-
-```
-self._tasks = [
-    asyncio.create_task(self._ttl_cleanup_loop(session_factory)),
-    asyncio.create_task(self._vendor_export_loop(session_factory)),
-]
-...
-await asyncio.gather(*self._tasks, return_exceptions=True)
-```
-
-Why these are false positives: Both task references are retained and later gathered during shutdown.
-
-Checklist evidence: The task lifecycle is explicitly managed rather than discarded.
-
-### [x] Finding 31 — CWE-1124
-
-- Function context: `./scripts/findings/functions/31.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/tasks.py:38:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-while not self._shutdown_event.is_set():
-    try:
-        async with session_factory() as session:
-            while True:
-                stmt = delete(MetricSample).where(...).limit(500)
-```
-
-Why this is a false positive: CWE-1124 measures executable control-flow depth; this source has four control constructs. Class and method declarations are lexical scopes, not executable nesting, so counting them inflates the finding.
-
-Checklist evidence: The detector must count only control-flow headers inside the function body, not class or function declarations.
-
-### [x] Finding 32 — CWE-89
-
-- Function context: `./scripts/findings/functions/32.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/app/tasks.py:41:47`
-- Checklist pattern: Injection
-
-Source excerpt:
-
-```
-stmt = delete(MetricSample).where(
-    MetricSample.created_at < cutoff
-).limit(500)
-result = await session.execute(stmt)
-```
-
-Why this is a false positive: The executed value is a SQLAlchemy delete expression, not a dynamically built SQL command string.
-
-Checklist evidence: The query builder binds the comparison value.
-
-### [x] Finding 36 — CWE-1124
-
-- Function context: `./scripts/findings/functions/36.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/tests/test_api.py:25:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-payload = {
-    "samples": [
-        {"timestamp": "2024-01-01T00:00:00Z"},
-    ]
-}
-```
-
-Why this is a false positive: The reported indentation is nested test data, not nested executable control flow.
-
-Checklist evidence: The construct is a test payload literal.
-
-### [x] Finding 37 — BP-PY-46
-
-- Function context: `./scripts/findings/functions/37.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/cli.py:49:9`
-- Checklist pattern: Console output
-
-Source excerpt:
-
-```
-@app.cli.command("purge-old-data")
-def purge_old_data():
-    print(f"Purged {old_attempts} attempts, {old_outbox} outbox rows, {old_events} events")
-```
-
-Why this is a false positive: The print is deliberate user-facing output from a registered command.
-
-Checklist evidence: It is not debug output in reusable runtime code.
-
-### [x] Finding 38 — CWE-1046
-
-- Function context: `./scripts/findings/functions/38.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/cli.py:56:9`
-- Checklist pattern: String construction
-
-Source excerpt:
-
-```
-for item in items:
-    item.status = "PENDING"
-    count += 1
-```
-
-Why this is a false positive: The loop mutates records and increments a counter; it does not concatenate immutable text.
-
-Checklist evidence: No string construction occurs in the loop body.
-
-### [x] Finding 39 — BP-PY-46
-
-- Function context: `./scripts/findings/functions/39.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/cli.py:63:9`
-- Checklist pattern: Console output
-
-Source excerpt:
-
-```
-@app.cli.command("redrive-dead-letter")
-def redrive_dead_letter():
-    print(f"Redrove {count} items")
-```
-
-Why this is a false positive: This is a command callback reporting its result to the command user.
-
-Checklist evidence: The output is intentional CLI behavior.
-
-### [x] Finding 40 — CWE-1124
-
-- Function context: `./scripts/findings/functions/40.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/cli.py:76:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-stats = {
-    "in_flight": DeliveryOutbox.query.filter_by(status="IN_FLIGHT").count(),
-    "dead_letter": DeliveryOutbox.query.filter_by(status="DEAD_LETTER").count(),
-}
-```
-
-Why this is a false positive: The indentation is dictionary layout for command statistics, not executable nesting.
-
-Checklist evidence: The reported line is a collection member.
+Checklist evidence: This is deliberate command output from a benchmark driver, not operational logging in reusable application code.
 
 ### [x] Finding 41 — BP-PY-46
 
 - Function context: `./scripts/findings/functions/41.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/cli.py:79:9`
-- Checklist pattern: Console output
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/bench/microbench.py:25:1`
+- Checklist pattern: Intentional benchmark output
 
 Source excerpt:
 
 ```
-@app.cli.command("queue-depth")
-def queue_depth():
-    print(f"Queue depth: {stats}")
+print("== FastAPI CPU hot-path microbenchmarks (2026-07-31) ==")
 ```
 
-Why this is a false positive: The print reports a command result to its user rather than debugging a library path.
+Why this is a false positive: The source explicitly labels this as a microbenchmark banner; the output is the harness result stream, not debugging in library code.
 
-Checklist evidence: It is explicit command-line output.
+Checklist evidence: The reported file is under `bench/` and the message names the benchmark being run.
 
-### [x] Finding 43 — CWE-1124
-
-- Function context: `./scripts/findings/functions/43.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/services/delivery.py:72:1`
-- Checklist pattern: Indentation/nesting
-
-Source excerpt:
-
-```
-headers={
-    "Content-Type": "application/json",
-    "X-Signature-256": signature,
-}
-```
-
-Why this is a false positive: The reported indentation belongs to an HTTP-header dictionary passed to a call, not deep control flow.
-
-Checklist evidence: This is a multiline literal.
-
-### [x] Finding 46 — CWE-1046
-
-- Function context: `./scripts/findings/functions/46.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/services/delivery.py:119:13`
-- Checklist pattern: String construction
-
-Source excerpt:
-
-```
-for outbox in items:
-    self.deliver(outbox)
-    delivered += 1
-```
-
-Why this is a false positive: The loop processes work items and increments a number; it never concatenates text.
-
-Checklist evidence: No immutable string construction appears in the loop.
-
-### [x] Findings 47–48 — CWE-312, CWE-798
-
-- Function contexts: `./scripts/findings/functions/47.txt`, `./scripts/findings/functions/48.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/tests/conftest.py:36:1`
-- Checklist pattern: Credential/secret value; Test-only behavior
-
-Source excerpt:
-
-```
-@pytest.fixture
-def sample_partner(db):
-    ...
-    secret="secret123",
-```
-
-Why these are false positives: The literal is synthetic data in a test fixture, not evidence of a deployed credential.
-
-Checklist evidence: The enclosing file and fixture establish non-production test-only usage.
-
-### [x] Finding 49 — CWE-1124
-
-- Function context: `./scripts/findings/functions/49.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/tests/test_api.py:23:1`
-- Checklist pattern: Indentation/nesting; Test-only behavior
-
-Source excerpt:
-
-```
-payload = {
-    "event_type": "order.created",
-    "payload": {"order_id": "123"},
-}
-```
-
-Why this is a false positive: The highlighted line is nested test data, not an executable statement with excessive control-flow nesting.
-
-Checklist evidence: The construct is a test payload literal.
-
-### [x] Finding 42 — CWE-924
+### [x] Finding 42 — BP-PY-46
 
 - Function context: `./scripts/findings/functions/42.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/app/routes.py:19:1`
-- Checklist pattern: Message integrity; authentication boundary
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/bench/microbench.py:26:1`
+- Checklist pattern: Intentional benchmark output
 
 Source excerpt:
 
 ```
-@bp.before_request
-def verify_auth():
-    api_key = request.headers.get("X-Api-Key")
-    if api_key != current_app.config["INGEST_API_KEY"]:
-        return jsonify({"error": "unauthorized"}), 401
-...
-def ingest_webhook():
-    data = request.get_json(silent=True)
+print(f"normalize_route 100k labels : {bench('route', lambda: [normalize_route(l) for l in LABELS], 100_000)}")
 ```
 
-Why this is a false positive: The module authenticates callers with an API-key gate, while requiring an HMAC payload signature is an architectural and protocol decision. CWE-924 cannot infer that this authenticated route is an untrusted public webhook whose body must be independently signed.
+Why this is a false positive: This is a named benchmark measurement emitted by the microbenchmark harness, not a debug print from application runtime code.
 
-Checklist evidence: A module-level authentication boundary is present; TLS and API-key enforcement can provide the intended transport and caller protection without a second application-level signature.
+Checklist evidence: The output identifies the measured operation and sample size.
+
+### [x] Finding 43 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/43.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/bench/microbench.py:47:1`
+- Checklist pattern: Intentional benchmark output
+
+Source excerpt:
+
+```
+print(f"pydantic validate 100-sample : {bench('pyd', validate, 1)}")
+```
+
+Why this is a false positive: The print emits the measured Pydantic benchmark result and is part of the intended harness report.
+
+Checklist evidence: The message names the benchmark operation and its sample count.
+
+### [x] Finding 44 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/44.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/bench/microbench.py:56:5`
+- Checklist pattern: Intentional benchmark output
+
+Source excerpt:
+
+```
+print(f"app-side percentile sort {n:<9}: {bench('sort', sort_it, 1)}")
+```
+
+Why this is a false positive: This is a benchmark result for the explicitly named app-side sort operation, not reusable-code logging or debugging.
+
+Checklist evidence: The source names the measured operation and prints its timing result.
+
+### [x] Finding 45 — CWE-89
+
+- Function context: `./scripts/findings/functions/45.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/bench/seed_db.py:46:26`
+- Checklist pattern: ORM/query-builder expression
+
+Source excerpt:
+
+```
+from sqlalchemy import insert
+...
+await session.execute(insert(MetricSample), rows)
+```
+
+Why this is a false positive: `insert(MetricSample)` is a SQLAlchemy Core statement and `rows` is a bound mapping sequence, not interpolated SQL command text.
+
+Checklist evidence: The execute call receives a typed query-builder expression with separate row parameters.
+
+### [x] Finding 46 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/46.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/fastapi-live-metrics-ingest/bench/seed_db.py:49:5`
+- Checklist pattern: Intentional seed/benchmark output
+
+Source excerpt:
+
+```
+async def main():
+    ...
+    print(f"seeded {SAMPLE_ROWS} metric samples for tenant_id={tenant_id}")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Why this is a false positive: The print reports completion of the local benchmark database seed and is emitted from a guarded CLI entry point.
+
+Checklist evidence: The message is a seed-completion status line, not library debug logging.
+
+### [x] Finding 50 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/50.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/bench/delivery_bench.py:47:9`
+- Checklist pattern: Intentional benchmark setup output
+
+Source excerpt:
+
+```
+def seed_outbox(app, n, round_id):
+    ...
+    print(f"seeded {n} outbox items -> {endpoint.url}")
+```
+
+Why this is a false positive: The helper reports benchmark fixture setup; it is not operational logging from the Flask application library.
+
+Checklist evidence: The message explicitly says that benchmark outbox items were seeded.
+
+### [x] Finding 51 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/51.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/bench/delivery_bench.py:68:5`
+- Checklist pattern: Intentional benchmark output
+
+Source excerpt:
+
+```
+def main():
+    ...
+    print("== Flask delivery worker benchmark (2026-07-31, mock partner 200ms) ==")
+
+if __name__ == "__main__":
+    main()
+```
+
+Why this is a false positive: This is the banner for a guarded delivery benchmark CLI.
+
+Checklist evidence: The message names the benchmark and its mock partner latency.
+
+### [x] Finding 52 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/52.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/bench/delivery_bench.py:69:5`
+- Checklist pattern: Intentional benchmark output
+
+Source excerpt:
+
+```
+print(f"run_once({N_ITEMS} items, sequential) : {statistics.median(times):.2f}s median  "
+      f"(per-item ≈ {statistics.median(times) / N_ITEMS * 1000:.0f} ms; partner latency 200ms)")
+```
+
+Why this is a false positive: The line is an intentional benchmark measurement of sequential delivery and its per-item latency.
+
+Checklist evidence: The output reports the exact measured operation, item count, and latency.
+
+### [x] Finding 53 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/53.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/bench/delivery_bench.py:77:13`
+- Checklist pattern: Intentional benchmark output
+
+Source excerpt:
+
+```
+print(f"single deliver()                 : {(time.perf_counter() - t0) * 1000:.0f} ms")
+```
+
+Why this is a false positive: The print reports a single benchmark sample from the delivery harness, not a library debug message.
+
+Checklist evidence: The output is explicitly labeled `single deliver()` and contains a measured duration.
+
+### [x] Findings 54–55 — CWE-312, CWE-798
+
+- Function contexts: `./scripts/findings/functions/54.txt`, `./scripts/findings/functions/55.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/bench/seed.py:18:1`
+- Checklist pattern: Synthetic benchmark credential
+
+Source excerpt:
+
+```
+endpoint = PartnerEndpoint(
+    partner_id=partner.id,
+    url="http://127.0.0.1:8200/webhook",
+    secret="bench-secret",
+    is_active=True,
+)
+```
+
+Why these are false positives: The value is an explicitly synthetic secret for a localhost benchmark endpoint, not a deployment credential stored in application code.
+
+Checklist evidence: Both the `bench-secret` name and loopback endpoint establish benchmark-only fixture data.
+
+### [x] Finding 56 — BP-PY-46
+
+- Function context: `./scripts/findings/functions/56.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/codehound-python-perf-targets/flask-partner-webhook-relay/bench/seed.py:23:5`
+- Checklist pattern: Intentional seed/benchmark output
+
+Source excerpt:
+
+```
+db.session.commit()
+print(f"seeded partner={partner.id}, endpoint={endpoint.id} -> {endpoint.url}")
+```
+
+Why this is a false positive: The print reports completion of a local benchmark seed script and is not library debugging output.
+
+Checklist evidence: The message is explicitly a `seeded` status line and the source file is the benchmark seed harness.
 
 ## Uncertain findings
 
 No uncertain findings remain.
 
-## True positives
-
-| Finding IDs | Rule(s) | Source | Short evidence |
-| ---: | --- | --- | --- |
-| 1–5 | CWE-1052, CWE-312, CWE-798, BP-PY-13, BP-PY-22 | `django-flash-sale-inventory/flash_sale/settings.py:5–6` | A signing secret is hard-coded as a cleartext source literal. |
-| 6–8 | CWE-489, CWE-756, BP-PY-21 | `django-flash-sale-inventory/flash_sale/settings.py:7–8` | Debug mode is unconditionally enabled. |
-| 9–11 | CWE-1188, CWE-547, BP-PY-23 | `django-flash-sale-inventory/flash_sale/settings.py:9–10` | Host validation accepts a wildcard. |
-| 20 | CWE-396 | `fastapi-live-metrics-ingest/app/routers/dashboard.py:30` | The endpoint catches every exception and returns a generic failure without preserving distinct handling. |
-| 26–27 | BP-PY-1, CWE-396 | `fastapi-live-metrics-ingest/app/services/vendor_export.py:71` | A retry loop catches all exception types, including unexpected programming failures. |
-| 28 | BP-PY-1 | `fastapi-live-metrics-ingest/app/services/vendor_export.py:86` | An outer generic handler converts arbitrary export failures into a failed status. |
-| 33–34 | BP-PY-1, CWE-396 | `fastapi-live-metrics-ingest/app/tasks.py:46` | The maintenance worker catches every exception, logs it, and continues. |
-| 35 | BP-PY-1 | `fastapi-live-metrics-ingest/app/tasks.py:54` | A generic exception handler is present around the background-loop action. |
-| 44–45 | BP-PY-1, CWE-396 | `flask-partner-webhook-relay/app/services/delivery.py:93` | The final generic handler converts unexpected delivery errors into retry state. |
-
 ## Final evidence
 
-- Delegated reviewers: `current_chunk_one`, `current_chunk_two`, `current_crosscheck`
+- Delegated reviewers: none; local chunk-by-chunk review plus full-set cross-check
 - Chunk evidence: `./scripts/chunks`
 - Function evidence: `./scripts/findings/functions`
-- Validation: `git diff --check` — passed
+- Validation: `git diff --check` — pass

@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: views.py
+---
+from django.utils.safestring import mark_safe
+html = mark_safe("<br>")

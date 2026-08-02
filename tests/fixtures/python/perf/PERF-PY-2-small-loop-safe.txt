@@ -1,0 +1,7 @@
+# PERF-PY-2 small explicit loop (safe)
+lang: python
+file: reservation.py
+---
+def reserve():
+    for code in ("A", "B"):
+        Sku.objects.get(code=code)

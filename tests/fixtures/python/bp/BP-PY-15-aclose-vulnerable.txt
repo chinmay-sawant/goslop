@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: http.py
+---
+import httpx
+client = httpx.AsyncClient()

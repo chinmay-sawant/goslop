@@ -1,6 +1,6 @@
-# Fixture for BP-PY-10 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-10-safe.py
+file: pk.py
 ---
 import json
 data = json.loads(body)

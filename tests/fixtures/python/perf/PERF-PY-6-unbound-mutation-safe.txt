@@ -1,0 +1,8 @@
+# PERF-PY-6 requires bound status mutation (safe)
+lang: python
+file: worker.py
+---
+def claim():
+    job = Job.objects.filter(status="pending").first()
+    other.status = "running"
+    other.save()

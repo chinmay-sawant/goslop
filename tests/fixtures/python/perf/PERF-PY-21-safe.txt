@@ -1,0 +1,8 @@
+lang: python
+file: cleanup.py
+---
+def purge(cutoff):
+    while True:
+        deleted, _ = AuditEvent.objects.filter(created_at__lt=cutoff)[:500].delete()
+        if not deleted:
+            break

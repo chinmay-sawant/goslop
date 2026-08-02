@@ -26,29 +26,45 @@ var (
 )
 
 func init() {
-	RegisterRule("CWE-915", detectCWE915, &MetaCWE915)
-	RegisterRule("CWE-914", detectCWE914, &MetaCWE914)
-	RegisterRule("CWE-916", detectCWE916, &MetaCWE916)
+	RegisterRule("CWE-915", detectCWE915, &MetaCWE915,
+		"**request.data", "**request.POST", "**request.json",
+		".__dict__.update", "setattr(",
+		"request.data", "request.POST", "request.json")
+	RegisterRule("CWE-914", detectCWE914, &MetaCWE914,
+		"globals()", "locals()", "vars(", "setattr(",
+		"request.args", "request.form", "request.data", "request.json",
+		"request.GET", "request.POST", "request.query_params", "request.get_json")
+	RegisterRule("CWE-916", detectCWE916, &MetaCWE916,
+		"hashlib.md5", "hashlib.sha1", "crypt.crypt", "md5_crypt")
 }
 
 // detectCWE915 detects direct request payload unpacking and request-key
 // setattr loops. It deliberately requires the source itself to establish the
 // request origin, avoiding findings on internal maps and allowlisted updates.
-func detectCWE915(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE915(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	src := pythonCodeMask(unit.Source)
-	if start := pyMassAssignRequestUnpack.FindStringIndex(src); start != nil {
-		pushCWE915(unit, start[0], "request data is unpacked directly into object attributes (allowlist writable fields)", out)
+	src := facts.Masked
+	if !strings.Contains(src, "request.") {
 		return
 	}
-	if start := pyDictUpdateRequest.FindStringIndex(src); start != nil {
-		pushCWE915(unit, start[0], "request data directly updates an object's __dict__ (allowlist writable fields)", out)
-		return
+	if strings.Contains(src, "**request.") || strings.Contains(src, "** request.") {
+		if start := pyMassAssignRequestUnpack.FindStringIndex(src); start != nil {
+			pushCWE915(unit, start[0], "request data is unpacked directly into object attributes (allowlist writable fields)", out)
+			return
+		}
 	}
-	if start := requestSetattrLoopStart(src); start >= 0 {
-		pushCWE915(unit, start, "setattr loop applies request-controlled keys without an allowlist", out)
+	if strings.Contains(src, "__dict__") && strings.Contains(src, ".update") {
+		if start := pyDictUpdateRequest.FindStringIndex(src); start != nil {
+			pushCWE915(unit, start[0], "request data directly updates an object's __dict__ (allowlist writable fields)", out)
+			return
+		}
+	}
+	if strings.Contains(src, "setattr(") && strings.Contains(src, ".items(") {
+		if start := requestSetattrLoopStart(src); start >= 0 {
+			pushCWE915(unit, start, "setattr loop applies request-controlled keys without an allowlist", out)
+		}
 	}
 }
 
@@ -87,12 +103,32 @@ func requestSetattrLoopStart(src string) int {
 
 // detectCWE914 detects direct request-controlled variable and attribute names.
 // It does not flag ordinary dict access or a static attribute name.
-func detectCWE914(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE914(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, pattern := range []*regexp.Regexp{pyDynamicNamespaceRequest, pyDynamicVarsRequest, pyDynamicSetattrRequest} {
-		if start := pattern.FindStringIndex(unit.Source); start != nil {
+	src := facts.Masked
+	if !strings.Contains(src, "request.") {
+		return
+	}
+	hasNS := strings.Contains(src, "globals()") || strings.Contains(src, "locals()")
+	hasVars := strings.Contains(src, "vars(")
+	hasSetattr := strings.Contains(src, "setattr(")
+	if !hasNS && !hasVars && !hasSetattr {
+		return
+	}
+	patterns := make([]*regexp.Regexp, 0, 3)
+	if hasNS {
+		patterns = append(patterns, pyDynamicNamespaceRequest)
+	}
+	if hasVars {
+		patterns = append(patterns, pyDynamicVarsRequest)
+	}
+	if hasSetattr {
+		patterns = append(patterns, pyDynamicSetattrRequest)
+	}
+	for _, pattern := range patterns {
+		if start := pattern.FindStringIndex(src); start != nil {
 			line, col := unit.LineCol(start[0])
 			rules.PushFindingWithConfidence(
 				&MetaCWE914,
@@ -110,12 +146,12 @@ func detectCWE914(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 // detectCWE916 detects fast, general-purpose password hashes. Generic uses of
 // MD5/SHA-1 are left alone; a password-like identifier is required at the call
 // site to retain a high signal-to-noise ratio.
-func detectCWE916(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE916(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"hashlib.md5", "hashlib.sha1", "md5_crypt.hash", "passlib.hash.md5_crypt.hash"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			if !pyPasswordIdentifier.MatchString(call.ArgsText) {
 				continue
 			}
@@ -123,7 +159,7 @@ func detectCWE916(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 			return
 		}
 	}
-	for _, call := range findCalls(unit.Source, "crypt.crypt") {
+	for _, call := range findCalls(facts, unit.Source, "crypt.crypt") {
 		if !pyPasswordIdentifier.MatchString(call.ArgsText) {
 			continue
 		}

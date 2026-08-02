@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-1046-bytearray-loop-vulnerable.py
+---
+def cbc_transform(chunks):
+    s = ""
+    for chunk in chunks:
+        s += chunk
+    return s

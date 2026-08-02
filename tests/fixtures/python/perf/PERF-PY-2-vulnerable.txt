@@ -1,0 +1,7 @@
+lang: python
+file: reservation.py
+---
+def reserve(items):
+    for item in items:
+        sku = Sku.objects.get(sku_code=item["sku_code"])
+        reserve_sku(sku)

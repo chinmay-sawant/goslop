@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: app/db.py
+---
+class QueryCounter:
+    def __call__(self, execute, sql, params, many, context):
+        sql = f"SELECT * FROM users WHERE id = {params[0]}"
+        return execute(sql, params, many, context)

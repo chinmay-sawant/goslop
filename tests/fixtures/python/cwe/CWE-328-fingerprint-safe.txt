@@ -1,0 +1,38 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# Non-security MD5 fingerprints: bench checksum, ICC profile ID, PDF /ID,
+# font subset tag, XMP UUID seed, and test digest equality.
+lang: python
+file: CWE-328-fingerprint-safe.py
+---
+import hashlib
+
+
+def run_bench(data: bytes) -> dict:
+    results = {}
+    results["md5"] = hashlib.md5(data).hexdigest()
+    return results
+
+
+def stamp_icc_profile_id(profile: bytes) -> bytes:
+    profile_id = hashlib.md5(profile).digest()
+    return profile[:84] + profile_id + profile[100:]
+
+
+def pdf_trailer_id(writer) -> bytes:
+    digest = hashlib.md5()
+    writer.feed_digest(digest)
+    return digest.digest()
+
+
+def subset_tag(face_name: str) -> str:
+    digest = hashlib.md5(face_name.encode("ascii")).digest()
+    return "".join(chr(65 + (byte % 16)) for byte in digest[:6])
+
+
+def uuid_from_seed(*parts: str) -> bytes:
+    return hashlib.md5("|".join(parts).encode("utf-8")).digest()
+
+
+def assert_pdf_bytes_equal(first: bytes, second: bytes) -> None:
+    assert first == second
+    assert hashlib.md5(first).hexdigest() == hashlib.md5(second).hexdigest()

@@ -261,7 +261,10 @@ func exceptionTextIsReturned(line string) bool {
 		strings.Contains(line, "make_response") || strings.Contains(line, "format_exc")
 }
 
-// BP-PY-20: send_file / send_from_directory with request-derived path without safe_join.
+// BP-PY-20: send_file / send_from_directory with request-derived path without a jail.
+// Idiomatic send_from_directory(fixed_root, request_name) is safe (Flask jails via
+// safe_join internally). Flag send_file(request_path) and send_from_directory when
+// the directory/root argument itself is request-derived.
 func detectBPPY20(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-20")
 	if isPythonTestFile(unit) {
@@ -287,36 +290,39 @@ func detectBPPY20(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			inner = src[m[0]:windowEnd]
 		}
-		// Miss when safe_join is used on the path argument region.
 		if strings.Contains(inner, "safe_join") {
 			continue
 		}
-		// Hit when request-derived input appears in args.
-		if requestPathRe.MatchString(inner) {
-			pushAt(unit, meta, m[0], "send_file/send_from_directory path from request without safe_join; path traversal risk", out)
-			continue
-		}
-		// Also: first arg is a bare name that was assigned from request in nearby lines (simple window).
+		callName := src[m[0]:m[1]]
+		isFromDir := strings.Contains(callName, "send_from_directory")
 		first, argOK := firstCallArg(src, openAbs)
-		if !argOK || first == "" {
-			continue
+		if !argOK {
+			first = ""
 		}
-		// Literal path → miss
-		if isStringLiteral(first) {
-			continue
-		}
-		// If first arg is identifier, check prior assignments in function window for request.*
-		name := strings.TrimSpace(first)
-		if !isSimpleIdent(name) {
-			// Might be request.args["path"] already caught above
-			if requestPathRe.MatchString(name) {
-				pushAt(unit, meta, m[0], "send_file/send_from_directory path from request without safe_join; path traversal risk", out)
+		first = strings.TrimSpace(first)
+
+		if isFromDir {
+			// Fixed root + request filename is the recommended Flask pattern → miss.
+			if first != "" && (isStringLiteral(first) || isSimpleIdent(first) && !nameAssignedFromRequest(src, m[0], first) && !requestPathRe.MatchString(first)) {
+				continue
+			}
+			// Request-derived directory/root → hit.
+			if requestPathRe.MatchString(first) || (isSimpleIdent(first) && nameAssignedFromRequest(src, m[0], first)) {
+				pushAt(unit, meta, m[0], "send_from_directory root/directory comes from request; path traversal risk", out)
 			}
 			continue
 		}
-		// Look backward ~40 lines for name = request...
-		if nameAssignedFromRequest(src, m[0], name) {
-			pushAt(unit, meta, m[0], "send_file/send_from_directory path from request without safe_join; path traversal risk", out)
+
+		// send_file: hit when the path argument is request-derived.
+		if requestPathRe.MatchString(inner) || requestPathRe.MatchString(first) {
+			pushAt(unit, meta, m[0], "send_file path from request without safe_join; path traversal risk", out)
+			continue
+		}
+		if first == "" || isStringLiteral(first) {
+			continue
+		}
+		if isSimpleIdent(first) && nameAssignedFromRequest(src, m[0], first) {
+			pushAt(unit, meta, m[0], "send_file path from request without safe_join; path traversal risk", out)
 		}
 	}
 }

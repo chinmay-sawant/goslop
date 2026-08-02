@@ -1,0 +1,12 @@
+# Fixture for PERF-PY-30 (safe)
+lang: python
+file: app/format.py
+---
+def format_grid(rows):
+    parts = []
+    for row in rows:
+        for cell in row:
+            parts.append(b"<c>")
+            parts.append(cell.encode())
+            parts.append(b"</c>")
+    return b"".join(parts)

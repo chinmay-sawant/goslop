@@ -9,16 +9,23 @@ import (
 )
 
 func init() {
-	// These source-only detectors inspect several valid framework spellings and
-	// argument shapes. A smaller SourceIndex gate could omit a true positive.
-	RegisterRule("CWE-1173", detectCWE1173, &MetaCWE1173)
-	RegisterRule("CWE-1230", detectCWE1230, &MetaCWE1230)
-	RegisterRule("CWE-1236", detectCWE1236, &MetaCWE1236)
-	RegisterRule("CWE-1286", detectCWE1286, &MetaCWE1286)
+	// CWE-1289 stays ungated (deny-list + request + FS combo). Others use
+	// FN-safe call/token gates.
+	RegisterRule("CWE-1173", detectCWE1173, &MetaCWE1173,
+		"request.get_json", "request.json", ".save(")
+	RegisterRule("CWE-1230", detectCWE1230, &MetaCWE1230,
+		"Content-Disposition")
+	RegisterRule("CWE-1236", detectCWE1236, &MetaCWE1236,
+		".writerow")
+	RegisterRule("CWE-1286", detectCWE1286, &MetaCWE1286,
+		"json.loads", "requests.", "httpx.", "urlopen")
 	RegisterRule("CWE-1289", detectCWE1289, &MetaCWE1289)
-	RegisterRule("CWE-1333", detectCWE1333, &MetaCWE1333)
-	RegisterRule("CWE-1389", detectCWE1389, &MetaCWE1389)
-	RegisterRule("CWE-140", detectCWE140, &MetaCWE140)
+	RegisterRule("CWE-1333", detectCWE1333, &MetaCWE1333,
+		"re.compile", "regex.compile")
+	RegisterRule("CWE-1389", detectCWE1389, &MetaCWE1389,
+		"request.args", "request.form", "request.GET", "request.POST", "request.query_params")
+	RegisterRule("CWE-140", detectCWE140, &MetaCWE140,
+		".join", "request.")
 }
 
 var (
@@ -31,12 +38,12 @@ var (
 // JSON and persists it through a model save without a visible schema,
 // serializer, or validation call in that handler. Simple JSON readers and
 // handlers that validate elsewhere are intentionally outside this heuristic.
-func detectCWE1173(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1173(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, handler := range routeHandlerBodies(unit.Source) {
-		code := strings.ToLower(pythonCodeMask(handler.body))
+	for _, handler := range routeHandlerBodies(facts, unit.Source) {
+		code := strings.ToLower(facts.codeMask(handler.body, handler.start))
 		if !hasRequestBodyRead(code) || !strings.Contains(code, ".save(") || hasValidationFrameworkEvidence(code) {
 			continue
 		}
@@ -62,22 +69,23 @@ func hasValidationFrameworkEvidence(code string) bool {
 
 // CWE-1230 only reports executable Content-Disposition construction that uses
 // request metadata. Generated, fixed download names are deliberately safe.
-func detectCWE1230(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1230(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if start := firstCodeMatchStart(unit.Source, pyContentDispositionRequestRE); start >= 0 {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyContentDispositionRequestRE,
+		"Content-Disposition"); start >= 0 {
 		emitValidationFinding(unit, &MetaCWE1230, start, "response exposes a request-controlled filename through Content-Disposition metadata", confidence80, out)
 	}
 }
 
 // CWE-1236 recognizes only a direct request expression at a CSV writer row.
 // Sanitizers that visibly strip or quote formula prefixes remain out of scope.
-func detectCWE1236(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1236(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, ".writerow") {
+	for _, call := range findCalls(facts, unit.Source, ".writerow") {
 		if isDirectRequestExpr(call.ArgsText) && !strings.Contains(call.ArgsText, "lstrip") && !strings.Contains(call.ArgsText, "safe_csv") {
 			emitValidationFinding(unit, &MetaCWE1236, call.Start, "CSV row writes a request-controlled field without formula neutralization", confidence82, out)
 			return
@@ -87,12 +95,12 @@ func detectCWE1236(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-1286 is constrained to one expression so it does not claim arbitrary
 // data-flow: json.loads reads request bytes directly into an HTTP client URL.
-func detectCWE1286(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1286(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"requests.get", "requests.post", "requests.request", "httpx.get", "httpx.post", "httpx.request", "urllib.request.urlopen"} {
-		for _, call := range findCalls(unit.Source, name) {
+		for _, call := range findCalls(facts, unit.Source, name) {
 			compact := compactWhitespace(call.ArgsText)
 			if strings.Contains(compact, "json.loads(request.") && !strings.Contains(compact, "urlparse(") {
 				emitValidationFinding(unit, &MetaCWE1286, call.Start, "request JSON is used as an outbound URL without syntactic validation", confidence80, out)
@@ -104,12 +112,12 @@ func detectCWE1286(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-1289 requires all three local facts: request-derived path assignment, a
 // deny-list equality check, and filesystem use without canonicalization.
-func detectCWE1289(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1289(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
-		code := pythonCodeMask(fn.body)
+	for _, fn := range facts.Functions() {
+		code := facts.codeMask(fn.body, fn.bodyStart)
 		match := pyPathDenyListRE.FindStringSubmatchIndex(fn.body)
 		if match == nil || strings.Contains(code, "realpath(") || strings.Contains(code, "resolve(") {
 			continue
@@ -130,7 +138,8 @@ func detectCWE1289(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 }
 
 func hasFilesystemUse(code, name string) bool {
-	for _, call := range findCalls(code, "open", "os.remove", "os.unlink", "send_file", "FileResponse") {
+	// code is already masked; search it directly without remasking.
+	for _, call := range findCallsMasked(code, code, "open", "os.remove", "os.unlink", "send_file", "FileResponse") {
 		if containsIdent(call.ArgsText, name) {
 			return true
 		}
@@ -140,11 +149,11 @@ func hasFilesystemUse(code, name string) bool {
 
 // CWE-1333 restricts the pattern to re.compile so a regular parenthesized
 // expression in application code cannot be mistaken for a regular expression.
-func detectCWE1333(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1333(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "re.compile", "regex.compile") {
+	for _, call := range findCalls(facts, unit.Source, "re.compile", "regex.compile") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) > 0 && pyNestedRegexQuantifierRE.MatchString(args[0]) {
 			emitValidationFinding(unit, &MetaCWE1333, call.Start, "compiled regular expression contains nested unbounded quantifiers", confidence84, out)
@@ -155,11 +164,11 @@ func detectCWE1333(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-1389 reports base-zero parsing only when the parsed argument is visibly
 // request-controlled. Application-controlled protocol parsing is not covered.
-func detectCWE1389(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE1389(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "int") {
+	for _, call := range findCalls(facts, unit.Source, "int") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && strings.TrimSpace(args[1]) == "0" && isDirectRequestExpr(args[0]) {
 			emitValidationFinding(unit, &MetaCWE1389, call.Start, "request-controlled numeric input is parsed with base 0", confidence82, out)
@@ -170,11 +179,11 @@ func detectCWE1389(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-140 is limited to a direct request value manually joined for a response.
 // csv.writer and other structured encoders are intentionally not considered.
-func detectCWE140(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE140(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, ".join") {
+	for _, call := range findCalls(facts, unit.Source, ".join") {
 		if isDirectRequestExpr(call.ArgsText) && strings.Contains(call.ArgsText, "request.") {
 			emitValidationFinding(unit, &MetaCWE140, call.Start, "response manually joins request-controlled fields with a delimiter", confidence76, out)
 			return

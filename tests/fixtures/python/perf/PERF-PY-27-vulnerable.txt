@@ -1,0 +1,17 @@
+# Fixture for PERF-PY-27 (vulnerable)
+lang: python
+file: app/resources.py
+---
+from pathlib import Path
+
+CONFIG_PATH = Path("/etc/myapp/defaults.json")
+
+def build_response(user_id):
+    config = CONFIG_PATH.read_text()
+    return format_response(user_id, config)
+
+def run_batch(user_ids):
+    out = []
+    for user_id in user_ids:
+        out.append(build_response(user_id))
+    return out

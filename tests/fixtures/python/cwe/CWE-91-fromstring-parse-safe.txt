@@ -1,0 +1,13 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# Bare document parse: dynamic xml_data into fromstring is not XML/XPath
+# injection (no f-string / format / concat into markup or query).
+lang: python
+file: CWE-91-fromstring-parse-safe.py
+---
+import xml.etree.ElementTree as ET
+
+
+def parse_report(xml_data: str) -> tuple[bool, int, int, list[str]]:
+    root = ET.fromstring(xml_data)
+    report = root.find("report") or root
+    return True, 0, 0, []

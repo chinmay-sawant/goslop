@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from flask_cors import CORS
+CORS(app, origins="*", supports_credentials=True)

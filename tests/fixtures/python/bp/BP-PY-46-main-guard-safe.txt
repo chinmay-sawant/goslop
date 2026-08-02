@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: lib.py
+---
+if __name__ == '__main__':
+    print('cli')

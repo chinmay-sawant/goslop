@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: requirements-nonreq-vulnerable.py
+---
+requests
+flask

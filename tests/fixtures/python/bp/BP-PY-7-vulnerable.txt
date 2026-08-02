@@ -1,6 +1,6 @@
-# Fixture for BP-PY-7 (vulnerable)
+# goslop text fixture
 lang: python
-file: BP-PY-7-vulnerable.py
+file: io.py
 ---
 def read(path):
     f = open(path)

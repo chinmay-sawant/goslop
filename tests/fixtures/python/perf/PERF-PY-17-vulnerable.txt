@@ -1,0 +1,7 @@
+# Fixture for PERF-PY-17 (vulnerable)
+lang: python
+file: config/database.py
+---
+ENVIRONMENT = "production"
+DATABASE_URL = "postgresql://db/service"
+engine = create_engine(DATABASE_URL)

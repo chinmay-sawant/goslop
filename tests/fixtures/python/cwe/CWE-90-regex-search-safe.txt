@@ -1,0 +1,18 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# Audit FP pattern: re.Pattern.search / compiled regex .search on PDF bytes is not LDAP.
+lang: python
+file: CWE-90-regex-search-safe.py
+---
+import re
+from typing import Optional
+
+_PAGE_COUNT_RE = re.compile(rb"/Type\s*/Pages\b.*?/Count\s+(\d+)", re.S)
+
+
+def _page_count(data: bytes) -> Optional[int]:
+    match = _PAGE_COUNT_RE.search(data)
+    return int(match.group(1)) if match is not None else None
+
+
+def trailer_match(data: bytes):
+    return re.search(rb"trailer\b", data)

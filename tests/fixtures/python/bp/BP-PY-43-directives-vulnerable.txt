@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: requirements-directives-vulnerable.py
+---
+requests
+flask

@@ -1,0 +1,7 @@
+# goslop text fixture
+# unit-only: written beside test as helpers.py (not a matrix pair)
+lang: python
+file: helpers.py
+---
+def find_object_with(data, marker, offsets):
+    raise AssertionError('missing')

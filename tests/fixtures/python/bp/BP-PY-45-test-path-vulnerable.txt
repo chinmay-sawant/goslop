@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+import sys
+sys.path.insert(0, './lib')

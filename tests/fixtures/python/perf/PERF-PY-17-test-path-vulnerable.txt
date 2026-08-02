@@ -1,0 +1,6 @@
+# PERF-PY-17 test-path variant (vulnerable)
+lang: python
+file: config/database.py
+---
+ENVIRONMENT = "production"
+engine = create_engine("postgresql://db/service")

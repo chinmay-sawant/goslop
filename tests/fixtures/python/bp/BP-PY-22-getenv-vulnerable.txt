@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: settings.py
+---
+SECRET_KEY = 'django-insecure-abc123-not-for-prod'
+INSTALLED_APPS = []

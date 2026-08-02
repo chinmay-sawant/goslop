@@ -1,0 +1,9 @@
+lang: python
+file: models.py
+---
+class WarehouseStock(models.Model):
+    warehouse_id = models.IntegerField()
+    quantity = models.IntegerField()
+
+def available():
+    return WarehouseStock.objects.filter(warehouse_id=1).order_by("-quantity")

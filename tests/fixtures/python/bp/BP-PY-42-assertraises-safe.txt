@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: test_foo.py
+---
+def test_foo():
+    with self.assertRaises(ValueError):
+        boom()

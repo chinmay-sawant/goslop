@@ -1,0 +1,7 @@
+lang: python
+file: import_rows.py
+---
+def import_rows(rows):
+    for row in rows:
+        event = Event.objects.create(name=row["name"])
+        EventAudit.objects.create(event=event, body=row["body"])

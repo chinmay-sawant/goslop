@@ -1,6 +1,6 @@
-# Fixture for BP-PY-4 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-4-safe.py
+file: mut.py
 ---
 def append_item(x, items=None):
     if items is None:

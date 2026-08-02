@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: bench/reserve_bench.py
+---
+class QueryCounter:
+    def __call__(self, execute, sql, params, many, context):
+        self.count += 1
+        return execute(sql, params, many, context)

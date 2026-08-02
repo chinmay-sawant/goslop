@@ -1,0 +1,7 @@
+lang: python
+file: worker.py
+---
+def claim():
+    job = Job.objects.select_for_update(skip_locked=True).filter(status="pending").first()
+    job.status = "running"
+    job.save()

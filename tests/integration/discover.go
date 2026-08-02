@@ -93,6 +93,22 @@ func DiscoverPythonCWECases() ([]string, error) {
 	return DiscoverPairedCases(filepath.Join(fx, "python", "cwe"))
 }
 
+// DiscoverPythonPERFCases lists Python PERF-PY fixture pairs under tests/fixtures/python/perf.
+func DiscoverPythonPERFCases() ([]string, error) {
+	fx, err := FixturesRoot()
+	if err != nil {
+		return nil, err
+	}
+	cases, err := DiscoverPairedCases(filepath.Join(fx, "python", "perf"))
+	if err != nil {
+		return nil, err
+	}
+	sort.Slice(cases, func(i, j int) bool {
+		return comparePythonPERFCase(cases[i], cases[j]) < 0
+	})
+	return cases, nil
+}
+
 // BPRuleID maps case stem BP-1 / BP-1-variant → BP-1 (Go catalogue).
 func BPRuleID(caseName string) string {
 	// BP-<num>[-variant...]
@@ -124,6 +140,27 @@ func PythonBPFixtureRel(caseName string, vulnerable bool) string {
 		suf = "vulnerable"
 	}
 	return filepath.ToSlash(filepath.Join("python", "bp", caseName+"-"+suf+".txt"))
+}
+
+// PythonPERFRuleID maps a fixture stem PERF-PY-12-variant to PERF-PY-12.
+func PythonPERFRuleID(caseName string) string {
+	parts := strings.Split(caseName, "-")
+	if len(parts) < 3 || parts[0] != "PERF" || parts[1] != "PY" {
+		return caseName
+	}
+	if _, err := strconv.Atoi(parts[2]); err != nil {
+		return caseName
+	}
+	return "PERF-PY-" + parts[2]
+}
+
+// PythonPERFFixtureRel returns path relative to tests/fixtures/ for a PERF-PY case.
+func PythonPERFFixtureRel(caseName string, vulnerable bool) string {
+	suf := "safe"
+	if vulnerable {
+		suf = "vulnerable"
+	}
+	return filepath.ToSlash(filepath.Join("python", "perf", caseName+"-"+suf+".txt"))
 }
 
 // PythonCWERuleID maps a fixture stem such as CWE-89-orm-expression to CWE-89.
@@ -159,6 +196,25 @@ func comparePythonBPCase(a, b string) int {
 func parsePythonBPNum(s string) int {
 	// BP-PY-12 → 12
 	rest, ok := strings.CutPrefix(s, "BP-PY-")
+	if !ok {
+		return 0
+	}
+	numStr, _, _ := strings.Cut(rest, "-")
+	n, _ := strconv.Atoi(numStr)
+	return n
+}
+
+func comparePythonPERFCase(a, b string) int {
+	an := parsePythonPERFNum(a)
+	bn := parsePythonPERFNum(b)
+	if an != bn {
+		return an - bn
+	}
+	return strings.Compare(a, b)
+}
+
+func parsePythonPERFNum(s string) int {
+	rest, ok := strings.CutPrefix(s, "PERF-PY-")
 	if !ok {
 		return 0
 	}

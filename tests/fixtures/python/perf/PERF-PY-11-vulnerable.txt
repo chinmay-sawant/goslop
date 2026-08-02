@@ -1,0 +1,7 @@
+lang: python
+file: redrive.py
+---
+def redrive():
+    for job in Job.objects.filter(state="dead"):
+        job.state = "queued"
+        job.save()

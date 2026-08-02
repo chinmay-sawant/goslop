@@ -1,0 +1,8 @@
+# CWE-93 multiline docstring line alignment (vulnerable)
+lang: python
+file: app.py
+---
+"""A multiline docstring.
+The masked source must keep this line.
+"""
+response.headers["Location"] = next_url

@@ -1,0 +1,20 @@
+# Fixture for PERF-PY-26 (safe)
+lang: python
+file: app/assets.py
+---
+_BLOB_CACHE = {}
+
+def decode_blob(data):
+    cached = _BLOB_CACHE.get(data)
+    if cached is not None:
+        return cached
+    payload = memoryview(data).tobytes()
+    _BLOB_CACHE[data] = payload
+    return payload
+
+def handle_job(job):
+    pages = []
+    for asset in job.assets:
+        payload = decode_blob(asset.data)
+        pages.append(render_asset(payload))
+    return pages

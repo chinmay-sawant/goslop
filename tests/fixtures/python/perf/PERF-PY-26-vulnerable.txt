@@ -1,0 +1,14 @@
+# Fixture for PERF-PY-26 (vulnerable)
+lang: python
+file: app/assets.py
+---
+def decode_blob(data):
+    # expensive pure-Python expansion of binary input
+    return memoryview(data).tobytes()
+
+def handle_job(job):
+    pages = []
+    for asset in job.assets:
+        payload = decode_blob(asset.data)
+        pages.append(render_asset(payload))
+    return pages

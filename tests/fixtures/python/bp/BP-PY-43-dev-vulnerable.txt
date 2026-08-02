@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: requirements-dev-vulnerable.py
+---
+pytest

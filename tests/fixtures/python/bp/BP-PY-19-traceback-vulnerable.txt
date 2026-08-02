@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from flask import Flask
+import traceback
+app = Flask(__name__)
+
+@app.errorhandler(Exception)
+def handle(e):
+    return traceback.format_exc()

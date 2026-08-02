@@ -1,0 +1,12 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+import requests
+app = FastAPI()
+
+@app.get("/proxy")
+async def proxy():
+    r = requests.get("https://example.com")
+    return {"status": r.status_code}

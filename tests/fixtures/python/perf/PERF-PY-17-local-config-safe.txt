@@ -1,0 +1,6 @@
+# PERF-PY-17 local sqlite suppress (safe)
+lang: python
+file: config/local_database.py
+---
+ENVIRONMENT = "production"
+engine = create_engine("sqlite:///local.db")

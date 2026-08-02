@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: async_sleep.py
+---
+import time
+def f():
+    time.sleep(1)

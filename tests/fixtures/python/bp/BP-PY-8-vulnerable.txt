@@ -1,6 +1,6 @@
-# Fixture for BP-PY-8 (vulnerable)
+# goslop text fixture
 lang: python
-file: BP-PY-8-vulnerable.py
+file: sh.py
 ---
 import subprocess
 subprocess.run(cmd, shell=True)

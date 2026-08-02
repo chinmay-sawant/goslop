@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: main.py
+---
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+)

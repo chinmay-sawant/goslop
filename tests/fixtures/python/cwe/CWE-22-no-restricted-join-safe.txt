@@ -1,0 +1,33 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-22-no-restricted-join-safe.py
+---
+"""CWE-22 safe: no confined-directory join of an untrusted segment.
+
+Covers audited false-positive shapes: Path(__file__) repo root, open(whole
+caller path), and CLI Path(argv[N]) as the intended root/target.
+"""
+
+from pathlib import Path
+import sys
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def load_template(path: str) -> str:
+    path = Path(path)
+    with open(path, encoding="utf-8") as handle:
+        return handle.read()
+
+
+def main(argv: list[str]) -> int:
+    out = Path(argv[0])
+    stats_path = Path(argv[1])
+    stats_path.write_text(str(out), encoding="utf-8")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))

@@ -1,0 +1,9 @@
+# PERF-PY-16 no-model variant (vulnerable)
+lang: python
+file: models.py
+---
+class Metric(models.Model):
+    created_at = models.DateTimeField()
+
+def purge(cutoff):
+    return Metric.objects.filter(created_at__lt=cutoff).delete()

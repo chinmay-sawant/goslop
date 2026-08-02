@@ -1,0 +1,39 @@
+# Fixture for PERF-PY-26 (safe): one-shot CLI main parse must not fire even
+# when an earlier function in the same file contains loops (cross-function
+# inLoop must not poison main).
+lang: python
+file: compliance/verapdf/report.py
+---
+import sys
+import xml.etree.ElementTree as ET
+
+
+def parse_report(xml_data: str) -> tuple[bool, int, int, list[str]]:
+    root = ET.fromstring(xml_data)
+    errors: list[str] = []
+    for elem in root.iter():
+        tag = elem.tag.split("}")[-1] if "}" in elem.tag else elem.tag
+        if tag == "errorMessage" and elem.text:
+            errors.append(elem.text.strip())
+    return True, 0, 0, errors
+
+
+def main() -> int:
+    xml_data = sys.stdin.read()
+    if not xml_data.strip():
+        print("FAILED: no XML data on stdin", file=sys.stderr)
+        return 1
+    try:
+        compliant, passed, failed, errors = parse_report(xml_data)
+    except ET.ParseError as exc:
+        print(f"FAILED: invalid XML: {exc}", file=sys.stderr)
+        return 1
+    if compliant:
+        print(f"PASSED — {passed} rules passed, {failed} failed")
+        return 0
+    print(f"FAILED — {passed} passed, {failed} failed")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

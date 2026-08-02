@@ -1,0 +1,9 @@
+# PERF-PY-14 top-level lookup after function (safe)
+lang: python
+file: events.py
+---
+def unrelated():
+    return 1
+
+existing = Event.objects.filter(idempotency_key=key).first()
+Event.objects.create(idempotency_key=key)

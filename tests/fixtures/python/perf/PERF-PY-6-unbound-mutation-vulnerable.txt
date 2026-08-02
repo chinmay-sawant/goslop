@@ -1,0 +1,8 @@
+# PERF-PY-6 unbound-mutation variant (vulnerable)
+lang: python
+file: worker.py
+---
+def claim():
+    job = Job.objects.filter(status="pending").first()
+    job.status = "running"
+    job.save()

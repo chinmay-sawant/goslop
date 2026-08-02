@@ -1,0 +1,6 @@
+lang: python
+file: inventory.py
+---
+def reserve(stock, amount):
+    stock.reserved_quantity += amount
+    stock.save()

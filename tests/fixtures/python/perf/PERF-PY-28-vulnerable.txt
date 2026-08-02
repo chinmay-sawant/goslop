@@ -1,0 +1,16 @@
+# Fixture for PERF-PY-28 (vulnerable)
+lang: python
+file: app/parallel.py
+---
+from concurrent.futures import ThreadPoolExecutor
+import zlib
+
+def compress_chunks(chunks):
+    def task(index):
+        return zlib.compress(chunks[index])
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        return list(executor.map(task, range(len(chunks))))
+
+def handle_request(payloads):
+    return compress_chunks(payloads)

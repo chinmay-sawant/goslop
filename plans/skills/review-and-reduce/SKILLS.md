@@ -1,6 +1,6 @@
 ---
 name: review-and-reduce
-description: Reduce confirmed static-analysis false positives without suppressing valid findings. Use only when a user supplies a false-positive review checklist path and asks to narrow detectors, correct anchors, add guardrails, add variant text fixtures, update fixture-driven tests, or validate a noise-reduction change.
+description: Reduce confirmed static-analysis false positives without suppressing valid findings. Use only when a user supplies a false-positive review checklist path and asks to narrow detectors, correct anchors, add guardrails, add variant text fixtures, update fixture-driven tests, or validate a noise-reduction change. Tests must load text/language fixtures only — never embed target-language source snippets in test code.
 ---
 
 # Review and reduce false positives
@@ -20,8 +20,28 @@ Read the supplied checklist fully before editing. Treat its `False positives`, `
 5. Preserve valid findings. Do not delete a rule, lower severity, add a broad ignore, or weaken matching globally merely to remove the reviewed hit.
 6. Add the same source pattern that caused the false positive as a language-appropriate **safe variant text fixture**. Preserve the relevant data shape, call form, and surrounding context from the exported function file.
 7. Add or retain a matching **vulnerable variant text fixture** for the same rule. The safe variant must not emit; the vulnerable variant must still emit.
-8. Update the per-rule test and integration matrix to reference the canonical text fixtures. Do not embed replacement source snippets in test code when the repository uses fixture files.
+8. Update the per-rule test and integration matrix to **load** the canonical fixtures by path/name. Never paste the sample source into the Go (or other) test file.
 9. Run the focused detector tests, affected fixture matrix, required lint, and full test commands. Re-run the audit scan and verify the reviewed false-positive pattern is absent while the vulnerable variant still fires.
+
+## Fixture and test source policy (mandatory)
+
+**DO NOT write target-language source snippets inside tests.** All sample programs used by unit, facts, audit-variant, or integration tests must live in fixture files.
+
+- **Preferred:** text fixtures under `tests/fixtures/<lang>/…` (goslop `.txt` materializers with `lang:` / `file:` / `---` headers).
+- **Allowed alternative:** a real source file in the respective language under the fixtures tree when a text materializer is not used for that language.
+- **Forbidden:** multi-line Python/Go/… strings, raw string literals, or concatenated source fragments embedded in `*_test.go` (or other test code) as the program under test — including “small” facts/helpers cases.
+- Tests may only reference fixtures (read + `fixture.ParseFixture` / matrix helpers) and assert on findings or fact outputs.
+- Name fixtures with the rule id prefix used by that language package, e.g. `PERF-PY-26-…`, `BP-PY-46-…`, `CWE-91-…` (not bare `facts-…` names).
+
+## Validation
+
+Before calling the reduction done, confirm:
+
+- [ ] Every new or changed test case loads source from a text fixture (preferred) or language fixture file — no inline snippets.
+- [ ] Safe and vulnerable fixture pair paths are recorded; safe is silent, vulnerable still fires for the rule.
+- [ ] Focused detector tests, fixture matrix / integration coverage, required lint, and full tests for the touched packages pass.
+- [ ] Audit rescan no longer reports the reviewed false-positive pattern; retained true positives still fire.
+- [ ] Completion record lists finding IDs, rule IDs, detector change, fixture paths, and test/rescan results.
 
 ## Uncertain and true-positive handling
 

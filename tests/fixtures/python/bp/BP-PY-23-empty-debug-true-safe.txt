@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: settings.py
+---
+DEBUG = True
+ALLOWED_HOSTS = []
+INSTALLED_APPS = []

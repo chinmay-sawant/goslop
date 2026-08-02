@@ -1,9 +1,9 @@
-# Fixture for BP-PY-1 (safe)
+# goslop text fixture
 lang: python
-file: BP-PY-1-safe.py
+file: bare.py
 ---
 def f():
     try:
         x()
     except ValueError as e:
-        raise RuntimeError("bad") from e
+        raise RuntimeError('bad') from e

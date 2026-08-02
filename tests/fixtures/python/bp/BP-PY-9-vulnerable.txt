@@ -1,6 +1,6 @@
-# Fixture for BP-PY-9 (vulnerable)
+# goslop text fixture
 lang: python
-file: BP-PY-9-vulnerable.py
+file: sys.py
 ---
 import os
-os.system(cmd)
+os.system('ls ' + path)

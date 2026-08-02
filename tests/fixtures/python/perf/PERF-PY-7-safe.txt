@@ -1,0 +1,12 @@
+# Fixture for PERF-PY-7 (safe)
+lang: python
+file: app/middleware.py
+---
+class AuditMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        await self.app(scope, receive, send)
+
+app.add_middleware(AuditMiddleware)

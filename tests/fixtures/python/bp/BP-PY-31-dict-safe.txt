@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get("/u/{id}")
+def get_user(id: int):
+    return {"id": id, "name": "x"}

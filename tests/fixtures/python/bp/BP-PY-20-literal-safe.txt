@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from flask import send_file
+
+def dl():
+    return send_file('/var/data/report.pdf')

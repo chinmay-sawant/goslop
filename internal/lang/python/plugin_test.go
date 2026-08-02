@@ -30,7 +30,7 @@ func TestPythonPluginIdentityAndParse(t *testing.T) {
 	// Priority CWE + sample BP-PY rule IDs must be present on the catalogue.
 	wantIDs := []string{
 		"CWE-22", "CWE-78", "CWE-79", "CWE-89", "CWE-502",
-		"BP-PY-1", "BP-PY-8",
+		"BP-PY-1", "BP-PY-8", "PERF-PY-1", "PERF-PY-22",
 	}
 	have := map[string]bool{}
 	for _, d := range dets {

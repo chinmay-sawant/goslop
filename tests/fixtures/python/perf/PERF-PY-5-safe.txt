@@ -1,0 +1,9 @@
+# Fixture for PERF-PY-5 (safe)
+lang: python
+file: workers/delivery.py
+---
+import asyncio
+
+async def worker():
+    batch = claim_pending_batch()
+    await asyncio.gather(*(deliver_webhook(job) for job in batch))

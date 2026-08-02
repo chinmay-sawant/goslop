@@ -1,0 +1,8 @@
+# goslop text fixture
+# matrix-safe without sibling helpers.py (assert present)
+lang: python
+file: test_api.py
+---
+def test_api():
+    r = client.get('/x')
+    assert r.status_code == 200

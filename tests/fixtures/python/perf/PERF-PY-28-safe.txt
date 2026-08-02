@@ -1,0 +1,17 @@
+# Fixture for PERF-PY-28 (safe)
+lang: python
+file: app/parallel.py
+---
+from concurrent.futures import ThreadPoolExecutor
+import zlib
+
+_POOL = ThreadPoolExecutor(max_workers=8)
+
+def compress_chunks(chunks):
+    def task(index):
+        return zlib.compress(chunks[index])
+
+    return list(_POOL.map(task, range(len(chunks))))
+
+def handle_request(payloads):
+    return compress_chunks(payloads)

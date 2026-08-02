@@ -1,9 +1,9 @@
-# Fixture for BP-PY-1 (vulnerable)
+# goslop text fixture
 lang: python
-file: BP-PY-1-vulnerable.py
+file: bare.py
 ---
 def f():
     try:
         x()
-    except Exception:
+    except:
         pass

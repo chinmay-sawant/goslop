@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: tpl.py
+---
+template = "{{ x|safe }}"

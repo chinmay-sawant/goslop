@@ -1,0 +1,8 @@
+# PERF-PY-11 non-ORM save (safe)
+lang: python
+file: redrive.py
+---
+def persist(records):
+    for record in records:
+        record.state = 'queued'
+        record.save()

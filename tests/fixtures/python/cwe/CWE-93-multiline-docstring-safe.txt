@@ -1,0 +1,8 @@
+# CWE-93 multiline docstring line alignment (safe)
+lang: python
+file: app.py
+---
+"""A multiline docstring.
+The masked source must keep this line.
+"""
+response.headers["Location"] = "/home"

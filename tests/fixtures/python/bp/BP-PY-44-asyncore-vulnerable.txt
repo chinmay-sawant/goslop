@@ -1,0 +1,5 @@
+# goslop text fixture
+lang: python
+file: legacy.py
+---
+from asyncore import dispatcher

@@ -1,0 +1,7 @@
+lang: python
+file: ingest.py
+---
+def ingest(request, session):
+    payload = request.get_json()
+    session.add(WebhookEvent(payload=json.dumps(payload)))
+    session.commit()

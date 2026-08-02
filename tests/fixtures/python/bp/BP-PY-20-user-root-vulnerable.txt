@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from flask import send_from_directory, request
+
+def dl():
+    return send_from_directory(request.args.get('root'), 'f')

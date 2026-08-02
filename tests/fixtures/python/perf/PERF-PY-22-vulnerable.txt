@@ -1,0 +1,7 @@
+# Fixture for PERF-PY-22 (vulnerable)
+lang: python
+file: config/database.py
+---
+ENVIRONMENT = "production"
+DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": "service.db"}}
+CELERY_WORKER_CONCURRENCY = 4

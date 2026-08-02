@@ -8,15 +8,16 @@ import (
 
 func TestBPPY46PrintInLibrary(t *testing.T) {
 	t.Parallel()
-	vuln := "def f():\n    print('debug')\n"
-	safeMain := "if __name__ == '__main__':\n    print('cli')\n"
-	safeLogging := "import logging\ndef f():\n    logging.info('debug')\n"
-	assertRule(t, "BP-PY-46", "lib.py", vuln, true)
-	assertRule(t, "BP-PY-46", "lib.py", safeMain, false)
-	assertRule(t, "BP-PY-46", "lib.py", safeLogging, false)
+	vuln := loadBPFixture(t, "BP-PY-46", true)
+	safeMain := loadBPFixture(t, "BP-PY-46-main-guard", false)
+	safeLogging := loadBPFixture(t, "BP-PY-46", false)
+	assertRule(t, "BP-PY-46", vuln.path, vuln.body, true)
+	assertRule(t, "BP-PY-46", safeMain.path, safeMain.body, false)
+	assertRule(t, "BP-PY-46", safeLogging.path, safeLogging.body, false)
 	// Test file skip
-	assertRule(t, "BP-PY-46", "test_lib.py", vuln, false)
-	findings := runBP(t, nil, vuln, "lib.py")
+	testSkip := loadBPFixture(t, "BP-PY-46-test-path", false)
+	assertRule(t, "BP-PY-46", testSkip.path, testSkip.body, false)
+	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-46" && f.Severity != rules.SeverityInfo {
 			t.Fatalf("BP-PY-46 severity = %v, want info", f.Severity)
@@ -26,17 +27,17 @@ func TestBPPY46PrintInLibrary(t *testing.T) {
 
 func TestBPPY47EagerLogFormat(t *testing.T) {
 	t.Parallel()
-	vuln := "logger.info(f\"user={user}\")\n"
-	vulnFormat := "logger.debug(\"user={}\".format(user))\n"
-	vulnLogging := "import logging\nlogging.info(f\"x={x}\")\n"
-	safe := "logger.info(\"user=%s\", user)\n"
-	safeLogging := "import logging\nlogging.info(\"user=%s\", user)\n"
-	assertRule(t, "BP-PY-47", "log.py", vuln, true)
-	assertRule(t, "BP-PY-47", "log.py", vulnFormat, true)
-	assertRule(t, "BP-PY-47", "log.py", vulnLogging, true)
-	assertRule(t, "BP-PY-47", "log.py", safe, false)
-	assertRule(t, "BP-PY-47", "log.py", safeLogging, false)
-	findings := runBP(t, nil, vuln, "log.py")
+	vuln := loadBPFixture(t, "BP-PY-47", true)
+	vulnFormat := loadBPFixture(t, "BP-PY-47-format", true)
+	vulnLogging := loadBPFixture(t, "BP-PY-47-logging-module", true)
+	safe := loadBPFixture(t, "BP-PY-47", false)
+	safeLogging := loadBPFixture(t, "BP-PY-47-logging-module", false)
+	assertRule(t, "BP-PY-47", vuln.path, vuln.body, true)
+	assertRule(t, "BP-PY-47", vulnFormat.path, vulnFormat.body, true)
+	assertRule(t, "BP-PY-47", vulnLogging.path, vulnLogging.body, true)
+	assertRule(t, "BP-PY-47", safe.path, safe.body, false)
+	assertRule(t, "BP-PY-47", safeLogging.path, safeLogging.body, false)
+	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-47" && f.Severity != rules.SeverityInfo {
 			t.Fatalf("BP-PY-47 severity = %v, want info", f.Severity)

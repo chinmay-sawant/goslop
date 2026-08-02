@@ -71,7 +71,9 @@ func detectBPPY9(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-// BP-PY-10: pickle.load / pickle.loads / _pickle / cloudpickle
+// BP-PY-10: pickle.load / pickle.loads / _pickle / cloudpickle on non-constant /
+// untrusted-looking sources (request body, user path, generic payload names).
+// Trusted/local cache-style constant loads are missed.
 func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-10")
 	if !facts.hasAny("pickle.", "cloudpickle.", "_pickle.") {
@@ -91,10 +93,50 @@ func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				break
 			}
 			abs := start + idx
-			pushAt(unit, meta, abs, "pickle load can execute arbitrary code; avoid on untrusted data", out)
+			open := abs + len(n) - 1 // points at '('
+			inner, ok := callArgsRegion(src, open)
+			if !ok {
+				windowEnd := abs + len(n) + 120
+				if windowEnd > len(src) {
+					windowEnd = len(src)
+				}
+				inner = src[abs:windowEnd]
+			}
+			if pickleArgLooksUntrusted(inner) {
+				pushAt(unit, meta, abs, "pickle load can execute arbitrary code; avoid on untrusted data", out)
+			}
 			start = abs + len(n)
 		}
 	}
+}
+
+func pickleArgLooksUntrusted(arg string) bool {
+	lower := strings.ToLower(arg)
+	if strings.Contains(lower, "request.") || strings.Contains(lower, "sys.stdin") {
+		return true
+	}
+	untrusted := []string{
+		"body", "payload", "data", "raw", "user", "upload", "content",
+		"message", "socket", "recv", "input",
+	}
+	for _, n := range untrusted {
+		if strings.Contains(lower, n) {
+			return true
+		}
+	}
+	// Literal constant / ALL_CAPS cache names → miss.
+	trimmed := strings.TrimSpace(arg)
+	if isStringLiteral(trimmed) {
+		return false
+	}
+	if isSimpleIdent(trimmed) && trimmed == strings.ToUpper(trimmed) && len(trimmed) > 1 {
+		return false
+	}
+	if strings.Contains(lower, "cache") && !strings.Contains(lower, "request") {
+		return false
+	}
+	// Bare non-literal name with no trust signal → still flag (conservative).
+	return strings.TrimSpace(arg) != ""
 }
 
 // BP-PY-11: yaml.load without SafeLoader
@@ -187,18 +229,19 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 var secretNameRe = regexp.MustCompile(`(?i)\b([A-Za-z_][A-Za-z0-9_]*(?:password|passwd|secret|api_key|apikey|token|private_key|access_key)[A-Za-z0-9_]*)\s*=\s*`)
 
-// Also match SECRET_KEY, API_KEY, etc. as whole names.
+// Also match SECRET_KEY, API_KEY, etc. as whole names (case-insensitive).
 var secretExactAssignRe = regexp.MustCompile(`(?i)\b(password|passwd|secret|secret_key|api_key|apikey|token|private_key|access_key|auth_token)\s*=\s*`)
 
 // BP-PY-13: hardcoded secret heuristic (conservative).
 func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-13")
 	if !facts.hasAny("password", "secret", "api_key", "token", "private_key", "SECRET_KEY") {
-		// still check SECRET_KEY case via source
-		if !strings.Contains(strings.ToLower(unit.Source), "password") &&
-			!strings.Contains(strings.ToLower(unit.Source), "secret") &&
-			!strings.Contains(strings.ToLower(unit.Source), "token") &&
-			!strings.Contains(strings.ToLower(unit.Source), "api_key") {
+		// Case-fold once for the gate-miss path (avoids up to 4× ToLower on full source).
+		lower := strings.ToLower(unit.Source)
+		if !strings.Contains(lower, "password") &&
+			!strings.Contains(lower, "secret") &&
+			!strings.Contains(lower, "token") &&
+			!strings.Contains(lower, "api_key") {
 			return
 		}
 	}
@@ -221,12 +264,6 @@ func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		loc := secretExactAssignRe.FindStringIndex(t)
 		if loc == nil {
 			loc = secretNameRe.FindStringIndex(t)
-		}
-		if loc == nil {
-			// SECRET_KEY = '...'
-			if m := regexp.MustCompile(`(?i)\bSECRET_KEY\s*=\s*`).FindStringIndex(t); m != nil {
-				loc = m
-			}
 		}
 		if loc == nil {
 			continue

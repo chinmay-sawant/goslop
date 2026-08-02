@@ -1,0 +1,9 @@
+lang: python
+file: ingest.py
+---
+@app.post("/ingest")
+def ingest(request):
+    if request.content_length > MAX_BODY_BYTES:
+        raise ValueError("body too large")
+    payload = request.get_json()
+    return {"accepted": len(payload)}

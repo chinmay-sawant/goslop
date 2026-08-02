@@ -8,6 +8,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/pytext"
 )
 
 const (
@@ -73,6 +74,24 @@ func isPythonTestModule(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isPythonBenchmarkFile identifies harness code whose literals and console
+// output are synthetic benchmark data rather than deployed application code.
+// Match path components only so a project name containing "bench" is not
+// enough to suppress a finding.
+func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.DisplayPath, unit.Path} {
+		for _, component := range strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/") {
+			if component == "bench" || component == "benchmarks" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // callSite is a lightweight function/method call match in source text.
 type callSite struct {
 	Name     string // callee text matched (e.g. "pickle.loads")
@@ -81,25 +100,40 @@ type callSite struct {
 	ArgsText string // interior of top-level argument list
 }
 
-// findCalls finds call-like sites for each name in names (exact callee strings).
-func findCalls(source string, names ...string) []callSite {
+// findCalls finds call-like sites using facts.Masked when source is the full
+// file. Prefer findCallsMasked with facts.codeMask for known fragment offsets.
+func findCalls(facts *PyCweFacts, source string, names ...string) []callSite {
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	return findCallsMasked(source, masked, names...)
+}
+
+// findCallsMasked finds call-like sites for each name using pre-masked text
+// (byte-aligned with source). Does not remask.
+func findCallsMasked(source, masked string, names ...string) []callSite {
 	var out []callSite
-	code := pythonCodeMask(source)
+	if masked == "" {
+		masked = pythonCodeMask(source)
+	}
 	for _, name := range names {
 		start := 0
 		for {
-			idx := strings.Index(code[start:], name)
+			idx := strings.Index(masked[start:], name)
 			if idx < 0 {
 				break
 			}
 			abs := start + idx
-			if !identBoundaryOK(code, abs, abs+len(name)) {
+			if !identBoundaryOK(masked, abs, abs+len(name)) {
 				start = abs + len(name)
 				continue
 			}
 			after := abs + len(name)
-			j := skipWS(code, after)
-			if j >= len(code) || code[j] != '(' {
+			j := skipWS(masked, after)
+			if j >= len(masked) || masked[j] != '(' {
 				start = after
 				continue
 			}
@@ -120,80 +154,177 @@ func findCalls(source string, names ...string) []callSite {
 	return out
 }
 
+// fragStartHint returns 0 when source is the full facts.Source, else -1
+// (unknown offset → codeMask may remask the fragment).
+func fragStartHint(facts *PyCweFacts, source string) int {
+	if facts != nil && source == facts.Source {
+		return 0
+	}
+	return -1
+}
+
 // pythonCodeMask keeps byte offsets stable while blanking comments and string
-// literals. Source-pattern rules can use it to avoid interpreting examples in
-// docstrings, comments, and quoted data as executable Python.
+// literals. Prefer facts.Masked / facts.codeMask; this remasks and is the
+// fallback when no facts or fragment offset is available.
 func pythonCodeMask(source string) string {
-	masked := []byte(source)
-	inString := byte(0)
-	triple := false
-	escaped := false
-	inComment := false
-	for i := 0; i < len(masked); i++ {
-		c := masked[i]
-		if inComment {
-			if c == '\n' {
-				inComment = false
-			} else {
-				masked[i] = ' '
-			}
-			continue
-		}
-		if inString != 0 {
-			i, inString, triple, escaped = maskPythonString(masked, i, inString, triple, escaped)
-			continue
-		}
-		switch c {
-		case '#':
-			masked[i] = ' '
-			inComment = true
-		case '\'', '"':
-			inString = c
-			if i+2 < len(masked) && masked[i+1] == c && masked[i+2] == c {
-				masked[i], masked[i+1], masked[i+2] = ' ', ' ', ' '
-				i += 2
-				triple = true
-			} else {
-				masked[i] = ' '
-			}
-		}
-	}
-	return string(masked)
+	return pytext.Mask(source)
 }
 
-func maskPythonString(masked []byte, index int, quote byte, triple, escaped bool) (int, byte, bool, bool) {
-	current := masked[index]
-	masked[index] = ' '
-	if triple {
-		if current == quote && index+2 < len(masked) && masked[index+1] == quote && masked[index+2] == quote {
-			masked[index+1], masked[index+2] = ' ', ' '
-			return index + 2, 0, false, false
-		}
-		return index, quote, true, false
+// firstCodeMatchStart returns the start of the first pattern match on masked
+// code text (comments/strings already blanked). Prefer this for code-oriented
+// patterns; use firstLiteralMatchStart when the pattern must see string quotes.
+func firstCodeMatchStart(facts *PyCweFacts, source string, pattern *regexp.Regexp) int {
+	if pattern == nil || source == "" {
+		return -1
 	}
-	if escaped {
-		return index, quote, false, false
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
 	}
-	if current == '\\' {
-		return index, quote, false, true
-	}
-	if current == quote {
-		return index, 0, false, false
-	}
-	return index, quote, false, false
+	return firstCodeMatchStartMasked(source, masked, pattern)
 }
 
-func firstCodeMatchStart(source string, pattern *regexp.Regexp) int {
+// firstCodeMatchStartMasked runs a single FindStringIndex on masked text.
+// masked must be byte-aligned with source. Hits are already "code" hits.
+func firstCodeMatchStartMasked(source, masked string, pattern *regexp.Regexp) int {
 	if pattern == nil {
 		return -1
 	}
-	masked := pythonCodeMask(source)
-	for _, match := range pattern.FindAllStringIndex(source, -1) {
-		if strings.TrimSpace(masked[match[0]:match[1]]) != "" {
-			return match[0]
+	if masked == "" {
+		if source == "" {
+			return -1
 		}
+		masked = pythonCodeMask(source)
+	}
+	loc := pattern.FindStringIndex(masked)
+	if loc == nil {
+		return -1
+	}
+	return loc[0]
+}
+
+// firstLiteralMatchStart scans unmasked source with pattern and keeps the first
+// hit whose masked span is non-blank. Use when the RE must see string-literal
+// quotes or contents (hard-coded credentials, quoted config keys, etc.).
+func firstLiteralMatchStart(facts *PyCweFacts, source string, pattern *regexp.Regexp) int {
+	if pattern == nil || source == "" {
+		return -1
+	}
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	return firstLiteralMatchStartMasked(source, masked, pattern)
+}
+
+// firstLiteralMatchStartMasked is the source-then-filter path for literal REs.
+func firstLiteralMatchStartMasked(source, masked string, pattern *regexp.Regexp) int {
+	if pattern == nil || source == "" {
+		return -1
+	}
+	if masked == "" {
+		masked = pythonCodeMask(source)
+	}
+	search := 0
+	for search <= len(source) {
+		loc := pattern.FindStringIndex(source[search:])
+		if loc == nil {
+			return -1
+		}
+		start := search + loc[0]
+		end := search + loc[1]
+		if end > len(masked) {
+			end = len(masked)
+		}
+		if start < end && strings.TrimSpace(masked[start:end]) != "" {
+			return start
+		}
+		if end <= search {
+			search++
+			continue
+		}
+		search = end
 	}
 	return -1
+}
+
+// containsAnyNeedle reports whether any non-empty needle appears in s.
+func containsAnyNeedle(s string, needles ...string) bool {
+	for _, n := range needles {
+		if n != "" && strings.Contains(s, n) {
+			return true
+		}
+	}
+	return false
+}
+
+// eachLiteralMatch invokes fn for each source match whose masked span is
+// non-blank. fn returns false to stop. Prefer over FindAllStringIndex.
+func eachLiteralMatch(facts *PyCweFacts, source string, pattern *regexp.Regexp, fn func(start, end int) bool) {
+	if pattern == nil || source == "" || fn == nil {
+		return
+	}
+	var masked string
+	if facts != nil {
+		masked = facts.codeMask(source, fragStartHint(facts, source))
+	} else {
+		masked = pythonCodeMask(source)
+	}
+	if masked == "" {
+		masked = pythonCodeMask(source)
+	}
+	search := 0
+	for search <= len(source) {
+		loc := pattern.FindStringIndex(source[search:])
+		if loc == nil {
+			return
+		}
+		start := search + loc[0]
+		end := search + loc[1]
+		maskedEnd := end
+		if maskedEnd > len(masked) {
+			maskedEnd = len(masked)
+		}
+		if start < maskedEnd && strings.TrimSpace(masked[start:maskedEnd]) != "" {
+			if !fn(start, end) {
+				return
+			}
+		}
+		if end <= search {
+			search++
+			continue
+		}
+		search = end
+	}
+}
+
+// eachCodeMatch invokes fn for each FindStringIndex hit on masked text.
+// fn returns false to stop. Prefer over FindAllStringIndex on masked.
+func eachCodeMatch(masked string, pattern *regexp.Regexp, fn func(start, end int) bool) {
+	if pattern == nil || masked == "" || fn == nil {
+		return
+	}
+	search := 0
+	for search <= len(masked) {
+		loc := pattern.FindStringIndex(masked[search:])
+		if loc == nil {
+			return
+		}
+		start := search + loc[0]
+		end := search + loc[1]
+		if !fn(start, end) {
+			return
+		}
+		if end <= search {
+			search++
+			continue
+		}
+		search = end
+	}
 }
 
 func identBoundaryOK(source string, start, end int) bool {

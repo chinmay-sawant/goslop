@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: test_auth.py
+---
+def check(request):
+    assert request.user.is_authenticated
+    return True

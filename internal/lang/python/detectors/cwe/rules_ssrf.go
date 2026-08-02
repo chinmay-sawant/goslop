@@ -1,14 +1,11 @@
 package cwe
 
 import (
-	"regexp"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
-
-var pyFunctionDefRE = regexp.MustCompile(`(?m)^([ \t]*)def\s+([A-Za-z_][A-Za-z0-9_]*)\s*\([^\n]*\)\s*:`)
 
 func init() {
 	// These rules deliberately have no SourceIndex gates: a gate that omits a
@@ -23,11 +20,11 @@ func init() {
 
 // CWE-918 reports only direct request-derived URLs at known outbound HTTP
 // sinks. Variables passed between functions are deliberately out of scope.
-func detectCWE918(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE918(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source,
+	for _, call := range findCalls(facts, unit.Source,
 		"requests.get", "requests.post", "requests.put", "requests.patch", "requests.delete", "requests.request",
 		"httpx.get", "httpx.post", "httpx.put", "httpx.patch", "httpx.delete", "httpx.request",
 		"urllib.request.urlopen") {
@@ -54,11 +51,11 @@ func callHasDirectRequestURL(argsText string) bool {
 
 // CWE-601 requires direct request evidence at a framework redirect sink. A
 // fixed local path and an already-validated local variable are not reported.
-func detectCWE601(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE601(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "redirect", "flask.redirect", "django.shortcuts.redirect", "HttpResponseRedirect", "RedirectResponse") {
+	for _, call := range findCalls(facts, unit.Source, "redirect", "flask.redirect", "django.shortcuts.redirect", "HttpResponseRedirect", "RedirectResponse") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !isDirectRequestExpr(args[0]) {
 			continue
@@ -70,20 +67,21 @@ func detectCWE601(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-605 requires both a reuse socket option and a wildcard bind in the same
 // file. Either operation alone is common and insufficient evidence.
-func detectCWE605(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE605(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
-		if start := reuseThenWildcardBind(fn.body); start >= 0 {
+	for _, fn := range facts.Functions() {
+		masked := facts.codeMask(fn.body, fn.bodyStart)
+		if start := reuseThenWildcardBind(fn.body, masked); start >= 0 {
 			pushSSRFfinding(unit, fn.bodyStart+start, &MetaCWE605, "socket reuse is enabled before binding the same socket to a wildcard interface", confidence76, out)
 			return
 		}
 	}
 }
 
-func reuseThenWildcardBind(source string) int {
-	for _, call := range findCalls(source, ".setsockopt") {
+func reuseThenWildcardBind(source, masked string) int {
+	for _, call := range findCallsMasked(source, masked, ".setsockopt") {
 		if !strings.Contains(call.ArgsText, "SO_REUSEADDR") && !strings.Contains(call.ArgsText, "SO_REUSEPORT") {
 			continue
 		}
@@ -91,7 +89,7 @@ func reuseThenWildcardBind(source string) int {
 		if receiver == "" {
 			continue
 		}
-		for _, bind := range findCalls(source, ".bind") {
+		for _, bind := range findCallsMasked(source, masked, ".bind") {
 			if bind.Start <= call.Start || receiver != callReceiver(source, bind.Start) ||
 				(!strings.Contains(bind.ArgsText, "0.0.0.0") && !strings.Contains(bind.ArgsText, "::")) {
 				continue
@@ -117,22 +115,22 @@ func callReceiver(source string, callStart int) string {
 
 // CWE-924 keeps webhook integrity checking local to a clearly named handler.
 // A signature verification in an unrelated function is not a safe suppression.
-func detectCWE924(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE924(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	// A module-level authentication gate establishes the caller boundary for
 	// internal webhook relays. CWE-924 should not require a second payload
 	// signature when the route is protected by header authentication over TLS.
-	if hasApplicationAuthGuard(unit.Source) {
+	if hasApplicationAuthGuard(facts) {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
+	for _, fn := range facts.Functions() {
 		name := strings.ToLower(fn.name)
 		if !strings.Contains(name, "webhook") && !strings.Contains(name, "_hook") {
 			continue
 		}
-		code := pythonCodeMask(fn.body)
+		code := facts.codeMask(fn.body, fn.bodyStart)
 		if !hasRequestBodyRead(code) || hasMessageIntegrityVerification(code) {
 			continue
 		}
@@ -141,8 +139,11 @@ func detectCWE924(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func hasApplicationAuthGuard(source string) bool {
-	code := pythonCodeMask(source)
+func hasApplicationAuthGuard(facts *PyCweFacts) bool {
+	if facts == nil {
+		return false
+	}
+	code := facts.Masked
 	if !strings.Contains(code, "before_request") || !strings.Contains(code, "request.headers") {
 		return false
 	}
@@ -153,16 +154,16 @@ func hasApplicationAuthGuard(source string) bool {
 // CWE-940 targets a particularly dangerous callback form: a callback handler
 // turns a direct request identity into a login without an apparent state/nonce
 // or source verification. General login handlers are intentionally excluded.
-func detectCWE940(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE940(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, fn := range pythonFunctions(unit.Source) {
+	for _, fn := range facts.Functions() {
 		name := strings.ToLower(fn.name)
 		if !strings.Contains(name, "callback") && !strings.Contains(name, "oauth") {
 			continue
 		}
-		code := pythonCodeMask(fn.body)
+		code := facts.codeMask(fn.body, fn.bodyStart)
 		if !strings.Contains(code, "request.args") && !strings.Contains(code, "request.GET") && !strings.Contains(code, "request.query_params") {
 			continue
 		}
@@ -179,11 +180,11 @@ func detectCWE940(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 
 // CWE-941 is intentionally distinct from SSRF: it looks only at direct
 // request-controlled recipients passed to SMTP or framework mail APIs.
-func detectCWE941(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
+func detectCWE941(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(unit.Source, "send_mail", ".sendmail", "sendmail") {
+	for _, call := range findCalls(facts, unit.Source, "send_mail", ".sendmail", "sendmail") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if directRequestMailDestination(call.Name, args) {
 			pushSSRFfinding(unit, call.Start, &MetaCWE941, "request-controlled recipient is used as an outbound mail destination", confidence80, out)
@@ -201,51 +202,6 @@ func isDirectRequestExpr(expr string) bool {
 		strings.Contains(compact, "request.data") || strings.Contains(compact, "request.json") ||
 		strings.Contains(compact, "request.get_json(") || strings.Contains(compact, "request.GET") ||
 		strings.Contains(compact, "request.POST") || strings.Contains(compact, "request.query_params")
-}
-
-type pythonFunction struct {
-	name      string
-	start     int
-	bodyStart int
-	body      string
-}
-
-func pythonFunctions(source string) []pythonFunction {
-	code := pythonCodeMask(source)
-	matches := pyFunctionDefRE.FindAllStringSubmatchIndex(code, -1)
-	out := make([]pythonFunction, 0, len(matches))
-	for _, match := range matches {
-		indent := len(code[match[2]:match[3]])
-		bodyStart := match[1]
-		bodyEnd := pythonFunctionBodyEnd(code, bodyStart, indent)
-		out = append(out, pythonFunction{name: source[match[4]:match[5]], start: match[0], bodyStart: bodyStart, body: source[bodyStart:bodyEnd]})
-	}
-	return out
-}
-
-func pythonFunctionBodyEnd(code string, bodyStart, indent int) int {
-	for lineStart := bodyStart; lineStart < len(code); {
-		if code[lineStart] == '\n' {
-			lineStart++
-		}
-		lineEnd := len(code)
-		if next := strings.IndexByte(code[lineStart:], '\n'); next >= 0 {
-			lineEnd = lineStart + next
-		}
-		line := code[lineStart:lineEnd]
-		trimmed := strings.TrimSpace(line)
-		if trimmed != "" {
-			lineIndent := len(line) - len(strings.TrimLeft(line, " \t"))
-			if lineIndent <= indent {
-				return lineStart
-			}
-		}
-		if lineEnd == len(code) {
-			break
-		}
-		lineStart = lineEnd + 1
-	}
-	return len(code)
 }
 
 func hasRequestBodyRead(code string) bool {

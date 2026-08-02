@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: async_fire.py
+---
+import asyncio
+async def main():
+    t = asyncio.create_task(coro())
+    await t

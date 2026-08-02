@@ -1,0 +1,6 @@
+# PERF-PY-14 helper lookup variant (safe upsert)
+lang: python
+file: events.py
+---
+def create(key):
+    return Event.objects.get_or_create(idempotency_key=key)

@@ -1,0 +1,5 @@
+# Source used by TestBuildCodeLinesKeepsOrdinaryStringKeywords (PERF-PY-26 facts).
+lang: python
+file: PERF-PY-26-code-lines-string-keyword.py
+---
+job = Job.objects.filter(status="pending").first()

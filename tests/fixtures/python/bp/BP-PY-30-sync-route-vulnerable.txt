@@ -1,0 +1,12 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+import time
+app = FastAPI()
+
+@app.get("/slow")
+async def slow():
+    time.sleep(1)
+    return {"ok": True}

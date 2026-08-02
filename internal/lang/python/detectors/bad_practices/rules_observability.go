@@ -30,6 +30,9 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonTestFile(unit) {
 		return
 	}
+	if isPythonBenchmarkFile(unit) {
+		return
+	}
 	if isRequirementsPath(unit) {
 		return
 	}
@@ -37,6 +40,9 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	lines := codeLinesFacts(facts, unit.Source)
+	mainInvoked := pythonMainGuardInvokesMain(lines)
+	hasArgparse := pythonHasArgparseCLI(unit.Source)
+	registeredCmds := pythonArgparseSetDefaultsFuncs(unit.Source)
 	// Track whether we are inside if __name__ == "__main__": block.
 	mainIndent := -1
 	cliDecorator := false
@@ -76,6 +82,11 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			}
 			cliDecorator = false
 		}
+		if name, ok := pythonDefFuncName(t); ok &&
+			pythonCLIPrintSkipFunc(name, mainInvoked, hasArgparse, registeredCmds) {
+			cliIndent = ind
+			continue
+		}
 		if cliIndent >= 0 && ind > cliIndent {
 			continue
 		}
@@ -97,6 +108,122 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				out)
 		}
 	}
+}
+
+// pythonHasArgparseCLI reports modules that build an argparse CLI entrypoint.
+func pythonHasArgparseCLI(src string) bool {
+	return strings.Contains(src, "ArgumentParser") ||
+		strings.Contains(src, "argparse.") ||
+		strings.Contains(src, "import argparse")
+}
+
+// pythonMainGuardInvokesMain reports that if __name__ == "__main__" calls main(...).
+func pythonMainGuardInvokesMain(lines []codeLine) bool {
+	mainIndent := -1
+	for _, line := range lines {
+		t := strings.TrimSpace(line.text)
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(line.raw)
+		if mainIndent >= 0 && ind <= mainIndent {
+			mainIndent = -1
+		}
+		if isMainGuard(t) {
+			mainIndent = ind
+			continue
+		}
+		if mainIndent >= 0 && ind > mainIndent && strings.Contains(t, "main(") {
+			return true
+		}
+	}
+	return false
+}
+
+// pythonArgparseSetDefaultsFuncs collects names from set_defaults(func=...).
+func pythonArgparseSetDefaultsFuncs(src string) map[string]struct{} {
+	out := make(map[string]struct{})
+	start := 0
+	for {
+		idx := strings.Index(src[start:], "set_defaults(")
+		if idx < 0 {
+			return out
+		}
+		abs := start + idx + len("set_defaults(")
+		end := abs
+		depth := 1
+		for end < len(src) && depth > 0 {
+			switch src[end] {
+			case '(':
+				depth++
+			case ')':
+				depth--
+			}
+			if depth > 0 {
+				end++
+			}
+		}
+		if depth != 0 {
+			return out
+		}
+		args := src[abs:end]
+		if i := strings.Index(args, "func="); i >= 0 {
+			name := pythonLeadingIdent(strings.TrimSpace(args[i+len("func="):]))
+			if isSimpleIdent(name) {
+				out[name] = struct{}{}
+			}
+		}
+		start = end + 1
+		if start >= len(src) {
+			return out
+		}
+	}
+}
+
+func pythonDefFuncName(t string) (string, bool) {
+	for _, pref := range []string{"async def ", "def "} {
+		if !strings.HasPrefix(t, pref) {
+			continue
+		}
+		name := pythonLeadingIdent(t[len(pref):])
+		if name == "" {
+			return "", false
+		}
+		return name, true
+	}
+	return "", false
+}
+
+func pythonLeadingIdent(s string) string {
+	end := 0
+	for end < len(s) && isIdentByte(s[end]) {
+		end++
+	}
+	if end == 0 {
+		return ""
+	}
+	return s[:end]
+}
+
+// pythonCLIPrintSkipFunc reports argparse/__main__ CLI presentation entrypoints
+// whose print calls are intentional user output, not library debug logging.
+func pythonCLIPrintSkipFunc(
+	name string,
+	mainInvoked, hasArgparse bool,
+	registeredCmds map[string]struct{},
+) bool {
+	if mainInvoked && name == "main" {
+		return true
+	}
+	if _, ok := registeredCmds[name]; ok {
+		return true
+	}
+	if hasArgparse && mainInvoked {
+		if strings.HasPrefix(name, "print_") || strings.HasPrefix(name, "cmd_") {
+			return true
+		}
+	}
+	return false
 }
 
 func isMainGuard(t string) bool {

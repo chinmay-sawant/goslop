@@ -25,16 +25,15 @@ var (
 const maxFastAPISignatureLines = 40
 
 func looksFastAPIish(unit *core.ParsedUnit, src string) bool {
+	// Require a real FastAPI/Starlette marker. Bare @app./@router. and path
+	// heuristics like "routes"/"api.py" are too broad (Flask, Celery, etc.).
 	if strings.Contains(src, "fastapi") || strings.Contains(src, "FastAPI") ||
 		strings.Contains(src, "APIRouter") || strings.Contains(src, "starlette") ||
 		strings.Contains(src, "Starlette") {
 		return true
 	}
-	if strings.Contains(src, "@app.") || strings.Contains(src, "@router.") {
-		return true
-	}
 	p := strings.ToLower(fileDisplayPath(unit))
-	return strings.Contains(p, "fastapi") || strings.Contains(p, "api.py") || strings.Contains(p, "routes")
+	return strings.Contains(p, "fastapi") || strings.Contains(p, "starlette")
 }
 
 // functionBodyRange returns inclusive line indices [start, end) for the body of a
@@ -173,7 +172,7 @@ func findBPPY29Mutation(unit *core.ParsedUnit, meta *rules.RuleMetadata, src str
 			if bt == "" {
 				continue
 			}
-			if isGlobalStateDeclaration(bt) && (routeOrDep || looksFastAPIish(unit, src)) {
+			if isGlobalStateDeclaration(bt) && routeOrDep {
 				pushAt(unit, meta, lines[j].byte, "FastAPI route/dependency mutates global state; prefer request-scoped deps or a proper store", out)
 				return // one finding per function is enough for v0
 			}
@@ -347,8 +346,8 @@ func detectBPPY32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if !strings.Contains(src, "FileResponse") {
 		return
 	}
-	// Prefer FastAPI/Starlette context; still flag FileResponse alone if path looks dynamic.
-	fastapiish := looksFastAPIish(unit, src) || strings.Contains(src, "FileResponse")
+	// Prefer FastAPI/Starlette context; dynamic-path signals still fire without it.
+	fastapiish := looksFastAPIish(unit, src)
 
 	// Collect path-ish parameter names from route signatures near FileResponse.
 	paramNames := collectRoutePathParams(src)

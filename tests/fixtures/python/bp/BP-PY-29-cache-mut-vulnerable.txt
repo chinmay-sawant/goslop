@@ -1,0 +1,12 @@
+# goslop text fixture
+lang: python
+file: app.py
+---
+from fastapi import FastAPI
+app = FastAPI()
+CACHE = {}
+
+@app.post("/c")
+async def put_c(k: str, v: str):
+    CACHE[k] = v
+    return {"ok": True}

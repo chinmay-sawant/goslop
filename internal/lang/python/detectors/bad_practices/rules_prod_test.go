@@ -11,58 +11,14 @@ import (
 
 func TestBPPY48CORSStarWithCredentials(t *testing.T) {
 	t.Parallel()
-	// FastAPI / Starlette middleware hit
-	hitFastAPI := `
-from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-)
-`
-	// Explicit origins + credentials — miss
-	missExplicit := `
-from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://app.example"],
-    allow_credentials=True,
-)
-`
-	// Star without credentials true — miss
-	missNoCreds := `
-from fastapi.middleware.cors import CORSMiddleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-)
-`
-	// Django cors-headers pair
-	hitDjango := `
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-`
-	missDjangoOnlyStar := `
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = False
-`
-	// flask-cors
-	hitFlask := `
-from flask_cors import CORS
-CORS(app, origins="*", supports_credentials=True)
-`
-	assertRule(t, "BP-PY-48", "main.py", hitFastAPI, true)
-	assertRule(t, "BP-PY-48", "main.py", missExplicit, false)
-	assertRule(t, "BP-PY-48", "main.py", missNoCreds, false)
-	assertRule(t, "BP-PY-48", "settings.py", hitDjango, true)
-	assertRule(t, "BP-PY-48", "settings.py", missDjangoOnlyStar, false)
-	assertRule(t, "BP-PY-48", "app.py", hitFlask, true)
-	// test file skip
-	assertRule(t, "BP-PY-48", "test_cors.py", hitFastAPI, false)
+	assertBPFixtureCase(t, "BP-PY-48", "BP-PY-48")
+	assertBPFixtureCase(t, "BP-PY-48", "BP-PY-48-no-creds")
+	assertBPFixtureCase(t, "BP-PY-48", "BP-PY-48-django")
+	assertBPFixtureCase(t, "BP-PY-48", "BP-PY-48-flask")
+	assertBPFixtureCase(t, "BP-PY-48", "BP-PY-48-test-path")
 
-	findings := runBP(t, nil, hitFastAPI, "main.py")
+	vuln := loadBPFixture(t, "BP-PY-48", true)
+	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-48" && f.Severity != rules.SeverityHigh {
 			t.Fatalf("BP-PY-48 severity = %v, want high", f.Severity)
@@ -72,26 +28,17 @@ CORS(app, origins="*", supports_credentials=True)
 
 func TestBPPY49TLSVerificationDisabled(t *testing.T) {
 	t.Parallel()
-	hitRequests := "import requests\nrequests.get(url, verify=False)\n"
-	hitHttpx := "import httpx\nhttpx.get(url, verify=False)\n"
-	hitUnverified := "import ssl\nctx = ssl._create_unverified_context()\n"
-	hitCertNone := "import ssl\nctx = ssl.create_default_context()\nctx.verify_mode = ssl.CERT_NONE\n"
-	missDefault := "import requests\nrequests.get(url, timeout=5)\n"
-	missVerifyTrue := "import requests\nrequests.get(url, verify=True)\n"
-	missCAPath := "import requests\nrequests.get(url, verify='/etc/ssl/certs/ca.pem')\n"
-
-	assertRule(t, "BP-PY-49", "client.py", hitRequests, true)
-	assertRule(t, "BP-PY-49", "client.py", hitHttpx, true)
-	assertRule(t, "BP-PY-49", "ssl_util.py", hitUnverified, true)
-	assertRule(t, "BP-PY-49", "ssl_util.py", hitCertNone, true)
-	assertRule(t, "BP-PY-49", "client.py", missDefault, false)
-	assertRule(t, "BP-PY-49", "client.py", missVerifyTrue, false)
-	assertRule(t, "BP-PY-49", "client.py", missCAPath, false)
-	// test file skip
-	assertRule(t, "BP-PY-49", "test_client.py", hitRequests, false)
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-httpx")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-unverified-context")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-cert-none")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-default")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-ca-path")
+	assertBPFixtureCase(t, "BP-PY-49", "BP-PY-49-test-path")
 
 	// Explicit: this detector must not fire BP-PY-14 (not implemented in this batch).
-	findings := runBP(t, nil, missDefault, "client.py")
+	missDefault := loadBPFixture(t, "BP-PY-49-default", false)
+	findings := runBP(t, nil, missDefault.body, missDefault.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-14" {
 			t.Fatalf("unexpected BP-PY-14 from batch-08 detector path; findings=%v", findings)
@@ -101,7 +48,8 @@ func TestBPPY49TLSVerificationDisabled(t *testing.T) {
 		}
 	}
 
-	hitFindings := runBP(t, nil, hitRequests, "client.py")
+	hit := loadBPFixture(t, "BP-PY-49", true)
+	hitFindings := runBP(t, nil, hit.body, hit.path)
 	for _, f := range hitFindings {
 		if f.RuleID == "BP-PY-49" && f.Severity != rules.SeverityHigh {
 			t.Fatalf("BP-PY-49 severity = %v, want high", f.Severity)
@@ -111,25 +59,14 @@ func TestBPPY49TLSVerificationDisabled(t *testing.T) {
 
 func TestBPPY50InsecureCookieFlags(t *testing.T) {
 	t.Parallel()
-	hitSession := "SESSION_COOKIE_SECURE = False\n"
-	hitCSRF := "CSRF_COOKIE_SECURE = False\n"
-	hitHTTPOnly := "SESSION_COOKIE_HTTPONLY = False\n"
-	hitFlaskConfig := "app.config['SESSION_COOKIE_SECURE'] = False\n"
-	missSecureTrue := "SESSION_COOKIE_SECURE = True\n"
-	missCSRFTrue := "CSRF_COOKIE_SECURE = True\n"
-	missHTTPOnlyTrue := "SESSION_COOKIE_HTTPONLY = True\n"
+	assertBPFixtureCase(t, "BP-PY-50", "BP-PY-50")
+	assertBPFixtureCase(t, "BP-PY-50", "BP-PY-50-csrf")
+	assertBPFixtureCase(t, "BP-PY-50", "BP-PY-50-httponly")
+	assertBPFixtureCase(t, "BP-PY-50", "BP-PY-50-flask-config")
+	assertBPFixtureCase(t, "BP-PY-50", "BP-PY-50-test-path")
 
-	assertRule(t, "BP-PY-50", "settings.py", hitSession, true)
-	assertRule(t, "BP-PY-50", "settings.py", hitCSRF, true)
-	assertRule(t, "BP-PY-50", "settings.py", hitHTTPOnly, true)
-	assertRule(t, "BP-PY-50", "app.py", hitFlaskConfig, true)
-	assertRule(t, "BP-PY-50", "settings.py", missSecureTrue, false)
-	assertRule(t, "BP-PY-50", "settings.py", missCSRFTrue, false)
-	assertRule(t, "BP-PY-50", "settings.py", missHTTPOnlyTrue, false)
-	// test file skip
-	assertRule(t, "BP-PY-50", "test_settings.py", hitSession, false)
-
-	findings := runBP(t, nil, hitSession, "settings.py")
+	vuln := loadBPFixture(t, "BP-PY-50", true)
+	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-50" && f.Severity != rules.SeverityMedium {
 			t.Fatalf("BP-PY-50 severity = %v, want medium", f.Severity)
@@ -171,8 +108,8 @@ func TestBPProdBatch08Registered(t *testing.T) {
 	ctx := core.DefaultScanContext()
 	ctx.BadPracticesEnabled = true
 	ctx.Only = []string{"BP-PY-48", "BP-PY-49", "BP-PY-50"}
-	src := "import requests\nrequests.get(url, verify=False)\n"
-	findings := runBP(t, ctx, src, "client.py")
+	vuln := loadBPFixture(t, "BP-PY-49", true)
+	findings := runBP(t, ctx, vuln.body, vuln.path)
 	if !hasRule(findings, "BP-PY-49") {
 		t.Fatalf("Only filter should allow BP-PY-49; findings=%v", findings)
 	}

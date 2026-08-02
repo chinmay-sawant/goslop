@@ -1,0 +1,19 @@
+# Fixture for PERF-PY-29 (safe)
+lang: python
+file: app/writer.py
+---
+def render(parts):
+    chunks = []
+    total = 0
+    for part in parts:
+        body = encode_part(part)
+        chunks.append(body)
+        total += len(body)
+    buffer = bytearray(total + 256)
+    offset = 0
+    for i, body in enumerate(chunks):
+        buffer[offset : offset + len(body)] = body
+        offset += len(body)
+        chunks[i] = b""
+    chunks.clear()
+    return bytes(buffer[:offset])

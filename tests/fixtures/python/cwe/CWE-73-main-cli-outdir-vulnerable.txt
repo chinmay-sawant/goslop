@@ -1,0 +1,9 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-73-main-cli-outdir-vulnerable.py
+---
+"""CWE-73 vulnerable: request-controlled path reaches a filesystem API."""
+
+from flask import request
+
+open(request.args.get("file"))

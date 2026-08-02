@@ -17,7 +17,7 @@ func TestFindCallsSkipsCommentsAndStrings(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	calls := findCalls(fx.Source, "eval")
+	calls := findCalls(nil, fx.Source, "eval")
 	if len(calls) != 1 || calls[0].Name != "eval" {
 		t.Fatalf("findCalls() = %#v, want only executable eval call", calls)
 	}

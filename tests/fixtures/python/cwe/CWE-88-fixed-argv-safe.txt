@@ -1,0 +1,34 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# Audit FP pattern: test module with fixed/hardcoded argv (literal flavour + temp path).
+lang: python
+file: tests/test_compliance.py
+---
+import subprocess
+from pathlib import Path
+
+VERAPDF_BIN = "verapdf"
+
+
+def _assert_verapdf_compliant(fixture_name: str, data: bytes, tmp: str) -> None:
+    path = Path(tmp) / (fixture_name + ".pdf")
+    path.write_bytes(data)
+    result = subprocess.run(
+        [VERAPDF_BIN, "-f", "4", str(path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0
+
+
+def test_note_flavours(tmp: str, data: bytes) -> None:
+    path = Path(tmp) / "note.pdf"
+    path.write_bytes(data)
+    for flavour in ("4", "ua2"):
+        result = subprocess.run(
+            [VERAPDF_BIN, "-f", flavour, str(path)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0

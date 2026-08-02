@@ -1,0 +1,23 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+# True-positive shape (finding 7): library helper with dynamic flavour/pdf argv.
+lang: python
+file: compliance/verapdf_report.py
+---
+import subprocess
+from dataclasses import dataclass
+
+
+@dataclass
+class VeraPDFResult:
+    returncode: int
+    summary: str
+
+
+def run_verapdf_check(verapdf_bin: str, flavour: str, pdf: str) -> VeraPDFResult:
+    proc = subprocess.run(
+        [verapdf_bin, "-f", flavour, "--format", "json", "--loglevel", "0", pdf],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return VeraPDFResult(returncode=proc.returncode, summary=proc.stdout[:200])

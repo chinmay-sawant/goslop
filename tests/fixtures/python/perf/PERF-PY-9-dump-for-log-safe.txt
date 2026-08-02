@@ -1,0 +1,8 @@
+# PERF-PY-9 dump-for-log variant (safe)
+lang: python
+file: ingest.py
+---
+def ingest(request, session):
+    payload = request.get_json()
+    logger.info(json.dumps(payload))
+    session.add(Event(name='x'))

@@ -1,0 +1,5 @@
+lang: python
+file: redrive.py
+---
+def redrive():
+    Job.objects.filter(state="dead").update(state="queued")

@@ -10,6 +10,16 @@ import (
 )
 
 func main() {
+	// This is the last-resort process boundary. Expected failures should be
+	// returned as errors; this guard only prevents an unexpected main-goroutine
+	// panic from leaking a Go runtime stack to CLI users.
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "goslop: internal error: %v\n", recovered)
+			os.Exit(app.ExitInternal)
+		}
+	}()
+
 	if err := app.Run(os.Args[1:]); err != nil {
 		var ece *app.ExitCodeError
 		if errors.As(err, &ece) {

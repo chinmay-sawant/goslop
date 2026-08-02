@@ -1,0 +1,22 @@
+# goslop text fixture (.txt) — materialized to .py at test/runtime
+lang: python
+file: CWE-73-main-cli-outdir-safe.py
+---
+"""CWE-73 safe: intentional __main__ CLI fixture output directory."""
+
+from pathlib import Path
+import sys
+
+DEFAULT_OUTPUT_DIR = Path("out")
+
+
+def generate_fixtures(output_dir: Path) -> dict[str, Path]:
+    target = output_dir / "minimal.pdf"
+    target.write_bytes(b"%PDF-1.4")
+    return {"minimal.pdf": target}
+
+
+if __name__ == "__main__":
+    out_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_OUTPUT_DIR
+    for name, path in generate_fixtures(out_dir).items():
+        print(f"wrote {path}")

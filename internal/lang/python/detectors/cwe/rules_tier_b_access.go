@@ -10,21 +10,36 @@ import (
 )
 
 func init() {
-	RegisterRule("CWE-66", detectCWE66, &MetaCWE66)
-	RegisterRule("CWE-76", detectCWE76, &MetaCWE76)
-	RegisterRule("CWE-178", detectCWE178, &MetaCWE178)
-	RegisterRule("CWE-179", detectCWE179, &MetaCWE179)
-	RegisterRule("CWE-182", detectCWE182, &MetaCWE182)
-	RegisterRule("CWE-184", detectCWE184, &MetaCWE184)
-	RegisterRule("CWE-186", detectCWE186, &MetaCWE186)
-	RegisterRule("CWE-257", detectCWE257, &MetaCWE257)
-	RegisterRule("CWE-272", detectCWE272, &MetaCWE272)
-	RegisterRule("CWE-279", detectCWE279, &MetaCWE279)
-	RegisterRule("CWE-289", detectCWE289, &MetaCWE289)
-	RegisterRule("CWE-290", detectCWE290, &MetaCWE290)
-	RegisterRule("CWE-323", detectCWE323, &MetaCWE323)
-	RegisterRule("CWE-331", detectCWE331, &MetaCWE331)
-	RegisterRule("CWE-334", detectCWE334, &MetaCWE334)
+	RegisterRule("CWE-66", detectCWE66, &MetaCWE66,
+		`"CON"`, `'CON'`, `"NUL"`, `'NUL'`, `"COM1"`, `'COM1'`)
+	RegisterRule("CWE-76", detectCWE76, &MetaCWE76,
+		`.replace("<"`, `.replace('<'`)
+	RegisterRule("CWE-178", detectCWE178, &MetaCWE178,
+		"request.args", "username")
+	RegisterRule("CWE-179", detectCWE179, &MetaCWE179,
+		"validate_", "unquote", "unescape", "decode(")
+	RegisterRule("CWE-182", detectCWE182, &MetaCWE182,
+		"re.sub", "request.args", "request.form", "request.data")
+	RegisterRule("CWE-184", detectCWE184, &MetaCWE184,
+		"deny", "blocked", "request.")
+	RegisterRule("CWE-186", detectCWE186, &MetaCWE186,
+		"re.compile")
+	RegisterRule("CWE-257", detectCWE257, &MetaCWE257,
+		".encrypt", "password", "passwd", "pwd")
+	RegisterRule("CWE-272", detectCWE272, &MetaCWE272,
+		"os.setuid", "os.seteuid", "os.setgid")
+	RegisterRule("CWE-279", detectCWE279, &MetaCWE279,
+		"os.chmod")
+	RegisterRule("CWE-289", detectCWE289, &MetaCWE289,
+		"request.headers", "host")
+	RegisterRule("CWE-290", detectCWE290, &MetaCWE290,
+		"request.headers", "X-Forwarded-For", "x-forwarded-for")
+	RegisterRule("CWE-323", detectCWE323, &MetaCWE323,
+		"nonce", "AESGCM")
+	RegisterRule("CWE-331", detectCWE331, &MetaCWE331,
+		"secrets.token_bytes", "secrets.token_urlsafe")
+	RegisterRule("CWE-334", detectCWE334, &MetaCWE334,
+		"random.randint")
 }
 
 var (
@@ -37,21 +52,23 @@ var (
 	pyTierBNonceRE       = regexp.MustCompile(`(?is)nonce\s*=\s*b?["'][^"']*["']\s*(?:\*\s*12)?[\s\S]{0,220}AESGCM\s*\([^)]*\)\.encrypt\s*\(\s*nonce\b`)
 )
 
-func detectCWE66(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBVirtualNameRE); start >= 0 {
+func detectCWE66(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBVirtualNameRE,
+		`"CON"`, `'CON'`, `"NUL"`, `'NUL'`, `"COM1"`, `'COM1'`); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE66, start, "Windows virtual resource name is used as a file path", confidence78, out)
 	}
 }
 
-func detectCWE76(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBStripTagRE); start >= 0 {
+func detectCWE76(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBStripTagRE,
+		`.replace("<"`, `.replace('<'`); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE76, start, "manual removal of one markup delimiter is used as neutralization", confidence76, out)
 	}
 }
 
-func detectCWE178(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, fn := range pythonFunctions(unit.Source) {
-		code := pythonCodeMask(fn.body)
+func detectCWE178(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, fn := range facts.Functions() {
+		code := facts.codeMask(fn.body, fn.bodyStart)
 		if strings.Contains(code, "request.args.get(") && strings.Contains(code, "username") && strings.Contains(code, "==") && !strings.Contains(code, "casefold(") && !strings.Contains(code, ".lower(") {
 			emitTierBFinding(unit, &MetaCWE178, fn.bodyStart, "request username is compared without case normalization", confidence70, out)
 			return
@@ -59,26 +76,26 @@ func detectCWE178(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE179(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBEarlyDecodeRE); start >= 0 {
+func detectCWE179(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(facts, unit.Source, pyTierBEarlyDecodeRE); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE179, start, "input is validated before a later decoding transformation", confidence78, out)
 	}
 }
 
-func detectCWE182(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBCollapseRE); start >= 0 {
+func detectCWE182(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(facts, unit.Source, pyTierBCollapseRE); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE182, start, "request data is collapsed before a security decision", confidence76, out)
 	}
 }
 
-func detectCWE184(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBDenyLoopRE); start >= 0 {
+func detectCWE184(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstCodeMatchStart(facts, unit.Source, pyTierBDenyLoopRE); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE184, start, "request input is protected by a manual substring deny-list", confidence76, out)
 	}
 }
 
-func detectCWE186(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, "re.compile") {
+func detectCWE186(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, "re.compile") {
 		if strings.Contains(call.ArgsText, "{3}") || strings.Contains(call.ArgsText, "{2}") {
 			emitTierBFinding(unit, &MetaCWE186, call.Start, "validation regular expression accepts only a fixed narrow identifier shape", confidence70, out)
 			return
@@ -86,8 +103,8 @@ func detectCWE186(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE257(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, ".encrypt") {
+func detectCWE257(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, ".encrypt") {
 		if containsPasswordName(call.ArgsText) {
 			emitTierBFinding(unit, &MetaCWE257, call.Start, "password is encrypted into a recoverable representation", confidence84, out)
 			return
@@ -95,8 +112,8 @@ func detectCWE257(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE272(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, "os.setuid", "os.seteuid", "os.setgid") {
+func detectCWE272(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, "os.setuid", "os.seteuid", "os.setgid") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) > 0 && strings.TrimSpace(args[0]) == "0" {
 			emitTierBFinding(unit, &MetaCWE272, call.Start, "process explicitly assumes root privileges", confidence84, out)
@@ -105,8 +122,8 @@ func detectCWE272(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE279(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, "os.chmod") {
+func detectCWE279(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, "os.chmod") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && (strings.TrimSpace(args[1]) == "0o777" || strings.TrimSpace(args[1]) == "0o666") {
 			emitTierBFinding(unit, &MetaCWE279, call.Start, "runtime permission change makes a resource world accessible", confidence84, out)
@@ -115,9 +132,9 @@ func detectCWE279(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE289(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, fn := range pythonFunctions(unit.Source) {
-		code := pythonCodeMask(fn.body)
+func detectCWE289(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, fn := range facts.Functions() {
+		code := facts.codeMask(fn.body, fn.bodyStart)
 		if strings.Contains(code, "request.headers.get(") && strings.Contains(strings.ToLower(fn.body), "host") && strings.Contains(code, "==") && !strings.Contains(code, ".lower(") && !strings.Contains(code, "casefold(") {
 			emitTierBFinding(unit, &MetaCWE289, fn.bodyStart, "host identity is compared without normalization", confidence72, out)
 			return
@@ -125,8 +142,8 @@ func detectCWE289(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE290(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, "request.headers.get") {
+func detectCWE290(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, "request.headers.get") {
 		if strings.Contains(strings.ToLower(call.ArgsText), "x-forwarded-for") {
 			emitTierBFinding(unit, &MetaCWE290, call.Start, "client-provided X-Forwarded-For header is trusted directly", confidence82, out)
 			return
@@ -134,14 +151,15 @@ func detectCWE290(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE323(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(unit.Source, pyTierBNonceRE); start >= 0 {
+func detectCWE323(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	if start := firstLiteralMatchStartIfContains(facts, unit, pyTierBNonceRE,
+		"nonce", "AESGCM"); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE323, start, "fixed nonce is reused for AES-GCM encryption", confidence90, out)
 	}
 }
 
-func detectCWE331(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, "secrets.token_bytes", "secrets.token_urlsafe") {
+func detectCWE331(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, "secrets.token_bytes", "secrets.token_urlsafe") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) > 0 && shortPositiveLiteral(args[0], maxInsecureTokenBytes) {
 			emitTierBFinding(unit, &MetaCWE331, call.Start, "security token is generated with fewer than 16 bytes of entropy", confidence82, out)
@@ -150,8 +168,8 @@ func detectCWE331(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
 	}
 }
 
-func detectCWE334(unit *core.ParsedUnit, _ *PyCweFacts, out *[]rules.Finding) {
-	for _, call := range findCalls(unit.Source, "random.randint") {
+func detectCWE334(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	for _, call := range findCalls(facts, unit.Source, "random.randint") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) >= 2 && strings.TrimSpace(args[0]) == "0" && shortPositiveLiteral(args[1], maxSmallRandomTokenValue) {
 			emitTierBFinding(unit, &MetaCWE334, call.Start, "random value for an authentication-sized token has a small numeric space", confidence80, out)
