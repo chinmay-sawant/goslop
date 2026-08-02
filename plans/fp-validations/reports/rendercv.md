@@ -1077,3 +1077,272 @@ None.
 - Chunk evidence: `scripts/rendercv/chunks/Chunk_1_25.txt`, `scripts/rendercv/chunks/Chunk_26_50.txt`, `scripts/rendercv/chunks/Chunk_51_73.txt`
 - Function evidence: `scripts/rendercv/findings/functions/1.txt` .. `scripts/rendercv/findings/functions/73.txt`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+## Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02T11:08:51Z
+repository: rendercv
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv
+branch: main
+commit: 1d4b87bc427e4cf61c0ef49623c971b0e2224708
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv
+scanner_fix: b5b8fde6e5850be5a4bf6957e90110b146a2e584 (binary rebuilt 2026-08-02 16:29)
+chunk_path: scripts/rendercv/chunks
+function_context_path: scripts/rendercv/findings/functions
+```
+
+## Scan evidence
+
+- Build command: `(pre-built) ./bin/goslop` from fix commit `b5b8fde` (rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/rendercv/chunks -context-dir scripts/rendercv/findings/functions real-repos/rendercv`
+- Findings: `36`
+- Chunks reviewed: `scripts/rendercv/chunks/Chunk_1_25.txt`, `scripts/rendercv/chunks/Chunk_26_36.txt`
+- Function contexts reviewed: `scripts/rendercv/findings/functions/4.txt`, `6.txt`, `7.txt`, `9.txt`, `10.txt`, `11.txt`, `16.txt`, `18.txt`, `19.txt`, `30.txt`, `36.txt`
+
+## Audit checklist
+
+- [x] Read every assigned chunk under `scripts/rendercv/chunks`.
+- [x] Read `scripts/rendercv/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+## Classification summary (fresh run)
+
+Fresh finding IDs do not correspond to old IDs; matching was done by `Source:` path. Every fresh finding maps 1:1 to an audited old finding — there are no new findings.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 11 | 4, 6, 7, 9, 10, 11, 16, 18, 19, 30, 36 |
+| True positive | 25 | 1, 2, 3, 5, 8, 12, 13, 14, 15, 17, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35 |
+| Uncertain | 0 | — |
+
+True positive mapping (fresh → audited TP, by source): 1→1 (CWE-1121 `docs_templating.py:72`), 2→2 (CWE-88 `analyze_pdfs.py:34`), 3→4 (CWE-252 `analyze_pdfs.py:66`), 5→8 (CWE-396 `analyze_pdfs.py:143`), 8→18 (CWE-396 `submit_commercial.py:86`), 12→31 (BP-PY-2 `app.py:73`), 13→32 (CWE-390 `app.py:73`), 14→33 (BP-PY-2 `app.py:87`), 15→34 (CWE-1071 `app.py:87`), 17→37 (BP-PY-2 `app.py:135`), 20→47 (CWE-478 `connections.py:78`), 21→48 (CWE-1124 `connections.py:152`), 22→51 (CWE-478 `social_network.py:86`), 23→52 (CWE-829 `design.py:96`), 24→58 / 25→59 / 26→60 / 27→61 / 28→62 / 29→63 (BP-PY-41 `test_progress_panel.py`), 31→66 (BP-PY-41 `test_app.py:146`), 32→67 (BP-PY-41 `test_error_handler.py:9`), 33→68 (BP-PY-41 `test_entry_templates_from_input.py:761`), 34→69 / 35→70 (BP-PY-41 `test_markdown_parser.py`). All audited TPs still present and re-detected; none over-suppressed.
+
+False positive mapping (fresh → audited FP): 4→7, 6→15, 7→17, 9→19, 10→23, 11→24, 16→35, 18→38, 19→39, 30→65, 36→71. These 11 audited FPs re-appear after the fix; the fix removed the other 35 audited FPs (ruamel `yaml.load` family, BP-PY-46 CLI prints, `fitz.open` BP-PY-7, BP-PY-41 multi-line-string scan bug cases, PERF-PY-26 render-substring artifacts, CWE-88 `submit_commercial` siblings).
+
+## False positives
+
+### [ ] Findings `18`, `19` — `CWE-829` / `CWE-94`
+
+- Function context: `scripts/rendercv/findings/functions/18.txt`, `scripts/rendercv/findings/functions/19.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:149:14`
+- Checklist pattern: the dynamically imported module names are composed from the package's own installed source tree — package-controlled selection, not an untrusted control sphere
+
+Source excerpt:
+
+```
+cli_folder_path = pathlib.Path(__file__).parent
+for file in cli_folder_path.rglob("*_command.py"):
+    folder_name = file.parent.name  # e.g. "foo_command"
+    py_file_name = file.stem  # e.g. "foo_command"
+
+    # Build full module path: <parent_pkg>.foo_command.foo_command
+    full_module = f"{__package__}.{folder_name}.{py_file_name}"
+
+    module = importlib.import_module(full_module)
+```
+
+Why this is a false positive: the module names derive from a deterministic `rglob` over the package's own `rendercv/cli/` directory, so no untrusted control sphere selects what executes (CWE-829's "request-derived module names" condition unmet) and no externally influenced text reaches the dynamic-import sink (CWE-94's "externally influenced text" condition unmet). Same construct and reasoning as audited FPs 38 and 39.
+
+Checklist evidence: CWE-829 requires "a dynamically selected module or file path, allowing an untrusted control sphere to select what executes"; the selection is a deterministic scan of package-controlled files. CWE-94 requires externally influenced text; the sink argument derives from the package-internal directory scan.
+
+### [ ] Finding `4` — `BP-PY-1`
+
+- Function context: `scripts/rendercv/findings/functions/4.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/analyze_pdfs.py:143:1`
+- Checklist pattern: the exception is recorded into the structured result, so it is handled, not swallowed
+
+Source excerpt:
+
+```
+        except Exception as e:
+            result["extractors"][ext_name] = {"success": False, "error": str(e)}
+```
+
+Why this is a false positive: the handler stores the exception message in the per-extractor result record, propagating the failure to the caller — BP-PY-1's "weak handling (pass / bare continue / log-only without re-raise)" condition is unmet. Same construct as audited FP 7; note the same `except` line is correctly flagged as CWE-396 (finding 5), which has no handling exemption.
+
+Checklist evidence: BP-PY-1 condition is a broad `except` with weak handling; the shown handler reports the exception type/message into the output envelope.
+
+### [ ] Finding `6` — `CWE-88`
+
+- Function context: `scripts/rendercv/findings/functions/6.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/run_all.py:36:14`
+- Checklist pattern: the dynamic argv segment comes from fixed developer-maintained constant tuples, not externally influenced input
+
+Source excerpt:
+
+```
+STEPS_LOCAL: list[tuple[str, str]] = [
+    ("render_pdfs.py", "Render PDFs across all themes"),
+    ("analyze_pdfs.py", "Run structural + extraction analysis"),
+]
+...
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_DIR / script)],
+        check=False,
+    )
+```
+
+Why this is a false positive: `script` is always one of the literal filenames in the module's own constant tuples (`STEPS_LOCAL`/`STEPS_COMMERCIAL`/`STEPS_REPORT`), so no externally influenced value can reach the argv and become an unintended option. Same construct as audited FP 15.
+
+Checklist evidence: rule condition requires externally influenced input; the argv operand is drawn from the source's own constant list, not from external input.
+
+### [ ] Finding `7` — `BP-PY-1`
+
+- Function context: `scripts/rendercv/findings/functions/7.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/ats_proof/submit_commercial.py:86:1`
+- Checklist pattern: the exception is reported (printed with its message) and counted, so it is handled, not swallowed
+
+Source excerpt:
+
+```
+            except Exception as e:
+                failed += 1
+                print(f"  [{i + 1}/{len(pdfs)}] ERROR: {rel} - {e}")  # noqa: T201
+```
+
+Why this is a false positive: the handler increments the failure counter and prints the error message — handled, not swallowed; BP-PY-1's weak-handling condition is unmet. Same construct as audited FP 17; the same `except` line is correctly flagged as CWE-396 (finding 8).
+
+Checklist evidence: BP-PY-1 condition is a broad except with weak handling; the shown handler reports the exception and counts the failure.
+
+### [ ] Finding `9` — `CWE-88`
+
+- Function context: `scripts/rendercv/findings/functions/9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/create_executable.py:35:5`
+- Checklist pattern: all argv segments are developer/environment constants (sys.executable, fixed flags, in-process temp path), no external input
+
+Source excerpt:
+
+```
+    # Run PyInstaller
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "PyInstaller",
+            "--onefile",
+            ...
+            "bin",
+            str(rendercv_file),
+        ],
+        check=True,
+    )
+```
+
+Why this is a false positive: `rendercv_file` is a path created in-process inside `tempfile.TemporaryDirectory()` and the remaining segments are the interpreter and fixed PyInstaller flags; no externally influenced value reaches the argv. Same construct as audited FP 19.
+
+Checklist evidence: the detector treats any non-literal as dynamic, but the rule's semantic condition requires externally influenced input; the shown values are environment/in-process constants.
+
+### [ ] Finding `10` — `PERF-PY-27`
+
+- Function context: `scripts/rendercv/findings/functions/10.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:283:25`
+- Checklist pattern: the load is inside a `for theme in SKILL_THEMES` loop, each iteration loading a distinct per-theme path — the rule's own "once-per-distinct-path" exemption
+
+Source excerpt:
+
+```
+    for theme in SKILL_THEMES:
+        if theme == "classic":
+            continue
+        yaml_path = other_themes_dir / f"{theme}.yaml"
+        if yaml_path.exists():
+            yaml = ruamel.yaml.YAML()
+            data = yaml.load(yaml_path.read_text(encoding="utf-8"))
+```
+
+Why this is a false positive: `yaml_path` is recomputed per iteration as a different theme file, so no path is loaded repeatedly; the rule's stated exemption (once-per-distinct-path loads are not "repeated same path") applies, and the detector's loop-variable check misses the f-string-derived path. Same construct as audited FP 23.
+
+Checklist evidence: the rule requires repeated load of the same filesystem path; each iteration reads `other_themes_dir/<theme>.yaml` with a distinct `<theme>`.
+
+### [ ] Finding `11` — `PERF-PY-27`
+
+- Function context: `scripts/rendercv/findings/functions/11.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/scripts/rendercv_skill/generate.py:293:1`
+- Checklist pattern: the load line uses the loop binding `path` (a distinct filesystem path per iteration)
+
+Source excerpt:
+
+```
+    model_sources: dict[str, str] = {}
+    for name, path in MODEL_SOURCE_FILES.items():
+        raw_source = path.read_text(encoding="utf-8")
+        model_sources[name] = strip_to_schema(raw_source)
+```
+
+Why this is a false positive: each iteration reads a different path from the `MODEL_SOURCE_FILES` mapping, so the rule's own once-per-distinct-path exemption applies; the detector only checks the first loop binding (`name`) and misses that the load line uses `path`. Same construct as audited FP 24.
+
+Checklist evidence: `enclosingForLoopVar` returns only the first binding of `for name, path in ...`; the load site uses the second binding, which is exactly the loop-variable usage the rule exempts.
+
+### [ ] Finding `16` — `BP-PY-40`
+
+- Function context: `scripts/rendercv/findings/functions/16.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/src/rendercv/cli/app.py:123:15`
+- Checklist pattern: the thread is constructed with `daemon=True` — the shutdown protocol the rule's fix demands
+
+Source excerpt:
+
+```
+    if not cache or (time.time() - cache["last_check"]) >= VERSION_CHECK_TTL_SECONDS:
+        thread = threading.Thread(target=fetch_and_cache_latest_version, daemon=True)
+        thread.start()
+```
+
+Why this is a false positive: the thread is explicitly daemon, so it cannot block process exit; the rule's "avoid fire-and-forget non-daemon threads" condition is not violated — the detector only skips `daemon=True` when it appears on the same line as `.start(`. Same construct as audited FP 35.
+
+Checklist evidence: rule condition is a thread started without join or a clear shutdown protocol; `daemon=True` on the construction line is that shutdown protocol.
+
+### [ ] Finding `30` — `BP-PY-40`
+
+- Function context: `scripts/rendercv/findings/functions/30.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/cli/render_command/test_watcher.py:41:23`
+- Checklist pattern: same construct as finding 16 — thread constructed with `daemon=True` (line 39)
+
+Source excerpt:
+
+```
+        watcher_thread = threading.Thread(
+            target=watcher.run_function_if_files_change,
+            args=([watched_file], tracked_function),
+            daemon=True,
+        )
+        watcher_thread.start()
+```
+
+Why this is a false positive: the thread is explicitly daemon, so it cannot prevent process exit; the detector only skips `daemon=True` when it appears on the same line as `.start(`. Same construct as audited FP 65.
+
+Checklist evidence: rule condition is a thread started without join or a clear shutdown protocol; `daemon=True` is that shutdown protocol.
+
+### [ ] Finding `36` — `CWE-94`
+
+- Function context: `scripts/rendercv/findings/functions/36.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/rendercv/tests/schema/models/cv/test_section.py:59:17`
+- Checklist pattern: the eval argument is built from `@pytest.mark.parametrize` literal values in a test — not externally influenced text
+
+Source excerpt:
+
+```
+    if entry_type != "TextEntry":
+        entry = eval(f"{entry_type}(**entry)")
+```
+
+Why this is a false positive: CWE-94's condition is externally influenced text reaching a code-generation sink; `entry_type` is one of the literal class names declared in the test's own parametrize list, so no external input reaches the eval. Same construct as audited FP 71.
+
+Checklist evidence: rule condition requires externally influenced text; the eval argument derives from test-controlled literals.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/rendercv/chunks/Chunk_1_25.txt`, `scripts/rendercv/chunks/Chunk_26_36.txt`
+- Function evidence: `scripts/rendercv/findings/functions/4.txt`, `6.txt`, `7.txt`, `9.txt`, `10.txt`, `11.txt`, `16.txt`, `18.txt`, `19.txt`, `30.txt`, `36.txt`
+- Validation: `git diff --check` — `pass`

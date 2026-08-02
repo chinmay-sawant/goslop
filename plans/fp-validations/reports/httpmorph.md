@@ -5071,3 +5071,108 @@ None.
 - Chunk evidence: `scripts/httpmorph/chunks`
 - Function evidence: `scripts/httpmorph/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix over-suppression audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:33:53Z
+repository: httpmorph
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httpmorph
+branch: main
+commit: 608decb1f5b82da9d13f01920bbd50d7e1a2a196 (unchanged since old audit)
+scanner_revision: b5b8fde fix(python): reduce showcase-corpus false positives across BP/CWE/PERF (binary rebuilt 2026-08-02 16:29)
+mode: B (over-suppressed true positives)
+fresh_findings: 427
+audited_true_positives: 436
+delta: -9
+chunk_path: scripts/httpmorph/chunks
+function_context_path: scripts/httpmorph/findings/functions
+```
+
+### Over-suppressed true positives
+
+An old TP is over-suppressed when its audited `Source:` (file:line) is absent from the fresh scan. Matching by `file:line` at any column (fresh `Source:` paths are the same absolute paths under `real-repos/httpmorph/`). Of the 436 audited TPs, 13 old sources are absent from the fresh scan; each was verified against the current source at that location and the construct is still present (the fix suppressed it, the code was not removed). Zero fixed-removed.
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-45 | `benchmarks/benchmark.py:47:1` | `sys.path.insert` executed at runtime — rule condition met | suppressed-but-present |
+| 224 | BP-PY-45 | `docs/source/conf.py:9:1` | `sys.path.insert` executed at runtime — rule condition met | suppressed-but-present |
+| 347 | BP-PY-45 | `examples/proxy_example.py:36:1` | `sys.path.insert` executed at runtime — rule condition met | suppressed-but-present |
+| 106 | BP-PY-49 | `benchmarks/libs/httpmorph_bench.py:379:1` | `verify=False` / `cert_reqs="CERT_NONE"` disables TLS verification on an HTTP client call — rule condition met | suppressed-but-present |
+| 110 | BP-PY-49 | `benchmarks/libs/httpmorph_bench.py:410:1` | `verify=False` / `cert_reqs="CERT_NONE"` disables TLS verification on an HTTP client call — rule condition met | suppressed-but-present |
+| 114 | BP-PY-49 | `benchmarks/libs/httpmorph_bench.py:443:1` | `verify=False` / `cert_reqs="CERT_NONE"` disables TLS verification on an HTTP client call — rule condition met | suppressed-but-present |
+| 634 | BP-PY-41 | `tests/test_proxy.py:285:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+| 637 | BP-PY-41 | `tests/test_proxy.py:354:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+| 640 | BP-PY-41 | `tests/test_proxy.py:411:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+| 643 | BP-PY-41 | `tests/test_proxy.py:439:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+| 647 | BP-PY-41 | `tests/test_proxy.py:528:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+| 673 | BP-PY-41 | `tests/test_proxy.py:1113:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+| 676 | BP-PY-41 | `tests/test_proxy.py:1151:1` | test function performs calls with no `assert`/`pytest.raises`/`self.assert*` in its body — rule condition met | suppressed-but-present |
+
+### Suppressed-but-present TPs
+
+#### Findings `1`, `224`, `347` — BP-PY-45 (`sys.path.insert` at runtime)
+
+Source excerpt:
+
+```
+# benchmarks/benchmark.py:47
+sys.path.insert(0, str(Path(__file__).parent))
+# docs/source/conf.py:9
+sys.path.insert(0, os.path.abspath("../.."))
+# examples/proxy_example.py:36
+sys.path.insert(0, str(Path(__file__).parent.parent))
+```
+
+Why these are still true positives: each `sys.path.insert` executes at module import time (top-level, not inside a function), so the BP-PY-45 condition ("sys.path insertion performed at runtime/import rather than declared as a dependency") is still met; the file-level import of the project module depends on this runtime path mutation. These are the only three BP-PY-45 TPs in the old audit, so BP-PY-45 is fully over-suppressed in the fresh scan.
+
+#### Findings `106`, `110`, `114` — BP-PY-49 (`verify=False` on an HTTP client call)
+
+Source excerpt:
+
+```
+# benchmarks/libs/httpmorph_bench.py:379 (same construct at 410 and 443)
+                        resp = await client.get(
+                            self.proxy_target_https,
+                            proxy=self.proxy_url_https,
+                            verify=False,
+                            timeout=10,
+                        )
+```
+
+Why these are still true positives: the async `client.get(...)` HTTP client call still passes `verify=False`, which per BP-PY-49 disables TLS certificate verification; the construct is unchanged and still satisfies the rule condition.
+
+#### Findings `634`, `637`, `640`, `643`, `647`, `673`, `676` — BP-PY-41 (test function with calls but no assertion)
+
+Source excerpt:
+
+```
+# tests/test_proxy.py:285 (test_http_via_real_proxy; same shape at 354, 411, 439, 528, 1113, 1151)
+        for attempt in range(max_attempts):
+            try:
+                # Use a real HTTP site instead of MockHTTPServer (external proxy can't reach localhost)
+                response = httpmorph.get("http://example.com", proxy=real_proxy_url, timeout=30)
+                if response.status_code in [200, 301, 302]:
+                    successes += 1
+                    if successes >= min_successes:
+                        return
+            except Exception:
+                pass
+
+        pytest.fail(f"Test failed: only {successes}/{max_attempts} attempts succeeded (needed {min_successes})")
+```
+
+Why these are still true positives: each `def test_*` function (at 285, 354, 411, 439, 528, 1113, 1151) still performs HTTP client calls (`httpmorph.get`, `session.get`, `await client.post`/`get`) and its body contains no `assert`, `pytest.raises`, or `self.assert*` — success is signaled only by `return` and failure only by `pytest.fail(...)`. The BP-PY-41 condition ("test function performs calls with no assertion") is still met in every one of the seven functions; the fresh scan no longer reports them.
+
+### Fixed-removed
+
+None — all 13 missing old TP sources still exist at their audited line in the current source.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/httpmorph/chunks` (18 files, 427 fresh findings; `test_proxy.py` still heavily reported at other lines, `benchmarks/benchmark.py`, `docs/source/conf.py` scanned)
+- Source evidence: `benchmarks/benchmark.py:47`, `docs/source/conf.py:9`, `examples/proxy_example.py:36`, `benchmarks/libs/httpmorph_bench.py:379/410/443`, `tests/test_proxy.py:285/354/411/439/528/1113/1151`
+- Validation: `git diff --check` — `pass`

@@ -3148,3 +3148,140 @@ Checklist evidence: the rule condition requires no assertions; the shown source 
 - Chunk evidence: `scripts/pictex/chunks`
 - Function evidence: `scripts/pictex/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+---
+
+## Post-fix over-suppression audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:50Z
+repository: pictex
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex
+branch: main
+commit: 07072311d51917679fe41a827c7136195fb0dcf5
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex
+chunk_path: scripts/pictex/chunks
+function_context_path: scripts/pictex/findings/functions
+fix_commit: b5b8fde (binary rebuilt 2026-08-02 16:29)
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pictex/chunks -context-dir scripts/pictex/findings/functions real-repos/pictex`
+- Findings: `41`
+- Chunks reviewed: `scripts/pictex/chunks/Chunk_1_25.txt`, `scripts/pictex/chunks/Chunk_26_41.txt`
+- Function contexts reviewed: none required for Mode B (over-suppression check); source files re-read directly at the two missing TP locations
+
+### Audit checklist
+
+- [x] Collected the full audited TP list (42 findings) from the True positives tables above.
+- [x] Collected the sources present in the fresh scan (41 findings) from `scripts/pictex/chunks`.
+- [x] Matched fresh findings to audited TPs by `Source:` (file:line) — 40 of 42 audited TPs reappear in the fresh run.
+- [x] Identified audited TPs whose old `Source:` is NOT present in the fresh scan: old 11 (github_card.py:143) and old 24 (background.py:23).
+- [x] Read the current source at both missing locations to confirm the construct still exists (suppressed, not fixed).
+- [x] Verified each suppressed construct against its rule condition (ruleset/python/bad-practices.json BP-PY-46; ruleset/python/chunks/cwe-351-400.json CWE-396).
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary
+
+| Classification | Count | Old finding IDs |
+| --- | ---: | --- |
+| Over-suppressed TPs (suppressed-but-present) | 2 | 11, 24 |
+| Fixed-removed (code actually removed) | 0 | — |
+| Audited TPs still present in fresh scan | 40 | 1, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 40, 56, 57, 70, 77, 94, 113, 150 |
+
+### Audited TP coverage table
+
+Old finding ID | Rule | Source | One-line reason (from old audit) | Current status
+--- | --- | --- | --- | ---
+1 | BP-PY-5 | examples/code_to_image/code_to_image.py:1 | `from pictex import *` — wildcard ImportFrom in non-`__init__.py` | present (fresh #1)
+4 | BP-PY-5 | examples/examples_made_by_ai/certificate_template.py:6 | `from pictex import *` — wildcard ImportFrom | present (fresh #3)
+5 | BP-PY-5 | examples/examples_made_by_ai/dashboard_metrics.py:6 | `from pictex import *` — wildcard ImportFrom | present (fresh #4)
+6 | BP-PY-5 | examples/examples_made_by_ai/infographic_stats.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #5)
+7 | BP-PY-5 | examples/examples_made_by_ai/product_showcase.py:6 | `from pictex import *` — wildcard ImportFrom | present (fresh #6)
+8 | BP-PY-5 | examples/github_card/github_card.py:9 | `from pictex import *` — wildcard ImportFrom | present (fresh #7)
+9 | BP-PY-14 | examples/github_card/github_card.py:22 | `requests.get(base_url)` without `timeout=` | present (fresh #8)
+10 | BP-PY-14 | examples/github_card/github_card.py:23 | `requests.get(f"{base_url}/languages")` without `timeout=` | present (fresh #9)
+11 | BP-PY-46 | examples/github_card/github_card.py:143 | module-level `print(...)` not under `__main__` guard, not a test | **suppressed-but-present** (no fresh finding)
+12 | BP-PY-5 | examples/table/table.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #10)
+13 | BP-PY-5 | examples/tweet_card/tweet_card.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #11)
+14 | BP-PY-1 | src/pictex/__skia_init.py:17 | `except Exception:` with `pass` suite | present (fresh #12)
+15 | BP-PY-2 | src/pictex/__skia_init.py:17 | except suite is solely `pass` | present (fresh #13)
+16 | CWE-390 | src/pictex/__skia_init.py:17 | exception detected, handler body is only `pass` | present (fresh #14)
+17 | CWE-396 | src/pictex/__skia_init.py:17 | `except Exception:` handler | present (fresh #15)
+18 | CWE-1071 | src/pictex/__skia_init.py:17 | exception handler body is empty (`pass` only) | present (fresh #16)
+20 | BP-PY-5 | src/pictex/builders/canvas.py:6 | `from ..models import *` — wildcard ImportFrom in library code | present (fresh #17)
+21 | BP-PY-5 | src/pictex/builders/inline_styleable.py:4 | `from ..models import *` — wildcard ImportFrom in library code | present (fresh #18)
+22 | BP-PY-5 | src/pictex/builders/stylable.py:4 | `from ..models import *` — wildcard ImportFrom in library code | present (fresh #19)
+24 | CWE-396 | src/pictex/models/public/background.py:23 | `except Exception:` handler | **suppressed-but-present** (no fresh finding)
+25 | CWE-1121 | src/pictex/models/public/linear_gradient.py:67 | `__post_init__` has 18 control-flow branches (threshold 12) | present (fresh #20)
+26 | CWE-1121 | src/pictex/models/public/radial_gradient.py:68 | `__post_init__` has 16 control-flow branches (threshold 12) | present (fresh #21)
+27 | CWE-1121 | src/pictex/models/public/sweep_gradient.py:52 | `__post_init__` has 15 control-flow branches (threshold 12) | present (fresh #22)
+28 | CWE-1121 | src/pictex/models/public/two_point_conical_gradient.py:83 | `__post_init__` has 20 control-flow branches (threshold 12) | present (fresh #23)
+29 | BP-PY-3 | src/pictex/renderer/renderer.py:25 | `raise Exception(...)` in library code | present (fresh #24)
+30 | CWE-397 | src/pictex/renderer/renderer.py:25 | `raise Exception(...)` directly raised | present (fresh #25)
+31 | BP-PY-3 | src/pictex/renderer/renderer.py:33 | `raise Exception("Failed to create surface")` | present (fresh #26)
+32 | CWE-1046 | src/pictex/renderer/vector_image_processor.py:122 | `css += f"""@font-face ..."""` inside `for typeface in typefaces:` loop | present (fresh #27)
+33 | BP-PY-2 | src/pictex/text/harfbuzz_shaper.py:216 | `except (AttributeError, Exception):` suite is solely `pass` | present (fresh #28)
+34 | CWE-390 | src/pictex/text/harfbuzz_shaper.py:216 | exception detected, handler body is only `pass` | present (fresh #29)
+35 | BP-PY-1 | src/pictex/text/typeface_loader.py:31 | bare `except:` (no type) | present (fresh #30)
+36 | BP-PY-1 | src/pictex/text/typeface_loader.py:45 | bare `except:` (no type) | present (fresh #31)
+37 | BP-PY-1 | src/pictex/text/typeface_loader.py:66 | bare `except:` (no type) | present (fresh #32)
+38 | BP-PY-1 | src/pictex/utils/font.py:6 | bare `except:` (no type) | present (fresh #33)
+40 | BP-PY-5 | tests/test_aspect_ratio.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #34)
+56 | BP-PY-5 | tests/test_builders_api.py:2 | `from pictex import *` — wildcard ImportFrom | present (fresh #35)
+57 | BP-PY-5 | tests/test_crop.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #36)
+70 | BP-PY-5 | tests/test_flex_properties.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #37)
+77 | BP-PY-5 | tests/test_fonts.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #38)
+94 | BP-PY-5 | tests/test_integration.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #39)
+113 | BP-PY-5 | tests/test_line_height.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #40)
+150 | BP-PY-5 | tests/test_size_constraints.py:1 | `from pictex import *` — wildcard ImportFrom | present (fresh #41)
+
+### [x] Finding `11` — BP-PY-46 (print Debugging In Library Code)
+
+- Old audit reason: module-level `print(...)` not under `__main__` guard, not a test.
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/examples/github_card/github_card.py:143:1`
+- Current status: **suppressed-but-present**
+
+Source excerpt:
+
+```
+# ═══════════════════════════════════════════════════════════════════════════
+# BUILD THE CARD
+# ═══════════════════════════════════════════════════════════════════════════
+print(f"Fetching data for {REPO}...")
+data = fetch_repo_data(REPO)
+```
+
+Why this construct still satisfies the rule condition: the file contains exactly one `print(...)` and zero `if __name__ == "__main__":` guards (verified by grep across the whole file), so the print executes at import time as module-level code in a non-test module — precisely the BP-PY-46 condition ("Match print(...) in modules that are not __main__ guards and not tests"). The fix suppressed this TP without the code changing.
+
+### [x] Finding `24` — CWE-396 (Declaration of Catch for Generic Exception)
+
+- Old audit reason: `except Exception:` handler.
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pictex/src/pictex/models/public/background.py:23:5`
+- Current status: **suppressed-but-present**
+
+Source excerpt:
+
+```
+    def get_skia_image(self) -> Optional[skia.Image]:
+        if self._skia_image is None:
+            try:
+                self._skia_image = skia.Image.open(self.path)
+            except Exception:
+                raise ValueError(f"Could not load background image from: {self.path}")
+        return self._skia_image
+```
+
+Why this construct still satisfies the rule condition: line 23 still contains `except Exception:` — a generic exception handler in library code, which is exactly the CWE-396 condition ("Catching overly broad exceptions ... like Exception can obscure exceptions that deserve special treatment"). The fresh scan emits no finding at this location despite the unchanged code, so the fix over-suppressed this TP.
+
+### Final evidence (post-fix)
+
+- Over-suppressed TPs: `2` (old 11, old 24)
+- Fixed-removed: `0` (no audited TP's code was removed; every missing construct was confirmed still present in the current source)
+- Chunk evidence: `scripts/pictex/chunks` (fresh run)
+- Function evidence: `scripts/pictex/findings/functions` (fresh run; not required for Mode B conclusions)
+- Validation: `git diff --check` — `pass`

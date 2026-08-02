@@ -650,3 +650,275 @@ None.
 - Chunk evidence: `scripts/calgebra/chunks`
 - Function evidence: `scripts/calgebra/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:20:35Z
+repository: calgebra
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra
+branch: main
+commit: 476c3e6
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra
+chunk_path: scripts/calgebra/chunks
+function_context_path: scripts/calgebra/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `bin/goslop` prebuilt (`make build`, FP-reduction fix `b5b8fde`, rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/calgebra/chunks -context-dir scripts/calgebra/findings/functions real-repos/calgebra`
+- Findings: `34`
+- Chunks reviewed: `scripts/calgebra/chunks/Chunk_1_25.txt`, `Chunk_26_34.txt`
+- Function contexts reviewed: `scripts/calgebra/findings/functions/1.txt` … `34.txt` (all 34 exist; the enclosing source was re-read directly for every proposed false positive)
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/calgebra/chunks`.
+- [x] Read `scripts/calgebra/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary
+
+Fresh findings matched to the old audit by `Source:` (file:line:col). A fresh finding whose source matches an audited TP (see the True positives tables above) is a TP; a fresh finding whose source matches an audited FP is a re-appearing FP. One fresh finding (14) is new: `CWE-396` at `gcsa.py:677:1`, whose source carries audited TPs (old 18/19/20/21) and whose rule condition (broad `except Exception`, no re-raise, suite only `pass`) is genuinely satisfied, so it is a TP.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 14 | 7, 8, 9, 10, 16, 22, 24, 25, 26, 27, 29, 30, 31, 34 |
+| True positive | 20 | 1, 2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21, 23, 28, 32, 33 |
+| Uncertain | 0 | — |
+
+Remaining false positives: 14 (all re-appearing audited FPs — the fix did not change these constructs).
+
+### False positives
+
+### [ ] Findings `8`, `9` — `BP-PY-1`, `CWE-396`
+
+- Function context: `scripts/calgebra/findings/functions/8.txt`, `9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:221:1`
+- Checklist pattern: handler's failure is immediately re-raised, so it is not hidden
+
+Source excerpt:
+
+```
+218:             try:
+219:                 err = json.loads(xhr.responseText)
+220:                 msg = err.get("error", {}).get("message", xhr.responseText)
+221:             except Exception:
+222:                 msg = f"HTTP {xhr.status}"
+223:             raise RuntimeError(f"Google Calendar API error ({xhr.status}): {msg}")
+```
+
+Why this is a false positive: the handler only formats an error message; the immediate next statement re-raises `RuntimeError` carrying that message (line 223), so the failure propagates to the caller. Same construct as audited FPs 9 (BP-PY-1) and 10 (CWE-396) at the same source.
+
+Checklist evidence: the generic handler at line 221 feeds its message into an unconditional `raise RuntimeError` at line 223 — nothing is swallowed or hidden, so neither rule's predicate is satisfied.
+
+### [ ] Finding `10` — `BP-PY-1`
+
+- Function context: `scripts/calgebra/findings/functions/10.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:245:1`
+- Checklist pattern: handler's failure is re-raised (`from e`) immediately after the handler
+
+Source excerpt:
+
+```
+241:         except urllib.error.HTTPError as e:
+242:             try:
+243:                 err = json.loads(e.read().decode())
+244:                 msg = err.get("error", {}).get("message", str(err))
+245:             except Exception:
+246:                 msg = f"HTTP {e.code}"
+247:             raise RuntimeError(f"Google Calendar API error ({e.code}): {msg}") from e
+```
+
+Why this is a false positive: identical shape to finding 8 — the handler only builds a message and the enclosing flow re-raises `RuntimeError(...) from e` at line 247, propagating the failure. Same construct as audited FP 11.
+
+Checklist evidence: the shown source re-raises the failure with `from e`, so the "hides failures" condition of BP-PY-1 is not satisfied.
+
+### [ ] Finding `7` — `BP-PY-13`
+
+- Function context: `scripts/calgebra/findings/functions/7.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcal.py:14:5`
+- Checklist pattern: secret-like assignment token inside a module docstring example, not executable code
+
+Source excerpt:
+
+```
+10: Example:
+11:     >>> from calgebra.gcal import calendars, Event, Calendar
+12:     >>> from calgebra import at_tz
+13:     >>>
+14:     >>> access_token = "ya29...."  # From Google OAuth
+15:     >>> cals = calendars(access_token)
+```
+
+Why this is a false positive: the flagged line is doctest prose inside the module docstring (lines 1–27 of `gcal.py`, confirmed at commit 476c3e6), and the literal `"ya29...."` is a truncated placeholder token; no executable secret assignment exists in the source. Same construct as audited FP 7.
+
+Checklist evidence: the flagged line is docstring example text (`>>>` prompt), not an assignment executed in source code, so BP-PY-13's condition is unmet.
+
+### [ ] Finding `16` — `BP-PY-1`
+
+- Function context: `scripts/calgebra/findings/functions/16.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/gcsa.py:1117:1`
+- Checklist pattern: failure detail is returned to the caller as per-event error results
+
+Source excerpt:
+
+```
+1115:         try:
+1116:             batch.execute()
+1117:         except Exception as e:
+1118:             # If batch execution fails entirely, return error for all
+1119:             return [
+1120:                 WriteResult(success=False, event=None, error=e) for _ in events_list
+1121:             ]
+```
+
+Why this is a false positive: the exception is turned into one `WriteResult(success=False, error=e)` per event and returned to the caller (comment line 1118 documents the intent); the failure is surfaced, not hidden. Same construct as audited FP 24.
+
+Checklist evidence: the handler returns the exception to the caller in every result item, so the "swallows failures" predicate of BP-PY-1 is unmet.
+
+### [ ] Finding `22` — `BP-PY-1`
+
+- Function context: `scripts/calgebra/findings/functions/22.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/ical.py:384:1`
+- Checklist pattern: handler reports the failure to stderr with the exception detail and deliberately skips the item
+
+Source excerpt:
+
+```
+380:     for component in cal.walk("VEVENT"):
+381:         try:
+382:             item = _parse_vevent(component, calendar_name=calendar_name)
+383:             timeline.add(item)
+384:         except Exception as e:
+385:             # We might want to log this or optionally fail
+386:             print(f"Warning: Failed to parse VEVENT: {e}", file=sys.stderr)
+387:             continue
+```
+
+Why this is a false positive: the handler reports the failure to stderr including the exception detail (`{e}`) and skips the malformed component by design (comment line 385); the failure is surfaced to the user, not hidden. Same construct as audited FP 30.
+
+Checklist evidence: the suite prints the warning with the exception text to stderr, so the "broad except hides failures" condition of BP-PY-1 is not satisfied.
+
+### [ ] Finding `24` — `BP-PY-46`
+
+- Function context: `scripts/calgebra/findings/functions/24.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/interval.py:134:9`
+- Checklist pattern: `print` produces the function's documented output, not operational logging
+
+Source excerpt:
+
+```
+121: def pprint(
+122:     intervals: Iterable["Interval"], tz: str = "UTC", fmt: str = "%Y-%m-%d %H:%M:%S"
+123: ) -> None:
+124:     """Pretty-print an iterable of Intervals.
+125:
+126:     Consumes the iterable and prints formatted datetime strings to stdout.
+...
+133:     for ivl in intervals:
+134:         print(ivl.format(tz=tz, fmt=fmt))
+```
+
+Why this is a false positive: the print is the function's intended, documented output ("prints formatted datetime strings to stdout") — a user-facing presentation helper, not operational logging. Same construct as audited FP 32.
+
+Checklist evidence: the flagged `print` implements the documented purpose of `pprint()` (output, not logging), so the rule's "operational logging" predicate is not satisfied.
+
+### [ ] Findings `25`, `26`, `27` — `BP-PY-2`, `CWE-390`, `CWE-1071`
+
+- Function context: `scripts/calgebra/findings/functions/25.txt`, `26.txt`, `27.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/calgebra/recurrence.py:437:1` (and `:437:25` for CWE-1071)
+- Checklist pattern: `pass` is a control-flow fall-through to an explicit raise of the same error
+
+Source excerpt:
+
+```
+433:                         try:
+434:                             n = int(prefix)
+435:                             weekdays.append(wd_const(n))
+436:                             continue
+437:                         except ValueError:
+438:                             pass
+439:
+440:                 # If we get here, invalid
+441:                 valid = ", ".join(sorted(_DAY_MAP.keys()))
+442:                 raise ValueError(
+443:                     f"Invalid day name: '{d}'\n"
+444:                     f"Valid days: {valid} or numbered (e.g. 1MO)\n"
+445:                 )
+```
+
+Why this is a false positive: the `pass` is a deliberate fall-through — when `int(prefix)`/`wd_const(n)` raises `ValueError`, execution proceeds to the explicit `raise ValueError("Invalid day name: ...")` at line 442, which is the action taken on the error condition. No failure is discarded silently (BP-PY-2), no error condition goes without action (CWE-390), and the handler is not an empty dead block (CWE-1071). Same constructs as audited FPs 33, 34, 35.
+
+Checklist evidence: the pass immediately precedes an unconditional `raise ValueError` reporting the invalid day, so the "discarded silently" / "takes no action" / "empty code block" predicates are all unmet.
+
+### [ ] Findings `29`, `30`, `31` — `BP-PY-2`, `CWE-390`, `CWE-1071`
+
+- Function context: `scripts/calgebra/findings/functions/29.txt`, `30.txt`, `31.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/tests/test_gcsa.py:1062:1` (and `:1062:5` for CWE-1071)
+- Checklist pattern: the pass is the test's expected-exception assertion, not a discarded failure
+
+Source excerpt:
+
+```
+1059:     try:
+1060:         stub.get_event("master-event-id")
+1061:         assert False, "Master event should have been deleted"
+1062:     except ValueError:
+1063:         pass  # Expected
+```
+
+Why this is a false positive: the try/except is the test's expected-exception assertion — `assert False` fails the test if the event is still present, and the `pass` catches the `ValueError` that proves the deletion. The failure is verified (BP-PY-2), the expected error condition is the tested outcome (CWE-390), and the handler is not a silently empty block (CWE-1071). Same constructs as audited FPs 37, 38, 39.
+
+Checklist evidence: the pass is the verification branch of a pytest test guarded by `assert False`, so the rules' conditions are unmet.
+
+### [ ] Finding `34` — `CWE-1121`
+
+- Function context: `scripts/calgebra/findings/functions/34.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/calgebra/tests/test_recurrence_fuzz.py:17:70`
+- Checklist pattern: the 12-branch threshold is reached only by counting `if `/`for ` tokens inside comments
+
+Source excerpt:
+
+```
+17: def get_ground_truth(freq_str, interval, start_ts, end_ts, duration):
+18:     """
+19:     Generate ground truth intervals using rrule from Epoch.
+20:     """
+21:     if freq_str == "daily":
+22:         freq = DAILY
+23:         dtstart = EPOCH
+24:     elif freq_str == "weekly":
+25:         freq = WEEKLY
+26:         dtstart = EPOCH_MONDAY
+27:     elif freq_str == "monthly":
+28:         freq = MONTHLY
+29:         dtstart = EPOCH
+30:     elif freq_str == "yearly":
+31:         freq = YEARLY
+32:         dtstart = EPOCH
+33:     else:
+34:         raise ValueError(f"Unknown freq: {freq_str}")
+```
+
+Why this is a false positive: the function's real control flow is 10 branch headers — 4×`if`/`elif` dispatch, `if before:`, `for dt in candidates:`, `if overlap_start < overlap_end:`, `if not results:`, `for next_ivl in results[1:]:`, `if current.end >= next_ivl.start:` — below the 12-branch threshold. The detector's `strings.Count(code, "if "/"for "/...)` also matches comment text (`rrule.between if we are careful about overlaps`, `for the basic fuzz test`, `Convert query bounds ... for filtering`, `in case (for long durations)`, `Overlap logic for exclusive ends`, `Merge if overlap or adjacent`), inflating the count to ≥12. Same construct as audited FP 42.
+
+Checklist evidence: the rule condition is "at least twelve visible control-flow branches"; the shown function has 10 real branch headers, so the threshold is only met via comment-text matches, and the condition is not genuinely satisfied.
+
+### Uncertain findings
+
+None.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/calgebra/chunks`
+- Function evidence: `scripts/calgebra/findings/functions`
+- Validation: `git diff --check` — pass

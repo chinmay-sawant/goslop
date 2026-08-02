@@ -234,3 +234,100 @@ None.
 - Chunk evidence: `scripts/astroz/chunks`
 - Function evidence: `scripts/astroz/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:26:26Z
+repository: astroz
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz
+branch: main
+commit: d558933ec3a9c9ee826eb8de665b6e5d229ebecb
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz
+chunk_path: scripts/astroz/chunks
+function_context_path: scripts/astroz/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (binary rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/astroz/chunks -context-dir scripts/astroz/findings/functions real-repos/astroz`
+- Findings: `17` (down from 21 pre-fix)
+- Chunks reviewed: `scripts/astroz/chunks/Chunk_1_17.txt`
+- Function contexts reviewed: `scripts/astroz/findings/functions/5.txt`, `scripts/astroz/findings/functions/6.txt` (remaining-FP candidates) plus all fresh contexts visible in `Chunk_1_17.txt`
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/astroz/chunks`.
+- [x] Read `scripts/astroz/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 2 | 5, 6 |
+| True positive | 15 | 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 |
+| Uncertain | 0 | — |
+
+Matching method: every fresh finding's `Source:` was matched against the audited classification in the original audit above. Fresh IDs 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 match audited TP sources by path:line (TP 1 → `jax_gpu_bench.py:51`, TP 2 → `python_sgp4_bench.py:39`, TPs 3/4/11 → `sgp4_compat_test.py:18/66/165`, TPs 7–10 → `sgp4_compat_test.py:107`, TP 12 → `__init__.py:203`, TPs 16–20 → `cesium_fast.py:146`) and are true positives. Fresh IDs 5 and 6 match audited FP sources (`sgp4_compat_test.py:81`, `sgp4_compat_test.py:103`) and remain false positives.
+
+Remaining false positives after the fix: **2** (fresh IDs 5, 6). The three pre-fix BP-PY-46 findings (old 13, 14, 15 — docstring/setup.py `print`) and the pre-fix PERF-PY-25 finding (old 21 — lambda in `sorted()` key) no longer appear in the fresh scan; the fix suppressed them.
+
+### [ ] Finding `5` — `CWE-772`
+
+- Function context: `scripts/astroz/findings/functions/5.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/benchmarks/sgp4_compat_test.py:81:1`
+- Checklist pattern: the URL response is not assigned to a variable — the assignment binds a string, so no unclosed resource handle exists
+
+Source excerpt:
+
+```
+79:     url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle"
+80:     req = urllib.request.Request(url, headers={"User-Agent": "astroz-test"})
+81:     tle_text = urllib.request.urlopen(req, timeout=60).read().decode("utf-8")
+```
+
+Why this is a false positive: The rule's condition is "a file, socket, or URL response is assigned without same-function close"; here the `urlopen` response is an intermediate expression consumed immediately by `.read()` — the assigned variable `tle_text` holds a `str`, not a resource, so no response handle is ever bound or leaked. Construct confirmed unchanged in the current source.
+
+Checklist evidence: the regex trigger `\w+ = urllib\.request\.urlopen(` matched the assignment line, but the response object is never assigned to `tle_text`; only the decoded text is assigned, so the "resource is assigned without release" condition is not satisfied.
+
+### [ ] Finding `6` — `BP-PY-42`
+
+- Function context: `scripts/astroz/findings/functions/6.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/astroz/benchmarks/sgp4_compat_test.py:103:1`
+- Checklist pattern: rule condition not satisfied — the try/except is tolerant data filtering, not an expect-failure assertion
+
+Source excerpt:
+
+```
+101:     satrecs = []
+102:     for line1, line2 in tle_pairs:
+103:         try:
+104:             sat = Satrec.twoline2rv(line1, line2, WGS72)
+105:             if sat.error == 0:
+106:                 satrecs.append(sat)
+107:         except:
+108:             pass
+```
+
+Why this is a false positive: The rule's condition is a test using try/except to *expect failure* instead of `assertRaises`/`pytest.raises`; here the loop silently skips malformed TLE records while building benchmark input, the function never asserts that an exception occurs, and the file contains no assertions at all. Construct confirmed unchanged in the current source.
+
+Checklist evidence: the except suite is `pass` inside a data-loading loop — there is no failure expectation and no assertion intent, so the "instead of assertRaises/pytest.raises" clause of the rule condition is unmet.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none (single-reviewer audit)
+- Chunk evidence: `scripts/astroz/chunks`
+- Function evidence: `scripts/astroz/findings/functions`
+- Validation: `git diff --check` — pass

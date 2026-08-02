@@ -232,3 +232,68 @@ None. Every finding was resolvable from the rule condition and the shown source;
 - Chunk evidence: `scripts/pytogether/chunks/Chunk_1_25.txt`, `scripts/pytogether/chunks/Chunk_26_50.txt`, `scripts/pytogether/chunks/Chunk_51_71.txt`
 - Function evidence: `scripts/pytogether/findings/functions/1.txt` … `scripts/pytogether/findings/functions/71.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+Mode B: fresh findings (68) are fewer than the audited TP count (70).
+
+### Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02 (post-fix binary rebuilt 2026-08-02 16:29, commit b5b8fde)
+repository: pytogether
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytogether
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytogether
+build_command: go build -o bin/goslop ./cmd/goslop
+scan_command: ./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pytogether/chunks -context-dir scripts/pytogether/findings/functions real-repos/pytogether
+findings: 68
+chunk_path: scripts/pytogether/chunks/Chunk_1_25.txt, Chunk_26_50.txt, Chunk_51_68.txt
+function_context_path: scripts/pytogether/findings/functions/1.txt … 68.txt
+```
+
+### Over-suppressed true positives
+
+Matching fresh findings to audited TPs by `Source:` (file:line), 68 of the 70 audited TPs are present in the fresh scan. The two audited TPs below are absent from the fresh scan (their sources appear only under BP-PY-46, not CWE-215). Both constructs still exist in the current source, so neither is fixed-removed; both were suppressed by the CWE-215 guard added in `b5b8fde` (`sensitiveIdentOutsideLiterals`, `internal/lang/python/detectors/cwe/fp_guards.go:337`, wired in `detectCWE215`, `rules_code_dynamic.go:132`). The pre-fix condition `sensitiveValueRE.MatchString(call.ArgsText) && !isPureStringLiteral(call.ArgsText)` matched the sensitive word anywhere in the args; the post-fix guard masks the whole f-string literal and only re-injects interpolation bodies, so the sensitive word inside the message text no longer counts. The old audited FP (finding 12, BP-PY-46, `base.py:224`) no longer appears in the fresh scan.
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 2 | CWE-215 | backend/backend/jwt_auth_middleware.py:50 | print args contain `Token` (sensitive identifier) and are an interpolated f-string, not a pure literal; prints the share-token payload | suppressed-but-present |
+| 32 | CWE-215 | backend/codes/consumers.py:45 | print args contain `token` identifier and interpolate user data; not a pure string literal, so the rule condition matches | suppressed-but-present |
+
+### [ ] Old finding `2` — `CWE-215`
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytogether/backend/backend/jwt_auth_middleware.py:50`
+
+Source excerpt (current file, line 50):
+
+```
+        if share_token and ":" in share_token:
+            share_data = await self.validate_share_token(share_token)
+            if share_data:
+                # Add the share data to scope so consumers can use it
+                scope['share_context'] = share_data
+                print(f"Share Token Validated: {share_data}")
+```
+
+Why it is over-suppressed: the `print(f"Share Token Validated: {share_data}")` call still exists at line 50, so the construct was not removed. Under the pre-fix rule condition it matched because the args contain the sensitive identifier `Token` (`sensitiveValueRE`) and the f-string is not a pure literal (`isPureStringLiteral`), and the call prints the share-token payload — the sensitive data itself. Post-fix, `sensitiveIdentOutsideLiterals` masks the entire literal and re-injects only the interpolation body `share_data`, which does not match `sensitiveValueRE`, so the finding disappears even though sensitive payload data is still written to the console.
+
+### [ ] Old finding `32` — `CWE-215`
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pytogether/backend/codes/consumers.py:45`
+
+Source excerpt (current file, lines 44-47):
+
+```
+            if not self._validate_share_token(share_token, self.group_id, self.project_id):
+                print(f"Connection rejected: User {self.user.email} is not a member and invalid token.")
+                await self.close(code=4003)
+                return
+```
+
+Why it is over-suppressed: the `print(...)` call still exists at line 45 and still interpolates user data, so the construct was not removed. Under the pre-fix rule condition it matched because the args contain the sensitive identifier `token` and are not a pure string literal. Post-fix, `sensitiveIdentOutsideLiterals` masks the message text (where "token" appears) and re-injects only `self.user.email`, which does not match `sensitiveValueRE`, so the finding is dropped (the email exposure itself remains covered separately by CWE-359 at `consumers.py:35`).
+
+### Summary
+
+- Over-suppressed TPs found: 2 (old IDs 2, 32 — both CWE-215)
+- Fixed-removed: 0
+- Validation: `git diff --check` — pass

@@ -771,3 +771,248 @@ None.
 - Chunk evidence: `scripts/tenso/chunks`
 - Function evidence: `scripts/tenso/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:29:00Z
+repository: tenso
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso
+branch: main
+commit: ee5d6eb7baba8aca90b1d63a5a176b0a7d37692e
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso
+chunk_path: scripts/tenso/chunks
+function_context_path: scripts/tenso/findings/functions
+fix_commit: b5b8fde (FP-reduction fix; binary rebuilt 2026-08-02 16:29)
+```
+
+### Scan evidence
+
+- Build command: `make build` (local `./bin/goslop` binary rebuilt post-fix)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/tenso/chunks -context-dir scripts/tenso/findings/functions real-repos/tenso`
+- Findings: `75`
+- Chunks reviewed: `scripts/tenso/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`
+- Function contexts reviewed: `scripts/tenso/findings/functions/1.txt`, `2.txt`, `8.txt`, `16.txt`, `17.txt`, `40.txt`, `43.txt`, `51.txt`, `52.txt`, plus the enclosing sources for those findings
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/tenso/chunks`.
+- [x] Read `scripts/tenso/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Fresh finding IDs do not correspond to old IDs; matched by `Source:` path (file:line:col) against the audited TP/FP lists. All 75 fresh findings matched an audited source; no new findings appeared. 66 match audited TPs, 9 re-appearing audited FPs, 0 Uncertain.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 9 | 1, 2, 8, 16, 17, 40, 43, 51, 52 |
+| True positive | 66 | 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 44, 45, 46, 47, 48, 49, 50, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75 |
+| Uncertain | 0 | — |
+
+Remaining false positives after the fix: 9 (down from 54). The fix suppressed the audited FPs not present in this run: BP-PY-45 (docs/source/conf.py), BP-PY-46 example-script prints (examples/client.py, client_grpc.py, server_grpc.py, ray_example.py, server.py, pyfuzz/_make_seeds.py), BP-PY-46 docstring prints (cache.py, client.py, shm.py), BP-PY-7 (cache.py `os.open`), CWE-1341 (gpu.py:315, test_cache.py:61, test_shm.py:56) and CWE-93 (test_fastapi.py:29).
+
+### False positives
+
+### [ ] Findings `1`, `2` — `BP-PY-10` / `CWE-502`
+
+- Function context: `scripts/tenso/findings/functions/1.txt`, `2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/benchmark.py:111:21`
+- Checklist pattern: rule condition not met — no untrusted-data sink (re-appearing audited FPs 1 and 2)
+
+Source excerpt:
+
+```
+    enc = lambda x: pickle.dumps(x, protocol=pickle.HIGHEST_PROTOCOL)  # noqa
+    dec = lambda x: pickle.loads(x)  # noqa
+    return enc, dec
+```
+
+Why this is a false positive: `bench_pickle` is a serialization-format benchmark; `dec` round-trips only bytes produced by `enc` in the same process from `np.random`-generated data, so no rule source category (request body, user-path file, cache) applies.
+
+Checklist evidence: no external-input call path into `pickle.loads` exists in the shown source; same construct as audited FPs 1/2.
+
+### [ ] Finding `8` — `BP-PY-10`
+
+- Function context: `scripts/tenso/findings/functions/8.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/benchmark.py:409:13`
+- Checklist pattern: rule condition not met — self-written temp file, not user input (re-appearing audited FP 8)
+
+Source excerpt:
+
+```
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        path = f.name
+    try:
+        t0 = time.perf_counter()
+        with open(path, "wb") as f:
+            pickle.dump(data, f)
+        ...
+        with open(path, "rb") as f:
+            t0 = time.perf_counter()
+            pickle.load(f)
+```
+
+Why this is a false positive: `path` is the benchmark's own `NamedTemporaryFile` written by this same function immediately before the load; it is not a user-path file, so the rule's "file from user path" source category does not apply.
+
+Checklist evidence: the handle passed to `pickle.load` was opened from a path created and written by the same function.
+
+### [ ] Finding `16` — `PERF-PY-28`
+
+- Function context: `scripts/tenso/findings/functions/16.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/bench_server.py:29:44`
+- Checklist pattern: rule condition not met — executor is process-lifetime (re-appearing audited FP 23)
+
+Source excerpt:
+
+```
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1), options=options)
+    benchmark_msg_pb2_grpc.add_BenchmarkerServicer_to_server(Benchmarker(), server)
+    server.add_insecure_port("[::]:50051")
+    print("Tenso Benchmark Server starting on port 50051...")
+    server.start()
+    server.wait_for_termination()
+```
+
+Why this is a false positive: the executor is constructed once in `serve()` and handed to `grpc.server`, which owns it for the server's lifetime — it is not created per unit of work as the rule condition requires.
+
+Checklist evidence: construction site is the server bootstrap executed once per process.
+
+### [ ] Finding `17` — `PERF-PY-28`
+
+- Function context: `scripts/tenso/findings/functions/17.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/examples/grpc/server_grpc.py:37:44`
+- Checklist pattern: rule condition not met — executor is process-lifetime (re-appearing audited FP 29)
+
+Source excerpt:
+
+```
+    # Pass the options to the server
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    ...
+    server.add_insecure_port("[::]:50051")
+    server.start()
+    server.wait_for_termination()
+```
+
+Why this is a false positive: same pattern as finding 16 — the executor is created once in `serve()` and owned by `grpc.server` for the whole process lifetime, not per unit of work.
+
+Checklist evidence: construction site is the server bootstrap executed once; the detector only checks that the executor line is inside a function (indent > 0).
+
+### [ ] Finding `40` — `CWE-1341`
+
+- Function context: `scripts/tenso/findings/functions/40.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/cache.py:1385:9`
+- Checklist pattern: detector over-match — idempotent guarded close, not double release (re-appearing audited FP 80)
+
+Source excerpt:
+
+```
+    def close(self):
+        """Close access to the shared memory pool."""
+        if not self._closed:
+            self._closed = True
+            try:
+                self._shm.close()
+            ...
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        if self._owns:
+            self.unlink()
+
+    def __del__(self):
+        try:
+            self.close()
+        except Exception:
+            pass
+```
+
+Why this is a false positive: the regex pairs `__exit__`'s `self.close()` with `__del__`'s `self.close()`, but `close()` is guarded by `if not self._closed` and sets `_closed = True`, so the shared-memory handle is released exactly once.
+
+Checklist evidence: both calls target the same object, but the guard makes the second call a no-op — no second release of the handle occurs.
+
+### [ ] Finding `43` — `CWE-1341`
+
+- Function context: `scripts/tenso/findings/functions/43.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/client.py:168:9`
+- Checklist pattern: detector over-match — distinct lifecycle methods, idempotent close (re-appearing audited FP 84)
+
+Source excerpt:
+
+```
+    def close(self):
+        """Close sync client. For async client, use ``async with`` or ``await client.aclose()``."""
+        if self._sync_client is not None:
+            self._sync_client.close()
+            self._sync_client = None
+
+    async def aclose(self):
+        """Close both sync and async clients."""
+        if self._async_client is not None:
+            await self._async_client.aclose()
+            self._async_client = None
+        self.close()
+
+    def __exit__(self, *args):
+        self.close()
+```
+
+Why this is a false positive: the regex pairs `self.close()` in `aclose()` (line 168) with `self.close()` in `__exit__`; `close()` only releases the sync client when `self._sync_client is not None` and then sets it to `None`, so the httpx handle is closed at most once.
+
+Checklist evidence: two `.close()` calls within 180 characters, but they are guarded, idempotent calls in different lifecycle methods — no duplicate release of the same handle.
+
+### [ ] Finding `51` — `CWE-695`
+
+- Function context: `scripts/tenso/findings/functions/51.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/core.py:692:14`
+- Checklist pattern: rule condition not met — mmap is the product's intended API, not prohibited low-level functionality (re-appearing audited FP 92)
+
+Source excerpt:
+
+```
+    if mmap_mode:
+        mm = mmap.mmap(fp.fileno(), 0, access=mmap.ACCESS_READ)
+        return loads(mm, copy=copy)
+```
+
+Why this is a false positive: the rule condition is "low-level functionality explicitly prohibited by the framework or specification under which the product is supposed to operate"; tenso is a zero-copy serialization library whose public `load(mmap_mode=True)` API is precisely this stdlib `mmap` use — the documented platform API, not a bypass of higher-level safety controls.
+
+Checklist evidence: the call is the opt-in `mmap_mode` branch of the library's own public load API; the detector mechanically matches any `mmap.mmap(` call.
+
+### [ ] Finding `52` — `CWE-93`
+
+- Function context: `scripts/tenso/findings/functions/52.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/tenso/src/tenso/fastapi.py:54:17`
+- Checklist pattern: rule condition not met — value cannot contain CRLF (re-appearing audited FP 93)
+
+Source excerpt:
+
+```
+        self.headers["X-Tenso-Version"] = "4"
+        if hasattr(tensor, "shape"):
+            self.headers["X-Tenso-Shape"] = str(tensor.shape)
+        if hasattr(tensor, "dtype"):
+            self.headers["X-Tenso-Dtype"] = str(tensor.dtype)
+```
+
+Why this is a false positive: `tensor.shape` is always a tuple of integers for every type the protocol can deserialize, so `str(tensor.shape)` can never contain CR or LF; like the detector's already-excluded `str(int(...))`/`str(round(...))` forms, the CRLF-neutralization condition is vacuous.
+
+Checklist evidence: the header value is the string form of an integer tuple — CR/LF cannot appear regardless of input.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none (single-reviewer audit)
+- Chunk evidence: `scripts/tenso/chunks`
+- Function evidence: `scripts/tenso/findings/functions`
+- Validation: `git diff --check` — `pass`

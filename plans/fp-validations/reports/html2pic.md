@@ -211,3 +211,85 @@ None.
 - Chunk evidence: `scripts/html2pic/chunks`
 - Function evidence: `scripts/html2pic/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+Run metadata (fresh scan with the fix `b5b8fde`, binary rebuilt 2026-08-02 16:29):
+
+```yaml
+timestamp: 2026-08-02T16:38+05:30
+repository: html2pic
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic
+branch: main
+commit: 27c292f1f2afd8975b9cb58470b9e7469df52dad
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/html2pic
+chunk_path: scripts/html2pic/chunks
+function_context_path: scripts/html2pic/findings/functions
+goslop_commit: b5b8fde6e5850be5a4bf6957e90110b146a2e584
+```
+
+Scan evidence: same scan command as the original audit (`./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/html2pic/chunks -context-dir scripts/html2pic/findings/functions real-repos/html2pic`) with the rebuilt binary. Fresh findings: `28` (down from 36). Chunks reviewed: `scripts/html2pic/chunks/Chunk_1_25.txt`, `scripts/html2pic/chunks/Chunk_26_28.txt`.
+
+The fresh run's 28 findings match 27 audited TP sources (all BP-PY-1 / BP-PY-46 / CWE-1046 / CWE-396 audited TPs re-appear at their old sources) plus one new CWE-396 finding at `css_parser.py:128:1` not present in the old audit. The audited TP count is 32, so the 5 BP-PY-45 example-script findings are over-suppressed. All 5 source constructs were verified still present in the working tree (suppressed, not fixed).
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-45 | `examples/01_quick_start.py:12:1` | `sys.path.insert(0, ...)` at module scope; not a test file / requirements path / bootstrap basename, no exemption applies. | suppressed-but-present |
+| 2 | BP-PY-45 | `examples/02_flexbox_card.py:12:1` | Same literal construct as finding 1, distinct file. | suppressed-but-present |
+| 3 | BP-PY-45 | `examples/03_typography_showcase.py:12:1` | Same literal construct, distinct file. | suppressed-but-present |
+| 4 | BP-PY-45 | `examples/04_shadows_and_effects.py:12:1` | Same literal construct, distinct file. | suppressed-but-present |
+| 5 | BP-PY-45 | `examples/05_background_images.py:12:1` | Same literal construct, distinct file. | suppressed-but-present |
+
+Fixed-removed: 0. Over-suppressed TPs found: 5.
+
+### [ ] Finding 1 — BP-PY-45 (`examples/01_quick_start.py:12`)
+
+The construct is still present at module scope, unguarded:
+
+```
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+```
+
+Why it still satisfies the rule condition: BP-PY-45 flags runtime `sys.path.insert/append/extend` in non-test, non-requirements files outside the bootstrap basenames (`sitecustomize.py`, `usercustomize.py`, `conftest.py`). This example file is none of those, and the insert is a literal module-scope mutation of `sys.path`. The fix (`b5b8fde`, `isSysPathBootstrap` in `internal/lang/python/detectors/bad_practices/rules_deps.go`) added a blanket exemption for any insert whose line contains `__file__`; that exemption silently covers example scripts that were previously — and per the old audit, correctly — flagged.
+
+### [ ] Finding 2 — BP-PY-45 (`examples/02_flexbox_card.py:12`)
+
+Same module-scope construct, verified present:
+
+```
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+```
+
+Same reasoning as finding 1: identical literal construct in a distinct file, now suppressed by the `__file__` exemption.
+
+### [ ] Finding 3 — BP-PY-45 (`examples/03_typography_showcase.py:12`)
+
+Same module-scope construct, verified present:
+
+```
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+```
+
+Same reasoning as finding 1.
+
+### [ ] Finding 4 — BP-PY-45 (`examples/04_shadows_and_effects.py:12`)
+
+Same module-scope construct, verified present:
+
+```
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+```
+
+Same reasoning as finding 1.
+
+### [ ] Finding 5 — BP-PY-45 (`examples/05_background_images.py:12`)
+
+Same module-scope construct, verified present:
+
+```
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+```
+
+Same reasoning as finding 1.
+
+Final evidence: chunks `scripts/html2pic/chunks/Chunk_1_25.txt` + `Chunk_26_28.txt` contain no `examples/` finding; function contexts `scripts/html2pic/findings/functions/1.txt`..`28.txt`; source verification at `real-repos/html2pic/examples/*.py:12`; `git diff --check` — pass (see below).

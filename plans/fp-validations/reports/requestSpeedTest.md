@@ -162,3 +162,114 @@ Checklist evidence: the except suite prints the failure message, i.e., the excep
 - Chunk evidence: `scripts/requestSpeedTest/chunks/Chunk_1_13.txt`
 - Function evidence: `scripts/requestSpeedTest/findings/functions/1.txt` .. `13.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:08:51Z
+repository: requestSpeedTest
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest
+branch: main
+commit: 60626f3d548258a76c8df962db1b26aa9baa0e87
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest
+chunk_path: scripts/requestSpeedTest/chunks
+function_context_path: scripts/requestSpeedTest/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (goslop binary rebuilt 2026-08-02 16:29, post-fix `b5b8fde`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/requestSpeedTest/chunks -context-dir scripts/requestSpeedTest/findings/functions real-repos/requestSpeedTest`
+- Findings: `11`
+- Chunks reviewed: `scripts/requestSpeedTest/chunks/Chunk_1_11.txt`
+- Function contexts reviewed: `scripts/requestSpeedTest/findings/functions/1.txt` .. `11.txt`
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/requestSpeedTest/chunks`.
+- [x] Read `scripts/requestSpeedTest/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [ ] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary
+
+Fresh finding IDs do NOT correspond to old IDs; matched by `Source:` path (file:line:col). Fresh findings 2, 3, 4, 5, 6, 7, 9, 10, 11 match audited TPs; fresh findings 1 and 8 match audited FPs (re-appearing); old audited FPs 1 and 2 (BP-PY-42 in `httpx_test.py:11:1` and `rnet_test.py:32:1`) no longer appear in the fresh scan (suppressed by the fix).
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 2 | 1, 8 |
+| True positive | 9 | 2, 3, 4, 5, 6, 7, 9, 10, 11 |
+| Uncertain | 0 | — |
+
+### False positives
+
+#### [x] Finding `1` — BP-PY-1
+
+- Function context: `scripts/requestSpeedTest/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest/send_request/rnet_test.py:37:1`
+- Checklist pattern: rule condition not satisfied — the handler actively handles the exception instead of swallowing it
+
+Source excerpt:
+
+```python
+        except Exception as e:
+            name = type(e).__name__
+            local_errors[name] += 1
+            local_fail += 1
+            if local_errors[name] == 1:
+                log.error(f"Worker {wid} error: {e}")
+    return local_success, local_fail, local_statuses, local_errors
+```
+
+Why this is a false positive: Re-appearing audited FP (old finding 3). The rule condition is a broad `except Exception` "without handling or re-raise" that swallows failures. Here the handler deliberately handles the failure: it records the exception type, increments the failure/error counters returned to and printed by the caller (`rnet_test.py:69-73`), and logs the first occurrence. The failure is surfaced, not swallowed or hidden.
+
+Checklist evidence: the except suite performs explicit error handling (accounting + logging) and the results propagate to the caller, so the "without handling ... swallows failures" clause of the rule condition is not satisfied.
+
+#### [x] Finding `8` — BP-PY-1
+
+- Function context: `scripts/requestSpeedTest/findings/functions/8.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/requestSpeedTest/utils/increase_limits.py:38:1`
+- Checklist pattern: rule condition not satisfied — the handler surfaces the error instead of swallowing it
+
+Source excerpt:
+
+```python
+            except Exception as e:
+                print(f"Failed to set a high limit: {e}")
+```
+
+Why this is a false positive: Re-appearing audited FP (old finding 10). The rule condition requires a broad except "without handling or re-raise" that swallows failures. This handler deliberately reports the failure to the user with the exception detail (and is the final fallback of a two-step limit-raising strategy), so the error is surfaced rather than hidden.
+
+Checklist evidence: the except suite prints the failure message, i.e., the exception is handled by explicit reporting, satisfying the "handling" clause that exempts the construct from the rule.
+
+### True positives
+
+All nine remaining fresh findings match audited TP sources from the first audit; classification carried over unchanged.
+
+| Finding | Rule | Source | Matches audited TP |
+| --- | --- | --- | --- |
+| 2 | CWE-117 | `send_request/rnet_test.py:42:17` | 4 |
+| 3 | BP-PY-46 | `utils/increase_limits.py:12:9` | 5 |
+| 4 | BP-PY-46 | `utils/increase_limits.py:21:9` | 6 |
+| 5 | BP-PY-46 | `utils/increase_limits.py:27:13` | 7 |
+| 6 | BP-PY-46 | `utils/increase_limits.py:29:13` | 8 |
+| 7 | BP-PY-46 | `utils/increase_limits.py:37:17` | 9 |
+| 9 | CWE-396 | `utils/increase_limits.py:38:1` | 11 |
+| 10 | BP-PY-46 | `utils/increase_limits.py:39:17` | 12 |
+| 11 | BP-PY-46 | `utils/increase_limits.py:42:9` | 13 |
+
+### Uncertain findings
+
+None.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/requestSpeedTest/chunks/Chunk_1_11.txt`
+- Function evidence: `scripts/requestSpeedTest/findings/functions/1.txt` .. `11.txt`
+- Validation: `git diff --check` — pass

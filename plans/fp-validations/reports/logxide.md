@@ -4050,3 +4050,1353 @@ None. Finding 286 (CWE-1121 on `dictConfig`) reclassified as a false positive: m
 - Chunk evidence: `scripts/logxide/chunks`
 - Function evidence: `scripts/logxide/findings/functions`
 - Validation: `git diff --check` — pass (exit 0, no whitespace errors)
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: logxide
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide
+branch: main
+commit: 136f7a4c3bc593488cd1e2c62bd74956265533d6
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide
+chunk_path: scripts/logxide/chunks
+function_context_path: scripts/logxide/findings/functions
+binary: ./bin/goslop rebuilt from b5b8fde on 2026-08-02 16:29 (post FP-reduction fix)
+```
+
+### Scan evidence (fresh run)
+
+- Build command: `n/a` (pre-built binary from fix commit `b5b8fde`, rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/logxide/chunks -context-dir scripts/logxide/findings/functions real-repos/logxide`
+- Findings: `377`
+- Chunks reviewed: `scripts/logxide/chunks/Chunk_1_25.txt` .. `scripts/logxide/chunks/Chunk_376_377.txt` (all 15 chunk files)
+- Function contexts reviewed: `scripts/logxide/findings/functions/<id>.txt` for all 67 proposed false positives and the 1 new finding
+
+### Audit checklist (fresh run)
+
+- [x] Read every assigned chunk under `scripts/logxide/chunks`.
+- [x] Read `scripts/logxide/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Fresh findings were matched to the audited run by `Source:` path (`file:line:col`) and rule. A fresh finding whose source matches an audited true positive is a true positive; a fresh finding whose source matches an audited false positive is a remaining false positive. The fix suppressed 186 audited FPs down to 67 remaining.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 67 | 9, 11, 12, 14, 15, 18, 38, 43, 46, 101, 110, 115, 132, 137, 140, 155, 157, 165, 179, 191, 206, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 224, 225, 230, 231, 234, 235, 241, 250, 262, 277, 285, 291, 294, 295, 296, 299, 302, 303, 307, 315, 316, 317, 321, 332, 335, 336, 342, 365, 366, 372, 374, 375, 376, 377 |
+| True positive | 310 | 1, 2, 3, 4, 5, 6, 7, 8, 10, 13, 16, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 44, 45, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 102, 103, 104, 105, 106, 107, 108, 109, 111, 112, 113, 114, 116, 117, 118, 119, 120, 121, 122, 123, 124, 126, 127, 128, 129, 130, 131, 133, 134, 135, 136, 138, 139, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 156, 158, 159, 160, 161, 162, 163, 164, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 207, 208, 209, 210, 223, 226, 227, 228, 229, 232, 233, 236, 237, 238, 239, 240, 242, 243, 244, 245, 246, 247, 248, 249, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 278, 279, 280, 281, 282, 283, 284, 286, 287, 288, 289, 290, 292, 293, 297, 298, 300, 301, 304, 305, 306, 308, 309, 310, 311, 312, 313, 314, 318, 319, 320, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 333, 334, 337, 338, 339, 340, 341, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 367, 368, 369, 370, 371, 373 and 125 |
+| Uncertain | 0 | — |
+
+## False positives (remaining, fresh run)
+
+One subsection per remaining false positive (each is a re-appearing audited FP at an unchanged source; fresh finding IDs do not correspond to old IDs). All 67 reference distinct source constructs, so no grouping applies. Source excerpts are taken from the fresh function-context files and match the audited excerpts at identical lines.
+
+### [ ] Finding 9 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/compare_loggers.py:138:26`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        136:         return lambda i: logger.info("Simple log message")
+        137:     if scenario == "structured":
+    >   138:         return lambda i: logger.info(
+        139:             f"User action - user_id: {i}, action: login, status: success"
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 11 — CWE-88
+
+- Function context: `scripts/logxide/findings/functions/11.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/compare_loggers.py:162:12`
+- Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
+
+Source excerpt:
+
+```
+        160:     env = dict(os.environ)
+        161:     env["PYTHONUTF8"] = "1"
+    >   162:     proc = subprocess.run(
+        163:         [
+```
+
+Why this is a false positive: the dynamic values are passed as separate argv elements consumed as the values of their named options (`--library`, `--scenario`, `-n`); they are delimited arguments in a no-shell argv list and cannot be parsed as unintended switches.
+
+Checklist evidence: each value follows its named flag as its own argv element; no shell parsing is involved.
+
+### [ ] Finding 12 — CWE-88
+
+- Function context: `scripts/logxide/findings/functions/12.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/gil_benchmark.py:90:12`
+- Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
+
+Source excerpt:
+
+```
+         88:     env = dict(os.environ)
+         89:     env["PYTHONUTF8"] = "1"
+    >    90:     proc = subprocess.run(
+         91:         [sys.executable, THIS, "--worker", "--library", library, "-n", str(n)],
+```
+
+Why this is a false positive: the dynamic values are passed as separate argv elements consumed as the values of their named options (`--library`, `--scenario`, `-n`); they are delimited arguments in a no-shell argv list and cannot be parsed as unintended switches.
+
+Checklist evidence: each value follows its named flag as its own argv element; no shell parsing is involved.
+
+### [ ] Finding 14 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/14.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/perf_vs_stdlib.py:73:26`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         71:         call = lambda i: logger.info("Simple log message")  # noqa: E731
+         72:     elif scenario == "structured":
+    >    73:         call = lambda i: logger.info(f"User action - user_id: {i}, action: login")  # noqa: E731
+         74:     else:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 15 — CWE-88
+
+- Function context: `scripts/logxide/findings/functions/15.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/perf_vs_stdlib.py:90:12`
+- Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
+
+Source excerpt:
+
+```
+         88:     env = dict(os.environ)
+         89:     env["PYTHONUTF8"] = "1"
+    >    90:     proc = subprocess.run(
+         91:         [
+```
+
+Why this is a false positive: the dynamic values are passed as separate argv elements consumed as the values of their named options (`--library`, `--scenario`, `-n`); they are delimited arguments in a no-shell argv list and cannot be parsed as unintended switches.
+
+Checklist evidence: each value follows its named flag as its own argv element; no shell parsing is involved.
+
+### [ ] Finding 18 — CWE-88
+
+- Function context: `scripts/logxide/findings/functions/18.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/benchmark/real_handlers_comparison.py:154:12`
+- Checklist pattern: dynamic value bound as named-option argument in a no-shell argv
+
+Source excerpt:
+
+```
+        152:     env = dict(os.environ)
+        153:     env["PYTHONUTF8"] = "1"
+    >   154:     proc = subprocess.run(
+        155:         [
+```
+
+Why this is a false positive: the dynamic values are passed as separate argv elements consumed as the values of their named options (`--library`, `--scenario`, `-n`); they are delimited arguments in a no-shell argv list and cannot be parsed as unintended switches.
+
+Checklist evidence: each value follows its named flag as its own argv element; no shell parsing is involved.
+
+### [ ] Finding 38 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/38.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/django_integration.py:317:1`
+- Checklist pattern: catch-all converts the failure into an HTTP error response
+
+Source excerpt:
+
+```
+        315:             return JsonResponse(user.to_dict(), status=201)
+        316:
+    >   317:         except Exception as e:
+        318:             app_logger.error(f"Failed to create user: {str(e)}")
+```
+
+Why this is a false positive: the handler body handles the exception by converting it into an HTTP 500 error response after logging — the failure outcome is modeled, so the “without handling” condition fails.
+
+Checklist evidence: the handler returns an error response to the caller after logging.
+
+### [ ] Finding 43 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/43.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/django_integration.py:347:1`
+- Checklist pattern: health-check catch-all updates service status
+
+Source excerpt:
+
+```
+        345:             cursor.execute("SELECT 1")
+        346:         db_status = "healthy"
+    >   347:     except Exception as e:
+        348:         db_logger.error(f"Database health check failed: {str(e)}")
+```
+
+Why this is a false positive: the catch-all is the deliberate health-check contract: any failure is handled by logging and reporting `db_status = "unhealthy"` — the failure is processed, not swallowed.
+
+Checklist evidence: the exception is processed into the health-check status result.
+
+### [ ] Finding 46 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/46.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/django_integration.py:405:1`
+- Checklist pattern: catch-all converts the failure into an HTTP error response
+
+Source excerpt:
+
+```
+        403:         return JsonResponse(metrics_data)
+        404:
+    >   405:     except Exception as e:
+        406:         app_logger.error(f"Failed to retrieve metrics: {str(e)}")
+```
+
+Why this is a false positive: the handler body handles the exception by converting it into an HTTP 500 error response after logging — the failure outcome is modeled, so the “without handling” condition fails.
+
+Checklist evidence: the handler returns an error response to the caller after logging.
+
+### [ ] Finding 101 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/101.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/fastapi_advanced.py:549:1`
+- Checklist pattern: health-check catch-all updates service status
+
+Source excerpt:
+
+```
+        547:         db.execute("SELECT 1")
+        548:         db_status = "healthy"
+    >   549:     except Exception as e:
+        550:         db_logger.error(f"Database health check failed: {str(e)}")
+```
+
+Why this is a false positive: the catch-all is the deliberate health-check contract: any failure is handled by logging and reporting `db_status = "unhealthy"` — the failure is processed, not swallowed.
+
+Checklist evidence: the exception is processed into the health-check status result.
+
+### [ ] Finding 110 — CWE-1046
+
+- Function context: `scripts/logxide/findings/functions/110.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/fastapi_advanced.py:656:1`
+- Checklist pattern: flagged line is an integer increment, not string concatenation
+
+Source excerpt:
+
+```
+        654:     while time.time() - start_time < duration:
+        655:         performance_logger.info(f"Stress test message {message_count + 1}")
+    >   656:         message_count += 1
+        657:
+```
+
+Why this is a false positive: the flagged construct `message_count += 1` is an integer counter increment; no immutable text is concatenated, so the rule condition (“creation of immutable text using string concatenation”) is not met.
+
+Checklist evidence: the flagged expression is `int += 1`, not `str += str`.
+
+### [ ] Finding 115 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/115.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/fastapi_demo.py:69:9`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         67:     # Log many messages using standard logging
+         68:     for i in range(count):
+    >    69:         logger.info(f"Performance test message {i + 1}")
+         70:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 132 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/132.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/flask_integration.py:219:1`
+- Checklist pattern: catch-all rolls back the transaction and returns an error response
+
+Source excerpt:
+
+```
+        217:             return jsonify(user.to_dict()), 201
+        218:
+    >   219:         except Exception as e:
+        220:             db.session.rollback()
+```
+
+Why this is a false positive: the handler body handles the failure with `db.session.rollback()` plus an error response — the transaction outcome is explicitly handled.
+
+Checklist evidence: the exception triggers `db.session.rollback()` and a 500 response.
+
+### [ ] Finding 137 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/137.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/flask_integration.py:249:1`
+- Checklist pattern: health-check catch-all updates service status
+
+Source excerpt:
+
+```
+        247:         db.session.execute("SELECT 1")
+        248:         db_status = "healthy"
+    >   249:     except Exception as e:
+        250:         db_logger.error(f"Database health check failed: {str(e)}")
+```
+
+Why this is a false positive: the catch-all is the deliberate health-check contract: any failure is handled by logging and reporting `db_status = "unhealthy"` — the failure is processed, not swallowed.
+
+Checklist evidence: the exception is processed into the health-check status result.
+
+### [ ] Finding 140 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/140.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/flask_integration.py:304:1`
+- Checklist pattern: catch-all converts the failure into an HTTP error response
+
+Source excerpt:
+
+```
+        302:         return jsonify(metrics)
+        303:
+    >   304:     except Exception as e:
+        305:         error_logger.error(f"Failed to retrieve metrics: {str(e)}")
+```
+
+Why this is a false positive: the handler body handles the exception by converting it into an HTTP 500 error response after logging — the failure outcome is modeled, so the “without handling” condition fails.
+
+Checklist evidence: the handler returns an error response to the caller after logging.
+
+### [ ] Finding 155 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/155.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_production.py:19:5`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         17:     logger = logging.getLogger(component)
+         18:     logger.setLevel(logging.INFO)
+    >    19:     logger.info(f"{component} initialized successfully")
+         20:     if component == "db.connection":
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 157 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/157.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/format_threaded.py:21:9`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         19:
+         20:     for i in range(3):
+    >    21:         logger.info(f"Processing task {i + 1}")
+         22:         time.sleep(0.1)  # Simulate work
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 165 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/165.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/minimal_dropin.py:120:13`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        118:
+        119:         for i in range(3):
+    >   120:             logger.info(f"Processing task {i + 1}")
+        121:             time.sleep(0.1)  # Simulate work
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 179 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/179.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/performance_demo.py:145:9`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        143:         logger = logging.getLogger(logger_name)
+        144:         loggers.append(logger)
+    >   145:         logger.info(f"Logger {logger_name} initialized")
+        146:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 191 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/191.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/examples/simple_demo.py:39:9`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         37:     start = time.time()
+         38:     for i in range(10000):
+    >    39:         logger.info(f"Performance test message {i}")
+         40:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 206 — CWE-1333
+
+- Function context: `scripts/logxide/findings/functions/206.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/compat_handlers.py:65:18`
+- Checklist pattern: nested repetition alternatives are disjoint and anchored by literals (linear-time)
+
+Source excerpt:
+
+```
+         63:         r"^(.?[<>=^])?[+ -]?#?0?(\d+|{\w+})?[,_]?(\.(\d+|{\w+}))?[bcdefgnosx%]?$", re.I
+         64:     )
+    >    65:     field_spec = re.compile(r"^(\d+|\w+)(\.\w+|\[[^]]+\])*$")
+         66:
+```
+
+Why this is a false positive: in `(\.\w+|\[[^]]+\])*` every repetition is anchored by a distinct literal delimiter (`.` or `[`) that the inner character classes cannot match, so the alternatives are disjoint and matching is linear — no catastrophic backtracking.
+
+Checklist evidence: the repeated group's alternatives start with disjoint literal delimiters, eliminating ambiguity between iterations.
+
+### [ ] Finding 211 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/211.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/compat_handlers.py:361:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        359:         except RecursionError:
+        360:             raise
+    >   361:         except Exception:
+        362:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 212 — CWE-396
+
+- Function context: `scripts/logxide/findings/functions/212.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/compat_handlers.py:361:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        359:         except RecursionError:
+        360:             raise
+    >   361:         except Exception:
+        362:             self.handleError(record)
+```
+
+Why this is a false positive: same handler as the paired BP-PY-1 finding: the generic catch is the required `emit()` contract and the error is handled via `self.handleError(record)`.
+
+Checklist evidence: the exception is routed to `handleError`, not hidden.
+
+### [ ] Finding 213 — CWE-1121
+
+- Function context: `scripts/logxide/findings/functions/213.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/config.py:21:24`
+- Checklist pattern: branch count below threshold of 12
+
+Source excerpt:
+
+```
+def dictConfig(config):
+    cfg = copy.deepcopy(config)
+    if "handlers" in cfg and isinstance(cfg["handlers"], dict):
+        for _name, handler_config in cfg["handlers"].items():
+            if not isinstance(handler_config, dict):
+                continue
+            class_name = handler_config.get("class")
+            if class_name == "logxide.FileHandler":
+                ...
+            elif class_name == "logxide.StreamHandler":
+                ...
+            elif class_name == "logxide.RotatingFileHandler":
+                ...
+            elif class_name == "logxide.HTTPHandler":
+                ...
+            elif class_name == "logxide.OTLPHandler":
+                ...
+            elif class_name in HANDLER_MAP:
+                ...
+    logging.config.dictConfig(cfg)
+```
+
+Why this is a false positive: CWE-1121 requires `branches >= 12` (`minimumRouteBranches` in `internal/lang/python/detectors/cwe/common.go`). Independent count of `if `/`elif `/`for `/`while `/`except ` tokens in `dictConfig` is **9** (3 `if` + 5 `elif` + 1 `for`) after docstring masking — below the threshold. Reclassified from Uncertain.
+
+Checklist evidence: rule condition "at least twelve visible control-flow branches"; source has 9.
+
+### [ ] Finding 214 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/214.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/fast_logger_wrapper.py:55:1`
+- Checklist pattern: catch-all recovers with a fallback value
+
+Source excerpt:
+
+```
+         53:             self._effective_level = self._rust_logger.getEffectiveLevel()
+         54:             self._name = self._rust_logger.name
+    >    55:         except Exception:
+         56:             # Fallback to safe defaults
+```
+
+Why this is a false positive: the handler body recovers with an explicit fallback value (safe defaults, `str(record.msg)`, `old_level = None`) — the failure is handled, satisfying the rule's “without handling” clause.
+
+Checklist evidence: the handler body performs explicit fallback recovery.
+
+### [ ] Finding 215 — CWE-396
+
+- Function context: `scripts/logxide/findings/functions/215.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/fast_logger_wrapper.py:55:1`
+- Checklist pattern: catch-all recovers with a fallback value
+
+Source excerpt:
+
+```
+         53:             self._effective_level = self._rust_logger.getEffectiveLevel()
+         54:             self._name = self._rust_logger.name
+    >    55:         except Exception:
+         56:             # Fallback to safe defaults
+```
+
+Why this is a false positive: same recovery handler as the paired BP-PY-1 finding: a deliberate fallback converts the exception into a safe default state.
+
+Checklist evidence: the exception is converted into a fallback value/state.
+
+### [ ] Finding 216 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/216.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:191:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        189:                     record.args = None
+        190:                 self._inner.emit(_prepare_record_for_rust(record))
+    >   191:         except Exception:
+        192:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 217 — CWE-396
+
+- Function context: `scripts/logxide/findings/functions/217.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:191:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        189:                     record.args = None
+        190:                 self._inner.emit(_prepare_record_for_rust(record))
+    >   191:         except Exception:
+        192:             self.handleError(record)
+```
+
+Why this is a false positive: same handler as the paired BP-PY-1 finding: the generic catch is the required `emit()` contract and the error is handled via `self.handleError(record)`.
+
+Checklist evidence: the exception is routed to `handleError`, not hidden.
+
+### [ ] Finding 218 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/218.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:260:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        258:                     record.args = None
+        259:                 self._inner.emit(_prepare_record_for_rust(record))
+    >   260:         except Exception:
+        261:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 219 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/219.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:325:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        323:                     record.args = None
+        324:                 self._inner.emit(_prepare_record_for_rust(record))
+    >   325:         except Exception:
+        326:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 220 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/220.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:406:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        404:             rust_record = _prepare_record_for_rust(record)
+        405:             self._inner.emit(rust_record)
+    >   406:         except Exception:
+        407:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 221 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/221.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:477:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        475:             rust_record = _prepare_record_for_rust(record)
+        476:             self._inner.emit(rust_record)
+    >   477:         except Exception:
+        478:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 222 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/222.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/handlers.py:519:1`
+- Checklist pattern: catch-all delegates to the logging error contract
+
+Source excerpt:
+
+```
+        517:             # MemoryHandler is always native: forward raw; caplog reads _inner.
+        518:             self._inner.emit(_prepare_record_for_rust(record, native=True))
+    >   519:         except Exception:
+        520:             self.handleError(record)
+```
+
+Why this is a false positive: the `except Exception` is the mandated logging `emit()` contract (emit must never propagate) and the body routes the failure to `self.handleError(record)` — the exception is handled, not swallowed.
+
+Checklist evidence: the handler body delegates to `handleError`, the stdlib emit error path.
+
+### [ ] Finding 224 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/224.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/interceptor.py:42:1`
+- Checklist pattern: catch-all recovers with a fallback value
+
+Source excerpt:
+
+```
+         40:             try:
+         41:                 message = record.getMessage()
+    >    42:             except Exception:
+         43:                 message = str(record.msg)
+```
+
+Why this is a false positive: the handler body recovers with an explicit fallback value (safe defaults, `str(record.msg)`, `old_level = None`) — the failure is handled, satisfying the rule's “without handling” clause.
+
+Checklist evidence: the handler body performs explicit fallback recovery.
+
+### [ ] Finding 225 — CWE-396
+
+- Function context: `scripts/logxide/findings/functions/225.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/interceptor.py:42:1`
+- Checklist pattern: catch-all recovers with a fallback value
+
+Source excerpt:
+
+```
+         40:             try:
+         41:                 message = record.getMessage()
+    >    42:             except Exception:
+         43:                 message = str(record.msg)
+```
+
+Why this is a false positive: same recovery handler as the paired BP-PY-1 finding: a deliberate fallback converts the exception into a safe default state.
+
+Checklist evidence: the exception is converted into a fallback value/state.
+
+### [ ] Finding 230 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/230.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/sentry_integration.py:85:1`
+- Checklist pattern: catch-all delegates to the error handler contract
+
+Source excerpt:
+
+```
+         83:                 self._add_breadcrumb(record, level_name, message, logger_name)
+         84:
+    >    85:         except Exception as e:
+         86:             # Prevent logging errors from causing infinite loops
+```
+
+Why this is a false positive: the handler body routes the exception to `self._handle_error(e)` (guarding against recursive logging errors) — handled, not swallowed.
+
+Checklist evidence: the handler body delegates to the dedicated `_handle_error` path.
+
+### [ ] Finding 231 — CWE-396
+
+- Function context: `scripts/logxide/findings/functions/231.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/sentry_integration.py:85:1`
+- Checklist pattern: catch-all delegates to the error handler contract
+
+Source excerpt:
+
+```
+         83:                 self._add_breadcrumb(record, level_name, message, logger_name)
+         84:
+    >    85:         except Exception as e:
+         86:             # Prevent logging errors from causing infinite loops
+```
+
+Why this is a false positive: same handler as finding 303: deliberate catch-all in the Sentry emit path with explicit `_handle_error` handling.
+
+Checklist evidence: the exception is routed to `_handle_error`, not hidden.
+
+### [ ] Finding 234 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/234.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/testing.py:163:1`
+- Checklist pattern: catch-all recovers with a fallback value
+
+Source excerpt:
+
+```
+        161:         try:
+        162:             old_level = handler._inner.level if hasattr(handler, "_inner") else None
+    >   163:         except Exception:
+        164:             old_level = None
+```
+
+Why this is a false positive: the handler body recovers with an explicit fallback value (safe defaults, `str(record.msg)`, `old_level = None`) — the failure is handled, satisfying the rule's “without handling” clause.
+
+Checklist evidence: the handler body performs explicit fallback recovery.
+
+### [ ] Finding 235 — CWE-396
+
+- Function context: `scripts/logxide/findings/functions/235.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/testing.py:163:1`
+- Checklist pattern: catch-all recovers with a fallback value
+
+Source excerpt:
+
+```
+        161:         try:
+        162:             old_level = handler._inner.level if hasattr(handler, "_inner") else None
+    >   163:         except Exception:
+        164:             old_level = None
+```
+
+Why this is a false positive: same recovery handler as the paired BP-PY-1 finding: a deliberate fallback converts the exception into a safe default state.
+
+Checklist evidence: the exception is converted into a fallback value/state.
+
+### [ ] Finding 241 — BP-PY-42
+
+- Function context: `scripts/logxide/findings/functions/241.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:16:1`
+- Checklist pattern: try/except is a defensive guard, not a failure expectation
+
+Source excerpt:
+
+```
+         14:     print("Testing basic import...")
+         15:
+    >    16:     try:
+         17:         import logxide
+```
+
+Why this is a false positive: the try/except is a defensive guard that reports failure to the console so the smoke script can continue; the test does not “expect failure”, so the rule condition (try/except instead of `pytest.raises`) is not met.
+
+Checklist evidence: the except branch reports the failure rather than asserting a raise.
+
+### [ ] Finding 250 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/250.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/scripts/verify_package.py:94:13`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         92:         start_time = time.time()
+         93:         for i in range(1000):
+    >    94:             logger.info(f"Performance test message {i}")
+         95:         logging.flush()
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 262 — BP-PY-40
+
+- Function context: `scripts/logxide/findings/functions/262.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/conftest.py:36:6`
+- Checklist pattern: daemon thread with explicit synchronization, no join needed
+
+Source excerpt:
+
+```
+         34:
+         35:     t = threading.Thread(target=_do_flush, daemon=True)
+    >    36:     t.start()
+         37:     done.wait(timeout=timeout_seconds)
+```
+
+Why this is a false positive: the thread is `daemon=True` (documented as a deliberate deadlock-bailout) and the caller synchronizes with `done.wait(timeout)`; the rule's own fix targets “fire-and-forget non-daemon threads”, so the condition is not met.
+
+Checklist evidence: daemon thread plus explicit `Event.wait` synchronization protocol.
+
+### [ ] Finding 277 — BP-PY-42
+
+- Function context: `scripts/logxide/findings/functions/277.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_basic_logging.py:97:1`
+- Checklist pattern: try/except is a crash-guard, not a failure expectation
+
+Source excerpt:
+
+```
+         95:
+         96:         # Test various format configurations - just make sure they don't crash
+    >    97:         try:
+         98:             logging.basicConfig(format="%(levelname)s: %(message)s")
+```
+
+Why this is a false positive: the try/except (“just make sure they don't crash”) guards a smoke test against unsupported formats rather than expecting a raise; `pytest.raises` is the wrong construct, so the condition is not met.
+
+Checklist evidence: the except branch tolerates unsupported formats instead of asserting an exception.
+
+### [ ] Finding 285 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/285.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_basic_logging.py:147:17`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        145:
+        146:             for i in range(5):
+    >   147:                 logger.info(f"Message {i}")
+        148:                 time.sleep(0.001)  # Small delay
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 291 — BP-PY-1
+
+- Function context: `scripts/logxide/findings/functions/291.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_compatibility.py:12:1`
+- Checklist pattern: catch-all delegates to full exception reporting
+
+Source excerpt:
+
+```
+         10:     try:
+         11:         raise ValueError("test")
+    >    12:     except:
+         13:         logging.exception("test_exception_logging")
+```
+
+Why this is a false positive: the handler body reports the (deliberately raised) exception through the full exception-reporting path (`logger.exception` / `error(..., exc_info=True)`, forwarded to Sentry) — handled, not swallowed.
+
+Checklist evidence: the handler body is a full exception-reporting call (`logger.exception`/`exc_info=True`).
+
+### [ ] Finding 294 — CWE-94
+
+- Function context: `scripts/logxide/findings/functions/294.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:68:9`
+- Checklist pattern: compile input is the repo's own committed docs, not externally influenced
+
+Source excerpt:
+
+```
+         66:     """Every Python code block in docs must be syntactically valid."""
+         67:     try:
+    >    68:         compile(code, block_id, "exec")
+         69:     except SyntaxError as exc:
+```
+
+Why this is a false positive: the compiled text comes from the repository's own documentation files and the resulting code object is discarded after syntax validation (never executed); it is not externally influenced input, so the CWE-94 condition is not met.
+
+Checklist evidence: input source is repo-committed docs; the compile result is never executed.
+
+### [ ] Finding 295 — CWE-829
+
+- Function context: `scripts/logxide/findings/functions/295.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_doc_codeblocks.py:215:13`
+- Checklist pattern: dynamic import selects from repo-derived framework names, not request input
+
+Source excerpt:
+
+```
+        213:     for framework in needed:
+        214:         try:
+    >   215:             __import__(framework)
+        216:         except ImportError:
+```
+
+Why this is a false positive: `needed` is computed by scanning the repository's own committed doc code blocks (`_needs_framework(code)`); the imported names come from package-controlled content, not from request-derived input, so the untrusted-control-sphere condition is not met.
+
+Checklist evidence: module names originate from repo-committed code content, not user/request input.
+
+### [ ] Finding 296 — CWE-829
+
+- Function context: `scripts/logxide/findings/functions/296.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:25:16`
+- Checklist pattern: file path comes from the repo's own examples directory, not request input
+
+Source excerpt:
+
+```
+         23:         # Load the module
+         24:         module_name = example_path.stem
+    >    25:         spec = importlib.util.spec_from_file_location(module_name, example_path)
+         26:         if spec is None:
+```
+
+Why this is a false positive: `example_path` is iterated from the repository's own `examples/` directory; the rule's own fix (“never pass request-derived module names or paths”) does not apply to package-controlled repo files.
+
+Checklist evidence: the path is derived from a local directory listing of repo files, not external input.
+
+### [ ] Finding 299 — BP-PY-42
+
+- Function context: `scripts/logxide/findings/functions/299.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:55:1`
+- Checklist pattern: try/except is a defensive guard, not a failure expectation
+
+Source excerpt:
+
+```
+         53:     print("Testing LogXide basic functionality...")
+         54:
+    >    55:     try:
+         56:         # Use auto-install pattern
+```
+
+Why this is a false positive: the try/except is a defensive guard that reports failure to the console so the smoke script can continue; the test does not “expect failure”, so the rule condition (try/except instead of `pytest.raises`) is not met.
+
+Checklist evidence: the except branch reports the failure rather than asserting a raise.
+
+### [ ] Finding 302 — CWE-489
+
+- Function context: `scripts/logxide/findings/functions/302.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:137:1`
+- Checklist pattern: debug flag set inside a test, not application source
+
+Source excerpt:
+
+```
+        135:         if not settings.configured:
+        136:             settings.configure(
+    >   137:                 DEBUG=True,
+        138:                 SECRET_KEY="test-key-for-integration-test",
+```
+
+Why this is a false positive: the flagged debug flag configures Django/Sentry inside a pytest test under `tests/`, where debug mode is standard test scaffolding; the rule condition (“debug mode is enabled in application source”) is not met.
+
+Checklist evidence: the construct is test code configuring a fake settings/SDK object, not application source.
+
+### [ ] Finding 303 — CWE-756
+
+- Function context: `scripts/logxide/findings/functions/303.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:137:1`
+- Checklist pattern: debug flag set inside a test, not a deployed application
+
+Source excerpt:
+
+```
+        135:         if not settings.configured:
+        136:             settings.configure(
+    >   137:                 DEBUG=True,
+        138:                 SECRET_KEY="test-key-for-integration-test",
+```
+
+Why this is a false positive: the same test scaffolding as the paired CWE-489 finding; the “application explicitly enables debug error output” condition targets deployed application source, not test code.
+
+Checklist evidence: the construct is test code, not application source.
+
+### [ ] Finding 307 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/307.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_examples.py:237:13`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        235:
+        236:         for i in range(1000):
+    >   237:             logger.info(f"Performance test message {i}")
+        238:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 315 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/315.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_gil_scaling.py:123:9`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        121:     n = 25
+        122:     for i in range(n):
+    >   123:         logger.info(f"secret-{i}")
+        124:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 316 — BP-PY-40
+
+- Function context: `scripts/logxide/findings/functions/316.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_http_auth.py:41:11`
+- Checklist pattern: daemon server thread with explicit shutdown protocol
+
+Source excerpt:
+
+```
+         39:     port = server.server_address[1]
+         40:     thread = threading.Thread(target=server.serve_forever, daemon=True)
+    >    41:     thread.start()
+         42:     yield port
+```
+
+Why this is a false positive: the fixture thread is `daemon=True` and teardown calls `server.shutdown()` — a clear shutdown protocol, satisfying the rule's own fix (avoid non-daemon fire-and-forget).
+
+Checklist evidence: daemon thread plus explicit `shutdown()` on teardown.
+
+### [ ] Finding 317 — BP-PY-40
+
+- Function context: `scripts/logxide/findings/functions/317.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_http_handler_features.py:43:11`
+- Checklist pattern: daemon server thread with explicit shutdown protocol
+
+Source excerpt:
+
+```
+         41:     port = server.server_address[1]
+         42:     thread = threading.Thread(target=server.serve_forever, daemon=True)
+    >    43:     thread.start()
+         44:     yield port
+```
+
+Why this is a false positive: the fixture thread is `daemon=True` and teardown calls `server.shutdown()` — a clear shutdown protocol, satisfying the rule's own fix (avoid non-daemon fire-and-forget).
+
+Checklist evidence: daemon thread plus explicit `shutdown()` on teardown.
+
+### [ ] Finding 321 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/321.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration.py:105:17`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        103:             logger = logging.getLogger("app.database")
+        104:             for i in range(10):
+    >   105:                 logger.info(f"Database query {i}")
+        106:                 time.sleep(0.001)
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 332 — BP-PY-42
+
+- Function context: `scripts/logxide/findings/functions/332.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:20:1`
+- Checklist pattern: try/except is a defensive guard, not a failure expectation
+
+Source excerpt:
+
+```
+         18:     print("Testing Flask integration...")
+         19:
+    >    20:     try:
+         21:         # Import and test basic functionality
+```
+
+Why this is a false positive: the try/except is a defensive guard that reports failure to the console so the smoke script can continue; the test does not “expect failure”, so the rule condition (try/except instead of `pytest.raises`) is not met.
+
+Checklist evidence: the except branch reports the failure rather than asserting a raise.
+
+### [ ] Finding 335 — CWE-489
+
+- Function context: `scripts/logxide/findings/functions/335.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:69:1`
+- Checklist pattern: debug flag set inside a test, not application source
+
+Source excerpt:
+
+```
+         67:         if not settings.configured:
+         68:             settings.configure(
+    >    69:                 DEBUG=True,
+         70:                 SECRET_KEY="test-key",
+```
+
+Why this is a false positive: the flagged debug flag configures Django/Sentry inside a pytest test under `tests/`, where debug mode is standard test scaffolding; the rule condition (“debug mode is enabled in application source”) is not met.
+
+Checklist evidence: the construct is test code configuring a fake settings/SDK object, not application source.
+
+### [ ] Finding 336 — CWE-756
+
+- Function context: `scripts/logxide/findings/functions/336.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:69:1`
+- Checklist pattern: debug flag set inside a test, not a deployed application
+
+Source excerpt:
+
+```
+         67:         if not settings.configured:
+         68:             settings.configure(
+    >    69:                 DEBUG=True,
+         70:                 SECRET_KEY="test-key",
+```
+
+Why this is a false positive: the same test scaffolding as the paired CWE-489 finding; the “application explicitly enables debug error output” condition targets deployed application source, not test code.
+
+Checklist evidence: the construct is test code, not application source.
+
+### [ ] Finding 342 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/342.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_integration_examples.py:159:13`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+        157:
+        158:         for i in range(1000):
+    >   159:             logger.info(f"Performance test message {i}")
+        160:
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 365 — CWE-489
+
+- Function context: `scripts/logxide/findings/functions/365.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_sentry_integration.py:353:1`
+- Checklist pattern: debug flag set inside a test, not application source
+
+Source excerpt:
+
+```
+        351:         sentry_sdk.init(
+        352:             dsn="https://test@example.com/1",  # Valid format but fake
+    >   353:             debug=True,
+        354:             # Disable default integrations to avoid noise
+```
+
+Why this is a false positive: the flagged debug flag configures Django/Sentry inside a pytest test under `tests/`, where debug mode is standard test scaffolding; the rule condition (“debug mode is enabled in application source”) is not met.
+
+Checklist evidence: the construct is test code configuring a fake settings/SDK object, not application source.
+
+### [ ] Finding 366 — CWE-756
+
+- Function context: `scripts/logxide/findings/functions/366.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_sentry_integration.py:353:1`
+- Checklist pattern: debug flag set inside a test, not a deployed application
+
+Source excerpt:
+
+```
+        351:         sentry_sdk.init(
+        352:             dsn="https://test@example.com/1",  # Valid format but fake
+    >   353:             debug=True,
+        354:             # Disable default integrations to avoid noise
+```
+
+Why this is a false positive: the same test scaffolding as the paired CWE-489 finding; the “application explicitly enables debug error output” condition targets deployed application source, not test code.
+
+Checklist evidence: the construct is test code, not application source.
+
+### [ ] Finding 372 — CWE-117
+
+- Function context: `scripts/logxide/findings/functions/372.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tests/test_timed_rotation.py:70:13`
+- Checklist pattern: interpolated value is not externally influenced input
+
+Source excerpt:
+
+```
+         68:         # Create multiple rotations
+         69:         for i in range(4):
+    >    70:             logger.info(f"message {i}")
+         71:             handler.flush()
+```
+
+Why this is a false positive: the value formatted into the log message is a local loop counter, an inline literal, or an internally generated name; there is no externally influenced value, so the CWE-117 “externally influenced input” condition is not met.
+
+Checklist evidence: the interpolated expression derives from a local counter/literal/internal variable, not request, network, or environment data.
+
+### [ ] Finding 374 — BP-PY-46
+
+- Function context: `scripts/logxide/findings/functions/374.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:10:1:tmp_test_intercept.py:10:1`
+- Checklist pattern: print in a script module, not a library module
+
+Source excerpt:
+
+```
+          8: lock = threading.RLock()
+          9:
+    >    10: print("Calling outside lock...")
+         11: lx_logger.log(logging.INFO, "Outside")
+```
+
+Why this is a false positive: the print is output of a throwaway scratch script at the repo root, not operational logging in a library module; the rule condition (“print used for operational logging in non-script modules”) is not met.
+
+Checklist evidence: the file is a runnable script (the rule's own exception for CLI/demo scripts), not library code.
+
+### [ ] Finding 375 — BP-PY-46
+
+- Function context: `scripts/logxide/findings/functions/375.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:13:1:tmp_test_intercept.py:13:1`
+- Checklist pattern: print in a script module, not a library module
+
+Source excerpt:
+
+```
+         11: lx_logger.log(logging.INFO, "Outside")
+         12:
+    >    13: print("Acquiring lock...")
+         14: with lock:
+```
+
+Why this is a false positive: the print is output of a throwaway scratch script at the repo root, not operational logging in a library module; the rule condition (“print used for operational logging in non-script modules”) is not met.
+
+Checklist evidence: the file is a runnable script (the rule's own exception for CLI/demo scripts), not library code.
+
+### [ ] Finding 376 — BP-PY-46
+
+- Function context: `scripts/logxide/findings/functions/376.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:15:5:tmp_test_intercept.py:15:5`
+- Checklist pattern: print in a script module, not a library module
+
+Source excerpt:
+
+```
+         13: print("Acquiring lock...")
+         14: with lock:
+    >    15:     print("Calling inside lock...")
+         16:     lx_logger.log(logging.INFO, "Inside lock!")
+```
+
+Why this is a false positive: the print is output of a throwaway scratch script at the repo root, not operational logging in a library module; the rule condition (“print used for operational logging in non-script modules”) is not met.
+
+Checklist evidence: the file is a runnable script (the rule's own exception for CLI/demo scripts), not library code.
+
+### [ ] Finding 377 — BP-PY-46
+
+- Function context: `scripts/logxide/findings/functions/377.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/tmp_test_intercept.py:18:1:tmp_test_intercept.py:18:1`
+- Checklist pattern: print in a script module, not a library module
+
+Source excerpt:
+
+```
+         16:     lx_logger.log(logging.INFO, "Inside lock!")
+         17:
+    >    18: print("FINISHED!")
+         19:
+```
+
+Why this is a false positive: the print is output of a throwaway scratch script at the repo root, not operational logging in a library module; the rule condition (“print used for operational logging in non-script modules”) is not met.
+
+Checklist evidence: the file is a runnable script (the rule's own exception for CLI/demo scripts), not library code.
+
+## Uncertain findings (fresh run)
+
+None.
+
+Note: fresh finding 125 (`examples/flask_integration.py:137:1`, CWE-396) is a new finding not present in the audited run. It is a true positive: the generic `except Exception` body only calls `db_logger.error(...)` and continues, matching the audited CWE-396 true-positive pattern (e.g., audited findings 44, 79) — the same handler the audited run classified as a BP-PY-1 true positive at the identical source.
+
+### Final evidence (fresh run)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/logxide/chunks` (all 15 files)
+- Function evidence: `scripts/logxide/findings/functions` (context files for all 67 FPs and finding 125)
+- Validation: `git diff --check` — pass (exit 0, no whitespace errors)

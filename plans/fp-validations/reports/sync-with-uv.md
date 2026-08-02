@@ -355,3 +355,101 @@ None.
 - Chunk evidence: `scripts/sync-with-uv/chunks/Chunk_1_20.txt`
 - Function evidence: `scripts/sync-with-uv/findings/functions/1.txt` .. `20.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+## Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: sync-with-uv
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv
+branch: main
+commit: 27f1d39
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv
+chunk_path: scripts/sync-with-uv/chunks
+function_context_path: scripts/sync-with-uv/findings/functions
+```
+
+## Scan evidence (fresh scan)
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (goslop binary: `./bin/goslop`, rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/sync-with-uv/chunks -context-dir scripts/sync-with-uv/findings/functions real-repos/sync-with-uv`
+- Findings: `7`
+- Chunks reviewed: `scripts/sync-with-uv/chunks/Chunk_1_7.txt`
+- Function contexts reviewed: `scripts/sync-with-uv/findings/functions/1.txt` .. `scripts/sync-with-uv/findings/functions/7.txt`
+
+## Audit checklist
+
+- [x] Read every assigned chunk under `scripts/sync-with-uv/chunks`.
+- [x] Read `scripts/sync-with-uv/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+## Classification summary (fresh run)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 2 | 1, 7 |
+| True positive | 5 | 2, 3, 4, 5, 6 |
+| Uncertain | 0 | — |
+
+Matching: fresh 2 → audited TP 4 (CWE-396, `cli.py:161:1`); fresh 3 → audited TP 16 (BP-PY-2, `repo_data.py:106:1`); fresh 4 → audited TP 17 (CWE-390, `repo_data.py:106:1`); fresh 5 → audited TP 18 (CWE-1071, `repo_data.py:106:5`); fresh 6 → audited TP 19 (BP-PY-2, `repo_data.py:110:1`). Fresh 1 → audited FP 3 (BP-PY-1, `cli.py:161:1`); fresh 7 → audited FP 20 (CWE-252, `test_precommit.py:54:9`).
+
+## False positives
+
+### [ ] Finding `1` — `BP-PY-1`
+
+- Function context: `scripts/sync-with-uv/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/src/sync_with_uv/cli.py:161:1`
+- Checklist pattern: re-appearing audited FP (old finding 3, same source) — the broad `except Exception` handler surfaces the failure instead of hiding it, so the rule condition ("hides failures") is not satisfied.
+
+Source excerpt:
+
+```
+        # return 1 if check and changed
+        return int(check and fixed_text != config_text)
+    except Exception as e:  # noqa: BLE001
+        print("Error:", e, file=sys.stderr)
+        return 123
+```
+
+Why this is a false positive: identical to the audited decision for old finding 3 — the handler reports the exception detail to stderr and returns the documented internal-error exit code `123` (docstring: "Return code 123 means there was an internal error"), so the failure is surfaced to the user and signaled via a non-zero status, not hidden. The "hides failures" clause of the rule condition is not satisfied; the only path to this handler is the cyclopts CLI entry (`@app.default()`), reachable only from `__main__.py`.
+
+Checklist evidence: the except suite prints the exception (`print("Error:", e, file=sys.stderr)`) and returns a non-zero status, i.e. the exception is handled by explicit reporting — the "without handling ... hides failures" clause of the rule condition is not met.
+
+### [ ] Finding `7` — `CWE-252`
+
+- Function context: `scripts/sync-with-uv/findings/functions/7.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/sync-with-uv/tests/test_precommit.py:54:9`
+- Checklist pattern: re-appearing audited FP (old finding 20, same source) — the call passes `check=True`, which is the rule's explicit exemption for `subprocess.run`.
+
+Source excerpt:
+
+```
+    try:
+        subprocess.run(
+            ["pre-commit", "install"], cwd=repo_dir, check=True  # noqa: S607
+        )
+    except subprocess.CalledProcessError as e:
+        # pre-commit install might crash on prerelease Python versions (SIGSEGV)
+        pytest.skip(f"pre-commit install failed: {e}")
+```
+
+Why this is a false positive: identical to the audited decision for old finding 20 — the rule's condition ("process call return status is discarded without checking success") is not met because the call passes `check=True`; the rule's own fix text directs callers to "use check=True so a failed command cannot silently continue execution", and a non-zero status raises `CalledProcessError`, which the surrounding `try/except` handles deliberately by skipping the test.
+
+Checklist evidence: the call includes `check=True`, the rule's documented exemption, so the return status is not discarded — the "unchecked return value" condition is unmet.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/sync-with-uv/chunks/Chunk_1_7.txt`
+- Function evidence: `scripts/sync-with-uv/findings/functions/1.txt` .. `7.txt`
+- Validation: `git diff --check` — pass

@@ -535,3 +535,273 @@ None.
 - Chunk evidence: `scripts/FuncToWeb/chunks`
 - Function evidence: `scripts/FuncToWeb/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+Run metadata:
+
+```yaml
+timestamp: 2026-08-02T16:45:00Z
+repository: FuncToWeb
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb
+branch: main
+commit: 96a90a2b14d667c9fa5957bff4405912e31b0462
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb
+scanner_binary: ./bin/goslop rebuilt at b5b8fde (FP-reduction fix, 2026-08-02 16:29)
+chunk_path: scripts/FuncToWeb/chunks
+function_context_path: scripts/FuncToWeb/findings/functions
+```
+
+Fresh scan produced 32 findings; the audited report lists 38 true positives. 23 of those TPs re-appear in the fresh scan (matched by `Source:` file:line, e.g. old 3→fresh 1, 22→5, 25–30→8–13, 34→16, 37–41→18–22, 43→23, 46→24, 50–53→26–29, 54–56→30–32). The remaining 15 audited TPs are absent from the fresh scan. Each was checked against the current source at the audited location: all 15 constructs are still present, so all 15 are over-suppressed, not fixed.
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-46 | examples/fastapi/sdk_frontend.py:79 | Real `print(f"file {index} of {files}")` in a module function, not under `__main__` | suppressed-but-present |
+| 2 | BP-PY-46 | examples/http/server.py:38 | Real `print(f"{index}...")` in `countdown`, not under `__main__` | suppressed-but-present |
+| 4 | BP-PY-46 | examples/outputs/no_result.py:8 | Real `print(f"Archiving order {reference}")` in `archive_order` | suppressed-but-present |
+| 5 | BP-PY-46 | examples/outputs/no_result.py:13 | Real `print(f"Clearing queue {name}")` in `clear_queue` | suppressed-but-present |
+| 8 | BP-PY-46 | examples/project/gallery.py:110 | Real `print(f"[{index}/{len(photos)}] ...")` in `bulk_thumbnails` | suppressed-but-present |
+| 9 | BP-PY-46 | examples/streaming/async_progress.py:13 | Real `print(f"fetching {pages} page(s)")` in `fetch_pages` | suppressed-but-present |
+| 10 | BP-PY-46 | examples/streaming/async_progress.py:17 | Real `print(f"page {index} of {pages} ready")` in loop | suppressed-but-present |
+| 11 | BP-PY-46 | examples/streaming/basic_prints.py:10 | Real `print(f"hello {name}")` in `announce` | suppressed-but-present |
+| 12 | BP-PY-46 | examples/streaming/basic_prints.py:18 | Real `print(f"step {index} of {items} done")` in loop | suppressed-but-present |
+| 13 | BP-PY-46 | examples/streaming/capture_policy.py:11 | Real `print(f"audited step {index}")` in loop | suppressed-but-present |
+| 14 | BP-PY-46 | examples/streaming/capture_policy.py:19 | Real `print(f"silent step {index}")` in loop | suppressed-but-present |
+| 15 | BP-PY-46 | examples/streaming/print_then_error.py:13 | Real `print(f"row {index} read")` in loop | suppressed-but-present |
+| 16 | BP-PY-46 | examples/streaming/progress.py:13 | Real `print(f"converting {files} file(s)")` in `convert` | suppressed-but-present |
+| 17 | BP-PY-46 | examples/streaming/progress.py:18 | Real `print(f"[{percent:3d}%] file {index} of {files}")` in loop | suppressed-but-present |
+| 19 | CWE-396 | src/func_to_web/models/return_parser.py:486 | `except Exception as error` re-wrapped into `ReturnContractError` | suppressed-but-present |
+
+Fixed-removed: 0. Root cause: the fix's `isPythonScriptModule` exemption (added in `internal/lang/python/detectors/bad_practices/common.go:72-98`, path component `examples/` → BP-PY-46 skipped entirely) suppresses all 14 example prints, and the broad-except "re-raise" exemption suppresses the CWE-396 at return_parser.py:486. None of the suppressed prints sit inside an `if __name__ == "__main__":` block (the guards appear at lines 67–213, after the flagged functions), so the main-guard exemption would not have applied; the path exemption is the sole cause.
+
+### [ ] Finding 1 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/fastapi/sdk_frontend.py:79`
+
+Source excerpt:
+
+```python
+def convert(files: Annotated[int, Min(1), Max(8)] = 5) -> str:
+    """Report the progress of a slow job while it advances."""
+    for index in range(1, files + 1):
+        time.sleep(STEP_SECONDS)
+        print(f"file {index} of {files}")
+```
+
+Why it satisfies the rule condition: module-level `print(...)` call in an importable module (`examples/fastapi/sdk_frontend.py` is imported by the host server; the `__main__` guard is at line 97, after `convert`), matching BP-PY-46's non-script print-in-library pattern.
+
+### [ ] Finding 2 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/http/server.py:38`
+
+Source excerpt:
+
+```python
+def countdown(steps: Annotated[int, Min(1), Max(10)] = 3) -> str:
+    """Print one line per step so the stream carries print events."""
+    for index in reversed(range(1, steps + 1)):
+        print(f"{index}...")
+```
+
+Why it satisfies the rule condition: executable `print(f"{index}...")` inside `countdown`, a module-level function not under the `__main__` guard at line 67.
+
+### [ ] Finding 4 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/outputs/no_result.py:8`
+
+Source excerpt:
+
+```python
+def archive_order(reference: str) -> None:
+    """Do the work and return nothing, which the web shows as "Done"."""
+    print(f"Archiving order {reference}")
+```
+
+Why it satisfies the rule condition: `print(...)` at module level in an importable function; the `__main__` guard at line 18 only wraps `run([...])`.
+
+### [ ] Finding 5 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/outputs/no_result.py:13`
+
+Source excerpt:
+
+```python
+def clear_queue(name: str) -> list[str]:
+    """Return an empty collection, which also shows "Done"."""
+    print(f"Clearing queue {name}")
+```
+
+Why it satisfies the rule condition: same module as finding 4, second module-level `print(...)` in an importable function, not under a `__main__` guard.
+
+### [ ] Finding 8 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/project/gallery.py:110`
+
+Source excerpt:
+
+```python
+    for index, path in enumerate(photos, start=1):
+        with Image.open(path) as picture:
+            picture.thumbnail((size, size))
+            picture.convert("RGB").save(folder / f"thumb-{index}.png")
+
+        print(f"[{index}/{len(photos)}] {Path(path).name} at {size}px")
+```
+
+Why it satisfies the rule condition: `print(...)` inside `bulk_thumbnails`, a module-level function (guard at line 213); note line 101's `print() is the whole API.` is a docstring, but line 110 is a real call node.
+
+### [ ] Finding 9 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/async_progress.py:13`
+
+Source excerpt:
+
+```python
+async def fetch_pages(pages: Annotated[int, Min(1), Max(8)] = 4) -> str:
+    """Report the progress of an awaited job."""
+    print(f"fetching {pages} page(s)")
+```
+
+Why it satisfies the rule condition: `print(f"fetching {pages} page(s)")` is executable code in an async module-level function, before the `__main__` guard at line 22.
+
+### [ ] Finding 10 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/async_progress.py:17`
+
+Source excerpt:
+
+```python
+    for index in range(1, pages + 1):
+        await asyncio.sleep(STEP_SECONDS)
+        print(f"page {index} of {pages} ready")
+```
+
+Why it satisfies the rule condition: second module-level `print(...)` in `fetch_pages`, not under the `__main__` guard.
+
+### [ ] Finding 11 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/basic_prints.py:10`
+
+Source excerpt:
+
+```python
+def announce(name: str = "world") -> str:
+    """Print a single line before returning."""
+    print(f"hello {name}")
+```
+
+Why it satisfies the rule condition: module-level `print(f"hello {name}")` in `announce`; the guard at line 23 only runs `run(...)`.
+
+### [ ] Finding 12 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/basic_prints.py:18`
+
+Source excerpt:
+
+```python
+def checklist(items: Annotated[int, Min(1), Max(20)] = 4) -> str:
+    """Print one line per item and report the total."""
+    for index in range(1, items + 1):
+        print(f"step {index} of {items} done")
+```
+
+Why it satisfies the rule condition: second module-level `print(...)` in `basic_prints.py`, not under the `__main__` guard.
+
+### [ ] Finding 13 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/capture_policy.py:11`
+
+Source excerpt:
+
+```python
+def audited(steps: Annotated[int, Min(1), Max(10)] = 3) -> str:
+    """Inherit the policy of the space, so its prints are streamed."""
+    for index in range(steps):
+        print(f"audited step {index}")
+```
+
+Why it satisfies the rule condition: module-level `print(f"audited step {index}")` in `audited`, before the guard at line 24.
+
+### [ ] Finding 14 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/capture_policy.py:19`
+
+Source excerpt:
+
+```python
+def silent(steps: Annotated[int, Min(1), Max(10)] = 3) -> str:
+    """Print only to the server console: the browser sees no print event."""
+    for index in range(steps):
+        print(f"silent step {index}")
+```
+
+Why it satisfies the rule condition: second module-level `print(...)` in `capture_policy.py`, not under the `__main__` guard.
+
+### [ ] Finding 15 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/print_then_error.py:13`
+
+Source excerpt:
+
+```python
+def import_rows(rows: Annotated[int, Min(1), Max(10)] = 5) -> str:
+    """Read rows one by one and fail on the malformed one."""
+    for index in range(1, rows + 1):
+        print(f"row {index} read")
+```
+
+Why it satisfies the rule condition: module-level `print(f"row {index} read")` in `import_rows`; the guard at line 21 comes after the function.
+
+### [ ] Finding 16 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/progress.py:13`
+
+Source excerpt:
+
+```python
+def convert(files: Annotated[int, Min(1), Max(8)] = 5) -> str:
+    """Report the progress of a slow job while it advances."""
+    print(f"converting {files} file(s)")
+```
+
+Why it satisfies the rule condition: module-level `print(f"converting {files} file(s)")` in `convert`, before the guard at line 23.
+
+### [ ] Finding 17 — BP-PY-46
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/examples/streaming/progress.py:18`
+
+Source excerpt:
+
+```python
+    for index in range(1, files + 1):
+        time.sleep(STEP_SECONDS)
+        percent = index * 100 // files
+        print(f"[{percent:3d}%] file {index} of {files}")
+```
+
+Why it satisfies the rule condition: second module-level `print(...)` in `progress.py`'s `convert`, not under the `__main__` guard.
+
+### [ ] Finding 19 — CWE-396
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/FuncToWeb/src/func_to_web/models/return_parser.py:486`
+
+Source excerpt:
+
+```python
+    try:
+        produced = filename(value, index)
+    except Exception as error:
+        raise ReturnContractError(
+            f"Download filename callable failed: "
+            f"{type(error).__name__}: {error}"
+        ) from error
+```
+
+Why it satisfies the rule condition: `except Exception as error` is a generic catch declared in library code, which CWE-396 flags regardless of how the handler re-uses `error`; the fix's re-raise exemption suppressed it, but the audit classified the generic catch itself as the true positive.
+
+## Final evidence (post-fix over-suppression audit)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/FuncToWeb/chunks/Chunk_1_25.txt`, `scripts/FuncToWeb/chunks/Chunk_26_32.txt`
+- Source evidence: current files at `real-repos/FuncToWeb` commit `96a90a2b14d667c9fa5957bff4405912e31b0462` (unchanged since the original audit)
+- Validation: `git diff --check` — pass

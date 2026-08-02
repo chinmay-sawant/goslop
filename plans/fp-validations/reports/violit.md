@@ -1030,3 +1030,436 @@ None. Finding 131 (CWE-829) reclassified as a true positive: `runpy.run_path(scr
 - Chunk evidence: `scripts/violit/chunks`
 - Function evidence: `scripts/violit/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+Mode A — remaining false positives. Fresh scan run with the post-fix binary (b5b8fde, rebuilt 2026-08-02 16:29); the fresh finding IDs (1–224) do not correspond to the old IDs, so every fresh finding was matched to the old audit by `Source:` path (file:line:col).
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:51+05:30
+repository: violit
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit
+branch: main
+commit: 8fae080f49f374b062172ed6ac71042539ad1f7a
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit
+chunk_path: scripts/violit/chunks
+function_context_path: scripts/violit/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (`go build -o bin/goslop ./cmd/goslop`), binary rebuilt at commit `b5b8fde` (2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/violit/chunks -context-dir scripts/violit/findings/functions real-repos/violit`
+- Findings: `224` (was `248` pre-fix; repo commit unchanged)
+- Chunks reviewed: `scripts/violit/chunks/Chunk_1_25.txt` … `scripts/violit/chunks/Chunk_201_224.txt` (all 9 chunk files)
+- Function contexts reviewed: `scripts/violit/findings/functions/2.txt`, `8.txt`, `9.txt`, `10.txt`, `21.txt`, `22.txt`, `58.txt`, `77.txt`, `81.txt`, `101.txt`, `114.txt`, `130.txt`, `139.txt`, `140.txt`, `141.txt`, `156.txt`, `190.txt`, `202.txt`, `211.txt`, `52.txt`
+- Source verification: re-read the enclosing source for every candidate FP at the flagged line and confirmed the construct is unchanged from the pre-fix audit (same line numbers)
+- Observations: 10 audited FPs no longer fire (old 5, 8, 28, 90, 148, 157, 159, 160, 161, 164 — CWE-89 db_query helper/DDL, BP-PY-46 string-literal print, CWE-215 bool print, BP-PY-12 `session.exec`), i.e. fixed by the reducer. 14 audited TPs no longer fire (old 7, 10, 25, 26, 27, 32, 129, 137, 138, 139, 140, 141, 142, 221 — module-level example prints, `sys.path.insert` bootstrap in examples/cli, CWE-215 native-token debug print at app.py:177, cli.py prints, CWE-367 TOCTOU at form_widgets.py:543); every one of these constructs was verified still present in source, i.e. suppressed-but-present (not fixed) — candidates for Mode-B review.
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/violit/chunks` (all 9 files).
+- [x] Read `scripts/violit/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Fresh findings were matched to the old audit by `Source:` path. Every fresh finding whose source matches an audited TP was classified TP (including fresh 52, which matches audited TP 61 by source: `app_launcher.py:159:17` — the `print("INFO:     Stopping reloader process")` line, construct verified at line 159). Every fresh finding matching an audited FP source was re-classified FP after re-verifying the construct against the rule condition. No genuinely new findings (no fresh finding without an old-audit source match).
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 19 | 2, 8, 9, 10, 21, 22, 58, 77, 81, 101, 114, 130, 139, 140, 141, 156, 190, 202, 211 |
+| True positive | 205 | 1, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 78, 79, 80, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 131, 132, 133, 134, 135, 136, 137, 138, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 203, 204, 205, 206, 207, 208, 209, 210, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224 |
+| Uncertain | 0 | — |
+
+### False positives (remaining)
+
+All 19 remaining false positives re-appear at the exact `Source:` locations audited as false positives in the pre-fix run; the flagged constructs were re-verified in the current source (unchanged) and each still fails to satisfy its rule condition.
+
+### [ ] Finding `2` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/01_demo_showcase/old_archive_demo_showcase.py:178:38`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+def _submit_chat_prompt(prompt: str):
+    if isinstance(prompt, dict):
+        prompt_payload = {
+            "text": str(prompt.get("text") or "").strip(),
+            "files": [entry for entry in list(prompt.get("files") or []) if entry is not None],
+            ...
+```
+
+Why this is a false positive: identical to audited FP 2 — at most 9 real control-flow statements; the substring counter reaches 12 only by counting `if `/`for ` inside list comprehensions, which are expressions, not branches.
+
+Checklist evidence: re-counted the function body from the current source; real control-flow statements < 12.
+
+### [ ] Finding `8` and `9` — `BP-PY-37` / `CWE-89`
+
+- Function context: `scripts/violit/findings/functions/8.txt`, `9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/03_multi_db_sqlite_editor/demo_multi_db_sqlite_editor.py:230:17` (same construct, two rules)
+- Checklist pattern: rule conditions “DB-API execute builds SQL with f-string/%; use bound parameters” and “dynamic SQL string reaches execute/executemany”
+
+Source excerpt:
+
+```
+    if field not in HR_FIELDS | PROJECT_FIELDS:
+        raise ValueError(f"Unsupported field: {field}")
+    ...
+        conn.execute(f"UPDATE employees SET {field} = ? WHERE emp_id = ?", (stored_value, emp_id))
+```
+
+Why this is a false positive: identical to audited FPs 12/13 — the only interpolated token is the column identifier, constrained by the same-function allowlist check to `HR_FIELDS | PROJECT_FIELDS`; all values travel via `?` bound parameters.
+
+Checklist evidence: field is allowlist-constrained at demo_multi_db_sqlite_editor.py:223-224 (verified in current source); values are bound parameters.
+
+### [ ] Finding `10` — `BP-PY-37`
+
+- Function context: `scripts/violit/findings/functions/10.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/examples/03_multi_db_sqlite_editor/demo_multi_db_sqlite_editor.py:234:13`
+- Checklist pattern: rule condition “DB-API `cursor.execute` builds SQL with f-string or % format; use bound parameters”
+
+Source excerpt:
+
+```
+    with _connect(PROJECT_DB) as conn:
+        conn.execute(f"UPDATE assignments SET {field} = ? WHERE emp_id = ?", (value, emp_id))
+```
+
+Why this is a false positive: identical to audited FP 14 — second statement in `persist_editor_change`, guarded by the same `field not in HR_FIELDS | PROJECT_FIELDS` allowlist check; values are bound with `?` placeholders.
+
+Checklist evidence: identifier is allowlist-constrained in the same function; values bound.
+
+### [ ] Finding `21` — `CWE-93`
+
+- Function context: `scripts/violit/findings/functions/21.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app.py:85:21`
+- Checklist pattern: rule condition “externally influenced value is written into an HTTP response header without CRLF neutralization”
+
+Source excerpt:
+
+```
+    def file_response(self, full_path, stat_result, scope, status_code=200):
+        response = super().file_response(full_path, stat_result, scope, status_code)
+        if not response.headers.get("Cache-Control"):
+            response.headers["Cache-Control"] = self._cache_control_for_scope(scope)
+```
+
+Why this is a false positive: identical to audited FP 29 — the header value is the return of `_cache_control_for_scope`, whose every branch returns one of four fixed string literals; no request data can reach the value.
+
+Checklist evidence: verified `_cache_control_for_scope` at app.py:89 ff. returns only hardcoded literal strings; the RHS being a call expression is what triggers the “dynamic” classification.
+
+### [ ] Finding `22` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/22.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app.py:124:434`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+    def __init__(self, mode: Optional[str] = None, title="Violit App", ...):
+        self._mode_is_explicit = mode is not None
+        self.mode = (mode or 'ws').strip().lower()
+        ...
+        if db is not None:
+            from .db import ViolItDB, normalize_db_url
+            self.db = ViolItDB(normalize_db_url(db), migrate=migrate)
+        ...
+        self.debug_mode = '--debug' in sys.argv
+```
+
+Why this is a false positive: identical to audited FP 30 — the constructor contains only 7 real `if` statements (AST count over lines 124–494); the substring counter reaches 30 `if ` hits by counting ternary/`or` expressions and `if` text inside string literals.
+
+Checklist evidence: AST count of `If`/`For`/`While`/`Try` statements directly in `App.__init__` = 7 < 12.
+
+### [ ] Finding `58` — `BP-PY-40`
+
+- Function context: `scripts/violit/findings/functions/58.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_launcher.py:298:15`
+- Checklist pattern: rule condition “threading.Thread started without .join … avoid fire-and-forget non-daemon threads” (detector explicitly skips lines with `daemon=True`)
+
+Source excerpt:
+
+```
+        thread = threading.Thread(target=server_manager, daemon=True)
+        thread.start()
+```
+
+Why this is a false positive: identical to audited FP 67 — the thread is constructed with `daemon=True` on the preceding line, but the exemption only inspects the `.start(` line, so the same-line check misses it.
+
+Checklist evidence: verified `threading.Thread(target=server_manager, daemon=True)` at app_launcher.py:297 immediately before the flagged `.start()` at line 298.
+
+### [ ] Finding `77` — `BP-PY-13`
+
+- Function context: `scripts/violit/findings/functions/77.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_runtime.py:414:32`
+- Checklist pattern: rule condition “A secret-like name is assigned a non-empty string literal in source”
+
+Source excerpt:
+
+```
+            csrf_token = self._generate_csrf_token(sid) if sid and self.csrf_enabled else ""
+            csrf_script = f'<script>window._csrf_token = "{csrf_token}";</script>' if csrf_token else ""
+```
+
+Why this is a false positive: identical to audited FP 86 — the matched `window._csrf_token = ` is JavaScript text inside an HTML/JS string template, not a Python assignment; the value is a runtime-generated CSRF token, not a hardcoded secret.
+
+Checklist evidence: the matched construct is a JS variable name inside a string literal with a runtime-generated f-string value.
+
+### [ ] Finding `81` — `BP-PY-32`
+
+- Function context: `scripts/violit/findings/functions/81.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/app_runtime.py:553:24`
+- Checklist pattern: rule condition “FileResponse / static file helpers use a path from user input without confinement”
+
+Source excerpt:
+
+```
+                media_path = str(payload.get("path") or "").strip()
+                if not media_path or not os.path.exists(media_path) or not os.path.isfile(media_path):
+                    return Response(status_code=404)
+                ...
+                return FileResponse(
+                    path=media_path, ...
+```
+
+Why this is a false positive: identical to audited FP 91 — the path comes from the application's own session-store media registry (`_vl_media_sources`), populated by the framework for developer-created media widgets; only `media_id` is user-controlled and it selects among registered entries.
+
+Checklist evidence: verified `media_path` is read from the app-populated `registry` (app_runtime.py:548-550), not derived from request parameters.
+
+### [ ] Finding `101` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/101.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/background.py:188:52`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+    def _run(self, sid: str, current_view_id: str):
+        t = session_ctx.set(sid) if sid else None
+        view_token = view_ctx.set(current_view_id) if current_view_id else None
+        ...
+        try:
+            self._result = self._fn()
+            if self._cancel_event.is_set():
+                ...
+```
+
+Why this is a false positive: identical to audited FP 111 — 11 real control-flow statements (AST count excluding nested definitions); the counter reaches ≥12 by counting ternary `if` expressions as branches.
+
+Checklist evidence: AST count of `If`/`For`/`While`/`Try` in `BackgroundTask._run` = 11 < 12.
+
+### [ ] Finding `114` — `CWE-117`
+
+- Function context: `scripts/violit/findings/functions/114.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/background.py:312:17`
+- Checklist pattern: rule condition “externally influenced input … without neutralizing line-breaking control characters”
+
+Source excerpt:
+
+```
+                logger.debug(f"[background] Pushed {len(dirty)} updates to session {sid[:8]}...")
+```
+
+Why this is a false positive: identical to audited FP 124 — the interpolated values are an integer and a truncated server-generated session-id prefix; no externally controlled string is written to the log.
+
+Checklist evidence: the formatted values are `len(dirty)` (int) and `sid[:8]` (truncated internally generated id).
+
+### [ ] Finding `130` — `CWE-117`
+
+- Function context: `scripts/violit/findings/functions/130.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:129:17`
+- Checklist pattern: rule condition “externally influenced input … without neutralizing line-breaking control characters”
+
+Source excerpt:
+
+```
+            if table_name not in existing_tables:
+                logger.info(f"[violit:db] ✅ New table created: {table_name}")
+                continue
+```
+
+Why this is a false positive: identical to audited FP 147 — `table_name` iterates SQLModel model metadata (developer-defined class names), not external input; it cannot carry CR/LF from an attacker.
+
+Checklist evidence: the interpolated value derives from `SQLModel.metadata.tables`, not from external input.
+
+### [ ] Finding `139` — `BP-PY-14`
+
+- Function context: `scripts/violit/findings/functions/139.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:279:20`
+- Checklist pattern: rule condition “`requests` HTTP calls omit `timeout=`” (detector regex `\b(session|sess|req_session)\.(get|post|…)\s*\(`)
+
+Source excerpt:
+
+```
+        _check_sqlmodel()
+        with Session(self._engine) as session:
+            return session.get(model, pk)
+```
+
+Why this is a false positive: identical to audited FP 158 — `session` is a SQLModel `Session` and `session.get(model, pk)` is an ORM primary-key lookup, not an HTTP request; the file imports no `requests`.
+
+Checklist evidence: `Session` is imported from `sqlmodel` and wraps `self._engine`; verified in current db.py:277-279.
+
+### [ ] Finding `140` — `BP-PY-14`
+
+- Function context: `scripts/violit/findings/functions/140.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:353:13`
+- Checklist pattern: rule condition “`requests` HTTP calls omit `timeout=`” (detector regex matches `session.delete(` by name)
+
+Source excerpt:
+
+```
+            managed = session.merge(obj)
+            session.delete(managed)
+            session.commit()
+```
+
+Why this is a false positive: identical to audited FP 162 — ORM delete on a SQLModel database session, not a `requests` call.
+
+Checklist evidence: `session` is a SQLModel `Session` bound to `self._engine`; `delete`/`commit` are ORM methods.
+
+### [ ] Finding `141` — `BP-PY-14`
+
+- Function context: `scripts/violit/findings/functions/141.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/db.py:369:17`
+- Checklist pattern: rule condition “`requests` HTTP calls omit `timeout=`” (detector regex matches `session.delete(` by name)
+
+Source excerpt:
+
+```
+            for row in rows:
+                managed = session.merge(row)
+                session.delete(managed)
+            session.commit()
+```
+
+Why this is a false positive: identical to audited FP 163 — same ORM delete construct on a SQLModel database session.
+
+Checklist evidence: `session` is a SQLModel `Session`; `delete`/`commit` are ORM methods.
+
+### [ ] Finding `156` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/156.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/chart_widgets.py:19:27`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+    def _normalize(value):
+        if isinstance(value, np.ndarray):
+            return [_normalize(item) for item in value.tolist()]
+        if isinstance(value, np.generic):
+            return value.item()
+        if isinstance(value, dict):
+            ...
+        if isinstance(value, list):
+            return [_normalize(item) for item in value]
+        if isinstance(value, tuple):
+            return [_normalize(item) for item in value]
+        return value
+```
+
+Why this is a false positive: identical to audited FP 179 — 6 `if` statements + 1 `except` (7 real branches); the count reaches 12 only via `for `/`if ` inside list/dict comprehensions.
+
+Checklist evidence: AST count of `If`/`For`/`While`/`Try` statements = 7 < 12.
+
+### [ ] Finding `190` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/190.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/form_widgets.py:67:23`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+        def builder():
+            token = rendering_ctx.set(cid)
+            bt = text() if callable(text) else text
+            ...
+            icon_html = f'...' if icon and not any(ord(c) > 127 for c in str(icon)) else ''
+            ...
+            if use_container_width:
+                host_style = merge_style(host_style, "width:100%;")
+            if height not in (None, "", "auto"):
+                ...
+```
+
+Why this is a false positive: identical to audited FP 213 — 6 real control-flow statements in the `builder()` closure; the count reaches 12 via ternary `... if ... else ...` expressions and `for` inside generator expressions.
+
+Checklist evidence: AST count of real control-flow statements in `builder()` at line 67 = 6 < 12.
+
+### [ ] Finding `202` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/202.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/input_widgets.py:415:23`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+        def builder():
+            token = rendering_ctx.set(cid)
+            cv = s.value
+            ...
+            opts_html = ""
+            for i_opt, opt in enumerate(options):
+                sel = 'checked' if opt == cv else ''
+                escaped_opt = html_lib.escape(str(opt), quote=True)
+                ...
+                if captions and i_opt < len(captions) and captions[i_opt]:
+                    ...
+```
+
+Why this is a false positive: identical to audited FP 226 — 1 real `for` loop + 6 `if` statements (7 real branches); the count reaches 12 via ternary `if` expressions.
+
+Checklist evidence: AST count of real control-flow statements in the `builder()` at line 415 = 7 < 12.
+
+### [ ] Finding `211` — `CWE-1121`
+
+- Function context: `scripts/violit/findings/functions/211.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/widgets/layout_widgets.py:326:107`
+- Checklist pattern: rule condition “function has at least twelve visible control-flow branches”
+
+Source excerpt:
+
+```
+    def expander(self, label, expanded=False, icon=None, cls: str = "", style: str = "", key: Any = None):
+        cid = self._resolve_widget_cid("expander", key)
+        summary_cid = f"{cid}__summary"
+        details_cid = f"{cid}__details"
+
+        class ExpanderContext:
+            def __init__(self, app, expander_id, label, expanded, icon=None, user_cls="", user_style=""):
+                ...
+            def __enter__(self):
+                def summary_builder():
+                    ...
+```
+
+Why this is a false positive: identical to audited FP 235 — `expander` contains only 8 real control-flow statements; the counter reaches 12 by including branches of the nested `ExpanderContext` class and `summary_builder` definitions, which are not part of `expander`'s own flow.
+
+Checklist evidence: AST count of real control-flow statements in `expander` (excluding nested definitions) = 8 < 12.
+
+### Uncertain findings
+
+None — every fresh finding was matched to an audited TP or an audited FP by exact `Source:` path, and the one finding not listed in the old tables (fresh 52 = `app_launcher.py:159:17`, BP-PY-46) matches audited TP 61 by source with the construct verified present.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/violit/chunks` (fresh scan, 9 chunk files)
+- Function evidence: `scripts/violit/findings/functions` (fresh scan)
+- Validation: `git diff --check` — `pass`

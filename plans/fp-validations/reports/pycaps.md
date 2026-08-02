@@ -599,3 +599,214 @@ None. Finding 22 (CWE-22) reclassified as a true positive: `open(os.path.join(se
 - Chunk evidence: `scripts/pycaps/chunks`
 - Function evidence: `scripts/pycaps/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+Mode A — remaining false positives. Fresh scan run with the FP-reduction binary (rebuilt 2026-08-02 16:29, fix commit `b5b8fde`).
+
+### Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02
+repository: pycaps
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps
+branch: main
+commit: 68a6843bbd3f7d0ea33047ffb1045d978a7671c4
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps
+chunk_path: scripts/pycaps/chunks
+function_context_path: scripts/pycaps/findings/functions
+```
+
+### Scan evidence (fresh scan)
+
+- Build command: `(pre-built) ./bin/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pycaps/chunks -context-dir scripts/pycaps/findings/functions real-repos/pycaps`
+- Findings: `29` (down from 51 pre-fix)
+- Chunks reviewed: `scripts/pycaps/chunks/Chunk_1_25.txt`, `scripts/pycaps/chunks/Chunk_26_29.txt`
+- Function contexts reviewed: `scripts/pycaps/findings/functions/1.txt … 29.txt`
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/pycaps/chunks`.
+- [x] Read `scripts/pycaps/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Fresh IDs were matched to old IDs by `Source:` (file:line:col). Fresh findings whose source matches an audited TP are true positives; sources matching audited FPs are re-appearing false positives; unmatched sources were classified on the rule condition.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 6 | 1, 9, 12, 16, 22, 25 |
+| True positive | 23 | 2, 3, 4, 5, 6, 7, 8, 10, 11, 13, 14, 15, 17, 18, 19, 20, 21, 23, 24, 26, 27, 28, 29 |
+| Uncertain | 0 | — |
+
+Remaining false positives: 6 (fresh IDs 1, 9, 12, 16, 22, 25), corresponding to old IDs 1, 10, 16, 20, 31, 35. All other 17 pre-fix FPs (old IDs 13, 15, 23, 25, 28, 30, 39–48, 51) no longer appear in the fresh scan — the fix suppressed them.
+
+## False positives (fresh run)
+
+### [ ] Finding 1 — BP-PY-13
+
+- Function context: `scripts/pycaps/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/ai/gpt.py:6:1`
+- Checklist pattern: the flagged string is an environment-variable *name* used as the lookup key for `os.getenv`, not a credential value (matches audited FP 1).
+
+Source excerpt:
+
+```
+    OPENAI_API_KEY_NAME = "PYCAPS_OPENAI_API_KEY"
+    ...
+        return os.getenv(self.OPENAI_API_KEY_NAME) is not None
+    ...
+            self._client = OpenAI(api_key=os.getenv(self.OPENAI_API_KEY_NAME))
+```
+
+Why this is a false positive: the literal is the name of the environment variable the code reads the key from via `os.getenv(self.OPENAI_API_KEY_NAME)` (gpt.py:15, 24) — the exact fix the rule recommends; no credential value is hardcoded.
+
+Checklist evidence: the rule condition "secret-like name assigned a string literal" fires only on the identifier pattern; the value is a lookup key for `os.getenv`, not a loaded-from-environment-able secret.
+
+### [ ] Finding 9 — CWE-409
+
+- Function context: `scripts/pycaps/findings/functions/9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/effect/clip/animate_segment_emojis_effect.py:71:18`
+- Checklist pattern: the archive is fetched from a hardcoded, version-pinned URL constant of the project's own release, so no untrusted party supplies the compressed data (matches audited FP 10).
+
+Source excerpt:
+
+```
+    ASSETS_ZIP_URL = "https://github.com/francozanardi/pycaps/releases/download/emoji-assets-v2/animated_emojis.zip"
+    ...
+            file_buffer.seek(0)
+            with zipfile.ZipFile(file_buffer) as z:
+                z.extractall(self.CACHE_DIR)
+```
+
+Why this is a false positive: the detector reports any `.extractall` call, but the archive bytes come solely from `requests.get(self.ASSETS_ZIP_URL, ...)` where the URL is a compile-time constant pinned to the project's own HTTPS release asset; no user-influenced input reaches the extraction sink.
+
+Checklist evidence: the zip-bomb trust boundary (untrusted compressed data) is absent — the archive source is a source constant, not user input.
+
+### [ ] Finding 12 — CWE-367
+
+- Function context: `scripts/pycaps/findings/functions/12.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/caps_pipeline_builder.py:49:16`
+- Checklist pattern: the `exists` check only feeds a user-facing `ValueError`; the subsequent use fails benignly (matches audited FP 16).
+
+Source excerpt:
+
+```
+    def add_css(self, css_file_path: str) -> "CapsPipelineBuilder":
+        if not os.path.exists(css_file_path):
+            raise ValueError(f"CSS file not found: {css_file_path}")
+        css_content = open(css_file_path, "r", encoding="utf-8").read()
+```
+
+Why this is a false positive: the check-then-use race has no privilege or integrity consequence — if the file vanishes between check and `open`, `open()` raises `FileNotFoundError` with the same benign outcome; no attacker-controlled state is used and no security boundary is crossed.
+
+Checklist evidence: rule condition "path checked before later separate use" is matched literally, but the check exists only to produce a friendly error and the race's failure mode is a benign exception on the user's own file.
+
+### [ ] Finding 16 — CWE-478
+
+- Function context: `scripts/pycaps/findings/functions/16.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/json_config_loader.py:93:1`
+- Checklist pattern: the match domain is a pydantic-validated `Literal` union whose every member has a case branch (matches audited FP 20).
+
+Source excerpt:
+
+```
+        for effect in self._config.effects:
+            match effect.type:
+                case "emoji_in_segment":
+                case "emoji_in_word":
+                case "remove_punctuation_marks":
+                case "typewriting":
+                case "animate_segment_emojis":
+```
+
+Why this is a false positive: `effect.type` is a pydantic `Literal["emoji_in_segment", "emoji_in_word", "remove_punctuation_marks", "typewriting", "animate_segment_emojis"]` (`json_schema.py:51-74`, verified unchanged), and all five members are handled by the five case branches; any other value raises `ValidationError` before the match is reached, so no unhandled value can occur.
+
+Checklist evidence: rule condition "match with two or more cases lacks a wildcard" is met syntactically, but the matched value is exhaustively constrained by schema validation, making a default branch unreachable dead code.
+
+### [ ] Finding 22 — CWE-478
+
+- Function context: `scripts/pycaps/findings/functions/22.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/selector/time_event_selector.py:28:1`
+- Checklist pattern: the matched value is a Python `Enum` whose members are all covered by the case branches (matches audited FP 31).
+
+Source excerpt:
+
+```
+        match self._element_type:
+            case ElementType.WORD:
+                return self.__filter_by_words(clips)
+            case ElementType.LINE:
+                return self.__filter_by_lines(clips)
+            case ElementType.SEGMENT:
+                return self.__filter_by_segments(clips)
+```
+
+Why this is a false positive: `ElementType` is a `str, Enum` with exactly `WORD`, `LINE`, `SEGMENT` members (`common/types.py:21-24`, verified unchanged), all three handled; invalid values cannot construct the enum, so no value reaches the match unhandled.
+
+Checklist evidence: rule condition "match with multiple cases and no wildcard" is met syntactically, but the enum domain is fully covered — a default branch would be unreachable.
+
+### [ ] Finding 25 — CWE-186
+
+- Function context: `scripts/pycaps/findings/functions/25.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/transcriber/transcript_loader.py:14:23`
+- Checklist pattern: the regex parses a fixed standard format (VTT inline timestamp), not a validator that rejects valid identifiers (matches audited FP 35).
+
+Source excerpt:
+
+```
+_TIME_EPSILON = 0.01
+_VTT_INLINE_TIME_RE = re.compile(r"<((?:\d{2}:)?\d{2}:\d{2}\.\d{3})>")
+```
+
+Why this is a false positive: the detector fires on the `\d{3}` quantifier, but this regex extracts WebVTT inline timestamps, whose format is exactly `[HH:]MM:SS.mmm` per the VTT spec; the millisecond part is always three digits, so the pattern is precise, not overly restrictive — no valid input is rejected.
+
+Checklist evidence: rule condition "validation regex accepts only a fixed narrow identifier shape" — this is a parser for a standards-defined fixed format (used to extract, not validate user identifiers), so narrowness is inherent to the format, not an over-restriction.
+
+## Uncertain findings (fresh run)
+
+None.
+
+## True positives (fresh run)
+
+Fresh findings whose `Source:` matches an audited TP (rule, source, old ID):
+
+| Fresh finding | Rule | Source (matches old) | Old finding |
+| --- | --- | --- | --- |
+| 2 | BP-PY-14 | `src/pycaps/api/api_sender.py:31` | 3 |
+| 3 | BP-PY-1 | `src/pycaps/api/emoji_in_segments_api.py:26` | 4 |
+| 4 | CWE-396 | `src/pycaps/api/emoji_in_segments_api.py:26` | 5 |
+| 5 | BP-PY-1 | `src/pycaps/api/pycaps_tagger_api.py:22` | 6 |
+| 6 | CWE-396 | `src/pycaps/api/pycaps_tagger_api.py:22` | 7 |
+| 7 | BP-PY-7 | `src/pycaps/cli/preview_styles_cli.py:22` | 8 |
+| 8 | BP-PY-14 | `src/pycaps/effect/clip/animate_segment_emojis_effect.py:49` | 9 |
+| 10 | BP-PY-1 | `src/pycaps/effect/clip/animate_segment_emojis_effect.py:76` | 11 |
+| 11 | CWE-396 | `src/pycaps/effect/clip/animate_segment_emojis_effect.py:76` | 12 |
+| 13 | BP-PY-7 | `src/pycaps/pipeline/caps_pipeline_builder.py:51` | 17 |
+| 14 | BP-PY-5 | `src/pycaps/pipeline/json_config_loader.py:6` | 18 |
+| 15 | BP-PY-5 | `src/pycaps/pipeline/json_config_loader.py:7` | 19 |
+| 17 | BP-PY-7 | `src/pycaps/pipeline/json_config_loader.py:227` | 21 |
+| 18 | CWE-22 | `src/pycaps/pipeline/json_config_loader.py:227` | 22 |
+| 19 | BP-PY-1 | `src/pycaps/renderer/pictex_subtitle_renderer.py:76` | 26 |
+| 20 | BP-PY-1 | `src/pycaps/renderer/pictex_subtitle_renderer.py:106` | 27 |
+| 21 | BP-PY-4 | `src/pycaps/renderer/renderer_page.py:9` | 29 |
+| 23 | BP-PY-1 | `src/pycaps/template/template_service.py:20` | 32 |
+| 24 | BP-PY-7 | `src/pycaps/transcriber/editor/transcription_editor.py:37` | 33 |
+| 26 | BP-PY-1 | `src/pycaps/video/audio_utils.py:28` | 37 |
+| 27 | CWE-396 | `src/pycaps/video/audio_utils.py:28` | 38 |
+| 28 | BP-PY-1 | `src/pycaps/video/video_generator.py:127` | 50 |
+
+Finding 29 (CWE-396, `src/pycaps/video/video_generator.py:127:1`) is a new true positive: `except Exception as e:` at video_generator.py:127 logs a warning and does not re-raise, so the generic handler hides the distinct failure conditions of `os.remove` — the rule condition is satisfied. It does not match any audited source (the audited CWE-396 at this file was line 77, old finding 49), so it was classified on the rule condition.
+
+## Final evidence (fresh run)
+
+- Delegated reviewers: none (single-reviewer audit)
+- Chunk evidence: `scripts/pycaps/chunks`
+- Function evidence: `scripts/pycaps/findings/functions`
+- Validation: `git diff --check` — pass

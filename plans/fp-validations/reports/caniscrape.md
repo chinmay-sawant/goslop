@@ -4622,3 +4622,152 @@ None.
 - Chunk evidence: `scripts/caniscrape/chunks`
 - Function evidence: `scripts/caniscrape/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+### Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02T16:38:49+05:30
+repository: caniscrape
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/caniscrape
+branch: main
+commit: 3624e55
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/caniscrape
+chunk_path: scripts/caniscrape/chunks
+function_context_path: scripts/caniscrape/findings/functions
+```
+
+### Scan evidence (fresh run)
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (post-fix binary `b5b8fde`, rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/caniscrape/chunks -context-dir scripts/caniscrape/findings/functions real-repos/caniscrape`
+- Findings: `67` (pre-fix run: 338)
+- Chunks reviewed: `scripts/caniscrape/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_67.txt`
+- Function contexts reviewed: none required for Mode B — every fresh finding was matched to an audited TP by `Source:` path from the chunks alone; the 12 missing TPs were verified directly in the enclosing source files.
+
+### Audit checklist (Mode B)
+
+- [x] Collected the full audited TP list (79 IDs) from the True positives tables above.
+- [x] Collected the sources present in the fresh scan from `scripts/caniscrape/chunks/Chunk_*.txt` (67 findings).
+- [x] Matched fresh findings to audited TPs by `Source:` path — all 67 fresh findings correspond to audited TP sources; no fresh FP or new finding appeared.
+- [x] Identified audited TP sources absent from the fresh scan (12) and read the current source at each old `file:line` to confirm the construct still exists.
+- [x] Classified each absent TP as `suppressed-but-present` or `fixed-removed` on the basis of the current source, not the old context files.
+- [x] Ran `git diff --check` after updating this report.
+
+### Over-suppressed true positives
+
+The fix `b5b8fde` (2026-08-02) added two new exemptions that suppress audited TPs:
+
+1. **Broad-except surfacing exemption** (`suiteSurfacesFailure` in `internal/lang/python/detectors/bad_practices/rules_core.go`): CWE-396/BP-PY-1 now skip any except suite that re-raises, logs with `exc_info`, or records into an error/result field. The original audit's rule condition note for CWE-396 stated "no re-raise exemption", and the three audited CWE-396 TPs in caniscrape all re-raise — they are now silently dropped.
+2. **Rich-print module exemption** (`pythonUsesRichPrint` in `internal/lang/python/detectors/bad_practices/rules_observability.go`): BP-PY-46 now skips any module containing `from rich import print`. Both `telemetry.py` (line 18) and `upload_handler.py` (line 1) import Rich's print, so the entire modules are skipped and the 9 audited TP prints in their worker functions vanish with them.
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 54 | CWE-396 | `caniscrape/cli.py:326` | generic handler in scan command | suppressed-but-present |
+| 245 | CWE-396 | `caniscrape/config.py:38` | generic handler hides distinct failures | suppressed-but-present |
+| 329 | CWE-396 | `caniscrape/utils/captcha_solvers.py:39` | generic handler wraps initialization errors | suppressed-but-present |
+| 290 | BP-PY-46 | `caniscrape/telemetry.py:243` | `print(...)` in `contribute_scan` worker | suppressed-but-present |
+| 291 | BP-PY-46 | `caniscrape/telemetry.py:245` | `print(...)` in `contribute_scan` worker | suppressed-but-present |
+| 318 | BP-PY-46 | `caniscrape/upload_handler.py:58` | `print(...)` in `try_upload_scan` worker | suppressed-but-present |
+| 319 | BP-PY-46 | `caniscrape/upload_handler.py:59` | `print(...)` in worker | suppressed-but-present |
+| 320 | BP-PY-46 | `caniscrape/upload_handler.py:65` | `print(...)` in worker error path | suppressed-but-present |
+| 322 | BP-PY-46 | `caniscrape/upload_handler.py:66` | `print(...)` in worker error path | suppressed-but-present |
+| 323 | BP-PY-46 | `caniscrape/upload_handler.py:68` | `print(...)` in worker error path | suppressed-but-present |
+| 324 | BP-PY-46 | `caniscrape/upload_handler.py:69` | `print(...)` in worker error path | suppressed-but-present |
+| 325 | BP-PY-46 | `caniscrape/upload_handler.py:71` | `print(...)` in worker error path | suppressed-but-present |
+
+Total: 12 over-suppressed TPs (suppressed-but-present), 0 fixed-removed.
+
+#### [ ] Findings `54`, `245`, `329` — `CWE-396` (re-raise exemption suppresses re-raising generic handlers)
+
+- Sources: `caniscrape/cli.py:326`, `caniscrape/config.py:38`, `caniscrape/utils/captcha_solvers.py:39`
+- Suppression mechanism: `suiteSurfacesFailure` in `rules_core.go` exempts except suites that re-raise (`raise`, `raise X`); the original audit's CWE-396 condition had no re-raise exemption.
+
+Source excerpt (cli.py:326):
+
+```
+    except Exception as e:
+        telemetry.track_usage_event('scan_error', __version__, metadata = {
+            'error_type': type(e).__name__,
+            'error_message': str(e)[:100]
+        }, silent=True)
+        raise
+```
+
+Source excerpt (config.py:38):
+
+```
+        except Exception as e:
+            if temp_file.exists():
+                temp_file.unlink()
+            raise Exception(f'Failed to save config.')
+```
+
+Source excerpt (captcha_solvers.py:39):
+
+```
+        except Exception as e:
+            raise CaptchaSolverError(f"Failed to initialize CapSolver client: {e}")
+```
+
+Why these are suppressed-but-present true positives: all three `except Exception as e:` clauses are intact at their audited lines. Each satisfies the audited rule condition — a generic `Exception` catch in a non-test module (the first `except Exception` clause in each function, matching `pyGenericExceptRE`) — and the old audit deliberately counted them as TPs despite the re-raises ("CWE-396 ... no re-raise exemption"). The new `suiteSurfacesFailure` exemption drops them because each suite contains a `raise` statement, which is a behavioral change to the rule condition, not removal of the construct.
+
+Checklist evidence: the "first generic except in a non-test module" predicate of the audited CWE-396 condition is still met at `cli.py:326`, `config.py:38` and `captcha_solvers.py:39`; the absence of these findings in the fresh scan is caused solely by the new re-raise surfacing exemption.
+
+#### [ ] Findings `290`, `291` — `BP-PY-46` (Rich-print exemption suppresses `contribute_scan` worker prints)
+
+- Sources: `caniscrape/telemetry.py:243`, `caniscrape/telemetry.py:245`
+- Suppression mechanism: `pythonUsesRichPrint(unit.Source)` skips the whole module when `from rich import print` is present (`telemetry.py:18`).
+
+Source excerpt:
+
+```
+            if response.status_code == 201:
+                if not silent:
+                    data = response.json()
+                    if data.get('is_new'):
+                        print('[dim]🌍 Scan contributed to public database (new entry)[/dim]')
+                    else:
+                        print('[dim]🌍 Scan contributed to public database (updated)[/dim]')
+                return True
+```
+
+Why these are suppressed-but-present true positives: both prints are intact inside `TelemetryManager.contribute_scan`, a worker method invoked from the scan flow — operational output in a library worker, not CLI presentation output, which is exactly the audited TP criterion (the 12 audited prints in `captcha_detector.py`, `robots_checker.py`, `config.py`, `captcha_solvers.py` and `playwright_proxy_parser.py` at the same rule still fire in the fresh scan). The module-wide Rich exemption suppresses them because the file also uses `from rich import print`, without checking whether the flagged print is inside a CLI presentation function.
+
+Checklist evidence: the "print is used for operational logging in non-script modules" predicate is still satisfied by both prints, which sit in the `contribute_scan` worker and are not under any CLI carve-out; the fresh scan's silence here is due to the module-level `pythonUsesRichPrint` skip.
+
+#### [ ] Findings `318`, `319`, `320`, `322`, `323`, `324`, `325` — `BP-PY-46` (Rich-print exemption suppresses `try_upload_scan` worker prints)
+
+- Sources: `caniscrape/upload_handler.py:58`, `:59`, `:65`, `:66`, `:68`, `:69`, `:71`
+- Suppression mechanism: `pythonUsesRichPrint(unit.Source)` skips the whole module when `from rich import print` is present (`upload_handler.py:1`).
+
+Source excerpt:
+
+```
+        print(f'\n[green]✨ Results synced to \'{project_name}\'[/green]')
+        print(f'[dim]   View: https://caniscrape.org/projects/{project_id}[/dim]')
+        return True
+    except ApiError as e:
+        error_msg = str(e)
+
+        if 'Authentication failed' in error_msg or 'expired' in error_msg.lower():
+            print(f'\n[yellow]⚠️  Upload failed: API token expired[/yellow]')
+            print(f'[dim]   Run [cyan]caniscrape init[/cyan] to re-authenticate[/dim]')
+        elif 'Rate limit' in error_msg:
+            print(f'\n[yellow]⚠️  Upload failed: Rate limit exceeded[/yellow]')
+            print(f'[dim]   Results cached. Try again later.[/dim]')
+        else:
+            print(f'\n[yellow]⚠️  Upload failed: {error_msg}[/yellow]')
+```
+
+Why these are suppressed-but-present true positives: all seven prints are intact inside `try_upload_scan`, a worker function called from the scan command's auto-upload path — operational output in a library worker, not CLI presentation output, matching the audited TP criterion (same construct as the still-firing TP prints in `captcha_detector.py` and `captcha_solvers.py`). The module-wide Rich exemption suppresses them because the file opens with `from rich import print`, without checking whether the flagged print is inside a CLI presentation function.
+
+Checklist evidence: the "print is used for operational logging in non-script modules" predicate is still satisfied by all seven prints in the `try_upload_scan` worker (success and error paths); the fresh scan's silence is due to the module-level `pythonUsesRichPrint` skip, not to removal of the constructs.
+
+### Final evidence (Mode B)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/caniscrape/chunks`
+- Function evidence: `scripts/caniscrape/findings/functions`
+- Validation: `git diff --check` — pass

@@ -2804,3 +2804,445 @@ None. Former uncertain CWE-1084 findings (174, 285, 440, 451, 977, 1110, 1174, 1
 - Chunk evidence: `scripts/WeThePeople/chunks` (60 chunk files, findings 1–1492)
 - Function evidence: `scripts/WeThePeople/findings/functions` (1492 context files)
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+```yaml
+timestamp: 2026-08-02T11:08:49Z
+repository: WeThePeople
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople
+branch: main
+commit: 6acbd5b2a67d4499ed17a05ea48cf9aebd3d1da0
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople
+chunk_path: scripts/WeThePeople/chunks
+function_context_path: scripts/WeThePeople/findings/functions
+fix_commit: b5b8fde6e5850be5a4bf6957e90110b146a2e584
+binary: ./bin/goslop rebuilt 2026-08-02 16:29
+fresh_findings: 1298
+old_findings: 1492 (audited TPs: 1422)
+old_audit: plans/fp-validations/reports/WeThePeople.md (2026-08-02T07:55:45Z)
+```
+
+## Scan evidence
+
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/WeThePeople/chunks -context-dir scripts/WeThePeople/findings/functions real-repos/WeThePeople`
+- Findings: `1298`
+- Chunks reviewed: `scripts/WeThePeople/chunks/Chunk_1_25.txt` … `Chunk_1276_1298.txt` (52 files)
+- Function contexts reviewed: `scripts/WeThePeople/findings/functions/<finding-id>.txt` for all 1298 fresh findings (fresh IDs 1–1298)
+- Target repo unchanged since the old audit: `HEAD == 6acbd5b2a67d4499ed17a05ea48cf9aebd3d1da0`; no construct was removed or fixed in the source.
+
+## Audit checklist
+
+- [x] Collected the full audited TP list (1422 findings: ID, Source, rule, reason) from the old audit tables.
+- [x] Collected every source position present in the fresh scan (`file:line` set from all 52 fresh chunks).
+- [x] Matched old TP `Source:` (file:line) against the fresh scan; 180 audited TPs are absent from the fresh scan.
+- [x] Read the current source at every one of the 180 locations and confirmed the flagged construct is still present verbatim (line content listed in the table below).
+- [x] Ran `git diff --check` after updating this report.
+
+## Over-suppression summary
+
+| Classification | Count | Rule breakdown |
+| --- | ---: | --- |
+| Suppressed-but-present | 180 | BP-PY-45 (67), BP-PY-1 (42), BP-PY-46 (40), CWE-396 (23), CWE-89 (5), PERF-PY-25 (2), BP-PY-42 (1) |
+| Fixed-removed | 0 | — |
+
+The fix (`b5b8fde`) added guardrails that skip: `__file__`-derived sys.path bootstraps (BP-PY-45), broad-except handlers that re-raise / log with `exc_info` / call `set_exception` / record into error fields (BP-PY-1, CWE-396, BP-PY-42), script/CLI `print()` calls (BP-PY-46), dynamic-SQL executes whose query text is a bound `text()` expression (CWE-89), and `key=lambda` sort keys (PERF-PY-25). Every suppressed construct is still present in the audited source; none of the 180 was removed or fixed.
+
+## Over-suppressed true positives (180)
+
+| Old ID | Rule | Source | Reason (old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 50 | CWE-396 | `connectors/finnhub.py:81:1` | generic Exception handler | suppressed-but-present |
+| 135 | BP-PY-45 | `jobs/ai_summarize.py:64:1` | sys.path mutated at runtime | suppressed-but-present |
+| 173 | BP-PY-45 | `jobs/audit_orphan_lobby_company_ids.py:28:1` | sys.path mutated at runtime | suppressed-but-present |
+| 179 | BP-PY-45 | `jobs/backfill_bill_ai_summaries.py:52:1` | sys.path mutated at runtime | suppressed-but-present |
+| 241 | BP-PY-45 | `jobs/backfill_story_simplified.py:49:1` | sys.path mutated at runtime | suppressed-but-present |
+| 244 | BP-PY-45 | `jobs/backfill_verification_tier.py:28:1` | sys.path mutated at runtime | suppressed-but-present |
+| 249 | BP-PY-45 | `jobs/check_corrected_bodies.py:16:1` | sys.path mutated at runtime | suppressed-but-present |
+| 251 | BP-PY-45 | `jobs/correct_lobby_double_count_stories.py:55:1` | sys.path mutated at runtime | suppressed-but-present |
+| 256 | BP-PY-45 | `jobs/detect_stories.py:53:1` | sys.path mutated at runtime | suppressed-but-present |
+| 309 | PERF-PY-25 | `jobs/detect_stories.py:1806:1` | heavy object/lambda per homogeneous loop element | suppressed-but-present |
+| 384 | BP-PY-1 | `jobs/evaluate_legislative_claims.py:210:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 385 | CWE-396 | `jobs/evaluate_legislative_claims.py:210:1` | generic Exception handler | suppressed-but-present |
+| 407 | BP-PY-45 | `jobs/import_congress_legislators.py:34:1` | sys.path mutated at runtime | suppressed-but-present |
+| 411 | BP-PY-45 | `jobs/import_openstates_people.py:37:1` | sys.path mutated at runtime | suppressed-but-present |
+| 417 | BP-PY-45 | `jobs/migrate_add_ai_summaries.py:17:1` | sys.path mutated at runtime | suppressed-but-present |
+| 434 | BP-PY-45 | `jobs/migrate_add_indexes.py:9:1` | sys.path mutated at runtime | suppressed-but-present |
+| 439 | BP-PY-45 | `jobs/migrate_add_sanctions.py:20:1` | sys.path mutated at runtime | suppressed-but-present |
+| 450 | BP-PY-45 | `jobs/migrate_add_specific_issues.py:8:1` | sys.path mutated at runtime | suppressed-but-present |
+| 465 | BP-PY-46 | `jobs/monitor_pipeline.py:280:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 466 | BP-PY-46 | `jobs/monitor_pipeline.py:283:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 467 | BP-PY-46 | `jobs/monitor_pipeline.py:284:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 468 | BP-PY-46 | `jobs/monitor_pipeline.py:285:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 469 | BP-PY-46 | `jobs/monitor_pipeline.py:286:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 470 | BP-PY-46 | `jobs/monitor_pipeline.py:289:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 471 | BP-PY-46 | `jobs/monitor_pipeline.py:291:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 472 | BP-PY-46 | `jobs/monitor_pipeline.py:293:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 473 | BP-PY-46 | `jobs/monitor_pipeline.py:302:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 474 | BP-PY-46 | `jobs/monitor_pipeline.py:305:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 475 | BP-PY-46 | `jobs/monitor_pipeline.py:306:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 476 | BP-PY-46 | `jobs/monitor_pipeline.py:308:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 479 | BP-PY-46 | `jobs/publish_huggingface_dataset.py:135:1` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 491 | BP-PY-1 | `jobs/rebuild_search_index.py:193:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 492 | BP-PY-45 | `jobs/repair_correction_notice_substitution.py:57:1` | sys.path mutated at runtime | suppressed-but-present |
+| 494 | BP-PY-45 | `jobs/retract_misattributed_stories.py:23:1` | sys.path mutated at runtime | suppressed-but-present |
+| 502 | BP-PY-45 | `jobs/retry_wayback_snapshots.py:40:5` | sys.path mutated at runtime | suppressed-but-present |
+| 510 | BP-PY-45 | `jobs/run_pipeline.py:56:1` | sys.path mutated at runtime | suppressed-but-present |
+| 519 | BP-PY-1 | `jobs/scheduler.py:835:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 520 | CWE-396 | `jobs/scheduler.py:835:1` | generic Exception handler | suppressed-but-present |
+| 522 | BP-PY-45 | `jobs/seed_badges.py:8:1` | sys.path mutated at runtime | suppressed-but-present |
+| 526 | BP-PY-45 | `jobs/seed_promises.py:29:1` | sys.path mutated at runtime | suppressed-but-present |
+| 550 | BP-PY-45 | `jobs/sync_agriculture_data.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 558 | BP-PY-1 | `jobs/sync_agriculture_data.py:430:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 559 | BP-PY-45 | `jobs/sync_agriculture_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 564 | BP-PY-45 | `jobs/sync_chemicals_data.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 572 | BP-PY-1 | `jobs/sync_chemicals_data.py:483:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 573 | BP-PY-45 | `jobs/sync_chemicals_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 578 | BP-PY-45 | `jobs/sync_congressional_trades.py:29:1` | sys.path mutated at runtime | suppressed-but-present |
+| 579 | CWE-396 | `jobs/sync_congressional_trades.py:125:1` | generic Exception handler | suppressed-but-present |
+| 585 | BP-PY-45 | `jobs/sync_defense_data.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 593 | BP-PY-1 | `jobs/sync_defense_data.py:444:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 594 | BP-PY-45 | `jobs/sync_defense_enforcement.py:27:1` | sys.path mutated at runtime | suppressed-but-present |
+| 600 | BP-PY-45 | `jobs/sync_donations.py:37:1` | sys.path mutated at runtime | suppressed-but-present |
+| 606 | BP-PY-45 | `jobs/sync_education_data.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 614 | BP-PY-1 | `jobs/sync_education_data.py:348:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 615 | BP-PY-45 | `jobs/sync_education_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 620 | BP-PY-45 | `jobs/sync_emissions.py:27:1` | sys.path mutated at runtime | suppressed-but-present |
+| 625 | BP-PY-45 | `jobs/sync_energy_data.py:32:1` | sys.path mutated at runtime | suppressed-but-present |
+| 633 | BP-PY-1 | `jobs/sync_energy_data.py:431:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 634 | BP-PY-45 | `jobs/sync_energy_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 639 | BP-PY-45 | `jobs/sync_fara_data.py:24:1` | sys.path mutated at runtime | suppressed-but-present |
+| 640 | CWE-396 | `jobs/sync_fara_data.py:185:1` | generic Exception handler | suppressed-but-present |
+| 642 | BP-PY-1 | `jobs/sync_finance_data.py:387:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 643 | CWE-396 | `jobs/sync_finance_data.py:387:1` | generic Exception handler | suppressed-but-present |
+| 644 | BP-PY-45 | `jobs/sync_finance_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 649 | BP-PY-45 | `jobs/sync_finance_political_data.py:32:1` | sys.path mutated at runtime | suppressed-but-present |
+| 656 | BP-PY-1 | `jobs/sync_finance_political_data.py:296:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 664 | BP-PY-1 | `jobs/sync_health_data.py:333:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 665 | CWE-396 | `jobs/sync_health_data.py:333:1` | generic Exception handler | suppressed-but-present |
+| 666 | BP-PY-45 | `jobs/sync_health_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 671 | BP-PY-45 | `jobs/sync_health_political_data.py:32:1` | sys.path mutated at runtime | suppressed-but-present |
+| 678 | BP-PY-1 | `jobs/sync_health_political_data.py:280:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 679 | BP-PY-45 | `jobs/sync_insider_trades.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 687 | BP-PY-1 | `jobs/sync_insider_trades.py:344:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 692 | BP-PY-1 | `jobs/sync_member_actions.py:54:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 693 | CWE-396 | `jobs/sync_member_actions.py:54:1` | generic Exception handler | suppressed-but-present |
+| 699 | BP-PY-45 | `jobs/sync_opensanctions.py:16:1` | sys.path mutated at runtime | suppressed-but-present |
+| 700 | CWE-396 | `jobs/sync_opensanctions.py:127:1` | generic Exception handler | suppressed-but-present |
+| 738 | BP-PY-45 | `jobs/sync_state_data.py:26:1` | sys.path mutated at runtime | suppressed-but-present |
+| 740 | BP-PY-45 | `jobs/sync_state_data_all.py:35:1` | sys.path mutated at runtime | suppressed-but-present |
+| 747 | BP-PY-1 | `jobs/sync_tech_data.py:385:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 748 | CWE-396 | `jobs/sync_tech_data.py:385:1` | generic Exception handler | suppressed-but-present |
+| 749 | BP-PY-45 | `jobs/sync_telecom_data.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 757 | BP-PY-1 | `jobs/sync_telecom_data.py:348:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 758 | BP-PY-45 | `jobs/sync_telecom_enforcement.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 763 | BP-PY-45 | `jobs/sync_trades_from_disclosures.py:40:1` | sys.path mutated at runtime | suppressed-but-present |
+| 776 | BP-PY-45 | `jobs/sync_transportation_data.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 784 | BP-PY-1 | `jobs/sync_transportation_data.py:416:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 785 | BP-PY-45 | `jobs/sync_transportation_enforcement.py:27:1` | sys.path mutated at runtime | suppressed-but-present |
+| 802 | BP-PY-45 | `jobs/twitter_bot.py:42:1` | sys.path mutated at runtime | suppressed-but-present |
+| 815 | BP-PY-45 | `jobs/twitter_monitor.py:39:1` | sys.path mutated at runtime | suppressed-but-present |
+| 841 | BP-PY-45 | `jobs/twitter_reply.py:46:1` | sys.path mutated at runtime | suppressed-but-present |
+| 861 | BP-PY-45 | `jobs/warm_closed_loop_cache.py:54:5` | sys.path mutated at runtime | suppressed-but-present |
+| 875 | CWE-396 | `middleware/tracing.py:76:1` | generic Exception handler | suppressed-but-present |
+| 901 | CWE-89 | `routers/bulk.py:158:20` | dynamic SQL string reaches execute | suppressed-but-present |
+| 903 | CWE-396 | `routers/chat.py:256:1` | generic Exception handler | suppressed-but-present |
+| 917 | CWE-396 | `routers/claims.py:101:1` | generic Exception handler | suppressed-but-present |
+| 929 | CWE-396 | `routers/digest.py:276:1` | generic Exception handler | suppressed-but-present |
+| 931 | CWE-396 | `routers/events.py:110:1` | generic Exception handler | suppressed-but-present |
+| 975 | CWE-89 | `routers/ops.py:394:24` | dynamic SQL string reaches execute | suppressed-but-present |
+| 1020 | BP-PY-1 | `routers/politics_people.py:1354:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1021 | CWE-396 | `routers/research_tools.py:100:1` | generic Exception handler | suppressed-but-present |
+| 1022 | CWE-89 | `routers/research_tools.py:432:18` | dynamic SQL string reaches execute | suppressed-but-present |
+| 1052 | BP-PY-45 | `scripts/apply_retraction_patches.py:37:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1065 | BP-PY-45 | `scripts/backfill_normalize_congress_urls.py:45:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1066 | BP-PY-45 | `scripts/diagnose_usajobs_auth.py:30:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1070 | BP-PY-45 | `scripts/diagnose_uspto_odp.py:34:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1072 | PERF-PY-25 | `scripts/diagnose_uspto_odp.py:130:1` | heavy object/lambda per homogeneous loop element | suppressed-but-present |
+| 1073 | BP-PY-45 | `scripts/dump_published_stories.py:38:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1074 | BP-PY-45 | `scripts/enrich_stories_with_lobbying_issues.py:22:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1091 | BP-PY-46 | `scripts/exhaustive_profile_audit.py:177:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1092 | BP-PY-46 | `scripts/exhaustive_profile_audit.py:269:5` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1095 | BP-PY-45 | `scripts/fix_finance_audit_20260417.py:32:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1109 | BP-PY-45 | `scripts/generate_lobbying_breakdown_stories.py:23:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1161 | BP-PY-45 | `scripts/generate_tech_stories.py:22:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1171 | BP-PY-45 | `scripts/migrate_twitter_models.py:14:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1177 | BP-PY-46 | `scripts/migrate_twitter_models.py:60:21` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1178 | BP-PY-46 | `scripts/migrate_twitter_models.py:62:21` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1179 | BP-PY-46 | `scripts/migrate_twitter_models.py:69:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1181 | BP-PY-46 | `scripts/migrate_twitter_models.py:71:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1182 | BP-PY-46 | `scripts/migrate_twitter_models.py:78:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1184 | BP-PY-46 | `scripts/migrate_twitter_models.py:80:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1186 | BP-PY-46 | `scripts/migrate_twitter_models.py:94:21` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1187 | BP-PY-46 | `scripts/migrate_twitter_models.py:96:21` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1188 | BP-PY-46 | `scripts/migrate_twitter_models.py:104:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1190 | BP-PY-46 | `scripts/migrate_twitter_models.py:106:17` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1191 | BP-PY-46 | `scripts/migrate_twitter_models.py:108:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1192 | BP-PY-46 | `scripts/migrate_twitter_models.py:110:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1193 | BP-PY-46 | `scripts/migrate_twitter_models.py:114:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1194 | BP-PY-46 | `scripts/migrate_twitter_models.py:116:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1195 | BP-PY-46 | `scripts/migrate_twitter_models.py:118:13` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1196 | BP-PY-46 | `scripts/migrate_twitter_models.py:121:9` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1203 | BP-PY-45 | `scripts/remediate_published_stories.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1215 | BP-PY-45 | `scripts/remediate_short_stories.py:19:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1227 | BP-PY-45 | `scripts/retract_and_correct_stories.py:33:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1229 | BP-PY-45 | `scripts/run_story_gates_audit.py:25:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1235 | BP-PY-45 | `scripts/seed_story_actions.py:31:1` | sys.path mutated at runtime | suppressed-but-present |
+| 1236 | BP-PY-1 | `scripts/seed_story_actions.py:869:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1237 | CWE-396 | `scripts/seed_story_actions.py:869:1` | generic Exception handler | suppressed-but-present |
+| 1238 | BP-PY-46 | `scripts/send_welcome.py:13:5` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1240 | BP-PY-46 | `scripts/send_welcome.py:40:1` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1241 | BP-PY-46 | `scripts/send_welcome.py:41:1` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1242 | BP-PY-46 | `scripts/veritas_v4_patch.py:11:5` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1247 | BP-PY-46 | `scripts/veritas_v4_patch.py:131:1` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1248 | BP-PY-46 | `scripts/veritas_v5_patch.py:21:5` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1249 | BP-PY-46 | `scripts/veritas_v5_patch.py:61:1` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1250 | BP-PY-46 | `scripts/veritas_v7_patch.py:23:5` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1251 | BP-PY-46 | `scripts/veritas_v7_patch.py:71:1` | print() used outside `if __name__ == "__main__"` | suppressed-but-present |
+| 1275 | CWE-396 | `services/audit.py:45:1` | generic Exception handler | suppressed-but-present |
+| 1305 | CWE-396 | `services/circuit_breaker.py:142:1` | generic Exception handler | suppressed-but-present |
+| 1308 | BP-PY-1 | `services/claims/veritas_bridge.py:97:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1311 | BP-PY-1 | `services/claims/veritas_bridge.py:208:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1313 | BP-PY-1 | `services/claims/veritas_bridge.py:279:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1315 | BP-PY-1 | `services/claims/veritas_bridge.py:301:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1316 | BP-PY-1 | `services/claims/veritas_bridge.py:321:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1317 | BP-PY-1 | `services/claims/veritas_bridge.py:343:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1318 | BP-PY-1 | `services/claims/veritas_bridge.py:363:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1319 | BP-PY-1 | `services/claims/veritas_bridge.py:399:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1320 | BP-PY-1 | `services/claims/veritas_bridge.py:464:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1321 | BP-PY-1 | `services/claims/veritas_bridge.py:532:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1339 | CWE-89 | `services/data_retention.py:167:25` | dynamic SQL string reaches execute | suppressed-but-present |
+| 1343 | BP-PY-45 | `services/data_retention.py:326:5` | sys.path mutated at runtime | suppressed-but-present |
+| 1347 | CWE-396 | `services/llm/client.py:130:1` | generic Exception handler | suppressed-but-present |
+| 1352 | CWE-89 | `services/lobby_spend.py:147:13` | dynamic SQL string reaches execute | suppressed-but-present |
+| 1360 | BP-PY-1 | `services/privacy.py:415:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1361 | CWE-396 | `services/privacy.py:415:1` | generic Exception handler | suppressed-but-present |
+| 1362 | BP-PY-1 | `services/rate_limit_store.py:115:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1363 | CWE-396 | `services/rate_limit_store.py:115:1` | generic Exception handler | suppressed-but-present |
+| 1364 | BP-PY-1 | `services/rate_limit_store.py:179:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1376 | BP-PY-1 | `services/research_pipeline/black_swan.py:371:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1396 | BP-PY-1 | `services/research_pipeline/orchestrator.py:446:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1404 | BP-PY-1 | `services/research_pipeline/orchestrator.py:1219:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1408 | BP-PY-1 | `services/research_pipeline/orchestrator.py:1252:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1435 | BP-PY-1 | `services/story_fact_checker.py:149:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1436 | CWE-396 | `services/story_fact_checker.py:149:1` | generic Exception handler | suppressed-but-present |
+| 1439 | BP-PY-1 | `services/story_fact_checker.py:295:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1443 | BP-PY-1 | `services/story_fact_checker.py:380:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1445 | BP-PY-1 | `services/story_fact_checker.py:400:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1447 | BP-PY-1 | `services/story_fact_checker.py:418:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+| 1469 | BP-PY-42 | `tests/performance/query_analysis.py:263:1` | try/except used to expect failure in test | suppressed-but-present |
+| 1472 | BP-PY-1 | `tests/performance/query_analysis.py:294:1` | bare `except Exception`/`BaseException` handler | suppressed-but-present |
+
+## Suppressed-but-present constructs
+
+Each group below lists every suppressed finding ID for that construct, with the smallest current-source excerpt proving the construct is still there.
+
+
+### [ ] BP-PY-45 — module-level `sys.path.insert(0, ...)` bootstrap (64 findings)
+- Finding IDs: 135, 173, 179, 241, 244, 249, 251, 256, 407, 411, 417, 434, 439, 450, 492, 494, 510, 522, 526, 550, 559, 564, 573, 578, 585, 594, 600, 606, 615, 620, 625, 634, 639, 644, 649, 666, 671, 679, 699, 738, 740, 749, 758, 763, 776, 785, 802, 815, 841, 1052, 1065, 1066, 1070, 1073, 1074, 1095, 1109, 1161, 1171, 1203, 1215, 1227, 1229, 1235
+
+Source excerpt (identical construct in every listed file; shown: `jobs/ai_summarize.py:64`):
+
+```
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+```
+
+Why it satisfies the rule condition: BP-PY-45 flags runtime `sys.path` mutation; the unguarded `sys.path.insert(0, ...)` module bootstrap is still present verbatim at each listed source line. Suppressed by the fix's `__file__`/guarded sys.path bootstrap skip.
+
+### [ ] BP-PY-45 — guarded `sys.path.insert(0, str(ROOT))` bootstrap (2 findings: 502, 861)
+
+Source excerpt (shown: `jobs/retry_wayback_snapshots.py:38-40`):
+
+```
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+```
+
+Why it satisfies the rule condition: runtime `sys.path.insert(0, ...)` still executed on import; suppressed by the same BP-PY-45 bootstrap skip.
+
+### [ ] BP-PY-45 — in-function `sys.path.insert(0, str(Path(__file__).resolve().parents[1]))` (1 finding: 1343)
+
+Source excerpt (shown: `services/data_retention.py:326-327`):
+
+```
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from models.database import SessionLocal
+```
+
+Why it satisfies the rule condition: runtime sys.path mutation in the `main()` body; suppressed by the BP-PY-45 bootstrap skip.
+
+### [ ] BP-PY-46 — `print()` in CLI/script modules outside `if __name__ == "__main__"` (40 findings)
+- Finding IDs: 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 479, 1091, 1092, 1177, 1178, 1179, 1181, 1182, 1184, 1186, 1187, 1188, 1190, 1191, 1192, 1193, 1194, 1195, 1196, 1238, 1240, 1241, 1242, 1247, 1248, 1249, 1250, 1251
+
+Source excerpt (representative; shown: `jobs/monitor_pipeline.py:284-286` and `scripts/migrate_twitter_models.py:60-62`):
+
+```
+print("  WeThePeople Pipeline Health Report")
+print(f"  {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}")
+print("=" * 70)
+
+print(f"  Added tweet_log.{col_name} ({col_type})")
+print(f"  tweet_log.{col_name} already exists")
+```
+
+Why it satisfies the rule condition: BP-PY-46 flags `print()` calls outside the `__main__` guard; every listed print statement is still present at its audited line. Suppressed by the fix's script/CLI print exemptions.
+
+### [ ] BP-PY-1/CWE-396 — broad `except Exception as e:` handler (29 findings)
+
+- Finding IDs: 50, 558, 572, 579, 593, 614, 633, 642, 643, 656, 664, 665, 678, 687, 700, 747, 748, 757, 784, 903, 917, 929, 1021, 1347, 1376, 1396, 1404, 1408, 1472
+
+Source excerpt (the flagged handler clause is identical at every listed source; representative bodies shown):
+
+```
+# connectors/finnhub.py:81:1
+    except Exception as e:
+        safe_msg = str(e).replace(API_KEY, "***") if API_KEY else str(e)
+        logger.error("Finnhub request failed (symbol=%s): %s", symbol, safe_msg)
+        raise
+# jobs/sync_agriculture_data.py:430:1
+            except Exception as e:
+                log.error(f"FAILED {cid}: {e}", exc_info=True)
+                session.rollback()
+# jobs/sync_chemicals_data.py:483:1
+            except Exception as e:
+                log.error(f"FAILED {cid}: {e}", exc_info=True)
+                session.rollback()
+```
+
+Why it satisfies the rule condition: the handler is a broad `except Exception/BaseException` clause — exactly what the audited BP-PY-1/CWE-396 rule condition flags — and it is still present at every listed source line. Suppressed by the fix's broad-except guardrail, which now skips handlers that re-raise, log with `exc_info`, call `set_exception`, or record into error/result fields.
+
+### [ ] BP-PY-1/CWE-396 — broad `except Exception as exc:` handler (10 findings)
+
+- Finding IDs: 384, 385, 519, 520, 692, 693, 931, 1020, 1360, 1361
+
+Source excerpt (the flagged handler clause is identical at every listed source; representative bodies shown):
+
+```
+# jobs/evaluate_legislative_claims.py:210:1
+    except Exception as exc:
+        db.rollback()
+        log.exception("evaluation pass aborted: %s", exc)
+        return 1
+# jobs/scheduler.py:835:1
+    except Exception as exc:
+        result["status"] = "error"
+        result["error"] = str(exc)
+        log.exception("║  EXCEPTION in %s", job.name)
+# jobs/sync_member_actions.py:54:1
+    except Exception as exc:
+        log.exception("ingest_member_legislation raised: %s", exc)
+        return 1
+    log.info("sync_member_actions finished in %.1fs", time.time() - t0)
+    return 0
+```
+
+Why it satisfies the rule condition: the handler is a broad `except Exception/BaseException` clause — exactly what the audited BP-PY-1/CWE-396 rule condition flags — and it is still present at every listed source line. Suppressed by the fix's broad-except guardrail, which now skips handlers that re-raise, log with `exc_info`, call `set_exception`, or record into error/result fields.
+
+### [ ] BP-PY-1/CWE-396 — broad `except Exception:` handler (25 findings)
+
+- Finding IDs: 491, 640, 875, 1236, 1237, 1275, 1308, 1311, 1313, 1315, 1316, 1317, 1318, 1319, 1320, 1321, 1362, 1363, 1364, 1435, 1436, 1439, 1443, 1445, 1447
+
+Source excerpt (the flagged handler clause is identical at every listed source; representative bodies shown):
+
+```
+# jobs/rebuild_search_index.py:193:1
+    except Exception:
+        db.rollback()
+        log.exception("rebuild failed")
+        return 1
+# jobs/sync_fara_data.py:185:1
+    except Exception:
+        session.rollback()
+        log.exception("FARA sync failed")
+        raise
+# middleware/tracing.py:76:1
+        except Exception:
+            raise
+```
+
+Why it satisfies the rule condition: the handler is a broad `except Exception/BaseException` clause — exactly what the audited BP-PY-1/CWE-396 rule condition flags — and it is still present at every listed source line. Suppressed by the fix's broad-except guardrail, which now skips handlers that re-raise, log with `exc_info`, call `set_exception`, or record into error/result fields.
+
+### [ ] CWE-396 — broad `except BaseException as exc:` handler (1 findings)
+
+- Finding IDs: 1305
+
+Source excerpt (the flagged handler clause is identical at every listed source; representative bodies shown):
+
+```
+# services/circuit_breaker.py:142:1
+        except BaseException as exc:
+            if isinstance(exc, self.expected_exceptions):
+                self._record_failure()
+                raise
+            # Unexpected exception type — propagate without tripping breaker
+            raise
+```
+
+Why it satisfies the rule condition: the handler is a broad `except Exception/BaseException` clause — exactly what the audited BP-PY-1/CWE-396 rule condition flags — and it is still present at every listed source line. Suppressed by the fix's broad-except guardrail, which now skips handlers that re-raise, log with `exc_info`, call `set_exception`, or record into error/result fields.
+
+### [ ] CWE-89 — dynamic SQL string reaching `execute` (5 findings: 901, 975, 1022, 1339, 1352)
+
+Source excerpts (each site builds the SQL from runtime values and passes it to `db.execute(text(...))`):
+
+```
+# routers/bulk.py:158:20  (finding 901)
+result = db.execute(text(sql), params)
+
+# routers/ops.py:394:24  (finding 975)
+result = db.execute(text(query)).fetchone()
+
+# routers/research_tools.py:432:18  (finding 1022)
+rows = db.execute(
+    text(union_sql),
+    {"term": search_term},
+).fetchall()
+
+# services/data_retention.py:167:25  (finding 1339)
+row = db.execute(text(count_sql), {"cutoff": cutoff_value}).scalar()
+
+# services/lobby_spend.py:147:13  (finding 1352)
+val = db.execute(text(sql), params).scalar()
+```
+
+Why they satisfy the rule condition: each `text(...)` receives a string built with f-strings/concatenation from runtime values (`sql`, `query`, `union_sql`, `count_sql`, `where_clause`), exactly the CWE-89 dynamic-interpolation condition the old audit confirmed; every site is still present. Suppressed by the fix's static-SQL / `text()` guardrails for these execute shapes.
+
+### [ ] PERF-PY-25 — sort with per-element `key=lambda` inside a loop (2 findings: 309, 1072)
+
+Source excerpts:
+
+```
+# jobs/detect_stories.py:1806:1  (finding 309)
+loop_top_issues = sorted(issue_spend.items(), key=lambda x: -x[1])[:5]
+
+# scripts/diagnose_uspto_odp.py:130:1  (finding 1072)
+sorted_files = sorted(
+    files, key=lambda f: f.get("fileLastModifiedDateTime") or "", reverse=True,
+)
+```
+
+Why they satisfy the rule condition: PERF-PY-25 flags heavy per-homogeneous-element construction; the sort `key=lambda` at each site is still present. Suppressed by the fix's key-lambda/early-return PERF-PY-25 guardrails.
+
+### [ ] BP-PY-42 — try/except used to expect failure in test (1 finding: 1469)
+
+Source excerpt (`tests/performance/query_analysis.py:263-265`):
+
+```
+try:
+    conn.execute(text("SELECT 1"))
+except Exception as e:
+    print(f"ERROR: Cannot connect to database: {e}", file=sys.stderr)
+    sys.exit(1)
+```
+
+Why it satisfies the rule condition: BP-PY-42 flags try/except used to expect failure; the audited construct is still present. Suppressed by the fix's broad-except/test-assert guardrails.
+
+## Final evidence
+
+- Fix commit: `b5b8fde6e5850be5a4bf6957e90110b146a2e584`
+- Target repo verified unchanged: `HEAD == 6acbd5b2a67d4499ed17a05ea48cf9aebd3d1da0` (same as old audit)
+- Fresh scan: 1298 findings (52 chunks); old audit: 1492 findings (1422 TPs)
+- Every one of the 180 over-suppressed TP sources read in current source; all constructs present verbatim
+- Chunk evidence: `scripts/WeThePeople/chunks` (52 files, fresh findings 1–1298)
+- Function evidence: `scripts/WeThePeople/findings/functions` (1298 files)
+- Validation: `git diff --check` — pass

@@ -291,3 +291,155 @@ Rule condition (from `detectBPPY45` in `internal/lang/python/detectors/bad_pract
 - Chunk evidence: `scripts/cylinder/chunks`
 - Function evidence: `scripts/cylinder/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: cylinder
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder
+branch: main
+commit: 7592dfac8c3c8141770f449ab3e65973b84268fc
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder
+chunk_path: scripts/cylinder/chunks
+function_context_path: scripts/cylinder/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (`go build -o bin/goslop ./cmd/goslop`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/cylinder/chunks -context-dir scripts/cylinder/findings/functions real-repos/cylinder`
+- Findings: `12`
+- Chunks reviewed: `scripts/cylinder/chunks/Chunk_1_12.txt`
+- Function contexts reviewed: `scripts/cylinder/findings/functions/1.txt` … `scripts/cylinder/findings/functions/12.txt`
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/cylinder/chunks`.
+- [x] Read `scripts/cylinder/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Fresh finding IDs were renumbered (1–12) and matched to the old audit by `Source:` path.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 5 | 3, 7, 8, 11, 12 |
+| True positive | 7 | 1, 2, 4, 5, 6, 9, 10 |
+| Uncertain | 0 | — |
+
+All five remaining false positives are re-appearing audited FPs: fresh 3 = old 4, fresh 7 = old 7, fresh 8 = old 8, fresh 11 = old 11, fresh 12 = old 17. Old audited FPs 2, 12, 13, 14, 15, 16 no longer fire in the fresh scan. Fresh finding 5 (CWE-396 at `src/cylinder.py:390`) is a new finding, not present in the old audit; it is a true positive because the suite does not surface the failure (see below).
+
+## False positives
+
+### [ ] Finding `3` — CWE-93
+
+- Function context: `scripts/cylinder/findings/functions/3.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/src/cylinder.py:369:17`
+
+Source excerpt (from `scripts/cylinder/findings/functions/3.txt`, verified at `src/cylinder.py:369`):
+
+```python
+        response.content_encoding = content_encoding or "identity"
+        response.mimetype = mimetype or "application/octet-stream"
+        response.headers["Content-Length"] = os.path.getsize(direct_path)
+```
+
+Why this is a false positive: the header value is the integer return of `os.path.getsize(...)` — a file size in bytes, which cannot contain CR or LF bytes, so CRLF injection is impossible. The rule's own suppression `headerValueIsInternalNumeric` treats numeric-derived values (`str(int(...))` / `str(round(...))`) as out of scope; `os.path.getsize` has the same non-injectable shape and is only missed because it is not an `int(...)`/`round(...)` literal. (Same finding as audited FP 4.)
+
+Checklist evidence: the value written to the header is an integer (file size) with no possible CR/LF bytes; not text that can carry an injected sequence.
+
+### [ ] Finding `7` — BP-PY-6
+
+- Function context: `scripts/cylinder/findings/functions/7.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/test_sites/foo_site.500.py:5:1`
+
+Source excerpt (from `scripts/cylinder/findings/functions/7.txt`, verified at `test_sites/foo_site.500.py:5`):
+
+```python
+def main(e, response, request):
+    # e.original_exception has the original exception
+    # e.get_response() can give you the default response for this error
+    response.data = str(e.original_exception)
+    assert request.shallow == False
+    return response
+```
+
+Why this is a false positive: `request.shallow` is a framework-internal boolean set by the framework itself (`src/cylinder.py:263`), not request data; the assert verifies an internal invariant in a test-site fixture, so stripping it with `python -O` cannot weaken any security control — the BP-PY-6 rationale does not apply. (Same finding as audited FP 7.)
+
+Checklist evidence: the asserted value is an internal framework flag, not request input; the assert has no runtime-validation or security purpose.
+
+### [ ] Finding `8` — BP-PY-6
+
+- Function context: `scripts/cylinder/findings/functions/8.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/test_sites/foo_site.eh.default.py:13:1`
+
+Source excerpt (from `scripts/cylinder/findings/functions/8.txt`, verified at `test_sites/foo_site.eh.default.py:13`):
+
+```python
+    if request.base_url.endswith("/") and request.path != "/":
+        new_base_url = request.base_url.rstrip("/")
+        if request.query_string:
+            abort(308, f"{new_base_url}?{request.query_string.decode('utf-8')}")
+        else:
+            abort(308, new_base_url)
+
+    assert request.shallow == True
+```
+
+Why this is a false positive: same construct as finding 7 — `request.shallow` is the framework-internal flag set by `process_module` (`src/cylinder.py:263`), asserted to verify the early hook receives `shallow=True` in this test-site fixture. It is an internal invariant check, not validation of untrusted input, so `python -O` stripping it cannot weaken any control. (Same finding as audited FP 8.)
+
+Checklist evidence: the asserted value is an internal framework flag, not request input; the assert has no runtime-validation or security purpose.
+
+### [ ] Finding `11` — BP-PY-6
+
+- Function context: `scripts/cylinder/findings/functions/11.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/test_sites/foo_site.lh.default.py:3:1`
+
+Source excerpt (from `scripts/cylinder/findings/functions/11.txt`, verified at `test_sites/foo_site.lh.default.py:3`):
+
+```python
+def main(request, response, init, g, log):
+    response.headers["late_hook"] = "good"
+    assert request.shallow == False
+    return response
+```
+
+Why this is a false positive: same construct as findings 7 and 8 — `request.shallow` is the framework-internal flag set by `process_module` (`src/cylinder.py:263`), asserted to verify the late hook receives `shallow=False` in this test-site fixture. An internal invariant check in test-site code; no security control is lost if the assert is stripped by `python -O`. (Same finding as audited FP 11.)
+
+Checklist evidence: the asserted value is an internal framework flag, not request input; the assert has no runtime-validation or security purpose.
+
+### [ ] Finding `12` — CWE-117
+
+- Function context: `scripts/cylinder/findings/functions/12.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/cylinder/tests/cylinder_test.py:396:9`
+
+Source excerpt (from `scripts/cylinder/findings/functions/12.txt`, verified at `tests/cylinder_test.py:395-396`):
+
+```python
+    log = tiny_queue_app.logger
+    for num in range(10):
+        log.error(f"test_logger_full {num}")
+```
+
+Why this is a false positive: the interpolated value is the local integer loop counter `num` from `range(10)` inside a test — not externally controlled and cannot contain CR/LF — so the log-injection concern cannot materialize; the f-string form is the only reason the rule's `looksLogFormatted` fires. (Same finding as audited FP 17.)
+
+Checklist evidence: the formatted value is an internal integer loop counter in test code; no externally controlled input reaches the log message.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/cylinder/chunks/Chunk_1_12.txt`
+- Function evidence: `scripts/cylinder/findings/functions/1.txt` … `12.txt`
+- Validation: `git diff --check` — pass

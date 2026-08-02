@@ -1389,3 +1389,476 @@ Rule condition (`rules_testing.go` `detectBPPY41`): a `test_*` function body con
 - Chunk evidence: `scripts/onlymaps/chunks`
 - Function evidence: `scripts/onlymaps/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: onlymaps
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps
+branch: main
+commit: 6444a59
+scanner_commit: b5b8fde (FP-reduction fix, binary rebuilt 2026-08-02 16:29)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps
+chunk_path: scripts/onlymaps/chunks
+function_context_path: scripts/onlymaps/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `(pre-built) ./bin/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/onlymaps/chunks -context-dir scripts/onlymaps/findings/functions real-repos/onlymaps`
+- Findings: `60` (down from `99` pre-fix)
+- Chunks reviewed: `scripts/onlymaps/chunks/Chunk_1_25.txt`, `scripts/onlymaps/chunks/Chunk_26_50.txt`, `scripts/onlymaps/chunks/Chunk_51_60.txt`
+- Function contexts reviewed: `scripts/onlymaps/findings/functions/<id>.txt` for every proposed false positive (2, 3, 4, 5, 6, 15, 16, 17, 18, 19, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 36, 41, 57, 59)
+- Fix effectiveness: all 36 audited true positives still fire; 39 of the 63 audited false positives (all BP-PY-7 `open()`/`def open` cases, all `exec`/`execute` method-call and protocol-definition cases, both BP-PY-42 cases, and the bound-parameter `execute` case) are gone; 24 audited FPs re-appear.
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/onlymaps/chunks`.
+- [x] Read `scripts/onlymaps/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Matching by `Source:` path against the audited TP/FP lists of the pre-fix audit.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 24 | 2, 3, 4, 5, 6, 15, 16, 17, 18, 19, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 36, 41, 57, 59 |
+| True positive | 36 | 1, 7, 8, 9, 10, 11, 12, 13, 14, 20, 21, 22, 23, 29, 31, 37, 38, 39, 40, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 58, 60 |
+| Uncertain | 0 | — |
+
+Every remaining false positive is a re-appearing audited FP; there are no new findings.
+
+## False positives (remaining)
+
+### [ ] Findings `3`, `4` — `BP-PY-12`, `CWE-94`
+
+- Function context: `scripts/onlymaps/findings/functions/3.txt`, `scripts/onlymaps/findings/functions/4.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:232:9`
+- Checklist pattern: the `exec` token is a method *definition*, not a call of the builtin
+
+Source excerpt:
+
+```
+    @require_open
+    @__require_not_iter_same_ctx
+    def exec(self, sql: str, /, *args: Any, **kwargs: Any) -> None:  # <async>
+```
+
+Why this is a false positive: the line declares the library's `Connection.exec` SQL method; no `eval`/`exec` builtin is invoked, so neither BP-PY-12 nor CWE-94 has a call reaching a code-generation sink.
+
+Checklist evidence: both rules require an actual `exec(`/`eval(` call; the flagged token is the `def` signature of a method named `exec`.
+
+### [ ] Finding `2` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:215:1`
+- Checklist pattern: handler rolls back and re-raises; the failure is propagated
+
+Source excerpt:
+
+```
+            except:
+                is_query_successful = False
+                if not self.__in_transaction:
+                    self.__conn.rollback()  # <await>
+                raise
+```
+
+Why this is a false positive: the bare `except:` resets the success flag, rolls back, and re-raises (`_connection.py:215-219`); nothing is swallowed.
+
+Checklist evidence: the suite ends in `raise`, so the "neither re-raises nor records the failure" predicate of BP-PY-1 is unmet.
+
+### [ ] Finding `5` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/5.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:376:1`
+- Checklist pattern: handler rolls back and re-raises; the failure is propagated
+
+Source excerpt:
+
+```
+            except:
+                self.__conn.rollback()  # <await>
+                raise
+```
+
+Why this is a false positive: the transaction handler rolls back and re-raises (`_connection.py:376-378`); the failure propagates to the caller.
+
+Checklist evidence: the suite ends in `raise` — the "hides failures" predicate is unmet.
+
+### [ ] Finding `6` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/6.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_connection.py:408:1`
+- Checklist pattern: handler resets state and re-raises
+
+Source excerpt:
+
+```
+            except:
+                self.__is_open = False
+                raise
+```
+
+Why this is a false positive: the handler clears the open flag and re-raises (`_connection.py:408-410`); the failure is not hidden.
+
+Checklist evidence: the suite ends in `raise` — BP-PY-1's condition is unmet.
+
+### [ ] Finding `15` — `CWE-478`
+
+- Function context: `scripts/onlymaps/findings/functions/15.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_drivers.py:403:1`
+- Checklist pattern: unmatched values are handled by an unconditional fallback statement immediately after the match
+
+Source excerpt:
+
+```
+            match value:
+                # Force `BINARY_DOUBLE` TYPE even if the decimal part is zero.
+                case float():
+                    return cursor.var(
+                        oracledb.DB_TYPE_BINARY_DOUBLE, arraysize=num_elements
+                    )
+                # Force `TIMESTAMP` type if datetime has microseconds.
+                case datetime() if value.microsecond > 0:
+                    return cursor.var(
+                        oracledb.DB_TYPE_TIMESTAMP, arraysize=num_elements
+                    )
+            return None
+```
+
+Why this is a false positive: every value outside the two cases falls through to the unconditional `return None` directly after the match — the same behavior a `case _:` would provide.
+
+Checklist evidence: the "no default and no fallback handling" condition of CWE-478 is unmet — the match is immediately followed by an unconditional return.
+
+### [ ] Findings `17`, `18` — `BP-PY-12`, `CWE-94`
+
+- Function context: `scripts/onlymaps/findings/functions/17.txt`, `scripts/onlymaps/findings/functions/18.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:280:9`
+- Checklist pattern: the `exec` token is a method *definition*, not the builtin
+
+Source excerpt:
+
+```
+    @require_open
+    def exec(self, sql: str, /, *args: Any, **kwargs: Any) -> None:  # <async>
+```
+
+Why this is a false positive: the line declares the pool's `ConnectionPool.exec` SQL method; no `eval`/`exec` builtin call exists.
+
+Checklist evidence: BP-PY-12/CWE-94 require a code-generation call; the flagged line is a `def` signature.
+
+### [ ] Finding `16` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/16.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:215:1`
+- Checklist pattern: handler decrements the connection counter and re-raises
+
+Source excerpt:
+
+```
+        try:
+            return self.__create_connection()  # <await>
+        except:
+            # Not sure whether a lock is needed here,
+            # though better safe than sorry!
+            with self.__lock:  # <async>
+                self.__current_connections -= 1
+            raise
+```
+
+Why this is a false positive: the handler only rolls back the pool's connection count and re-raises (`_pool.py:215-220`); the failure propagates.
+
+Checklist evidence: the suite ends in `raise` — the "swallows all exceptions" predicate is unmet.
+
+### [ ] Finding `19` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/19.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_pool.py:443:1`
+- Checklist pattern: handler closes the pool and re-raises
+
+Source excerpt:
+
+```
+            except:
+                self.close()  # <await>
+                raise
+```
+
+Why this is a false positive: the handler closes the pool and re-raises (`_pool.py:443-445`); the failure propagates to the caller.
+
+Checklist evidence: the suite ends in `raise` — BP-PY-1's condition is unmet.
+
+### [ ] Findings `24`, `25` — `BP-PY-12`, `CWE-94`
+
+- Function context: `scripts/onlymaps/findings/functions/24.txt`, `scripts/onlymaps/findings/functions/25.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_query.py:52:9`
+- Checklist pattern: the `exec` token is a method *definition*, not the builtin
+
+Source excerpt:
+
+```
+    def exec(  # <async>
+        self,
+        sql: str,
+        params: tuple[Any, ...],
+        kwparams: dict[str, Any],
+        /,
+    ) -> None:
+```
+
+Why this is a false positive: the line declares the library's `Query.exec` SQL-query runner; no `eval`/`exec` builtin is invoked.
+
+Checklist evidence: the rules require an actual call to a code-generation sink; the flagged token is a `def` signature.
+
+### [ ] Findings `26`, `27` — `BP-PY-12`, `CWE-94`
+
+- Function context: `scripts/onlymaps/findings/functions/26.txt`, `scripts/onlymaps/findings/functions/27.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:153:9`
+- Checklist pattern: the `exec` token is a `@overload` method *definition*, not the builtin
+
+Source excerpt:
+
+```
+    @overload
+    def exec(  # <async>
+        self,
+        sql: str,
+        /,
+        *args: Any,
+    ) -> None:
+```
+
+Why this is a false positive: the line is a type-hint `@overload` signature of the `exec` method; no code-generation API is called.
+
+Checklist evidence: BP-PY-12/CWE-94 require a `eval`/`exec`/`compile` call; the line is a declaration.
+
+### [ ] Finding `28` — `BP-PY-12`
+
+- Function context: `scripts/onlymaps/findings/functions/28.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_spec.py:170:9`
+- Checklist pattern: the `exec` token is a `@overload` method *definition*, not the builtin
+
+Source excerpt:
+
+```
+    @overload
+    def exec(  # <async>
+        self,
+        sql: str,
+        /,
+        **kwargs: Any,
+    ) -> None:
+```
+
+Why this is a false positive: the line is the second `@overload` signature of the `exec` method; no `eval`/`exec` builtin call exists.
+
+Checklist evidence: BP-PY-12 requires an actual `exec(` call; the line is a definition signature.
+
+### [ ] Finding `30` — `CWE-478`
+
+- Function context: `scripts/onlymaps/findings/functions/30.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/onlymaps/_types.py:307:1`
+- Checklist pattern: unmatched values are handled by an unconditional fallback statement after the match
+
+Source excerpt:
+
+```
+        match value:
+            case str():
+                dt: datetime = OnlymapsDatetime.parse_impl(value)
+                return dt.date()
+            case datetime():
+                return value.date()
+        return value
+```
+
+Why this is a false positive: every value outside the two cases falls through to the unconditional `return value` directly after the match — the same behavior a `case _:` default would provide.
+
+Checklist evidence: the "no default and no fallback handling" condition is unmet — the match is immediately followed by an unconditional return.
+
+### [ ] Finding `32` — `BP-PY-46`
+
+- Function context: `scripts/onlymaps/findings/functions/32.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:6:5`
+- Checklist pattern: `print` in an invoke task-runner CLI file, user-facing step output, not library logging
+
+Source excerpt:
+
+```
+@task
+def asyncio(c):
+    format(c)
+    print("Generating async source code...")
+    c.run("python gen_async.py")
+```
+
+Why this is a false positive: `tasks.py` is the project's `invoke` CLI task file; the print is progress output of a `@task` entrypoint, matching the rule's own "keep print … for CLIs" guidance.
+
+Checklist evidence: BP-PY-46 targets library modules; the flagged file is a CLI task runner.
+
+### [ ] Finding `33` — `BP-PY-46`
+
+- Function context: `scripts/onlymaps/findings/functions/33.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:12:5`
+- Checklist pattern: same CLI task-file user output as Finding 32
+
+Source excerpt:
+
+```
+@task
+def format(c):
+    print("Formatting source code...")
+    c.run("black onlymaps")
+```
+
+Why this is a false positive: the print is user-facing output of the `invoke format` CLI task, not library debug logging.
+
+Checklist evidence: the flagged module is a CLI task file; the "non-script modules" condition is unmet.
+
+### [ ] Finding `34` — `BP-PY-46`
+
+- Function context: `scripts/onlymaps/findings/functions/34.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:20:5`
+- Checklist pattern: same CLI task-file user output as Finding 32
+
+Source excerpt:
+
+```
+@task
+def check(c):
+    print("Checking for formatting issues...")
+    c.run("black --check onlymaps tests")
+```
+
+Why this is a false positive: the print is progress output of the `invoke check` CLI task, not operational logging in a library module.
+
+Checklist evidence: the flagged file is a CLI task runner, so BP-PY-46's library-code condition is unmet.
+
+### [ ] Finding `35` — `BP-PY-46`
+
+- Function context: `scripts/onlymaps/findings/functions/35.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:23:5`
+- Checklist pattern: same CLI task-file user output as Finding 32
+
+Source excerpt:
+
+```
+    print("Running mypy...")
+    c.run("mypy onlymaps tests")
+```
+
+Why this is a false positive: the print announces the next step of the `invoke check` CLI task; it is user-facing CLI output.
+
+Checklist evidence: the module is the project's CLI task file — the "print used in library code" condition is unmet.
+
+### [ ] Finding `36` — `BP-PY-46`
+
+- Function context: `scripts/onlymaps/findings/functions/36.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tasks.py:25:5`
+- Checklist pattern: same CLI task-file user output as Finding 32
+
+Source excerpt:
+
+```
+    print("Running pylint...")
+    c.run("pylint onlymaps")
+```
+
+Why this is a false positive: the print is step output of the `invoke check` CLI task in the project's task file, not library debug logging.
+
+Checklist evidence: the flagged file is a CLI task runner, so the "non-script modules" condition of BP-PY-46 is unmet.
+
+### [ ] Finding `41` — `CWE-89`
+
+- Function context: `scripts/onlymaps/findings/functions/41.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/fixtures/containers.py:180:13`
+- Checklist pattern: the first argument is a compile-time SQL constant, not a dynamic/interpolated string
+
+Source excerpt:
+
+```
+    with sqlite3.connect(database=db, isolation_level="DEFERRED") as conn:
+        conn.execute(SQL.CREATE_TEST_TABLE)
+        yield SqliteContainer(dbname=db)
+```
+
+Why this is a false positive: `conn.execute` receives `SQL.CREATE_TEST_TABLE`, a module-level constant SQL string; no dynamic expression or interpolation is involved, so no special elements can be injected.
+
+Checklist evidence: CWE-89's "dynamic SQL string reaches execute" condition is unmet — the argument is a static constant reference.
+
+### [ ] Finding `57` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/57.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_pool.py:63:1`
+- Checklist pattern: the handler records the exception into the test's result variable, which is asserted later
+
+Source excerpt:
+
+```
+            except Exception as exc:
+                result = exc
+            finally:
+                continue_counter = 2
+
+        executor.submit(fn_1)
+        executor.submit(fn_2)
+        executor.wait()  # <await>
+
+        # SQL Server implements READ COMMITTED isolation via
+        # locking, not MVCC, therefore the query should fail
+        # instead due to the lock held on the table.
+        if pool.driver == Driver.SQL_SERVER:
+            assert isinstance(result, Exception)
+        else:
+            assert result is None
+```
+
+Why this is a false positive: the handler stores the exception in `result`, and the test asserts on it at line 76 (`assert isinstance(result, Exception)`); the failure is captured as test evidence, not hidden.
+
+Checklist evidence: BP-PY-1's "broad except hides failures" predicate is not satisfied — the exception is recorded into a variable that the test asserts on.
+
+### [ ] Finding `59` — `BP-PY-1`
+
+- Function context: `scripts/onlymaps/findings/functions/59.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/onlymaps/tests/test_query.py:78:1`
+- Checklist pattern: the handler records the exception into the test's result variable for later assertion
+
+Source excerpt:
+
+```
+        try:
+            result: Any = db.fetch_one(t, query, param)  # <await>
+        except Exception as e:
+            result = e
+
+        # A value of type `T` should always be castable to type `T`.
+        if t is type(scalar):
+            assert result == scalar
+        else:
+            match scalar:
+```
+
+Why this is a false positive: the handler stores the exception in `result`, which the test subsequently asserts against (`assert result == scalar` / type checks below); the failure is captured as test evidence, not hidden.
+
+Checklist evidence: BP-PY-1's "broad except hides failures" predicate is not satisfied — the exception is recorded into the asserted result variable.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none (single-reviewer audit)
+- Chunk evidence: `scripts/onlymaps/chunks`
+- Function evidence: `scripts/onlymaps/findings/functions`
+- Validation: `git diff --check` — pass

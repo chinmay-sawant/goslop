@@ -260,3 +260,85 @@ None.
 - Chunk evidence: `scripts/Cronboard/chunks`
 - Function evidence: `scripts/Cronboard/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:30:00Z
+repository: Cronboard
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard
+branch: main
+commit: 0fa5f0d
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard
+chunk_path: scripts/Cronboard/chunks
+function_context_path: scripts/Cronboard/findings/functions
+fix_commit: b5b8fde (binary rebuilt 2026-08-02 16:29)
+```
+
+## Scan evidence
+
+- Build command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Cronboard/chunks -context-dir scripts/Cronboard/findings/functions real-repos/Cronboard`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Cronboard/chunks -context-dir scripts/Cronboard/findings/functions real-repos/Cronboard`
+- Findings: 66
+- Chunks reviewed: `scripts/Cronboard/chunks/Chunk_1_25.txt`, `scripts/Cronboard/chunks/Chunk_26_50.txt`, `scripts/Cronboard/chunks/Chunk_51_66.txt`
+- Function contexts reviewed: `scripts/Cronboard/findings/functions/66.txt`, plus the enclosing source (`tests/screens/test_cron_ssh_modal.py`) for the flagged finding
+
+## Audit checklist
+
+- [x] Read every assigned chunk under `scripts/Cronboard/chunks`.
+- [x] Read `scripts/Cronboard/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+## Classification summary
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 1 | 66 |
+| True positive | 65 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65 |
+| Uncertain | 0 | — |
+
+Notes: every fresh finding was matched by `Source:` path to the old audit. Findings 1–65 map one-to-one to audited true positives (all 65 audited TP constructs still present). Finding 66 maps to audited false positive 69 (same source construct, re-appearing). Audited false positives 30 (`CWE-215`), 40 (`PERF-PY-25`), and 62 (`CWE-88`) no longer appear in the fresh scan (eliminated by the fix). No new (unmatched) findings.
+
+## False positives
+
+### [ ] Finding `66` — `CWE-260`
+
+- Function context: `scripts/Cronboard/findings/functions/66.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Cronboard/tests/screens/test_cron_ssh_modal.py:96:13`
+- Checklist pattern: literal `"password": "password"` in a test assertion fixture, not a configuration map
+
+Source excerpt:
+
+```python
+    modal.dismiss.assert_called_once_with(
+        {
+            "hostname": "node9",
+            "port": 2222,
+            "username": "test",
+            "password": "password",
+            "ssh_key": False,
+            "crontab_user": "root",
+        }
+    )
+```
+
+Why this is a false positive: the dict is the expected-call argument of the mock assertion in `test_on_button_pressed_add_dismisses_server_data`, a unit test in `tests/`, not a configuration file or runtime config map; the value is the placeholder string "password", and no product configuration stores a credential.
+
+Checklist evidence: CWE-260's condition is "the product stores a password in a configuration file that might be accessible to actors who do not know the password" (rule is also quarantined as fixture-only, `all_pack: true`); the flagged literal is a test-fixture mock expectation, so there is no configuration file and no credential exposure — the detector's `pyConfigPasswordRE` still matches any `"password": "…"` dict entry, including test assertions.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/Cronboard/chunks`
+- Function evidence: `scripts/Cronboard/findings/functions`
+- Validation: `git diff --check` — pass

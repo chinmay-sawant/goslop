@@ -7715,3 +7715,2760 @@ None — every finding was classifiable from the rule condition and the shown so
 - Chunk evidence: `scripts/Project_Parva/chunks`
 - Function evidence: `scripts/Project_Parva/findings/functions`
 - Validation: `git diff --check` — pass (exit 0)
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:45:00Z
+repository: Project_Parva
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva
+branch: main
+commit: d05f6111bb0a39ce8dc3c82330297b60ae82c7c5
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva
+chunk_path: scripts/Project_Parva/chunks
+function_context_path: scripts/Project_Parva/findings/functions
+audit_mode: A (remaining false positives)
+fix_commit: b5b8fde (FP-reduction, binary rebuilt 2026-08-02 16:29)
+```
+
+## Scan evidence
+
+- Build command: `make build` (goslop binary at `./bin/goslop`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/Project_Parva/chunks -context-dir scripts/Project_Parva/findings/functions real-repos/Project_Parva`
+- Findings: `171` (down from 412 pre-fix)
+- Chunks reviewed: `scripts/Project_Parva/chunks/Chunk_1_25.txt` … `Chunk_151_171.txt` (7 files, findings 1–171)
+- Function contexts reviewed: `scripts/Project_Parva/findings/functions/<id>.txt` for every proposed false positive; enclosing source read where the exported context was insufficient (billing `service.py`/`storage.py`, `public_artifacts_routes.py`, `middleware.py`, `rulelang_service.py`, `backtest.py`, `client.py`, `validate_schemas.py`, `evaluate.py`, `langchain.py`, `llamaindex.py`).
+
+## Audit checklist
+
+- [x] Read every assigned chunk under `scripts/Project_Parva/chunks` (all 7 chunks, findings 1–171).
+- [x] Read `scripts/Project_Parva/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Matched every fresh finding to the old audit by `Source:` path (file:line); 159 fresh findings match audited-FP sources, 11 match audited-TP sources, 1 fresh finding (`31`) is new and was verified against the rule condition.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition (`-explain` metadata + catalogue `detection_notes` in `ruleset/python/`) and the shown source, not on application-specific knowledge.
+- [x] Ran `git diff --check` after updating this report.
+
+## Classification summary (fresh run)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 160 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 54, 55, 56, 57, 59, 60, 61, 62, 63, 64, 65, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171 |
+| True positive | 11 | 38, 50, 58, 67, 79, 82, 83, 85, 86, 120, 131 |
+| Uncertain | 0 | — |
+
+True positives (fresh IDs match audited TPs by source): 38=CWE-1124 bikram_sambat.py:614 (old 41), 50=CWE-1121 rules/service.py:37 (old 62), 58=BP-PY-1 rulelang_service.py:1362 (old 70), 67=CWE-1046 tools/evaluate.py:383 (old 88), 79=PERF-PY-27 week3_ground_truth_pipeline.py:263 (old 124), 82=BP-PY-1 langchain.py:67 (old 133), 83=CWE-396 langchain.py:67 (old 134), 85=BP-PY-1 llamaindex.py:16 (old 136), 86=CWE-396 llamaindex.py:16 (old 137), 120=CWE-1124 check_public_claims.py:164 (old 273), 131=CWE-1124 verify_clean_clone_assumptions.py:257 (old 315). All 11 audited true positives still appear in the fresh scan.
+
+## False positives
+
+One subsection per remaining false positive. No grouping applied: no two fresh false-positive findings reference the exact same source construct (same file, same line, same rule). Each subsection notes the audited-FP finding from the pre-fix audit that shares the same source construct; fresh finding `31` is new (the pre-fix scan flagged the `execute()` wrapper at storage.py:108:17, the fresh scan flags the `seed_plans()` call site at storage.py:158:17 — same placeholder-only pattern).
+
+
+### [ ] Finding 1 — BP-PY-13
+- Function context: `scripts/Project_Parva/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/billing_routes.py:327:1`
+- Matches audited FP: Finding 1 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise HTTPException(status_code=403, detail="Webhook notifications require Professional or Enterprise.")
+secret = f"parva_whsec_{secrets.token_urlsafe(32)}"
+return await _billing_call(
+```
+
+Why this is a false positive: the 'secret' is generated at runtime with `secrets.token_urlsafe(32)`; no secret-like string literal is assigned, so the hardcoded-literal rule condition is not satisfied.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 2 — BP-PY-32
+- Function context: `scripts/Project_Parva/findings/functions/2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:100:12`
+- Matches audited FP: Finding 3 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise HTTPException(status_code=404, detail="Artifact not found")
+return FileResponse(path, media_type="application/json", filename=filename)
+```
+
+Why this is a false positive: the user-supplied `filename` is confined by a basename-only policy: `/` and `..` are rejected and a `.json` suffix enforced before joining under the constant `PRECOMPUTED_DIR`, satisfying the confinement requirement.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 3 — BP-PY-32
+- Function context: `scripts/Project_Parva/findings/functions/3.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:110:12`
+- Matches audited FP: Finding 4 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise HTTPException(status_code=404, detail="Dashboard artifact not generated yet")
+return FileResponse(path, media_type="application/json", filename=path.name)
+```
+
+Why this is a false positive: path built from module constants (`REPORTS_DIR`/`PUBLIC_ARTIFACTS_DIR`) plus a fixed filename; no user input reaches `FileResponse`.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 4 — BP-PY-32
+- Function context: `scripts/Project_Parva/findings/functions/4.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:118:12`
+- Matches audited FP: Finding 5 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise HTTPException(status_code=404, detail="Source review queue artifact not generated yet")
+return FileResponse(path, media_type="application/json", filename=path.name)
+```
+
+Why this is a false positive: constant directory plus fixed filename; no user input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 5 — BP-PY-32
+- Function context: `scripts/Project_Parva/findings/functions/5.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:126:12`
+- Matches audited FP: Finding 6 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise HTTPException(status_code=404, detail="Boundary suite artifact not generated yet")
+return FileResponse(path, media_type="application/json", filename=path.name)
+```
+
+Why this is a false positive: constant directory plus fixed filename; no user input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 6 — BP-PY-32
+- Function context: `scripts/Project_Parva/findings/functions/6.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/public_artifacts_routes.py:134:12`
+- Matches audited FP: Finding 7 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise HTTPException(status_code=404, detail="Differential artifact not generated yet")
+return FileResponse(path, media_type="application/json", filename=path.name)
+```
+
+Why this is a false positive: constant `data_dir()`/`differential` path plus fixed filename; no user input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 7 — BP-PY-41
+- Function context: `scripts/Project_Parva/findings/functions/7.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/api/rules_routes.py:112:1`
+- Matches audited FP: Finding 8 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+@router.post("/{rule_id}/test")
+async def test_rule(rule_id: str, request: Request) -> dict[str, Any]:
+try:
+```
+
+Why this is a false positive: `test_rule` is a FastAPI route handler, not a pytest test function; the placeholder-test condition does not apply.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 8 — CWE-89
+- Function context: `scripts/Project_Parva/findings/functions/8.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/migrations.py:224:10`
+- Matches audited FP: Finding 9 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+schema = SQLITE_SCHEMA[0] if store.config.dialect == "sqlite" else POSTGRES_SCHEMA[0]
+store.execute(schema)
+for migration in MIGRATIONS:
+```
+
+Why this is a false positive: the SQL passed to `execute` is a static schema constant selected at migration time; no data is interpolated.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 9 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/migrations.py:235:14`
+- Matches audited FP: Finding 10 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+store.execute(statement)
+store.execute(
+f"INSERT INTO billing_schema_migrations (version, name) VALUES ({store.param()}, {store.param()})",
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 10 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/10.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:112:19`
+- Matches audited FP: Finding 11 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+scrubbed_metadata = scrub_structured_trace(metadata or {})
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 11 — CWE-89
+- Function context: `scripts/Project_Parva/findings/functions/11.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:112:19`
+- Matches audited FP: Finding 12 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+scrubbed_metadata = scrub_structured_trace(metadata or {})
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: no value is interpolated into the SQL text: either a static schema constant or placeholder-only f-strings with all values passed as bound parameters through the `(sql, params)` wrapper.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 12 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/12.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:193:23`
+- Matches audited FP: Finding 13 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if existing:
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 13 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/13.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:208:19`
+- Matches audited FP: Finding 14 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+customer_id = _new_id("cus")
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 14 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/14.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:252:19`
+- Matches audited FP: Finding 15 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+due_at = (utc_now() + timedelta(days=7)).isoformat()
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 15 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/15.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:259:19`
+- Matches audited FP: Finding 16 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 16 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/16.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:276:19`
+- Matches audited FP: Finding 17 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 17 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/17.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:382:19`
+- Matches audited FP: Finding 18 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+payment_status = "failed"
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 18 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/18.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:397:23`
+- Matches audited FP: Finding 19 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+elif payment_status == "failed":
+self.store.execute(
+f"UPDATE invoices SET status = 'failed', updated_at = {self.store.param()} WHERE id = {self.store.param()}",
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 19 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/19.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:420:19`
+- Matches audited FP: Finding 20 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+renews_at = (now_dt + timedelta(days=30)).isoformat()
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 20 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/20.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:429:19`
+- Matches audited FP: Finding 21 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 21 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/21.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:480:19`
+- Matches audited FP: Finding 22 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+key_id = _new_id("key")
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 22 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/22.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:554:19`
+- Matches audited FP: Finding 23 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise BillingAuthError(403, "Subscription is not active.")
+self.store.execute(
+f"UPDATE api_keys SET last_used_at = {self.store.param()} WHERE id = {self.store.param()}",
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 23 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/23.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:593:23`
+- Matches audited FP: Finding 24 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if existing:
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 24 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/24.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:602:23`
+- Matches audited FP: Finding 25 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+else:
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 25 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/25.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:654:19`
+- Matches audited FP: Finding 26 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+now = iso_now()
+self.store.execute(
+f"UPDATE api_keys SET active = {self.store.param()}, revoked_at = {self.store.param()} WHERE id = {self.store.param()}",
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 26 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/26.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:678:19`
+- Matches audited FP: Finding 27 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+secret_hash = hash_api_key_secret(secret, self.settings.api_key_pepper)
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 27 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/27.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:732:19`
+- Matches audited FP: Finding 28 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+now = iso_now()
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 28 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/28.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:741:23`
+- Matches audited FP: Finding 29 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if row["payment_id"]:
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 29 — BP-PY-37
+- Function context: `scripts/Project_Parva/findings/functions/29.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/service.py:788:19`
+- Matches audited FP: Finding 30 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+renews_at = (base + timedelta(days=max(1, min(days, 366)))).isoformat()
+self.store.execute(
+f"""
+```
+
+Why this is a false positive: the f-string interpolates only `store.param()` placeholder tokens (`?` / `%s`); every value is passed as a bound parameter in the `execute(sql, params)` call — exactly the rule's prescribed fix, so no data is `%`-formatted into the SQL.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 30 — PERF-PY-23
+- Function context: `scripts/Project_Parva/findings/functions/30.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/storage.py:131:1`
+- Matches audited FP: Finding 32 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+for plan in PLAN_DEFINITIONS:
+features_json = json.dumps(list(plan.features), separators=(",", ":"))
+if self.config.dialect == "sqlite":
+```
+
+Why this is a false positive: serialization runs in a startup seeding loop over a small constant plan list, or per-row in an offline research script producing report rows — not a hot service loop.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 31 — CWE-89
+- Function context: `scripts/Project_Parva/findings/functions/31.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/billing/storage.py:158:17`
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+            if self.config.dialect == "sqlite":
+                sql = """
+                INSERT INTO plans (id, slug, name, currency, price_minor, monthly_limit, daily_limit, features_json, active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+                ...
+                """
+            else:
+                sql = """
+                INSERT INTO plans (id, slug, name, currency, price_minor, monthly_limit, daily_limit, features_json, active)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, true)
+                ...
+                """
+            self.execute(
+                sql,
+                (
+                    plan.slug,
+```
+
+Why this is a false positive: the `sql` argument is a static placeholder string (`?` / `%s`) selected from two dialect constants; every value is passed as a bound parameter in the `(sql, params)` call, so no data is interpolated into the SQL text.
+
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 32 — BP-PY-32
+- Function context: `scripts/Project_Parva/findings/functions/32.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/app_factory.py:77:16`
+- Matches audited FP: Finding 33 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _frontend_response(path, *, immutable: bool = False) -> FileResponse:
+response = FileResponse(path)
+response.headers["Cache-Control"] = (
+```
+
+Why this is a false positive: the helper serves the frontend build directory; callers pass `settings.frontend_dist`-rooted paths, not request input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 33 — CWE-93
+- Function context: `scripts/Project_Parva/findings/functions/33.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/app_factory.py:78:13`
+- Matches audited FP: Finding 34 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+response = FileResponse(path)
+response.headers["Cache-Control"] = (
+"public, max-age=31536000, immutable" if immutable else "no-cache"
+```
+
+Why this is a false positive: the header value is a fixed string literal chosen by a boolean; nothing an attacker could inject CRLF into.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 34 — CWE-93
+- Function context: `scripts/Project_Parva/findings/functions/34.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:61:13`
+- Matches audited FP: Finding 35 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+existing = response.headers.get("Link")
+response.headers["Link"] = f"{existing}, {value}" if existing else value
+```
+
+Why this is a false positive: callers pass `source_url` from `settings.source_url` (server configuration) or the constant `'</v3/docs>; rel="successor-version"'`; no request-controlled value reaches the header.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 35 — CWE-290
+- Function context: `scripts/Project_Parva/findings/functions/35.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:181:21`
+- Matches audited FP: Finding 36 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+remote_host = request.client.host if request.client and request.client.host else ""
+forwarded_for = request.headers.get("x-forwarded-for")
+trusted_proxy_ips = settings.trusted_proxy_ips
+```
+
+Why this is a false positive: X-Forwarded-For is honored only when `trust_proxy_headers` is true (direct peer in the configured trusted-proxy allowlist or `*`); the header is not trusted directly.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 36 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/36.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:794:1`
+- Matches audited FP: Finding 38 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+ephemeris_value = "jpl-de440-lahiri-sidereal"
+except Exception as exc:  # noqa: BLE001
+logger.warning("Unable to resolve active future-BS ephemeris label: %s", exc)
+```
+
+Why this is a false positive: the exception object is recorded in `logger.warning(..., exc)`; the handler deliberately degrades a header value and the failure is not silently discarded.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 37 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/37.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/bootstrap/middleware.py:794:1`
+- Matches audited FP: Finding 38 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+ephemeris_value = "jpl-de440-lahiri-sidereal"
+except Exception as exc:  # noqa: BLE001
+logger.warning("Unable to resolve active future-BS ephemeris label: %s", exc)
+```
+
+Why this is a false positive: the exception object is recorded in `logger.warning(..., exc)`; the handler deliberately degrades a header value and the failure is not silently discarded.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 39 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/39.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:366:1`
+- Matches audited FP: Finding 45 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return DateRange(start=override_date, end=end_date, year=gregorian_year)
+except (ImportError, OSError, JSONDecodeError, TypeError, ValueError, KeyError):
+# If overrides aren't available, fall back to calculations
+```
+
+Why this is a false positive: typed-exception tuple with a comment documenting the fallback to algorithmic calculation when override data is unavailable; the pass is the intended fallback.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 40 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/40.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator.py:366:1`
+- Matches audited FP: Finding 46 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return DateRange(start=override_date, end=end_date, year=gregorian_year)
+except (ImportError, OSError, JSONDecodeError, TypeError, ValueError, KeyError):
+# If overrides aren't available, fall back to calculations
+```
+
+Why this is a false positive: the handler's purpose is the documented fallback to algorithmic calculation; recovery exists, so 'error condition without action' does not hold.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 41 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/41.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator_v2.py:173:1`
+- Matches audited FP: Finding 49 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except (ImportError, OSError, JSONDecodeError, TypeError, ValueError, KeyError):
+# Fall back to algorithmic calculation
+```
+
+Why this is a false positive: documented deliberate fallback to algorithmic calculation when override data is unavailable.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 42 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/42.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/calculator_v2.py:173:1`
+- Matches audited FP: Finding 50 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except (ImportError, OSError, JSONDecodeError, TypeError, ValueError, KeyError):
+# Fall back to algorithmic calculation
+```
+
+Why this is a false positive: the handler triggers the documented fallback recovery path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 43 — BP-PY-5
+- Function context: `scripts/Project_Parva/findings/functions/43.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/calendar/tithi.py:9:1`
+- Matches audited FP: Finding 52 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+from app.calendar.tithi import *  # noqa: F401,F403
+```
+
+Why this is a false positive: the module is an explicitly documented compatibility re-export stub for the canonical `tithi` package (`# noqa: F401,F403`), the documented re-export pattern the rule's note allows.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 44 — CWE-186
+- Function context: `scripts/Project_Parva/findings/functions/44.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/compliance/notice_ingestion.py:14:14`
+- Matches audited FP: Finding 53 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+BS_DATE_RE = re.compile(r"(?P<year>20\d{2})-(?P<month>\d{2})-(?P<day>\d{2})")
+FIELD_RE = re.compile(r"^(?P<key>issuer|published|effective|deadline|action|affected_party|jurisdiction):\s*(?P<value>.+)$", re.I)
+```
+
+Why this is a false positive: the regex is a parser for the fixed BS date format of the ingestion sources; the narrow shape is the intended format, not an over-restriction.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 45 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/45.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/membranes/source_resolution.py:98:59`
+- Matches audited FP: Finding 54 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+review_required=True,
+source_docket_ids=resolution.source_docket_ids if resolution.authority == AuthorityTaint.STATIC_REFERENCE else (),
+source_refs=resolution.source_refs if resolution.authority == AuthorityTaint.STATIC_REFERENCE else (),
+```
+
+Why this is a false positive: the `==` compares enum members (`AuthorityTaint`), not secrets or authentication values.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 46 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/46.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/policy/vm.py:64:21`
+- Matches audited FP: Finding 55 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+static_rule == "explicit_mode_or_compare_branch_only"
+and candidate.authority == AuthorityTaint.STATIC_REFERENCE
+and len(candidates) > 1
+```
+
+Why this is a false positive: enum member comparison, not a secret comparison.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 47 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/47.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/backtest.py:282:1`
+- Matches audited FP: Finding 57 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+mismatch_by_ingress_hour[hour] += 1
+except ValueError:
+pass
+```
+
+Why this is a false positive: the handler tolerates malformed diagnostic rows in an offline analytics loop; the unparseable row is deliberately skipped without breaking the aggregate.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 48 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/48.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/backtest.py:282:1`
+- Matches audited FP: Finding 58 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+mismatch_by_ingress_hour[hour] += 1
+except ValueError:
+pass
+```
+
+Why this is a false positive: skipping the malformed row is the defined handling; the pass is the intended action.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 49 — CWE-1071
+- Function context: `scripts/Project_Parva/findings/functions/49.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/research/future_bs/backtest.py:282:21`
+- Matches audited FP: Finding 59 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+mismatch_by_ingress_hour[hour] += 1
+except ValueError:
+pass
+```
+
+Why this is a false positive: the empty block implements the deliberate malformed-row skip in batch analytics.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 51 — PERF-PY-27
+- Function context: `scripts/Project_Parva/findings/functions/51.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/rules/triad_pipeline.py:125:12`
+- Matches audited FP: Finding 63 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validation_path = triad_paths(rule.festival_id)["validation"]
+payload = json.loads(validation_path.read_text(encoding="utf-8"))
+if any(case.get("status") == "passed" for case in payload.get("cases", [])):
+```
+
+Why this is a false positive: the path is derived per rule (`rule.festival_id`), so each loop iteration loads a different file; the rule targets repeated loads of the same path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 52 — PERF-PY-27
+- Function context: `scripts/Project_Parva/findings/functions/52.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/rules/triad_pipeline.py:150:23`
+- Matches audited FP: Finding 64 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validation_payload = json.loads(paths["validation"].read_text(encoding="utf-8"))
+if any(case.get("status") == "passed" for case in validation_payload.get("cases", [])):
+```
+
+Why this is a false positive: same as 63: the path varies per rule iteration.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 53 — CWE-186
+- Function context: `scripts/Project_Parva/findings/functions/53.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/agent_service.py:71:18`
+- Matches audited FP: Finding 65 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+BS_AD_CLAIM_RE = re.compile(
+r"(?P<bs>\d{4}-\d{2}-\d{2})\s*(?:BS|B\.S\.|Bikram Sambat)?\s*"
+```
+
+Why this is a false positive: the regex parses the fixed BS/AD date-claim format the feature documents; the narrow shape is the intended grammar.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 54 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/54.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:415:1`
+- Matches audited FP: Finding 66 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+evidence_packet_id = packet["packet_id"]
+except Exception as exc:  # noqa: BLE001
+context.warnings.append(f"rule_evidence_packet_unavailable: {exc}")
+```
+
+Why this is a false positive: the exception text is recorded in `context.warnings`; the failure is surfaced to the caller.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 55 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/55.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:415:1`
+- Matches audited FP: Finding 67 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+evidence_packet_id = packet["packet_id"]
+except Exception as exc:  # noqa: BLE001
+context.warnings.append(f"rule_evidence_packet_unavailable: {exc}")
+```
+
+Why this is a false positive: the failure is recorded in the evaluation context warnings.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 56 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/56.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:523:1`
+- Matches audited FP: Finding 68 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except Exception as exc:  # noqa: BLE001
+results.append(
+```
+
+Why this is a false positive: the failure is recorded per case with `str(exc)` in the results the caller consumes.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 57 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/57.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:761:1`
+- Matches audited FP: Finding 69 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+fact_ids = [bs_ad_fact_id(year, month, day)]
+except Exception as exc:  # noqa: BLE001
+value = {"valid": False, "error": str(exc)}
+```
+
+Why this is a false positive: the exception text is captured into the returned error value (`{"valid": False, "error": str(exc)}`).
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 59 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/59.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:1384:1`
+- Matches audited FP: Finding 71 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return True
+except ValueError:
+pass
+```
+
+Why this is a false positive: unparseable AD date strings are deliberately skipped while scanning candidate dates.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 60 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/60.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:1384:1`
+- Matches audited FP: Finding 72 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return True
+except ValueError:
+pass
+```
+
+Why this is a false positive: skipping the malformed date is the defined handling.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 61 — CWE-1071
+- Function context: `scripts/Project_Parva/findings/functions/61.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/rulelang_service.py:1384:13`
+- Matches audited FP: Finding 73 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return True
+except ValueError:
+pass
+```
+
+Why this is a false positive: the empty handler implements the intended skip of unparseable dates.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 62 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/62.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/timegraph_fact_links.py:39:1`
+- Matches audited FP: Finding 74 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+fact_ids.append(fiscal_period_fact_id(year, month, day))
+except (KeyError, TypeError, ValueError):
+pass
+```
+
+Why this is a false positive: typed-exception tuple; malformed date tuples are deliberately skipped while building fact-id lists.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 63 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/63.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/app/services/timegraph_fact_links.py:39:1`
+- Matches audited FP: Finding 75 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+fact_ids.append(fiscal_period_fact_id(year, month, day))
+except (KeyError, TypeError, ValueError):
+pass
+```
+
+Why this is a false positive: skip of malformed rows is the defined handling.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 64 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/64.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:157:1`
+- Matches audited FP: Finding 77 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+converted_dates.append(g_date.isoformat())
+except Exception as exc:  # noqa: BLE001
+err = str(exc)
+```
+
+Why this is a false positive: the exception text is captured into the conversion error record for reporting.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 65 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/65.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:157:1`
+- Matches audited FP: Finding 78 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+converted_dates.append(g_date.isoformat())
+except Exception as exc:  # noqa: BLE001
+err = str(exc)
+```
+
+Why this is a false positive: the failure is recorded per row.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 66 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/66.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/build_baseline_supplement.py:195:1`
+- Matches audited FP: Finding 79 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+records.append(
+BaselineRecord(
+bs_year=bs_year,
+```
+
+Why this is a false positive: per-row record construction is inherent to the batch conversion tool; not a hot path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 68 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/68.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/generate_beta_dashboard.py:33:1`
+- Matches audited FP: Finding 107 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return float(metrics["uptime_percent"])
+except (TypeError, ValueError):
+pass
+```
+
+Why this is a false positive: missing/invalid metric values fall through to a default return; the typed except implements a documented default.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 69 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/69.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/generate_beta_dashboard.py:33:1`
+- Matches audited FP: Finding 108 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return float(metrics["uptime_percent"])
+except (TypeError, ValueError):
+pass
+```
+
+Why this is a false positive: the handler's action is falling back to the default metric value.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 70 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/70.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:178:5`
+- Matches audited FP: Finding 111 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+prefix = tmp_dir / "page"
+subprocess.run(
+["pdftoppm", "-r", "300", "-png", str(pdf_path), str(prefix)],
+```
+
+Why this is a false positive: `pdf_path`/`prefix` are paths from a local filesystem scan in an offline ingestion tool with fixed flags; no externally influenced value can become an unintended option.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 71 — PERF-PY-27
+- Function context: `scripts/Project_Parva/findings/functions/71.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:193:1`
+- Matches audited FP: Finding 112 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if txt_path.exists():
+parts.append(txt_path.read_text(encoding="utf-8", errors="ignore"))
+return "\n".join(parts)
+```
+
+Why this is a false positive: each iteration reads a different `txt_path` derived from the per-image base name; the same path is not reloaded.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 72 — PERF-PY-27
+- Function context: `scripts/Project_Parva/findings/functions/72.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_moha_pdfs.py:386:22`
+- Matches audited FP: Finding 113 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+) -> int:
+overrides = json.loads(overrides_path.read_text())
+# Remove known bad OCR-derived entries
+```
+
+Why this is a false positive: the path is read and parsed exactly once per function call.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 73 — CWE-772
+- Function context: `scripts/Project_Parva/findings/functions/73.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/ingest_pradhanlaw_2082.py:113:43`
+- Matches audited FP: Finding 115 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def ingest(url: str, force: bool = False):
+html = urllib.request.urlopen(url).read().decode("utf-8", errors="ignore")
+```
+
+Why this is a false positive: the `urlopen` response is a temporary consumed inline via `.read()` and becomes garbage immediately; no persistent handle is retained.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 74 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/74.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/load_test.py:163:1`
+- Matches audited FP: Finding 117 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+await make_request(session, f"{API_BASE}{ep}")
+except (OSError, RuntimeError, TimeoutError, ValueError):
+pass
+```
+
+Why this is a false positive: a load-test harness intentionally tolerates per-endpoint request failures to keep exercising the remaining endpoints.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 75 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/75.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/load_test.py:163:1`
+- Matches audited FP: Finding 118 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+await make_request(session, f"{API_BASE}{ep}")
+except (OSError, RuntimeError, TimeoutError, ValueError):
+pass
+```
+
+Why this is a false positive: continue-on-failure is the defined load-test behavior.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 76 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/76.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/week3_ground_truth_pipeline.py:174:1`
+- Matches audited FP: Finding 121 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+converted_dates.append(g_date.isoformat())
+except Exception as e:  # noqa: BLE001
+err = str(e)
+```
+
+Why this is a false positive: the exception text is captured into the row's error record.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 77 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/77.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/week3_ground_truth_pipeline.py:174:1`
+- Matches audited FP: Finding 122 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+converted_dates.append(g_date.isoformat())
+except Exception as e:  # noqa: BLE001
+err = str(e)
+```
+
+Why this is a false positive: the failure is recorded per row.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 78 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/78.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/backend/tools/week3_ground_truth_pipeline.py:216:1`
+- Matches audited FP: Finding 123 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+baseline_records.append(
+BaselineRecord(
+bs_year=bs_year,
+```
+
+Why this is a false positive: per-row record construction is inherent to the batch pipeline; not a hot path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 80 — CWE-22
+- Function context: `scripts/Project_Parva/findings/functions/80.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/benchmark/harness.py:163:73`
+- Matches audited FP: Finding 125 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+out_path = Path(args.out) if args.out else Path("benchmark/results") / f"{pack['pack_id']}_report.json"
+out_path.parent.mkdir(parents=True, exist_ok=True)
+```
+
+Why this is a false positive: a local benchmark CLI: `pack_id` comes from a validated pack file and `args.out` is an operator CLI argument, not request-controlled input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 81 — CWE-73
+- Function context: `scripts/Project_Parva/findings/functions/81.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/benchmark/validate_pack.py:83:12`
+- Matches audited FP: Finding 126 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+path = Path(sys.argv[1])
+if not path.exists():
+```
+
+Why this is a false positive: operator-supplied CLI argument to a local validation tool; no request boundary.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 84 — BP-PY-13
+- Function context: `scripts/Project_Parva/findings/functions/84.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-agent-tools/parva_tools/langchain.py:100:1`
+- Matches audited FP: Finding 135 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+for key, value in list(payload.items()):
+token = "{" + key + "}"
+if token in bound:
+```
+
+Why this is a false positive: the 'secret-like' variable `token` is a template placeholder built from a dict key (`"{" + key + "}"`), not a credential.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 87 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/87.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/client.py:192:1`
+- Matches audited FP: Finding 138 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except ValueError:
+pass
+```
+
+Why this is a false positive: an unparseable `content-length` header falls through to the streaming size check; the ValueError triggers the robust path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 88 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/88.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/client.py:192:1`
+- Matches audited FP: Finding 139 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except ValueError:
+pass
+```
+
+Why this is a false positive: the handler's action is the fall-through to streaming validation.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 89 — CWE-1071
+- Function context: `scripts/Project_Parva/findings/functions/89.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/src/parva_mcp_server/client.py:192:9`
+- Matches audited FP: Finding 140 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except ValueError:
+pass
+```
+
+Why this is a false positive: the empty handler implements the intended fallback to the streaming check.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 90 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/90.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/tests/test_client.py:69:1`
+- Matches audited FP: Finding 143 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validate_public_origin(origin)
+except ValueError:
+pass
+```
+
+Why this is a false positive: the test intentionally invokes the validator expecting it to raise for an invalid origin; the pass is the expected-rejection assertion.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 91 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/91.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/tests/test_client.py:69:1`
+- Matches audited FP: Finding 144 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validate_public_origin(origin)
+except ValueError:
+pass
+```
+
+Why this is a false positive: the expected exception is the test outcome.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 92 — CWE-1071
+- Function context: `scripts/Project_Parva/findings/functions/92.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/packages/parva-mcp-server/tests/test_client.py:69:9`
+- Matches audited FP: Finding 145 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validate_public_origin(origin)
+except ValueError:
+pass
+```
+
+Why this is a false positive: the empty handler is the expected-rejection assertion.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 93 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/93.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/parva_mcp_server/__init__.py:30:14`
+- Matches audited FP: Finding 148 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise AttributeError(name)
+module = __import__(f"{__name__}.{module_name}", fromlist=[name])
+return getattr(module, name)
+```
+
+Why this is a false positive: package `__getattr__` lazy-import shim; `module_name` is derived from a Python attribute name, not an untrusted control sphere.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 94 — CWE-94
+- Function context: `scripts/Project_Parva/findings/functions/94.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/parva_mcp_server/__init__.py:30:14`
+- Matches audited FP: Finding 149 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise AttributeError(name)
+module = __import__(f"{__name__}.{module_name}", fromlist=[name])
+return getattr(module, name)
+```
+
+Why this is a false positive: the dynamic import is a lazy-attribute shim whose argument is an attribute name; no externally influenced text reaches it.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 95 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/95.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_parva.py:316:1`
+- Matches audited FP: Finding 152 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+result = _evaluate_task(task, status, payload)
+except Exception as exc:  # noqa: BLE001 - benchmark output should record every task.
+result = {
+```
+
+Why this is a false positive: the exception is recorded per task in the benchmark result row (`"error": str(exc)`), which the comment explicitly requires.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 96 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/96.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/public-benchmark/runners/run_against_parva.py:316:1`
+- Matches audited FP: Finding 153 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+result = _evaluate_task(task, status, payload)
+except Exception as exc:  # noqa: BLE001 - benchmark output should record every task.
+result = {
+```
+
+Why this is a false positive: the failure is recorded per task.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 97 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/97.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/benchmark/generate_benchmark_badge.py:46:12`
+- Matches audited FP: Finding 156 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _source_timestamp() -> str:
+proc = subprocess.run(
+[
+```
+
+Why this is a false positive: the only dynamic operand is a repo-relative constant path passed after `--`; no externally influenced input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 98 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/98.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:51:1`
+- Matches audited FP: Finding 164 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except (OSError, SpkValidationError):
+pass
+```
+
+Why this is a false positive: the pass is inside a download/verify loop that retries; a failed verify deliberately falls through to the download path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 99 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/99.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/download_jpl_kernel.py:51:1`
+- Matches audited FP: Finding 165 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+except (OSError, SpkValidationError):
+pass
+```
+
+Why this is a false positive: the handler's action is proceeding to the download/retry path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 100 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/100.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/accuracy_lab.py:28:21`
+- Matches audited FP: Finding 181 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+python_executable = os.getenv("PARVA_PYTHON", sys.executable)
+completed = subprocess.run([python_executable, *sys.argv], env=env)
+raise SystemExit(completed.returncode)
+```
+
+Why this is a false positive: the script re-executes itself with its own already-parsed `sys.argv` under a re-exec guard; no new command is constructed from untrusted input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 101 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/101.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/generate_all_final_artifacts.py:30:21`
+- Matches audited FP: Finding 190 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+python_executable = os.getenv("PARVA_PYTHON", sys.executable)
+completed = subprocess.run([python_executable, *sys.argv], env=env)
+raise SystemExit(completed.returncode)
+```
+
+Why this is a false positive: self re-execution with the process's own argv under a guard (same pattern as 181).
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 102 — PERF-PY-23
+- Function context: `scripts/Project_Parva/findings/functions/102.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/optimize_solar_civil_rules_loop.py:281:1`
+- Matches audited FP: Finding 199 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+"risk_flags": ";".join(risk_cache.get(year, [])),
+"applied_rules": json.dumps(applied_for_month, ensure_ascii=False, sort_keys=True),
+}
+```
+
+Why this is a false positive: per-month serialization in an offline rule-optimization research script; the serialization is the output being produced.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 103 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/103.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/future_bs/replay_2083_ashwin.py:28:21`
+- Matches audited FP: Finding 206 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+python_executable = os.getenv("PARVA_PYTHON", sys.executable)
+completed = subprocess.run([python_executable, *sys.argv], env=env)
+raise SystemExit(completed.returncode)
+```
+
+Why this is a false positive: self re-execution with the process's own argv under a guard (same pattern as 181).
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 104 — BP-PY-45
+- Function context: `scripts/Project_Parva/findings/functions/104.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/generate_accuracy_report.py:29:5`
+- Matches audited FP: Finding 215 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+"""Compare V2 calculator output against ground truth for all years."""
+sys.path.insert(0, str(PROJECT_ROOT / "backend"))
+```
+
+Why this is a false positive: the script needs the in-tree `backend` package importable before running; module-top bootstrap.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 105 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/105.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/node_runtime.py:49:14`
+- Matches audited FP: Finding 218 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+result = subprocess.run(
+[resolved, "--version"],
+```
+
+Why this is a false positive: `resolved` is the node executable from `shutil.which` and the flag is a fixed constant; no externally influenced argument.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 106 — CWE-73
+- Function context: `scripts/Project_Parva/findings/functions/106.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_credential_verify.py:22:29`
+- Matches audited FP: Finding 224 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return 0 if len(sys.argv) == 2 and sys.argv[1] in {"-h", "--help"} else 2
+credential = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+result = verify_calendar_credential_payload(credential)
+```
+
+Why this is a false positive: operator-supplied CLI argument to a local verification tool; no request boundary.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 107 — CWE-73
+- Function context: `scripts/Project_Parva/findings/functions/107.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_offline_verify.py:20:12`
+- Matches audited FP: Finding 229 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+return 2
+root = Path(sys.argv[1])
+manifest_path = root / "bundle-manifest.json"
+```
+
+Why this is a false positive: operator-supplied CLI argument to a local verification tool; no request boundary.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 108 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/108.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_rulelang_verify.py:169:1`
+- Matches audited FP: Finding 235 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+_assert_disputed_fact_blocks()
+except Exception as exc:  # noqa: BLE001
+print(f"Project Parva RuleLang verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 109 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/109.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_rulelang_verify.py:169:1`
+- Matches audited FP: Finding 236 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+_assert_disputed_fact_blocks()
+except Exception as exc:  # noqa: BLE001
+print(f"Project Parva RuleLang verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 110 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/110.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_timegraph_verify.py:41:1`
+- Matches audited FP: Finding 239 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise TimeGraphError("sample date query returned no facts")
+except Exception as exc:  # noqa: BLE001
+print(f"Project Parva TimeGraph verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 111 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/111.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_timegraph_verify.py:41:1`
+- Matches audited FP: Finding 240 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise TimeGraphError("sample date query returned no facts")
+except Exception as exc:  # noqa: BLE001
+print(f"Project Parva TimeGraph verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 112 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/112.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_trust_verify.py:75:1`
+- Matches audited FP: Finding 243 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise TrustInfrastructureError("; ".join(trust["issues"]))
+except Exception as exc:  # noqa: BLE001
+print(f"Project Parva trust verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 113 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/113.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/parva_trust_verify.py:75:1`
+- Matches audited FP: Finding 244 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+raise TrustInfrastructureError("; ".join(trust["issues"]))
+except Exception as exc:  # noqa: BLE001
+print(f"Project Parva trust verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 114 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/114.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/audit_ceiling_depth.py:42:1`
+- Matches audited FP: Finding 255 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+detail = fn()
+except Exception as exc:  # noqa: BLE001 - audit scripts report exact failure text.
+return AuditCheck(name, "fail", f"{type(exc).__name__}: {exc}")
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 115 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/115.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/audit_ceiling_depth.py:42:1`
+- Matches audited FP: Finding 256 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+detail = fn()
+except Exception as exc:  # noqa: BLE001 - audit scripts report exact failure text.
+return AuditCheck(name, "fail", f"{type(exc).__name__}: {exc}")
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 116 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/116.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_ceiling_depth_semantics.py:219:1`
+- Matches audited FP: Finding 259 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+failures.extend(_verify_replay_artifacts())
+except Exception as exc:  # noqa: BLE001
+failures.append(f"proof artifact evidence verification failed: {exc}")
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 117 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/117.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_ceiling_depth_semantics.py:219:1`
+- Matches audited FP: Finding 260 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+failures.extend(_verify_replay_artifacts())
+except Exception as exc:  # noqa: BLE001
+failures.append(f"proof artifact evidence verification failed: {exc}")
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 118 — BP-PY-45
+- Function context: `scripts/Project_Parva/findings/functions/118.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_mcp_registry_metadata.py:11:1`
+- Matches audited FP: Finding 269 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+MCP_SRC = ROOT / "packages" / "parva-mcp-server" / "src"
+sys.path.insert(0, str(MCP_SRC))
+```
+
+Why this is a false positive: guarded module-top bootstrap (`if <root> not in sys.path`) with a constant repo path in a standalone in-tree script whose purpose is to import the uninstalled package; this is bootstrap usage the rule's own note excludes (it targets mutation outside tests and bootstrap).
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 119 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/119.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_package_readiness.py:39:14`
+- Matches audited FP: Finding 270 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _git_files(package_dir: Path) -> list[str]:
+result = subprocess.run(
+["git", "ls-files", "--", str(package_dir.relative_to(ROOT)).replace("\\", "/")],
+```
+
+Why this is a false positive: `package_dir` is derived from the repo root constant and passed after `--`; no externally influenced input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 121 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/121.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/check_sdk_examples.py:30:18`
+- Matches audited FP: Finding 279 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+for rel in PYTHON_EXAMPLES:
+result = subprocess.run([sys.executable, rel], cwd=PROJECT_ROOT, text=True, capture_output=True, check=False)
+if result.returncode != 0:
+```
+
+Why this is a false positive: `rel` iterates the module-constant `PYTHON_EXAMPLES` list; no externally influenced input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 122 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/122.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/clean_local_artifacts.py:36:14`
+- Matches audited FP: Finding 281 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _git_lines(*args: str) -> set[str]:
+result = subprocess.run(
+["git", *args],
+```
+
+Why this is a false positive: `args` come from internal callers with fixed repository paths.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 123 — CWE-215
+- Function context: `scripts/Project_Parva/findings/functions/123.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_partner_api_key.py:83:5`
+- Matches audited FP: Finding 287 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+print(f"Scopes: {', '.join(record.scopes)}")
+print(f"Secret: {record.secret}")
+print("")
+```
+
+Why this is a false positive: printing the generated secret is the provisioning CLI's primary output (the operator must capture the one-time secret), not debug output.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 124 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/124.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_release_candidate_dossier.py:74:21`
+- Matches audited FP: Finding 294 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+try:
+completed = subprocess.run(
+["git", *args],
+```
+
+Why this is a false positive: `args` come from internal callers with fixed git subcommands.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 125 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/125.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_trust_status_report.py:92:1`
+- Matches audited FP: Finding 297 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validate_schema_file(path)
+except Exception as exc:  # noqa: BLE001
+failures.append(f"{path.relative_to(PROJECT_ROOT)}: {exc}")
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 126 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/126.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/generate_trust_status_report.py:92:1`
+- Matches audited FP: Finding 298 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+validate_schema_file(path)
+except Exception as exc:  # noqa: BLE001
+failures.append(f"{path.relative_to(PROJECT_ROOT)}: {exc}")
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 127 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/127.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/refresh_trust_artifacts.py:24:17`
+- Matches audited FP: Finding 300 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _run(script: Path, *, optional: bool = False, reason: str | None = None) -> None:
+completed = subprocess.run(
+[sys.executable, str(script)],
+```
+
+Why this is a false positive: `script` comes from internal constant paths; the vector is `sys.executable` + path.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 128 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/128.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/regenerate_public_release_hashes.py:113:20`
+- Matches audited FP: Finding 305 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+next_signature = expected_signature(manifest_path, signature_path)
+signature_ok = current_signature == next_signature
+```
+
+Why this is a false positive: offline release-verification script comparing JSON dicts of release signatures; no online timing attack surface and no secret equality comparison.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 129 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/129.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/run_ceiling_climax_demos.py:61:61`
+- Matches audited FP: Finding 308 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+else None,
+flags=frozenset({TaintFlag.REVIEW_REQUIRED}) if authority == AuthorityTaint.STATIC_REFERENCE else frozenset(),
+)
+```
+
+Why this is a false positive: enum member comparison (`AuthorityTaint.STATIC_REFERENCE`), not a secret comparison.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 130 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/130.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_clean_clone_assumptions.py:87:14`
+- Matches audited FP: Finding 314 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _is_ignored(path: str) -> bool:
+result = subprocess.run(
+["git", "check-ignore", "-q", path],
+```
+
+Why this is a false positive: `path` is a repo-relative path from internal iteration passed as an operand; no externally influenced input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 132 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/132.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/release/verify_public.py:22:14`
+- Matches audited FP: Finding 317 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _python_version(command: list[str]) -> tuple[int, int] | None:
+result = subprocess.run(
+[
+```
+
+Why this is a false positive: `command` is an internal python invocation list and the `-c` code string is fixed; no externally influenced input.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 133 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/133.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_browser_smoke.py:60:24`
+- Matches audited FP: Finding 330 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+executable_probe = subprocess.run(
+[
+```
+
+Why this is a false positive: `node_path` comes from `shutil.which` and the `-e` script is a fixed constant; no externally influenced argument.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 134 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/134.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_accessibility.py:65:24`
+- Matches audited FP: Finding 335 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+executable_probe = subprocess.run(
+[
+```
+
+Why this is a false positive: `node_path` from `shutil.which` plus a fixed `-e` constant script.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 135 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/135.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_frontend_performance.py:69:13`
+- Matches audited FP: Finding 340 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+probe = subprocess.run(
+[
+```
+
+Why this is a false positive: `node_path` from `shutil.which` plus a fixed `-e` constant script.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 136 — CWE-88
+- Function context: `scripts/Project_Parva/findings/functions/136.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/scripts/run_golden_journeys.py:65:24`
+- Matches audited FP: Finding 345 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+executable_probe = subprocess.run(
+[
+```
+
+Why this is a false positive: `node_path` from `shutil.which` plus a fixed `-e` constant script.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 137 — CWE-22
+- Function context: `scripts/Project_Parva/findings/functions/137.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/accuracy/test_prediction_run_immutability.py:28:45`
+- Matches audited FP: Finding 359 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def test_model_run_file_name_matches_run_id():
+path = Path("data/future_bs/model_runs") / f"{DEFAULT_RUN_ID}.json"
+```
+
+Why this is a false positive: test constructs the path from a constant run id; no dynamic or untrusted segment.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 138 — CWE-22
+- Function context: `scripts/Project_Parva/findings/functions/138.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/accuracy/test_source_policy_metrics_exist.py:12:51`
+- Matches audited FP: Finding 360 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+]:
+path = Path("data/future_bs/accuracy_lab") / name
+assert path.exists(), path
+```
+
+Why this is a false positive: test iterates a module-constant list of filenames; no untrusted segment.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 139 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/139.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_canonical_runtime_registry.py:9:8`
+- Matches audited FP: Finding 361 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+spec = importlib.util.spec_from_file_location("check_canonical_runtime", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant (`PROJECT_ROOT / "scripts" / "check_canonical_runtime.py"`).
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 140 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/140.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_deprecated_modules_not_imported_by_public_routes.py:9:8`
+- Matches audited FP: Finding 362 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+spec = importlib.util.spec_from_file_location("check_canonical_runtime", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 141 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/141.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_no_public_route_imports_research_private.py:9:8`
+- Matches audited FP: Finding 363 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+spec = importlib.util.spec_from_file_location("check_canonical_runtime", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 142 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/142.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_no_runtime_tests_fixture_dependency.py:9:8`
+- Matches audited FP: Finding 364 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+spec = importlib.util.spec_from_file_location("check_canonical_runtime", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 143 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/143.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/architecture/test_runtime_does_not_depend_on_tests_fixtures.py:9:8`
+- Matches audited FP: Finding 365 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+spec = importlib.util.spec_from_file_location("check_canonical_runtime", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 144 — BP-PY-41
+- Function context: `scripts/Project_Parva/findings/functions/144.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/artifacts/test_final_artifacts_exist.py:8:1`
+- Matches audited FP: Finding 366 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def test_verify_final_artifacts_script_passes():
+subprocess.run(["python", "scripts/future_bs/generate_all_final_artifacts.py"], check=True)
+```
+
+Why this is a false positive: `subprocess.run(..., check=True)` raises on non-zero exit, so the test verifies through the raise; not a side-effect-only placeholder.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 145 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/145.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/benchmark/test_benchmark_schema.py:8:8`
+- Matches audited FP: Finding 367 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+MODULE_PATH = ROOT / "public-benchmark" / "validate_benchmark.py"
+spec = importlib.util.spec_from_file_location("validate_benchmark", MODULE_PATH)
+assert spec and spec.loader
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 146 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/146.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/benchmark/test_runners.py:11:12`
+- Matches audited FP: Finding 368 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def _load(name: str, path: Path):
+spec = importlib.util.spec_from_file_location(name, path)
+assert spec and spec.loader
+```
+
+Why this is a false positive: test loads module-constant paths for repo runners.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 147 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/147.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/runtime/test_canonical_runtime_imports.py:10:8`
+- Matches audited FP: Finding 377 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+spec = importlib.util.spec_from_file_location("check_canonical_runtime", SCRIPT_PATH)
+assert spec is not None and spec.loader is not None
+```
+
+Why this is a false positive: test loads a hard-coded repo path constant.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 148 — CWE-829
+- Function context: `scripts/Project_Parva/findings/functions/148.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/benchmark/test_public_benchmark_runners.py:12:12`
+- Matches audited FP: Finding 379 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+path = ROOT / "public-benchmark" / "runners" / name
+spec = importlib.util.spec_from_file_location(name.removesuffix(".py"), path)
+module = importlib.util.module_from_spec(spec)
+```
+
+Why this is a false positive: test loads module-constant paths for repo runners.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 149 — BP-PY-12
+- Function context: `scripts/Project_Parva/findings/functions/149.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/bootstrap/test_rate_limit.py:17:9`
+- Matches audited FP: Finding 382 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def eval(self, script, numkeys, *args):
+self.calls.append((script, numkeys, args))
+```
+
+Why this is a false positive: `def eval(self, script, numkeys, *args)` is a method definition on a fake redis client used to record calls; it is not an eval call.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 150 — CWE-94
+- Function context: `scripts/Project_Parva/findings/functions/150.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/bootstrap/test_rate_limit.py:17:9`
+- Matches audited FP: Finding 383 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def eval(self, script, numkeys, *args):
+self.calls.append((script, numkeys, args))
+```
+
+Why this is a false positive: the flagged `eval` is the fake redis client's method definition (same construct as 382); no code generation occurs.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 151 — BP-PY-2
+- Function context: `scripts/Project_Parva/findings/functions/151.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/calendar/test_calculator.py:109:1`
+- Matches audited FP: Finding 385 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+assert result is None or hasattr(result, "start")
+except (KeyError, RuntimeError, ValueError):
+pass  # Expected - unsupported historical range can reject the request
+```
+
+Why this is a false positive: the test deliberately tolerates the expected rejection of unsupported historical ranges (comment documents it); the pass is the expectation.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 152 — CWE-390
+- Function context: `scripts/Project_Parva/findings/functions/152.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/calendar/test_calculator.py:109:1`
+- Matches audited FP: Finding 386 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+assert result is None or hasattr(result, "start")
+except (KeyError, RuntimeError, ValueError):
+pass  # Expected - unsupported historical range can reject the request
+```
+
+Why this is a false positive: the expected rejection is the test outcome; recovery (assert before the handler) exists.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 153 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/153.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/policy/test_policy_vm.py:18:20`
+- Matches audited FP: Finding 387 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+flags=frozenset({TaintFlag.REVIEW_REQUIRED})
+if authority == AuthorityTaint.STATIC_REFERENCE
+else frozenset(),
+```
+
+Why this is a false positive: enum member comparison in a unit test; not a secret comparison.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 154 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/154.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/trust/test_field_provenance.py:37:12`
+- Matches audited FP: Finding 389 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+boundary = BoundaryVector.from_provenance(provenance)
+assert boundary.authority == AuthorityTaint.STATIC_REFERENCE
+assert boundary.review_state == "required"
+```
+
+Why this is a false positive: enum member comparison in a unit test; not a secret comparison.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 155 — CWE-208
+- Function context: `scripts/Project_Parva/findings/functions/155.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/trust/test_taint_algebra.py:33:84`
+- Matches audited FP: Finding 390 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+)
+assert apply_review_upgrade(value, AuthorityTaint.COMPUTED_CERTIFIED, witness).authority == AuthorityTaint.COMPUTED_CERTIFIED
+```
+
+Why this is a false positive: enum member comparison in a unit test; not a secret comparison.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 156 — BP-PY-41
+- Function context: `scripts/Project_Parva/findings/functions/156.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tests/unit/trust/test_temporal_trust_tools.py:53:1`
+- Matches audited FP: Finding 391 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+def test_trust_schemas_parse_and_validate_examples():
+for relative in [
+```
+
+Why this is a false positive: `validate_schema_file` raises `SchemaValidationError` on invalid schemas (verified in `tools/validate_schemas.py`), so the test verifies through the raise.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 157 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/157.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:557:1`
+- Matches audited FP: Finding 393 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+results.append(CaseResult(case_id, True, "passed", _display_path(path)))
+except Exception as exc:  # noqa: BLE001
+results.append(CaseResult(case_id, False, str(exc), _display_path(path)))
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 158 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/158.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:557:1`
+- Matches audited FP: Finding 394 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+results.append(CaseResult(case_id, True, "passed", _display_path(path)))
+except Exception as exc:  # noqa: BLE001
+results.append(CaseResult(case_id, False, str(exc), _display_path(path)))
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 159 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/159.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:584:1`
+- Matches audited FP: Finding 395 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if not case["executable"]:
+results.append(CaseResult(case_id, True, "skipped: documented-only public issue", _display_path(path)))
+continue
+```
+
+Why this is a false positive: per-case result record construction is inherent to the conformance runner's output.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 160 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/160.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:588:1`
+- Matches audited FP: Finding 396 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+results.append(CaseResult(case_id, True, "passed", _display_path(path)))
+except Exception as exc:  # noqa: BLE001
+results.append(CaseResult(case_id, False, str(exc), _display_path(path)))
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 161 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/161.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/conformance_runner/run.py:893:1`
+- Matches audited FP: Finding 397 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+failures, results = run(Path(args.case_root), api_base_url=api_base_url)
+except Exception as exc:  # noqa: BLE001
+print(f"Conformance setup failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 162 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/162.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:246:1`
+- Matches audited FP: Finding 402 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if not path.exists():
+raise ReleaseVerificationError(f"missing schema listed in schemas_used: {schema_path}")
+load_json(path)
+```
+
+Why this is a false positive: the flagged statement is a `raise ReleaseVerificationError(...)` on a missing-schema error path inside a loop — exception construction on the error path, not hot-path work.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 163 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/163.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:271:1`
+- Matches audited FP: Finding 403 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+messages = verify_release(manifest_path.resolve())
+except Exception as exc:  # noqa: BLE001
+print(f"release verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 164 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/164.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/release/verify_release.py:271:1`
+- Matches audited FP: Finding 404 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+messages = verify_release(manifest_path.resolve())
+except Exception as exc:  # noqa: BLE001
+print(f"release verification failed: {exc}", file=sys.stderr)
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 165 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/165.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:186:1`
+- Matches audited FP: Finding 406 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if key not in instance:
+raise SchemaValidationError(f"{path}: missing required key {key!r}")
+```
+
+Why this is a false positive: `raise SchemaValidationError(...)` on a missing-key error path inside a validation loop; not hot-path object construction.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 166 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/166.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:195:1`
+- Matches audited FP: Finding 407 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if additional is False:
+raise SchemaValidationError(f"{path}: unexpected key {key!r}")
+if isinstance(additional, dict):
+```
+
+Why this is a false positive: `raise SchemaValidationError(...)` on an unexpected-key error path inside a validation loop.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 167 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/167.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:204:1`
+- Matches audited FP: Finding 408 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if pattern.search(text):
+raise SchemaValidationError(f"{path}: public-safety pattern matched: {pattern.pattern}")
+```
+
+Why this is a false positive: `raise SchemaValidationError(...)` on a pattern-match error path inside a loop.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 168 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/168.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:209:1`
+- Matches audited FP: Finding 409 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if example.get("publication_status") != "computed_prediction_not_official":
+raise SchemaValidationError(f"{path}: future-risk example must be computed_prediction_not_official")
+if example.get("corrected_value_included") is not False:
+```
+
+Why this is a false positive: `raise SchemaValidationError(...)` on an invalid-example error path inside a loop.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 169 — PERF-PY-25
+- Function context: `scripts/Project_Parva/findings/functions/169.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:211:1`
+- Matches audited FP: Finding 410 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+if example.get("corrected_value_included") is not False:
+raise SchemaValidationError(f"{path}: public future-risk example must not include corrected values")
+```
+
+Why this is a false positive: `raise SchemaValidationError(...)` on an invalid-example error path inside a loop.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 170 — BP-PY-1
+- Function context: `scripts/Project_Parva/findings/functions/170.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:245:1`
+- Matches audited FP: Finding 411 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+print(f"ok: {path.relative_to(ROOT)}")
+except Exception as exc:  # noqa: BLE001
+failures.append(f"{path.relative_to(ROOT)}: {exc}")
+```
+
+Why this is a false positive: the handler records the exception (log message with `exc`, result/error field with `str(exc)`, warning text, or stderr output) and/or re-raises, so the failure is surfaced — it does not pass or continue without recording the exception type.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+### [ ] Finding 171 — CWE-396
+- Function context: `scripts/Project_Parva/findings/functions/171.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/Project_Parva/tools/validate_schemas.py:245:1`
+- Matches audited FP: Finding 412 (old audit) — same source construct
+- Checklist pattern: Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+
+Source excerpt:
+
+```
+print(f"ok: {path.relative_to(ROOT)}")
+except Exception as exc:  # noqa: BLE001
+failures.append(f"{path.relative_to(ROOT)}: {exc}")
+```
+
+Why this is a false positive: the handler deliberately handles the failure: it records the exception in logs/results/warnings or re-raises a specific error; nothing is hidden.
+Checklist evidence: the flagged source does not satisfy the rule condition as stated in the rule metadata/detection notes.
+
+## Uncertain findings
+
+None — every fresh finding was classifiable from the rule condition and the shown source.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/Project_Parva/chunks`
+- Function evidence: `scripts/Project_Parva/findings/functions`
+- Validation: `git diff --check` — pass (exit 0)

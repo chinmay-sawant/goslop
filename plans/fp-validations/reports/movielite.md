@@ -1818,3 +1818,100 @@ None.
 - Chunk evidence: `scripts/movielite/chunks`
 - Function evidence: `scripts/movielite/findings/functions`
 - Validation: `git diff --check` — pass
+
+---
+
+# Post-fix remaining-FP audit (2026-08-02)
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:29:00Z
+repository: movielite
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite
+branch: main
+commit: b7cd21f75a7102fa3578f6f568cd7d344aa0f958
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite
+chunk_path: scripts/movielite/chunks
+function_context_path: scripts/movielite/findings/functions
+```
+
+## Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (post-fix binary `b5b8fde`, rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/movielite/chunks -context-dir scripts/movielite/findings/functions real-repos/movielite`
+- Findings: `59`
+- Chunks reviewed: `scripts/movielite/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_59.txt`
+- Function contexts reviewed: `scripts/movielite/findings/functions/40.txt`, `functions/50.txt` plus the enclosing sources (`docs/icon/movielite_gif.py`, `src/movielite/core/video_writer.py`)
+
+## Audit checklist
+
+- [x] Read every assigned chunk under `scripts/movielite/chunks`.
+- [x] Read `scripts/movielite/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+Matching method: fresh finding IDs do not correspond to old IDs; each fresh finding was matched to the old audit by `Source:` path (file:line[:col]). A fresh finding whose source matches an audited TP (True positives tables above) is a true positive; a source matching an audited FP is a false positive. All 59 fresh findings matched an old audit entry — no genuinely new findings appeared in this run.
+
+## Classification summary
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 2 | 40, 50 |
+| True positive | 57 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 54, 55, 56, 57, 58, 59 |
+| Uncertain | 0 | — |
+
+Remaining false positives: 2 (fresh findings 40 and 50, both re-appearances of audited FPs 43 and 143). The remaining 94 audited FPs (BP-PY-46 example prints, CWE-1341 adjacent-close pairs in examples/benchmarks/tests, and the src/tests CWE-1341 pairs) no longer fire after the fix.
+
+## False positives
+
+### [ ] Finding `40` — `CWE-1046` (re-appearance of audited FP `43`)
+
+- Function context: `scripts/movielite/findings/functions/40.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/docs/icon/movielite_gif.py:55:1`
+- Checklist pattern: the `+=` accumulator is a numeric pixel-width sum, not immutable text.
+
+Source excerpt:
+
+```
+        clip = TextClip(letter, canvas=canvas, duration=DURATION)
+        letter_clips.append(clip)
+        total_text_width += clip.size[0]
+    start_x = (WIDTH - total_text_width) / 2
+```
+
+Why this is a false positive: `total_text_width += clip.size[0]` accumulates integer pixel widths (`clip.size[0]` is an int); the rule's name heuristic fires because the name contains "text", but no string is concatenated and no immutable text is built in the loop. Construct and location are identical to audited FP 43.
+
+Checklist evidence: `textAccumulatorEvidence` returns true on the name heuristic alone; the flagged RHS is `clip.size[0]` (int width), and no string-literal/str( initializer exists for `total_text_width` — the rule's "creation of immutable text using string concatenation" condition is not met.
+
+### [ ] Finding `50` — `CWE-367` (re-appearance of audited FP `143`)
+
+- Function context: `scripts/movielite/findings/functions/50.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/movielite/src/movielite/core/video_writer.py:403:20`
+- Checklist pattern: the exists-check is a teardown guard on the function's own temp file; the race has no consequence.
+
+Source excerpt:
+
+```
+            finally:
+                if os.path.exists(temp_audio_path):
+                    os.remove(temp_audio_path)
+```
+
+Why this is a false positive: the exists-check guards `os.remove` of the function's own `tempfile.NamedTemporaryFile` path in a single-threaded `finally` cleanup; if the file vanished between check and remove the cleanup intent is unchanged and the failure is benign, so the TOCTOU has no exploitable consequence. Construct and location are identical to audited FP 143.
+
+Checklist evidence: the checked path is a locally created temp file in a `finally` teardown (same shape as the teardown-guard false positives recorded in the pycaps audit); no attacker-controlled path is checked before a security-relevant use.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/movielite/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_59.txt`
+- Function evidence: `scripts/movielite/findings/functions/40.txt`, `50.txt`
+- Validation: `git diff --check` — pass

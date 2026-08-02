@@ -604,3 +604,147 @@ None.
 - Chunk evidence: `scripts/voicetag/chunks`
 - Function evidence: `scripts/voicetag/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+---
+
+# Post-fix over-suppression audit (2026-08-02)
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:51Z
+repository: voicetag
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag
+branch: main
+commit: d5ddf73a2ceb644674f7091a7efa7e9c29e6d621
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/voicetag
+chunk_path: scripts/voicetag/chunks
+function_context_path: scripts/voicetag/findings/functions
+scan_binary: bin/goslop (post-fix build 2026-08-02 16:29, commit b5b8fde)
+```
+
+## Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/voicetag/chunks -context-dir scripts/voicetag/findings/functions real-repos/voicetag`
+- Findings: `6` (audited TP count in the original run: `13`)
+- Chunks reviewed: `scripts/voicetag/chunks/Chunk_1_6.txt`
+- Function contexts reviewed: `scripts/voicetag/findings/functions/1.txt` … `6.txt` (all)
+
+## Over-suppression table
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 30 | CWE-396 | `voicetag/diarizer.py:70:1` | `except Exception as exc:` matches `pyGenericExceptRE` in a non-test module; the handler inspects the message and folds distinct conditions (auth vs pipeline-load failure) into a single `DiarizationError`. | suppressed-but-present |
+| 31 | BP-PY-1 | `voicetag/encoder.py:79:1` | Broad `except Exception as exc:` whose suite only calls `logger.warning(...)` — no re-raise. | present in fresh scan (finding 1) |
+| 32 | CWE-396 | `voicetag/encoder.py:79:1` | `except Exception as exc:` matches the regex; the handler only logs and continues the loop. | present in fresh scan (finding 2) |
+| 33 | BP-PY-1 | `voicetag/pipeline.py:157:1` | Broad `except Exception as exc:` whose suite only calls `logger.warning(...)` and `return None`. | present in fresh scan (finding 3) |
+| 34 | CWE-396 | `voicetag/pipeline.py:157:1` | `except Exception as exc:` matches the regex; the handler logs and returns `None`. | present in fresh scan (finding 4) |
+| 35 | CWE-396 | `voicetag/providers/deepgram_stt.py:59:1` | `except Exception as exc:` matches the regex; all API/SDK failure conditions are collapsed into `TranscriptionError`. | suppressed-but-present |
+| 36 | CWE-396 | `voicetag/providers/fireworks_stt.py:61:1` | `except Exception as exc:` matches the regex; HTTP/parse failures are collapsed into `TranscriptionError`. | suppressed-but-present |
+| 37 | CWE-396 | `voicetag/providers/groq_stt.py:60:1` | `except Exception as exc:` matches the regex; SDK/API failures are collapsed into `TranscriptionError`. | suppressed-but-present |
+| 38 | CWE-396 | `voicetag/providers/openai_stt.py:59:1` | `except Exception as exc:` matches the regex; SDK/API failures are collapsed into `TranscriptionError`. | suppressed-but-present |
+| 39 | CWE-396 | `voicetag/providers/whisper_local.py:61:1` | `except Exception as exc:` matches the regex; decode/model failures are collapsed into `TranscriptionError`. | suppressed-but-present |
+| 40 | CWE-829 | `voicetag/transcriber.py:90:18` | `importlib.import_module(module_path)` with a non-literal first argument. | present in fresh scan (finding 5) |
+| 41 | CWE-94 | `voicetag/transcriber.py:90:18` | Dynamic (non-literal) expression reaches the `importlib.import_module` code-generation sink. | present in fresh scan (finding 6) |
+| 42 | CWE-396 | `voicetag/utils.py:72:1` | `except Exception as exc:` matches the regex; distinct decode/read conditions are collapsed into `AudioLoadError`. | suppressed-but-present |
+
+Summary: 7 over-suppressed true positives (30, 35, 36, 37, 38, 39, 42), 0 fixed-removed. All seven are the CWE-396 generic-catch findings whose handlers re-raise via `raise ... from exc`; the fix commit b5b8fde exempts broad-except handlers that re-raise ("skip handlers that re-raise … BP-PY-1, CWE-396, BP-PY-42"), which also removed the two BP-PY-1 re-raise variants (they are not in the audited list). The two audited broad-except TPs that survived (32, 34) and their BP-PY-1 twins (31, 33) merely log-and-continue and never raise, which is why they are still flagged. The scanned repository is byte-identical to the original audit commit (d5ddf73), so every suppressed construct is present in source, not fixed.
+
+## Suppressed-but-present findings
+
+### Finding 30 — CWE-396 — `voicetag/diarizer.py:70:1`
+
+Source excerpt (diarizer.py:70-79):
+
+```
+        except Exception as exc:
+            error_msg = str(exc)
+            if "401" in error_msg or "authentication" in error_msg.lower():
+                raise DiarizationError(
+                    "Diarization failed: model requires authentication (HTTP 401). "
+                    ...
+                ) from exc
+            raise DiarizationError(f"Failed to load pyannote diarization pipeline: {exc}") from exc
+```
+
+Why it still satisfies the rule condition: the handler inspects `str(exc)` to fold two distinct failure conditions (auth vs pipeline-load) into one `DiarizationError`; the generic `except Exception` still hides the raw condition from the caller, so CWE-396's regex condition fires. The re-raise exemption introduced by b5b8fde suppresses it.
+
+### Finding 35 — CWE-396 — `voicetag/providers/deepgram_stt.py:59:1`
+
+Source excerpt (deepgram_stt.py:59-60):
+
+```
+        except Exception as exc:
+            raise TranscriptionError(f"Deepgram transcription failed: {exc}") from exc
+```
+
+Why it still satisfies the rule condition: every failure inside the `try` (client construction, HTTP call, response parse) collapses into a single `TranscriptionError`, hiding the distinct condition; the construct is unchanged since the original audit.
+
+### Finding 36 — CWE-396 — `voicetag/providers/fireworks_stt.py:61:1`
+
+Source excerpt (fireworks_stt.py:61-62):
+
+```
+        except Exception as exc:
+            raise TranscriptionError(f"Fireworks transcription failed: {exc}") from exc
+```
+
+Why it still satisfies the rule condition: HTTP/parse failures of the `httpx.post` call are collapsed into one `TranscriptionError`; construct unchanged.
+
+### Finding 37 — CWE-396 — `voicetag/providers/groq_stt.py:60:1`
+
+Source excerpt (groq_stt.py:60-61):
+
+```
+        except Exception as exc:
+            raise TranscriptionError(f"Groq transcription failed: {exc}") from exc
+```
+
+Why it still satisfies the rule condition: SDK/API failures around the `client.audio.transcriptions.create` call collapse into one `TranscriptionError`; construct unchanged.
+
+### Finding 38 — CWE-396 — `voicetag/providers/openai_stt.py:59:1`
+
+Source excerpt (openai_stt.py:59-60):
+
+```
+        except Exception as exc:
+            raise TranscriptionError(f"OpenAI transcription failed: {exc}") from exc
+```
+
+Why it still satisfies the rule condition: SDK/API failures collapse into one `TranscriptionError`; construct unchanged.
+
+### Finding 39 — CWE-396 — `voicetag/providers/whisper_local.py:61:1`
+
+Source excerpt (whisper_local.py:61-62):
+
+```
+        except Exception as exc:
+            raise TranscriptionError(f"Local Whisper transcription failed: {exc}") from exc
+```
+
+Why it still satisfies the rule condition: decode/model failures collapse into one `TranscriptionError`; construct unchanged.
+
+### Finding 42 — CWE-396 — `voicetag/utils.py:72:1`
+
+Source excerpt (utils.py:70-73):
+
+```
+    try:
+        data, sr = sf.read(str(audio_path), dtype="float32")
+    except Exception as exc:
+        raise AudioLoadError(f"Cannot read audio file '{audio_path.name}': {exc}") from exc
+```
+
+Why it still satisfies the rule condition: distinct read/decode conditions (`sf.read` on any unreadable/undecodable file) collapse into a single `AudioLoadError`; construct unchanged.
+
+## Fixed/removed findings
+
+None — the scanned repository is at the same commit (d5ddf73) as the original audit, so no audited TP source was removed.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/voicetag/chunks/Chunk_1_6.txt`
+- Function evidence: `scripts/voicetag/findings/functions/1.txt` … `6.txt`
+- Validation: `git diff --check` — `pass`

@@ -1171,3 +1171,242 @@ None — every finding could be decided from the rule condition and the shown so
 - Chunk evidence: `scripts/WHEN-Language/chunks`
 - Function evidence: `scripts/WHEN-Language/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+Mode B triggered: fresh findings (42) < audited true positives (46).
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:30:00Z (fresh scan run immediately after the FP-reduction binary rebuild at 16:29)
+repository: WHEN-Language
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language
+branch: main
+commit: f9bf78d49c16c36d4eb98d5abd305a65f3252e32 (repository unchanged since the pre-fix audit)
+scanner_revision: b5b8fde6e5850be5a4bf6957e90110b146a2e584 (branch fix/python-fp-reduction)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WHEN-Language
+chunk_path: scripts/WHEN-Language/chunks
+function_context_path: scripts/WHEN-Language/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (binary rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/WHEN-Language/chunks -context-dir scripts/WHEN-Language/findings/functions real-repos/WHEN-Language`
+- Findings: `42` (pre-fix audit: 104, of which 46 audited true positives)
+- Chunks reviewed: `scripts/WHEN-Language/chunks/Chunk_1_25.txt`, `scripts/WHEN-Language/chunks/Chunk_26_42.txt` (all 42 fresh findings read)
+- Source matching: every fresh `Source:` was matched against the audited TP/FP lists. Present: 35 audited-TP sources, plus 7 re-appearing audited-FP sources (hot_reload.py:91:1, interpreter.py:316:1, interpreter.py:971:1, interpreter.py:1492:1, interpreter.py:1636:1 — BP-PY-44; lexer.py:714:20 — CWE-208; when.py:23:1 — BP-PY-44). Absent: 11 audited-TP sources, all BP-PY-46 prints in `hot_reload.py`
+- Function contexts reviewed: none needed (Mode B); the current `hot_reload.py` was read in full at every suppressed location
+
+### Over-suppression cause
+
+The fix added a module-wide shebang exemption to `detectBPPY46` (`internal/lang/python/detectors/bad_practices/rules_observability.go:43-45`, `isPythonShebangScript` in `common.go:103-108`): any file whose first line starts with `#!` is skipped entirely. `hot_reload.py` carries a vestigial `#!/usr/bin/env python3` on line 1, so all 11 audited library prints in it are suppressed. A shebang marks a file *executable*, not an *entry script*: `hot_reload.py` is a library module (imported via `from hot_reload import HotReloader` at `interpreter.py:465`) with no `__main__` guard, and its prints are operational logging of the background watch/reload thread — exactly the rule's target. The exemption should require an entry-script signal (e.g. `__main__` guard or CLI parser) in addition to the shebang.
+
+### Audited true positives vs fresh scan
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 1 | BP-PY-46 | hot_reload.py:55:9 | print for operational logging in the `HotReloader` library class (no `__main__` guard, not a test). | suppressed-but-present |
+| 2 | BP-PY-46 | hot_reload.py:73:21 | print operational logging in library class method `_watch_loop`. | suppressed-but-present |
+| 5 | BP-PY-46 | hot_reload.py:78:17 | print error logging in library class method. | suppressed-but-present |
+| 7 | BP-PY-46 | hot_reload.py:110:17 | print operational logging in library class method `_reload_blocks`. | suppressed-but-present |
+| 9 | BP-PY-46 | hot_reload.py:113:17 | print error logging in library class method. | suppressed-but-present |
+| 10 | BP-PY-46 | hot_reload.py:142:17 | print operational logging in library class method `_restore_block_state`. | suppressed-but-present |
+| 11 | BP-PY-46 | hot_reload.py:157:21 | print operational logging in library class method. | suppressed-but-present |
+| 12 | BP-PY-46 | hot_reload.py:159:21 | print operational logging in library class method. | suppressed-but-present |
+| 14 | BP-PY-46 | hot_reload.py:205:17 | print operational logging in library class method `_update_blocks`. | suppressed-but-present |
+| 15 | BP-PY-46 | hot_reload.py:207:17 | print operational logging in library class method. | suppressed-but-present |
+| 16 | BP-PY-46 | hot_reload.py:223:13 | print operational logging in library class method. | suppressed-but-present |
+| 3 | BP-PY-1 | hot_reload.py:77:1 | `except Exception as e:` swallows all exceptions and only prints. | present — fresh 1 |
+| 4 | CWE-396 | hot_reload.py:77:1 | generic `except Exception` handler. | present — fresh 2 |
+| 8 | BP-PY-1 | hot_reload.py:112:1 | `except Exception as e:` swallows all exceptions and only prints. | present — fresh 4 |
+| 13 | CWE-1121 | hot_reload.py:170:39 | `_update_blocks` body counts ≥12 control-flow keyword occurrences (18 by the rule's counter). | present — fresh 5 |
+| 17 | BP-PY-5 | interpreter.py:7:1 | `from ast_nodes import *` pollutes namespace. | present — fresh 6 |
+| 18 | BP-PY-1 | interpreter.py:112:1 | `except Exception as e:` in `safe_call` catches all failures. | present — fresh 7 |
+| 19 | CWE-396 | interpreter.py:112:1 | generic `except Exception` handler. | present — fresh 8 |
+| 20 | BP-PY-1 | interpreter.py:137:1 | bare `except:` in `has_attr`. | present — fresh 9 |
+| 21 | BP-PY-1 | interpreter.py:144:1 | bare `except:` in `safe_getattr`. | present — fresh 10 |
+| 23 | BP-PY-1 | interpreter.py:325:1 | bare `except:` in `eval_func` wraps any failure into ValueError. | present — fresh 12 |
+| 25 | CWE-1121 | interpreter.py:411:43 | `interpret` body counts ≥12 control-flow keyword occurrences (26). | present — fresh 13 |
+| 26 | BP-PY-46 | interpreter.py:473:13 | `print("Program exited")` in library module `interpret()`. | present — fresh 14 |
+| 27 | CWE-1124 | interpreter.py:907:1 | `saved_event = ...` at 7 active control-flow frames. | present — fresh 15 |
+| 28 | CWE-1046 | interpreter.py:966:1 | `result += part_value` in f-string parts loop. | present — fresh 16 |
+| 30 | BP-PY-1 | interpreter.py:985:1 | `except Exception as e:` in f-string evaluation. | present — fresh 18 |
+| 31 | BP-PY-46 | interpreter.py:1061:13 | `print(*values)` implementing the language `print` builtin in library module. | present — fresh 19 |
+| 32 | BP-PY-46 | interpreter.py:1369:9 | `print` operational logging `[SAVE]` in library module. | present — fresh 20 |
+| 33 | BP-PY-46 | interpreter.py:1377:9 | `print` operational logging `[SAVESTOP]` in library module. | present — fresh 21 |
+| 34 | BP-PY-46 | interpreter.py:1388:13 | `print` operational logging `[STARTSAVE]` in library module. | present — fresh 22 |
+| 35 | BP-PY-46 | interpreter.py:1394:13 | `print` operational logging `[STARTSAVE]` in library module. | present — fresh 23 |
+| 36 | BP-PY-46 | interpreter.py:1396:13 | `print` operational logging `[STARTSAVE]` in library module. | present — fresh 24 |
+| 37 | BP-PY-46 | interpreter.py:1423:13 | `print` operational logging `[DISCARD]` in library module. | present — fresh 25 |
+| 38 | BP-PY-46 | interpreter.py:1425:13 | `print` operational logging `[DISCARD]` in library module. | present — fresh 26 |
+| 39 | CWE-829 | interpreter.py:1440:34 | `top_module = __import__(decl.module)` with dynamic module value. | present — fresh 27 |
+| 40 | CWE-94 | interpreter.py:1440:34 | same dynamic import reaches a code-generation/dynamic-import sink. | present — fresh 28 |
+| 43 | BP-PY-1 | interpreter.py:1837:1 | `except Exception as e:` in parallel block runner. | present — fresh 31 |
+| 44 | BP-PY-46 | interpreter.py:1838:13 | `print` error logging `[PARALLEL]` in library module. | present — fresh 32 |
+| 45 | CWE-1046 | lexer.py:117:1 | `result += char` in `for i in range(length):` where `result` was initialized to `""`. | present — fresh 33 |
+| 47 | BP-PY-5 | parser.py:3:1 | `from ast_nodes import *` pollutes namespace. | present — fresh 35 |
+| 74 | CWE-1124 | parser.py:654:1 | `args.append(self.parse_expression())` at 6 active control-flow frames. | present — fresh 36 |
+| 84 | BP-PY-45 | when.py:20:1 | `sys.path.insert(0, ...)` at runtime instead of packaging. | present — fresh 37 |
+| 89 | CWE-367 | when.py:38:16 | `os.path.exists(filename)` check before a separate `open(filename)` use. | present — fresh 39 |
+| 95 | BP-PY-1 | when.py:69:1 | `except Exception as e:` in `run_file` catches all runtime failures. | present — fresh 40 |
+| 96 | CWE-396 | when.py:69:1 | generic `except Exception` handler. | present — fresh 41 |
+| 101 | BP-PY-1 | when.py:107:1 | `except Exception as e:` in REPL loop. | present — fresh 42 |
+
+Result: 11 over-suppressed TPs found, 0 fixed/removed. All 11 are BP-PY-46 prints in `hot_reload.py`; the source at each location is unchanged (verified line-for-line against commit f9bf78d).
+
+### Suppressed-but-present findings
+
+Each excerpt is from the current `real-repos/WHEN-Language/hot_reload.py` (unchanged since the pre-fix audit).
+
+### [ ] Old finding `1` — `BP-PY-46`
+
+- Old source: `hot_reload.py:55:9` (verified still at the same line)
+
+Source excerpt:
+
+```
+        self.watch_thread.start()
+        print(f"[HOT RELOAD] Watching {self.source_file} for changes...")
+```
+
+Why it still satisfies the rule condition: `print` in `start_watching()` of the library `HotReloader` class logs watch startup to stdout; the module has no `__main__` guard and is imported by `interpreter.py`, so this is operational logging in a non-script module — the rule's exact target. Suppressed only because `hot_reload.py:1` begins with `#!/usr/bin/env python3`.
+
+### [ ] Old finding `2` — `BP-PY-46`
+
+- Old source: `hot_reload.py:73:21` (verified still at the same line)
+
+Source excerpt:
+
+```
+                if (current_state.last_modified != self.file_state.last_modified or
+                    current_state.content_hash != self.file_state.content_hash):
+
+                    print(f"[HOT RELOAD] Detected changes in {self.source_file}")
+```
+
+Why it still satisfies the rule condition: change-detection logging inside the `_watch_loop` background thread; library module, no `__main__` guard.
+
+### [ ] Old finding `5` — `BP-PY-46`
+
+- Old source: `hot_reload.py:78:17` (verified still at the same line)
+
+Source excerpt:
+
+```
+            except Exception as e:
+                print(f"[HOT RELOAD] Error checking file: {e}")
+```
+
+Why it still satisfies the rule condition: error logging in `_watch_loop`; the print is the handler's only reporting channel in the library module.
+
+### [ ] Old finding `7` — `BP-PY-46`
+
+- Old source: `hot_reload.py:110:17` (verified still at the same line)
+
+Source excerpt:
+
+```
+                self._restore_block_state()
+
+                print("[HOT RELOAD] Successfully reloaded blocks!")
+```
+
+Why it still satisfies the rule condition: success logging of a reload operation in `_reload_blocks`; library module, no `__main__` guard.
+
+### [ ] Old finding `9` — `BP-PY-46`
+
+- Old source: `hot_reload.py:113:17` (verified still at the same line)
+
+Source excerpt:
+
+```
+            except Exception as e:
+                print(f"[HOT RELOAD] Error reloading: {e}")
+```
+
+Why it still satisfies the rule condition: error logging in `_reload_blocks` of the library module.
+
+### [ ] Old finding `10` — `BP-PY-46`
+
+- Old source: `hot_reload.py:142:17` (verified still at the same line)
+
+Source excerpt:
+
+```
+                print(f"[HOT RELOAD] Restored state for block '{block_name}'")
+```
+
+Why it still satisfies the rule condition: state-restore logging in `_restore_block_state` of the library module.
+
+### [ ] Old finding `11` — `BP-PY-46`
+
+- Old source: `hot_reload.py:157:21` (verified still at the same line)
+
+Source excerpt:
+
+```
+                if old_func:
+                    print(f"[HOT RELOAD] Updated function '{decl.name}'")
+```
+
+Why it still satisfies the rule condition: declaration-update logging in `_update_declarations` of the library module.
+
+### [ ] Old finding `12` — `BP-PY-46`
+
+- Old source: `hot_reload.py:159:21` (verified still at the same line)
+
+Source excerpt:
+
+```
+                else:
+                    print(f"[HOT RELOAD] Added new function '{decl.name}'")
+```
+
+Why it still satisfies the rule condition: declaration-update logging in `_update_declarations` of the library module.
+
+### [ ] Old finding `14` — `BP-PY-46`
+
+- Old source: `hot_reload.py:205:17` (verified still at the same line)
+
+Source excerpt:
+
+```
+                print(f"[HOT RELOAD] Updated block '{block.name}'")
+```
+
+Why it still satisfies the rule condition: block-update logging in `_update_blocks` of the library module.
+
+### [ ] Old finding `15` — `BP-PY-46`
+
+- Old source: `hot_reload.py:207:17` (verified still at the same line)
+
+Source excerpt:
+
+```
+            else:
+                print(f"[HOT RELOAD] Added new block '{block.name}'")
+```
+
+Why it still satisfies the rule condition: block-update logging in `_update_blocks` of the library module.
+
+### [ ] Old finding `16` — `BP-PY-46`
+
+- Old source: `hot_reload.py:223:13` (verified still at the same line)
+
+Source excerpt:
+
+```
+            del self.interpreter.blocks[block_name]
+            print(f"[HOT RELOAD] Removed block '{block_name}'")
+```
+
+Why it still satisfies the rule condition: block-removal logging in `_update_blocks` of the library module.
+
+### Final evidence
+
+- Over-suppressed TPs found: 11 (all suppressed-but-present); fixed-removed: 0
+- Chunk evidence: `scripts/WHEN-Language/chunks` (42 fresh findings)
+- Function evidence: `scripts/WHEN-Language/findings/functions` (42 contexts, not required for Mode B)
+- Validation: `git diff --check` — pass

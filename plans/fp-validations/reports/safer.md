@@ -766,3 +766,220 @@ None.
 - Chunk evidence: `scripts/safer/chunks`
 - Function evidence: `scripts/safer/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:08:51Z
+repository: safer
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer
+branch: main
+commit: eae83f7df824752540ad1e67d50099e13c86a647
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer
+chunk_path: scripts/safer/chunks
+function_context_path: scripts/safer/findings/functions
+scanner_binary: bin/goslop (rebuilt 2026-08-02 16:29 +0530, post-fix b5b8fde)
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/safer/chunks -context-dir scripts/safer/findings/functions real-repos/safer`
+- Findings: `13`
+- Chunks reviewed: `scripts/safer/chunks/Chunk_1_13.txt`
+- Function contexts reviewed: `scripts/safer/findings/functions/1.txt` .. `scripts/safer/findings/functions/13.txt` (all 13)
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/safer/chunks`.
+- [x] Read `scripts/safer/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 6 | 1, 2, 3, 8, 12, 13 |
+| True positive | 7 | 4, 5, 6, 7, 9, 10, 11 |
+| Uncertain | 0 | — |
+
+### False positives
+
+All six remaining false positives re-appear at source locations that the original audit already classified as false positives (matched by `Source:` path). Each was re-verified against its rule condition on the fresh scan.
+
+#### [ ] Finding 1 — BP-PY-1
+
+- Function context: `scripts/safer/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:87:1`
+- Checklist pattern: `except Exception:` token inside module docstring example, not code (same construct as audited FP 6)
+
+Source excerpt:
+
+```
+83:     try:
+84:         write_header(sock)
+85:         write_body(sock)   # Exception is thrown here
+86:         write_footer(sock)
+87:      except Exception:
+88:         write_error(sock)  # Oops, the header was already written
+```
+
+Why this is a false positive: The flagged line is the docstring's "old, dangerous way" example (module docstring lines 1–149), not an executable handler, so BP-PY-1's condition (broad except in executable code without re-raise) cannot be met.
+
+Checklist evidence: The source line is unchanged from audited FP 6 (`safer/__init__.py:87:1`); it remains text inside the module docstring — no real exception handler exists.
+
+#### [ ] Finding 2 — BP-PY-1
+
+- Function context: `scripts/safer/findings/functions/2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:97:1`
+- Checklist pattern: `except Exception:` token inside module docstring example, not code (same construct as audited FP 7)
+
+Source excerpt:
+
+```
+92:     try:
+93:         with safer.writer(sock) as s:
+94:             write_header(s)
+95:             write_body(s)  # Exception is thrown here
+96:             write_footer(s)
+97:      except Exception:
+98:         write_error(sock)  # Nothing has been written
+```
+
+Why this is a false positive: Same docstring-example shape as finding 1 ("With `safer`" example, lines 92–98 of the module docstring) — documentation text, not an executable handler.
+
+Checklist evidence: The source line is unchanged from audited FP 7 (`safer/__init__.py:97:1`); the `except Exception:` token is inside the module docstring, so no executable broad-except handler exists.
+
+#### [ ] Finding 3 — BP-PY-7
+
+- Function context: `scripts/safer/findings/functions/3.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:225:16`
+- Checklist pattern: the flagged `open(` call targets the module's own `open` (proven by non-builtin kwargs) and its return value is returned to the caller (same construct as audited FP 14)
+
+Source excerpt:
+
+```
+224:     if isinstance(stream, (str, Path)):
+225:         return open(
+226:             stream,
+227:             'wb' if is_binary else 'w',
+228:             delete_failures=delete_failures,
+229:             dry_run=dry_run,
+230:             enabled=enabled,
+231:         )
+```
+
+Why this is a false positive: The callee is the library's own `safer.open` — the `delete_failures`/`dry_run`/`enabled` keyword arguments are not builtin `open` parameters, so this cannot be the builtin. The returned stream is the function's return value, handed to the caller, so nothing is leaked by `writer()` itself.
+
+Checklist evidence: Source unchanged from audited FP 14; the rule's leak condition requires an unmanaged builtin `open`, and here the call is the library's context-manager-compatible `open` whose result is returned, not abandoned.
+
+#### [ ] Finding 8 — CWE-459
+
+- Function context: `scripts/safer/findings/functions/8.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/safer/__init__.py:621:29`
+- Checklist pattern: temp-file cleanup exists in the owning class's lifecycle methods, so the file does not persist (same construct as audited FP 26)
+
+Source excerpt:
+
+```
+618: class _FileCloser(_Closer):
+619:     def __init__(self, temp_file, delete_failures, parent=None):
+620:         if temp_file is True:
+621:             fd, temp_file = tempfile.mkstemp(dir=parent)
+622:             os.close(fd)
+...
+627:     def _failure(self):
+628:         if self.delete_failures:
+629:             os.remove(self.temp_file)
+...
+679:     def _success(self):
+680:         if not self.dry_run:
+681:             if os.path.exists(self.target_file):
+682:                 shutil.copymode(self.target_file, self.temp_file)
+683:             os.replace(self.temp_file, self.target_file)
+```
+
+Why this is a false positive: The mkstemp file's lifecycle is owned by `_FileCloser`: removed on failure by `_failure()` (`os.remove`, line 629) and renamed over the target on success by `_success()` (`os.replace`, line 683). The file never persists, so there is no incomplete cleanup; the rule's same-function heuristic cannot see cleanup in sibling class methods.
+
+Checklist evidence: Source unchanged from audited FP 26; the "persistent temporary file without cleanup" condition is not satisfied because both lifecycle outcomes dispose of the file.
+
+#### [ ] Finding 12 — CWE-772
+
+- Function context: `scripts/safer/findings/functions/12.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_writer.py:191:1`
+- Checklist pattern: the assigned resource is released by a context manager in the same function (same construct as audited FP 39)
+
+Source excerpt:
+
+```
+192:     fp = open(FILENAME, 'w')
+193:     with safer.writer(fp, close_on_exit=True):
+194:         fp.write('hello, world')
+```
+
+Why this is a false positive: `fp` is passed to `safer.writer(fp, close_on_exit=True)`, whose wrapper executes `with stream:` (safer/__init__.py:258), so the stream is closed when the writer context exits — the rule's own message exempts context-manager release.
+
+Checklist evidence: Source unchanged from audited FP 39 (`test_writer.py:191:1`); the "resource without same-function close or context-manager release" condition is not met because the next line hands the stream to a context manager that releases it.
+
+#### [ ] Finding 13 — BP-PY-7
+
+- Function context: `scripts/safer/findings/functions/13.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/safer/test/test_writer.py:192:10`
+- Checklist pattern: the opened stream is released by the writer wrapper on the very next line (same construct as audited FP 40)
+
+Source excerpt:
+
+```
+192:     fp = open(FILENAME, 'w')
+193:     with safer.writer(fp, close_on_exit=True):
+194:         fp.write('hello, world')
+```
+
+Why this is a false positive: The stream opened at line 192 is closed by the writer wrapper (with `close_on_exit=True` the write path runs `with stream:` at safer/__init__.py:258), so the leak BP-PY-7 warns about does not occur.
+
+Checklist evidence: Source unchanged from audited FP 40 (`test_writer.py:192:10`); the same construct that satisfied CWE-772's context-manager exemption (finding 12) also defeats BP-PY-7's leak condition.
+
+### True positives
+
+Seven fresh findings satisfy their rule conditions and match audited true positives by `Source:` (or, for finding 7, satisfy the rule condition at a source the old scan did not report):
+
+| Finding id | Rule | Source | Match / basis |
+| --- | --- | --- | --- |
+| 4 | CWE-829 | `safer/__init__.py:528:20` | audited TP 22 — `__import__(dump)` with non-literal module name |
+| 5 | CWE-94 | `safer/__init__.py:528:20` | audited TP 23 — dynamic import sink with non-literal argument |
+| 6 | BP-PY-1 | `safer/__init__.py:573:1` | audited TP 25 — broad except, suite only `traceback.print_exc()` (no re-raise) |
+| 7 | CWE-396 | `safer/__init__.py:573:1` | new source for CWE-396; suite is `traceback.print_exc()` with no re-raise, which the post-fix detector (`rules_platform.go:107`) does not treat as surfacing the failure, so the handler hides the failure of `_close(True)` — satisfies the rule condition |
+| 9 | BP-PY-46 | `safer/__init__.py:631:13` | audited TP 27 — real executable `print(...)` in library code |
+| 10 | BP-PY-1 | `test/test_open.py:21:1` | audited TP 36 — `except Exception: return False` swallows errors |
+| 11 | BP-PY-41 | `test/test_writer.py:126:1` | audited TP 38 — side-effect-only test with no assertion |
+
+For finding 7 the source is:
+
+```
+570:         except Exception:  # pragma: no cover
+571:             try:
+572:                 self._close(True)
+573:             except Exception:
+574:                 traceback.print_exc()
+575:             raise
+```
+
+Why finding 7 is a true positive: the inner handler at 573:1 catches the failure of the cleanup call `self._close(True)` and only prints its traceback; the exception is not propagated (`raise` at line 575 re-raises only the outer `parent_close` failure). The cleanup failure condition is therefore hidden, matching CWE-396's condition. The old scan reported CWE-396 at the re-raising handler (`__init__.py:312:1`, audited FP 15), which the post-fix detector now skips; the non-re-raising handler at 573:1 is its replacement, and it is a genuine match.
+
+### Uncertain findings
+
+None.
+
+### Final evidence
+
+- Delegated reviewers: none (single-reviewer audit)
+- Chunk evidence: `scripts/safer/chunks/Chunk_1_13.txt`
+- Function evidence: `scripts/safer/findings/functions/1.txt` .. `13.txt`
+- Validation: `git diff --check` — pass
+- Note: audited TP 31 (`test_dump.py:51:32`, BP-PY-7) did not re-fire in the fresh scan; out of Mode A scope (potential over-suppression, not assessed here).

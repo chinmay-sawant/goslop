@@ -680,3 +680,237 @@ None.
 $ git diff --check   # run in goslop repo root after writing this report
 <no output — pass>
 ```
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata (fresh scan)
+
+```yaml
+timestamp: 2026-08-02T11:08:47Z
+repository: CourtScrapper
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper
+branch: master
+commit: c1377ced4655f51eb59d685959080fd1a55f03af
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper
+chunk_path: scripts/CourtScrapper/chunks
+function_context_path: scripts/CourtScrapper/findings/functions
+binary: post-fix rebuild b5b8fde (2026-08-02 16:29)
+```
+
+### Scan evidence (fresh run)
+
+- Build command: `go build -o bin/goslop ./cmd/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/CourtScrapper/chunks -context-dir scripts/CourtScrapper/findings/functions real-repos/CourtScrapper`
+- Findings: `337`
+- Chunks reviewed: `scripts/CourtScrapper/chunks/Chunk_1_25.txt` … `Chunk_326_337.txt` (14 files, all fresh findings 1–337)
+- Function contexts reviewed: `scripts/CourtScrapper/findings/functions/26.txt, 102.txt, 129.txt, 150.txt, 153.txt, 274.txt, 281.txt, 286.txt, 295.txt, 301.txt, 309.txt` (all proposed fresh false positives) plus enclosing source for the five fresh-only findings (`inspect_website.py`, `main.py`, `scraper.py:95-119`, `scraper_pool.py:95-167`, `utils.py:148-187`)
+- Rules consulted via `./bin/goslop -explain`: `BP-PY-1`, `CWE-396`, `CWE-117`
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/CourtScrapper/chunks` (all 14 fresh chunk files).
+- [x] Read `scripts/CourtScrapper/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient (callers of `inspect_page`, the `click_and_wait_for_navigation` handler, the `run_all_attorneys_concurrent` future-processing loop and its `thread_exceptions` reporting block, the Chrome-stderr guard in `get_chrome_user_agent`).
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient. (No delegated reviews; no disagreements.)
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Fresh finding IDs do not correspond to old IDs; matching was done by `Source:` (file:line:col) + rule against the audited True-positive tables and False-positive sections above.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 8 | 26, 102, 150, 274, 281, 286, 295, 301 |
+| True positive | 329 | 1-25, 27-101, 103-149, 151-273, 275-280, 282-285, 287-294, 296-300, 302-337 |
+| Uncertain | 0 | — |
+
+Fresh TP breakdown by rule: BP-PY-1 (72), BP-PY-2 (11), BP-PY-46 (26), BP-PY-47 (192), CWE-1071 (4), CWE-1121 (6), CWE-1124 (4), CWE-117 (4: 41, 61, 129, 139), CWE-390 (4), CWE-396 (6: 9, 59, 121, 127, 153, 309), CWE-779 (0), CWE-88 (0), PERF-PY-28 (0). Fresh FP breakdown by rule: CWE-779 (26), CWE-117 (102, 150, 274, 295), CWE-396 (286), CWE-88 (301), PERF-PY-28 (281).
+
+Six of the twelve audited FPs no longer appear in the fresh scan (suppressed by the fix): old 102 (`inspect_website.py:14:5` CWE-117 constant-only message), 127 (`main.py:30:9` CWE-117 `len(ATTORNEYS)`), 149 (`scraper.py:67:1` CWE-396 log-and-re-raise), 264 (`scraper.py:881:26` CWE-1341 distinct-handle teardown), 280 (`scraper_pool.py:74:1` CWE-396 log-with-traceback-and-return), 302 (`utils.py:136:1` CWE-396 chained re-raise).
+
+Two audited TPs are no longer flagged in the fresh run (potential over-suppression; the constructs are still present in the source at the same locations — see Final evidence): old 51 (`captcha_handler.py:502:1` BP-PY-1, log with `exc_info=True` + return) and old 279 (`scraper_pool.py:74:1` BP-PY-1, log with `exc_info=True` + return error tuple). Both are `except Exception as e:` handlers whose body logs with `exc_info=True`, which the post-fix BP-PY-1 no longer flags; if the suppressed condition is "failure is logged with traceback", these match the audited-log-with-traceback FP pattern rather than a swallowed failure, but the old audit recorded them as true positives, so they are listed here for Mode-B review.
+
+## False positives (fresh run)
+
+### [ ] Finding `26` — `CWE-779`
+
+- Function context: `scripts/CourtScrapper/findings/functions/26.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/captcha_handler.py:229:17`
+- Matches audited FP 26 (same source construct).
+- Checklist pattern: sensitive value is **not** logged; only a non-sensitive derived quantity is.
+
+Source excerpt:
+
+```
+                logger.info("Captcha solved! Token received (length: %d)", len(token))
+```
+
+Why this is a false positive: the rule condition requires a "sensitive value … logged without a visible redaction", but the only data written is `len(token)` — the token string itself is never logged, only its length.
+
+Checklist evidence: the call's argument is `len(token)` (an integer length); the regex signal is the literal word "Token" in the static message text.
+
+### [ ] Finding `102` — `CWE-117`
+
+- Function context: `scripts/CourtScrapper/findings/functions/102.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/inspect_website.py:15:5`
+- New finding (audited FP 102 sat at `:14:5`, which the fix suppressed; the fresh scan now flags the sibling statement at `:15:5`).
+- Checklist pattern: interpolated value is a developer-supplied literal at every call site.
+
+Source excerpt:
+
+```
+def inspect_page(page, page_name):
+    logger.info(f"\n{'='*60}")
+    logger.info(f"Inspecting: {page_name}")
+```
+
+Call sites (inspect_website.py:91, 113) both pass string literals:
+
+```
+        inspect_page(page, "Initial Search Page")
+        ...
+        inspect_page(page, "After Expanding Advanced Options")
+```
+
+Why this is a false positive: the rule condition requires an "externally influenced input"; `page_name` is a function parameter whose only two call sites pass developer-owned string literals, so no externally controlled CRLF-capable value reaches the log (same pattern as audited FP 152).
+
+Checklist evidence: both call sites pass literal strings; the interpolated segment can never carry CR/LF from external input.
+
+### [ ] Finding `150` — `CWE-117`
+
+- Function context: `scripts/CourtScrapper/findings/functions/150.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper.py:82:13`
+- Matches audited FP 152 (same source construct).
+- Checklist pattern: interpolated values are a numeric delay and an internal literal description.
+
+Source excerpt:
+
+```
+        if description:
+            logger.debug(f"Waiting {delay}s before {description}")
+        time.sleep(delay)
+```
+
+Why this is a false positive: `delay` is a numeric duration and `description` is a developer-supplied literal passed by callers (e.g. "navigating to search page"); neither is externally controlled or CRLF-capable.
+
+Checklist evidence: both interpolated segments are internal scalar values; there is no input-derived string that could inject log record separators.
+
+### [ ] Finding `274` — `CWE-117`
+
+- Function context: `scripts/CourtScrapper/findings/functions/274.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper_pool.py:51:5`
+- Matches audited FP 276 (same source construct).
+- Checklist pattern: interpolated values are an internally generated thread name and a static config constant.
+
+Source excerpt:
+
+```
+    logger.info(f"{thread_name} starting for attorney: {first_name} {last_name}")
+```
+
+Why this is a false positive: `thread_name` is generated by the thread pool and `first_name`/`last_name` come from the developer-owned `ATTORNEYS` list in `config.py`; no externally controlled, CRLF-capable value is formatted into the message.
+
+Checklist evidence: all interpolated segments trace to internal configuration or pool-generated strings, not to external input.
+
+### [ ] Finding `281` — `PERF-PY-28`
+
+- Function context: `scripts/CourtScrapper/findings/functions/281.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper_pool.py:112:24`
+- Matches audited FP 285 (same source construct).
+- Checklist pattern: the executor is created once for the entire batch, not per unit of work.
+
+Source excerpt:
+
+```
+        with ThreadPoolExecutor(max_workers=num_workers, thread_name_prefix="ScraperWorker") as executor:
+            # Submit all attorney scraping tasks to the thread pool
+```
+
+Why this is a false positive: the rule condition is an executor "created per unit of work"; here the pool is constructed once at the top of the single batch function, all attorney tasks are submitted to it at once, and it lives for the whole run (the function is invoked exactly once from `main.py`). This already matches the recommended process-lifetime-pool pattern.
+
+Checklist evidence: the executor is created once per program run and handles the complete workload in one `with` block; no per-task or per-work-item pool creation exists.
+
+### [ ] Finding `286` — `CWE-396`
+
+- Function context: `scripts/CourtScrapper/findings/functions/286.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/scraper_pool.py:141:1`
+- New finding (the audited CWE-396 at `scraper_pool.py:74:1` was suppressed by the fix; the fresh scan flags the sibling handler in `run_all_attorneys_concurrent`).
+- Checklist pattern: handler surfaces the failure — logs it and aggregates the exception for reporting.
+
+Source excerpt:
+
+```
+                except Exception as e:
+                    logger.error(f"Error processing future for attorney {attorney_index}: {e}")
+                    thread_exceptions.append((f"Worker-{attorney_index}", e))
+```
+
+The aggregated errors are then reported (scraper_pool.py:148-151):
+
+```
+        if thread_exceptions:
+            logger.warning(f"{len(thread_exceptions)} worker(s) encountered errors:")
+            for worker_name, error in thread_exceptions:
+                logger.warning(f"  - {worker_name}: {error}")
+```
+
+Why this is a false positive: the rule condition is a generic handler that "can hide distinct failure conditions"; this handler logs the exception and stores it in `thread_exceptions`, which is iterated and reported to the operator afterwards — the same log-and-propagate-for-reporting pattern the old audit accepted as a false positive for audited FP 280 — so no failure is hidden.
+
+Checklist evidence: each exception is written at error level and its object is retained in `thread_exceptions`, which the enclosing function reports in a warning block before returning; failures are surfaced, not swallowed.
+
+### [ ] Finding `295` — `CWE-117`
+
+- Function context: `scripts/CourtScrapper/findings/functions/295.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/utils.py:90:13`
+- Matches audited FP 298 (same source construct).
+- Checklist pattern: interpolated values are numeric counters.
+
+Source excerpt:
+
+```
+            logger.debug(f"Chrome debug endpoint ready after {elapsed:.2f}s ({attempt} attempts)")
+```
+
+Why this is a false positive: the only interpolated values are `elapsed` (a float formatted to two decimals) and `attempt` (an int counter) — internal numerics that cannot carry CRLF, so no CRLF neutralization concern exists.
+
+Checklist evidence: both dynamic segments are numeric (float/int) values; no string input is formatted into the log message.
+
+### [ ] Finding `301` — `CWE-88`
+
+- Function context: `scripts/CourtScrapper/findings/functions/301.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/CourtScrapper/utils.py:148:24`
+- Matches audited FP 305 (same source construct).
+- Checklist pattern: interpolated argv segments are OS-generated or config values, not attacker-controlled.
+
+Source excerpt:
+
+```
+                proc = subprocess.Popen([
+                    chrome_path,
+                    f"--remote-debugging-port={debug_port}",
+                    f"--user-data-dir={temp_dir}"
+                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+```
+
+Why this is a false positive: the rule condition is an "untrusted argument [that] can become a tool option"; the dynamic segments are an OS-assigned integer port (`getsockname()[1]`), a `mkdtemp`-generated directory path, and a config constant — none attacker-controlled, and the port is numeric so it cannot introduce option delimiters.
+
+Checklist evidence: all interpolated argv values originate from the OS (`socket` bind, `tempfile.mkdtemp`) or local config; no externally supplied text reaches the argument vector.
+
+## Uncertain findings (fresh run)
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/CourtScrapper/chunks` (fresh run)
+- Function evidence: `scripts/CourtScrapper/findings/functions` (fresh run)
+- Over-suppression note: two audited TPs (old 51 `captcha_handler.py:502`, old 279 `scraper_pool.py:74`, both BP-PY-1) are absent from the fresh scan although their `except Exception as e:` + `exc_info=True` handlers are still present at those locations — flagged for the Mode-B pass.
+- Validation: `git diff --check` — `pass` (see below)
+
+```
+$ git diff --check   # run in goslop repo root after writing this report
+<no output — pass>
+```

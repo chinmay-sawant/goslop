@@ -204,3 +204,71 @@ None.
 - Chunk evidence: `scripts/among-llms/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_72.txt`
 - Function evidence: `scripts/among-llms/findings/functions/1.txt` … `72.txt`
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: among-llms
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/among-llms
+branch: develop
+commit: a6d4f57
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/among-llms
+chunk_path: scripts/among-llms/chunks
+function_context_path: scripts/among-llms/findings/functions
+scanner_binary: bin/goslop rebuilt 2026-08-02 16:29 from b5b8fde (FP-reduction fix)
+```
+
+Fresh scan produced 70 findings (old audit: 72). Fresh finding IDs were mapped to audited TPs by `Source:` path (fresh IDs 1–70 = old IDs 1–12, 14–28, 30–72 in order). Two audited TP sources are absent from the fresh scan: `allms/config/runtime.py:159` and `allms/core/llm/parser.py:54`, both CWE-396. Both constructs were verified still present at those locations in the current source (same commit `a6d4f57`).
+
+### Over-suppressed audit table
+
+| Old finding ID | Rule | Source | One-line reason (old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 13 | CWE-396 | `allms/config/runtime.py:159` | `except Exception as e:` matches `pyGenericExceptRE`; `runtime.py` is not a test module. | suppressed-but-present |
+| 29 | CWE-396 | `allms/core/llm/parser.py:54` | `except Exception as ex:` matches `pyGenericExceptRE`; `parser.py` is not a test module. | suppressed-but-present |
+
+Over-suppressed TPs found: 2. Fixed/removed: 0.
+
+### Suppressed-but-present TP — old finding 13 — CWE-396
+
+- Source: `allms/config/runtime.py:159`
+- Rule condition: `detectCWE396` (`rules_platform.go`) matches the first `except Exception` / `except BaseException` (`pyGenericExceptRE`) in a non-test module.
+
+Source excerpt (`allms/config/runtime.py:156-160`):
+
+```
+        try:
+            if not path.exists():
+                path.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            raise RuntimeError(f"There was an issue creating the given directory: {str(path)}: {e}")
+```
+
+Why this is over-suppressed: the generic `except Exception as e:` at line 159 is unchanged (same commit `a6d4f57`, non-test module, still matches `pyGenericExceptRE`), so the old audited TP construct remains. The FP-reduction fix (`b5b8fde`) added `suiteSurfacesFailureMasked` to `detectCWE396` (rules_platform.go:107), which skips handlers whose suite re-raises — this suite starts with `raise RuntimeError(...)` (`suiteLineSurfacesFailure` returns true on the `raise ` prefix) — so the previously-reported TP is now silently dropped.
+
+### Suppressed-but-present TP — old finding 29 — CWE-396
+
+- Source: `allms/core/llm/parser.py:54`
+- Rule condition: `detectCWE396` (`rules_platform.go`) matches the first `except Exception` / `except BaseException` (`pyGenericExceptRE`) in a non-test module.
+
+Source excerpt (`allms/core/llm/parser.py:51-55`):
+
+```
+            except KeyError as ke:
+                supp_keys = " ".join(list(parser_map.keys()))
+                raise ValueError(f"{ke}. Supported keys: {supp_keys}. DOES NOT MATCH THE OUTPUT SCHEMA")
+            except Exception as ex:
+                raise ValueError(f"{ex}. Doesn't match the requested output schema")
+```
+
+Why this is over-suppressed: the generic `except Exception as ex:` at line 54 is unchanged (same commit `a6d4f57`, non-test module, still matches `pyGenericExceptRE`), so the old audited TP construct remains. The `suiteSurfacesFailureMasked` exemption added in `b5b8fde` skips this handler because its suite starts with `raise ValueError(...)`, dropping the previously-reported TP.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/among-llms/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_70.txt` (fresh, post-fix)
+- Function evidence: `scripts/among-llms/findings/functions/1.txt` … `70.txt` (fresh)
+- Validation: `git diff --check` — pass

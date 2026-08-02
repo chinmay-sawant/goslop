@@ -7929,3 +7929,318 @@ Findings whose shown source satisfies the rule condition; listed compactly per r
 - Chunk evidence: `scripts/pdf_oxide/chunks` (26 chunk files, findings 1-636)
 - Function evidence: `scripts/pdf_oxide/findings/functions` (per-finding context files)
 - Validation: `git diff --check` — pass
+
+---
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+Re-audit of the fresh scan after FP-reduction fix `b5b8fde` (binary rebuilt 2026-08-02 16:29). Mode A: classify every fresh finding against the audited TP sources in this report.
+
+## Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: pdf_oxide
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide
+branch: main
+commit: 10b87f153200cd5c4d4a4defee471757091e6559 (unchanged from first audit)
+goslop_fix: b5b8fde (fix(python): reduce showcase-corpus false positives across BP/CWE/PERF)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide
+chunk_path: scripts/pdf_oxide/chunks
+function_context_path: scripts/pdf_oxide/findings/functions
+```
+
+## Scan evidence
+
+- Build command: `cargo build --release` (prebuilt `./bin/goslop` rebuilt 2026-08-02 16:29 after `b5b8fde`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pdf_oxide/chunks -context-dir scripts/pdf_oxide/findings/functions real-repos/pdf_oxide` (per TP_MATCH.md loop)
+- Findings: `202` (previous audit: 636; old TP count 188)
+- Chunks reviewed: `scripts/pdf_oxide/chunks/Chunk_1_25.txt .. Chunk_201_202.txt` (all 9 chunk files)
+- Function contexts reviewed: `scripts/pdf_oxide/findings/functions/<id>.txt` for all 16 unmatched findings; enclosing source read for findings 10, 43, 44, 134, 139, 165, 173, 174, 176, 177, 179, 180, 198
+
+## Audit checklist
+
+- [x] Read every assigned chunk under `scripts/pdf_oxide/chunks`.
+- [x] Read `scripts/pdf_oxide/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+## Classification summary (fresh run)
+
+Matching method: fresh finding ID ↔ audited TP by exact `Source:` path (file:line:col). 186 fresh findings match audited TP sources (same rule at same location); 16 fresh findings match audited FP sources (all re-appearing audited FPs, verified against the rule condition below); 0 new findings.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 16 | 6, 9, 10, 19, 43, 44, 134, 139, 165, 173, 174, 176, 177, 179, 180, 198 |
+| True positive | 186 | 1, 2, 3, 4, 5, 7, 8, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 135, 136, 137, 138, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 166, 167, 168, 169, 170, 171, 172, 175, 178, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 199, 200, 201, 202 |
+| Uncertain | 0 | — |
+
+Side observation (over-suppression, for Mode B): two audited TPs no longer appear in the fresh scan although their constructs are still present unchanged — old TP 37 (BP-PY-41, `python/tests/test_feature_guard.py:93:1`, test function calls `OcrEngine(...)` without an assertion) and old TP 403 (PERF-PY-25, `scripts/diagnose_character_order.py:132:1`, sort-key lambda constructed per loop iteration). Both suppressed-but-present; the 16 FPs below are the complete remaining-FP set.
+
+## False positives
+
+### [ ] Finding 6 — PERF-PY-28
+
+- Function context: `scripts/pdf_oxide/findings/functions/6.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/08-batch-processing/main.py:31:21`
+- Checklist pattern: `not per unit of work — executor created once per batch/object lifetime`
+
+Source excerpt:
+
+```
+    with ProcessPoolExecutor() as pool:
+        futures = {pool.submit(process_pdf, p): p for p in paths}
+```
+
+Why this is a false positive: The pool is created once at the top of `main()` before submitting the whole batch of PDF tasks; it is not created per unit of work, so the rule condition is not met.
+
+Checklist evidence: executor created once per batch run, not per submitted task.
+
+### [ ] Finding 9 — BP-PY-6
+
+- Function context: `scripts/pdf_oxide/findings/functions/9.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/image_embedding/main.py:197:1`
+- Checklist pattern: `not input/security validation — assert on own-output sanity check in an example`
+
+Source excerpt:
+
+```
+assert os.path.getsize(out_path) > 0, "output PDF must be non-empty"
+print("All image embedding checks passed.")
+```
+
+Why this is a false positive: The assert checks the size of a file the example script itself just wrote (own-output sanity check), not request/CLI/authz/path input validation; the needle hit is coincidental (`os.path` in `os.path.getsize`). The rule condition (assert used for input or security checks) is not met.
+
+Checklist evidence: own-output sanity check in a standalone example script; no input or security boundary validated.
+
+### [ ] Finding 10 — CWE-22
+
+- Function context: `scripts/pdf_oxide/findings/functions/10.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/examples/python/09-new-features/office_conversion/main.py:37:10`
+- Checklist pattern: `constant path — no external input reaches the open() sink`
+
+Source excerpt:
+
+```
+    with open(os.path.join(OUT_DIR, "output.docx"), "wb") as f:
+        f.write(docx_bytes)
+```
+
+Why this is a false positive: The path is `os.path.join(OUT_DIR, "output.docx")` where OUT_DIR is a module constant (`OUT_DIR = "output"`, line 19) and the second segment is a string literal; no external/user-influenced segment reaches the open() sink, so the traversal condition is not met.
+
+Checklist evidence: constant path — both path segments are source constants/literals.
+
+### [ ] Finding 19 — PERF-PY-28
+
+- Function context: `scripts/pdf_oxide/findings/functions/19.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/python/pdf_oxide/_async.py:118:36`
+- Checklist pattern: `not per unit of work — executor created once per batch/object lifetime`
+
+Source excerpt:
+
+```
+        self._executor = ThreadPoolExecutor(max_workers=1)
+```
+
+Why this is a false positive: The executor is created once in `__init__` of a long-lived wrapper object (reused for the object's lifetime), not per unit of work.
+
+Checklist evidence: executor created once per object lifetime in `__init__`.
+
+### [ ] Findings 43 and 44 — CWE-829 and CWE-94 (identical source construct)
+
+- Function contexts: `scripts/pdf_oxide/findings/functions/43.txt`, `scripts/pdf_oxide/findings/functions/44.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/benchmark_all_libraries.py:50:13`
+- Checklist pattern: `no untrusted source — module names are hardcoded literals in the source`
+
+Source excerpt:
+
+```
+            __import__(import_name)
+            AVAILABLE_LIBRARIES[name] = True
+```
+
+Why this is a false positive: `import_name` comes from the hardcoded literal dict `libraries` in the same source file (`"fitz"`, `"pypdf"`, `"pdfminer"`, …); there is no untrusted control sphere selecting which module executes, so neither the CWE-829 nor the CWE-94 condition is met.
+
+Checklist evidence: dynamic-import sink fed only by source-literal module names; no external influence on the executed module.
+
+### [ ] Finding 134 — PERF-PY-27
+
+- Function context: `scripts/pdf_oxide/findings/functions/134.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/fetch_real_fixtures.py:33:1`
+- Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
+
+Source excerpt:
+
+```
+    if out.is_file() and out.read_bytes()[:5] == b"%PDF-":
+```
+
+Why this is a false positive: `out = DEST / name` is derived per loop element from the hardcoded `ARTICLES` list; each iteration loads a distinct path, so the same path is not loaded repeatedly and the rule condition is not met.
+
+Checklist evidence: distinct path per iteration (path varies per list item).
+
+### [ ] Finding 139 — CWE-88
+
+- Function context: `scripts/pdf_oxide/findings/functions/139.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regression_harness.py:111:16`
+- Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
+
+Source excerpt:
+
+```
+        proc = subprocess.run(
+            [str(binary), str(pdf)],
+```
+
+Why this is a false positive: The argv operands are internal repository paths (the locally built binary and the repo's own corpus PDFs); no externally influenced option-bearing input reaches the argument vector, so the argument-injection condition is not met.
+
+Checklist evidence: argv operands are internal repo paths, not externally influenced values.
+
+### [ ] Finding 165 — CWE-88
+
+- Function context: `scripts/pdf_oxide/findings/functions/165.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:193:13`
+- Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
+
+Source excerpt:
+
+```
+        r = subprocess.run(
+            [bin_path, pdf, fmt],
+```
+
+Why this is a false positive: `bin_path` and `pdf` are internal repository paths (locally built binaries + repo corpus) and `fmt` is a fixed format literal; no externally influenced input reaches the argument vector.
+
+Checklist evidence: argv operands are internal repo paths and fixed literals.
+
+### [ ] Finding 173 — PERF-PY-28
+
+- Function context: `scripts/pdf_oxide/findings/functions/173.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:270:53`
+- Checklist pattern: `not per unit of work — executor created once per batch/object lifetime`
+
+Source excerpt:
+
+```
+    with open(manifest_path, "a") as mf, ProcessPoolExecutor(max_workers=jobs) as ex:
+        futs = {ex.submit(_worker, t): t for t in tasks}
+```
+
+Why this is a false positive: The executor is created once at the top of the batch runner before submitting the full task list; it is not created per unit of work.
+
+Checklist evidence: executor created once per batch run, not per submitted task.
+
+### [ ] Finding 174 — PERF-PY-23
+
+- Function context: `scripts/pdf_oxide/findings/functions/174.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:284:1`
+- Checklist pattern: `unavoidable per-item encode — data produced inside the loop`
+
+Source excerpt:
+
+```
+            mf.write(json.dumps(row) + "\n")
+            mf.flush()
+```
+
+Why this is a false positive: Each iteration serializes freshly produced per-task result data with `json.dumps`; the encode cannot be hoisted out of the loop, so no avoidable polymorphic-encode work exists and the rule condition is not met.
+
+Checklist evidence: encode of per-iteration result data cannot be hoisted out of the loop.
+
+### [ ] Finding 176 — PERF-PY-27
+
+- Function context: `scripts/pdf_oxide/findings/functions/176.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:404:1`
+- Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
+
+Source excerpt:
+
+```
+            if out_p.exists():
+                return out_p.read_text(errors="replace")
+```
+
+Why this is a false positive: `out_p` is derived per iteration from the per-row `_pdf`, `_fmt`, and `_build` values; each iteration loads a distinct path, so the same path is not loaded repeatedly.
+
+Checklist evidence: distinct path per iteration (path varies per loop element).
+
+### [ ] Finding 177 — CWE-1046
+
+- Function context: `scripts/pdf_oxide/findings/functions/177.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:473:1`
+- Checklist pattern: `no accumulating concatenation — accumulator re-initialized per iteration`
+
+Source excerpt:
+
+```
+        flag += " ← expected improvement" if st in ("CRASH_MAIN", "NEW_OUTPUT") else ""
+        md_lines.append(f"| {st} | {cols} | {tc} |{flag}")
+```
+
+Why this is a false positive: `flag` is re-initialized at the top of each loop iteration and the `+=` appends a constant suffix at most once per iteration; the accumulator does not grow by repeated concatenation inside the loop, so the rule condition is not met.
+
+Checklist evidence: accumulator re-initialized per iteration; no repeated in-loop concatenation.
+
+### [ ] Finding 179 — PERF-PY-27
+
+- Function context: `scripts/pdf_oxide/findings/functions/179.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/regtest_branch_vs_main.py:568:1`
+- Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
+
+Source excerpt:
+
+```
+            print(out_p.read_text(errors="replace")[:3000])
+```
+
+Why this is a false positive: `out_p` is derived per manifest row (`r["build"]`, `r["bucket"]`, `r["stem"]`, `fmt`); each iteration loads a distinct path, so the same path is not loaded repeatedly.
+
+Checklist evidence: distinct path per iteration (path varies per manifest row).
+
+### [ ] Finding 180 — PERF-PY-27
+
+- Function context: `scripts/pdf_oxide/findings/functions/180.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/scripts/sync_version.py:120:1`
+- Checklist pattern: `distinct paths per iteration — same path is not loaded repeatedly`
+
+Source excerpt:
+
+```
+        text = path.read_text()
+        matches = list(re.finditer(pat, text))
+```
+
+Why this is a false positive: `path = ROOT / rel` is derived per iteration from the per-rule relative path; each iteration reads a distinct path, so the same path is not loaded repeatedly.
+
+Checklist evidence: distinct path per iteration (path varies per rule entry).
+
+### [ ] Finding 198 — CWE-88
+
+- Function context: `scripts/pdf_oxide/findings/functions/198.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pdf_oxide/tools/benchmark-harness/olmocr/run_olmocr_bench.py:49:13`
+- Checklist pattern: `no externally influenced input — fixed literals / internal repo paths`
+
+Source excerpt:
+
+```
+        r = subprocess.run(
+            [python_bin, "-c", code, str(pdf_path)], capture_output=True, timeout=timeout
+```
+
+Why this is a false positive: Local olmOCR benchmark harness only; `python_bin` defaults to `sys.executable` (CLI `--python` is the local operator's interpreter path) and `pdf_path` is a path under the locally downloaded bench corpus; the argument forms are fixed, so no externally influenced option token can be injected.
+
+Checklist evidence: no externally influenced option-bearing input reaches the argument vector; fixed literal argv forms.
+
+## Uncertain findings
+
+None.
+
+## Final evidence
+
+- Delegated reviewers: none (single-reviewer re-audit)
+- Chunk evidence: `scripts/pdf_oxide/chunks` (9 chunk files, fresh findings 1-202)
+- Function evidence: `scripts/pdf_oxide/findings/functions` (per-finding context files for fresh findings 1-202)
+- Validation: `git diff --check` — pass

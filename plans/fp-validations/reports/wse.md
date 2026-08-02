@@ -1177,3 +1177,129 @@ None — every finding could be classified from the rule condition and the shown
 - Chunk evidence: `scripts/wse/chunks`
 - Function evidence: `scripts/wse/findings/functions`
 - Validation: `git diff --check` — pass
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:08:00Z
+repository: wse
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse
+branch: main
+commit: 90ebca1d1dfb9b9ae9efc03f55738bb6a3b42444 (unchanged since first audit)
+goslop_binary: ./bin/goslop rebuilt 2026-08-02 16:29 IST from commit b5b8fde (FP-reduction fix)
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse
+chunk_path: scripts/wse/chunks
+function_context_path: scripts/wse/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `make build` (goslop binary at `./bin/goslop`)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/wse/chunks -context-dir scripts/wse/findings/functions real-repos/wse`
+- Findings: `169` (previous run: 206)
+- Chunks reviewed: `scripts/wse/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_150.txt`, `Chunk_151_169.txt` (all 7)
+- Function contexts reviewed: `scripts/wse/findings/functions/<id>.txt` for every proposed false positive (1, 17, 39, 67, 69, 70, 72, 73, 77, 78, 81, 82, 86) and for the three newly-appearing CWE-396 findings (61, 103, 133); enclosing source read for all of the above.
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/wse/chunks`.
+- [x] Read `scripts/wse/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient (no delegated reviews; no disagreements).
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary
+
+Fresh finding IDs are per the fresh scan; matching to the audited run is by `Source:` path (file:line).
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 13 | 1, 17, 39, 67, 69, 70, 72, 73, 77, 78, 81, 82, 86 |
+| True positive | 156 | 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 68, 71, 74, 75, 76, 79, 80, 83, 84, 85, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169 |
+| Uncertain | 0 | — |
+
+Notes: the 156 true positives are the 153 fresh findings whose `Source:` matches an audited TP (all still present in the source, unchanged), plus 3 newly-appearing CWE-396 findings (61, 103, 133) at `bench_wse_multiprocess.py:197`, `connection.py:232`, `security.py:185` — generic `except Exception:` handlers without re-raise, which satisfy the CWE-396 rule condition (the fix dropped the re-raise variants at `bench_wse_multiprocess.py:96`, `circuit_breaker.py:84`, `connection.py:193`, `security.py:147`). The 13 remaining false positives all match audited FP sources; the fix removed the other 36 audited FPs (BP-PY-46 docstring/CLI prints, BP-PY-13 bench/test fixtures, CWE-88/89/1341, and the two remaining BP-PY-40 sites' siblings were not re-flagged).
+
+## False positives
+
+Two of the three rule types repeat the exact same source construct across files and are grouped; the third is a single finding. Each grouped finding ID is listed with its source.
+
+### [ ] Findings 1, 39, 69, 72, 77, 81, 86 — BP-PY-40
+
+- Function context: `./scripts/wse/findings/functions/<id>.txt` for 1, 39, 69, 72, 77, 81, 86
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_battle_server.py:129:6` (finding 1), `bench_fanout_server.py:113:6` (finding 39), `examples/standalone_basic.py:111:11` (finding 69), `examples/standalone_broadcast.py:123:7` (finding 72), `examples/standalone_cluster.py:110:7` (finding 77), `examples/standalone_presence.py:145:11` (finding 81), `examples/standalone_recovery.py:190:7` (finding 86)
+- Checklist pattern: rule is a review-only heuristic for non-daemon workers; every thread is created with an explicit `daemon=True` policy
+
+Source excerpt (identical construct at every listed source; finding 1 shown):
+
+```
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+```
+
+and (finding 72, two threads):
+
+```
+    t1 = threading.Thread(target=event_loop, args=(server, stop), daemon=True)
+    t2 = threading.Thread(target=publisher, args=(server, stop), daemon=True)
+    t1.start()
+    t2.start()
+```
+
+Why these are false positives: each finding flags a `.start()` line whose `Thread` construction (the immediately preceding line) declares an explicit `daemon=True` policy, so none of the threads is a non-daemon fire-and-forget worker; the line-scoped detector trips on the separate `.start()` statement without consulting the constructor.
+
+Checklist evidence: in every flagged function, the `threading.Thread(...)` call carries `daemon=True`; the rule's own detection notes scope it to non-daemon workers ("review-only heuristic for non-daemon workers").
+
+### [ ] Findings 67, 70, 73, 78, 82 — BP-PY-13
+
+- Function context: `./scripts/wse/findings/functions/<id>.txt` for 67, 70, 73, 78, 82
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/examples/standalone_basic.py:20:1` (finding 67), `standalone_broadcast.py:24:1` (finding 70), `standalone_cluster.py:25:1` (finding 73), `standalone_presence.py:20:1` (finding 78), `standalone_recovery.py:26:1` (finding 82)
+- Checklist pattern: rule excludes obvious placeholders (changeme, xxx)
+
+Source excerpt (identical construct at every listed source):
+
+```
+JWT_SECRET = b"change-me-to-a-secure-32-byte-key!"
+JWT_ISSUER = "my-app"
+```
+
+Why these are false positives: the literal starts with the canonical `change-me` placeholder token, which the rule's detection notes explicitly exclude ("obvious placeholders (changeme, xxx)"); each is a demo-script fixture in `examples/`, not a real credential.
+
+Checklist evidence: the flagged assignment is a secret-named variable whose value is an obvious `change-me` placeholder in an example script — exactly the documented exclusion case.
+
+### [ ] Finding 17 — BP-PY-42
+
+- Function context: `./scripts/wse/findings/functions/17.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/wse/benchmarks/bench_brutal.py:224:1`
+- Checklist pattern: not a failure-expectation test; benchmark measurement helper
+
+Source excerpt:
+
+```
+            async def _connect_timed():
+                t0 = time.perf_counter()
+                try:
+                    ws = await connect_one(token)
+                    lat = (time.perf_counter() - t0) * 1000
+                    return ws, lat
+                except Exception:
+                    return None, None
+```
+
+Why this is a false positive: the try/except lives in a benchmark harness helper whose exception path returns a `(None, None)` sentinel that the caller tallies as a connection failure count; it is not a test expecting failure, so the `pytest.raises` recommendation does not apply.
+
+Checklist evidence: no assertion or `pytest.raises` context is intended; the handler's purpose is measurement of failures, which the rule's condition ("try/except used to 'expect' failures" in tests) does not cover.
+
+## Uncertain findings
+
+None — every fresh finding could be classified from the rule condition and the shown source.
+
+## Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/wse/chunks`
+- Function evidence: `scripts/wse/findings/functions`
+- Validation: `git diff --check` — pass

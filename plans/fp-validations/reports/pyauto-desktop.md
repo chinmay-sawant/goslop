@@ -285,3 +285,107 @@ All remaining findings satisfy their rule's condition; tables per rule.
 - Chunk evidence: `scripts/pyauto-desktop/chunks` (4 chunk files, findings 1–92)
 - Function evidence: `scripts/pyauto-desktop/findings/functions` (92 per-finding contexts)
 - Validation: `git diff --check` — pass
+
+## Post-fix over-suppression audit (2026-08-02)
+
+## Run metadata (re-audit)
+
+```yaml
+timestamp: 2026-08-02T16:38:00Z
+repository: pyauto-desktop
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop
+branch: main
+commit: 2448ba4a843cde40697a289895b7cb2e399d5afa
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop
+chunk_path: scripts/pyauto-desktop/chunks
+function_context_path: scripts/pyauto-desktop/findings/functions
+fix_commit: b5b8fde (binary rebuilt 2026-08-02 16:29)
+mode: B (over-suppressed true positives)
+```
+
+## Scan evidence (fresh scan, post-fix)
+
+- Build command: `n/a` (prebuilt `./bin/goslop` rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/pyauto-desktop/chunks -context-dir scripts/pyauto-desktop/findings/functions real-repos/pyauto-desktop`
+- Findings: `86` (was 92 in the old run; delta −6)
+- Chunks reviewed: `scripts/pyauto-desktop/chunks/Chunk_1_25.txt`, `scripts/pyauto-desktop/chunks/Chunk_26_50.txt`, `scripts/pyauto-desktop/chunks/Chunk_51_75.txt`, `scripts/pyauto-desktop/chunks/Chunk_76_86.txt`
+- Function contexts reviewed: fresh contexts exported under `scripts/pyauto-desktop/findings/functions/`; enclosing source read for all three missing TP locations
+
+## Classification summary (fresh run, cross-mapped by `Source:`)
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| Fresh findings matching audited TPs | 85 | fresh 2–36, 38–86 (mapped to old 2–36, 38, 40–62, 65, 67–73, 75–92) |
+| Fresh findings matching audited FPs (still firing) | 1 | fresh 1 = old 1 (CWE-1341, capture_tool.py:91) |
+| Fresh findings that are new (no old counterpart) | 0 | — |
+| Audited TPs absent from fresh run (over-suppressed candidates) | 3 | old 37, 39, 64 |
+
+Audited FPs correctly suppressed by the fix (no longer firing): old 63 (PERF-PY-26), old 66 (BP-PY-12), old 74 (BP-PY-12). The CWE-1341 FP (old 1) was not affected and still fires as fresh finding 1.
+
+## Over-suppression table
+
+| Old finding ID | Rule | Source | One-line reason (from old audit) | Current status |
+| --- | --- | --- | --- | --- |
+| 37 | BP-PY-7 | pyauto_desktop/functions.py:185 | `return Image.open(img)` — `.open(` without `with` | suppressed-but-present |
+| 39 | BP-PY-7 | pyauto_desktop/functions.py:223 | `img = Image.open(image_path)` without `with` | suppressed-but-present |
+| 64 | BP-PY-7 | pyauto_desktop/main.py:342 | `img = Image.open(path)` without `with` | suppressed-but-present |
+
+All three missing findings share the single rule BP-PY-7 (open Without Context Manager); no other audited TP is absent from the fresh run. The repo is at the same commit as the old audit, so nothing was fixed/removed in source.
+
+## Suppressed-but-present true positives
+
+### [ ] Finding `37` — `BP-PY-7`
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/functions.py:185`
+
+Source excerpt (current file, unchanged):
+
+```
+def _load_image(img):
+    if isinstance(img, str):
+        with PerformanceTimer(f"Load Image from Disk ({img})"):
+            return Image.open(img)
+    return img
+```
+
+Why it satisfies the rule condition: `Image.open(img)` opens a file handle with no `with` statement and no `close()` anywhere in scope; the opened image is returned to callers that never close it, risking a resource leak — exactly the rule's "file opened without `with`" condition.
+
+### [ ] Finding `39` — `BP-PY-7`
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/functions.py:223`
+
+Source excerpt (current file, unchanged):
+
+```
+@lru_cache(maxsize=128)
+def _load_cached_needle(image_path, scale_factor, grayscale):
+    if DEBUG_LEVEL >= 2: print(f"[CACHE] Loading/Processing Needle: {image_path} (Scale: {scale_factor})")
+    with PerformanceTimer("Process Needle (Uncached)"):
+        img = Image.open(image_path)
+        return _process_needle_to_cv2(img, scale_factor, grayscale)
+```
+
+Why it satisfies the rule condition: `Image.open(image_path)` is called without `with` and the `img` handle is converted via `_process_needle_to_cv2` with no `close()` in the function, so the opened handle leaks — satisfies the rule's condition.
+
+### [ ] Finding `64` — `BP-PY-7`
+
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pyauto-desktop/pyauto_desktop/main.py:342`
+
+Source excerpt (current file, unchanged):
+
+```
+    def process_loaded_image(self, path, mode='target'):
+        try:
+            img = Image.open(path)
+            edited_img = self.open_editor(img)
+            if not edited_img: return
+```
+
+Why it satisfies the rule condition: `Image.open(path)` has no `with` statement and the resulting handle is passed to `open_editor` with no close path — satisfies the rule's condition.
+
+## Final evidence (re-audit)
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/pyauto-desktop/chunks` (4 chunk files, findings 1–86)
+- Function evidence: `scripts/pyauto-desktop/findings/functions`
+- Validation: `git diff --check` — pass

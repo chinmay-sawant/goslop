@@ -270,3 +270,224 @@ None.
 - Chunk evidence: `scripts/enso/chunks`
 - Function evidence: `scripts/enso/findings/functions`
 - Validation: `git diff --check` — pass
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T16:30:00Z (fresh scan; binary rebuilt 2026-08-02 16:29, fix b5b8fde)
+repository: enso
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso
+branch: master
+commit: 516c06caa712e2e454e8673ef5f365616362a9a9
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso
+chunk_path: scripts/enso/chunks
+function_context_path: scripts/enso/findings/functions
+```
+
+### Scan evidence
+
+- Build command: `go build -o bin/goslop ./cmd/goslop`
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/enso/chunks -context-dir scripts/enso/findings/functions real-repos/enso`
+- Findings: `134`
+- Chunks reviewed: `scripts/enso/chunks/Chunk_1_25.txt`, `Chunk_26_50.txt`, `Chunk_51_75.txt`, `Chunk_76_100.txt`, `Chunk_101_125.txt`, `Chunk_126_134.txt`
+- Function contexts reviewed: `scripts/enso/findings/functions/12.txt`, `81.txt`, `91.txt`, `92.txt`, `93.txt`, `94.txt`, `95.txt`, `96.txt`, `97.txt`
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/enso/chunks`.
+- [x] Read `scripts/enso/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [x] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient. (No delegated reviews.)
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 9 | 12, 81, 91, 92, 93, 94, 95, 96, 97 |
+| True positive | 125 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 82, 83, 84, 85, 86, 87, 88, 89, 90, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134 |
+| Uncertain | 0 | — |
+
+Fresh findings were matched to the audited findings by `Source:` (file:line:col). All 9 false positives below are re-appearing audited FPs (old IDs 14, 85, 95, 96, 97, 98, 99, 100, 101). The remaining 125 findings match audited TP sources one-to-one (per-rule counts agree with the audited TP grouping: BP-PY-5 48, BP-PY-12 7, BP-PY-1 23, BP-PY-2 1, BP-PY-3 14, BP-PY-6 1, BP-PY-7 5, BP-PY-46 7, CWE-94 2, CWE-1333 1, CWE-397 6, CWE-390 1, CWE-1071 1, CWE-1046 1, CWE-1121 3) except CWE-396, which is now 4 of the audited 5 (see review item below).
+
+Two audited FPs were fixed by `b5b8fde` and no longer fire: CWE-89 `Base.py:210:5` (old FP 11, `def execute` header) and CWE-89 `Callables.py:895:12` (old FP 25, non-SQL `execute` call) — the new non-SQL-`execute` guard suppresses both. No new findings were introduced.
+
+Review item (over-suppression, Mode B concern): two audited TPs are absent from the fresh scan while their source constructs remain present —
+- CWE-396 `Base.py:206:9` (old TP 10): handler body is `raise`; the new `suiteSurfacesFailureMasked` guard skips re-raising handlers, so this audited TP is suppressed-but-present. The suppression matches the rule's intent (a re-raise does not hide the failure) and is flagged for reviewer confirmation.
+- PERF-PY-26 `Macro.py:180` (old TP 52): `macros.append(parse_macro(macro))` inside the `while ...:` loop is now skipped because `parse_*` calls only fire inside explicit `handle_job`/`handle_request` windows (`perfLineIsParseCall`); the construct is still in the source, suppressed-but-present.
+
+### False positives
+
+### [ ] Finding `12` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/12.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Builtin.py:537:5`
+- Checklist pattern: flagged construct is a `def` statement, not a print call (re-appearing audited FP 14)
+
+Source excerpt:
+
+```
+def print(*x:T, end="\n") -> Void:
+```
+
+Why this is a false positive: the flagged line is the declaration of the language's `print` builtin; the `print(` token is the `def` parameter list, not a call site. The fix's def-header guards were applied to BP-PY-12/7 and CWE-89/94, not to BP-PY-46, so the rule still fires on the definition.
+
+Checklist evidence: the flagged token is inside a `def print(...)` header; no `print(` call occurs on the line, so the rule condition ("print used in library code") is not met by usage.
+
+### [ ] Finding `81` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/81.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Test.py:4:1`
+- Checklist pattern: print in a test file — the rule's own test exemption is defeated by the case-sensitive path check (re-appearing audited FP 85)
+
+Source excerpt:
+
+```
+from Shell import Command as cmd
+
+print("hello i am a test file")
+```
+
+Why this is a false positive: this is a standalone test script (its own output declares "i am a test file"). `isPythonTestFile` still does not match it: the filename `Test.py` matches neither `test_*.py` nor `*_test.py`, and the `Tests/`/`Test.py` paths do not match the case-sensitive `tests/`/`test/` path components, so the rule's test exemption does not apply while the rule intends it to.
+
+Checklist evidence: `isPythonTestFile` (common.go:24) only matches `test_*.py`, `*_test.py`, `tests.py`, `conftest.py`, and `tests/`/`test/` path components; `Test.py` satisfies none of them.
+
+### [ ] Finding `91` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/91.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:12:5`
+- Checklist pattern: print in the test harness (`Tests/` directory) — case-sensitive path exemption miss (re-appearing audited FP 95)
+
+Source excerpt:
+
+```
+def section(section_name:Str) -> Void:
+    print()
+    header $ f"#### {section_name} ####"
+```
+
+Why this is a false positive: the print is test-harness output in `Tests/Testing.py`, the repo's test framework; the rule's test exemption covers it but is defeated only by the case-sensitive `tests/` path check in `isPythonTestFile` (`Tests/` ≠ `tests/`).
+
+Checklist evidence: the file lives in a `Tests/` directory and implements test sections; the rule condition excludes tests, so the print is outside the rule's scope.
+
+### [ ] Finding `92` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/92.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:14:5`
+- Checklist pattern: print in the test harness (same exemption-miss as finding 91) (re-appearing audited FP 96)
+
+Source excerpt:
+
+```
+    print()
+    header $ f"#### {section_name} ####"
+    print()
+```
+
+Why this is a false positive: same test-harness case as finding 91 — the print is section formatting output in the `Tests/` test framework file that the rule's test exemption covers.
+
+Checklist evidence: file is the repo's test framework under `Tests/`; the exemption applies and is missed only by the case-sensitive path check.
+
+### [ ] Finding `93` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/93.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:25:9`
+- Checklist pattern: print in the test harness (re-appearing audited FP 97)
+
+Source excerpt:
+
+```
+    if failed:
+        print(f"{rfill(60, '.', name)} {Color.red('FAILURE')}")
+```
+
+Why this is a false positive: FAILURE/PASSED lines are the test framework's report output in `Tests/Testing.py`; covered by the rule's test exemption, missed only by the case-sensitive `tests/` path check.
+
+Checklist evidence: the print renders a test-result report inside the repo's test framework file; the rule condition excludes tests.
+
+### [ ] Finding `94` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/94.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:28:9`
+- Checklist pattern: print in the test harness (re-appearing audited FP 98)
+
+Source excerpt:
+
+```
+    else:
+        testlist.append(True)
+        print(f"{rfill(60, '.', name)} {Color.green('PASSED')}")
+```
+
+Why this is a false positive: same as finding 93 — PASSED report output in the test framework; the rule's test-file exemption covers it, and the detector only misses it because of the case-sensitive path check.
+
+Checklist evidence: the print emits a test-result line inside the repo's test framework; the rule condition excludes tests.
+
+### [ ] Finding `95` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/95.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:33:9`
+- Checklist pattern: print in the test harness (re-appearing audited FP 99)
+
+Source excerpt:
+
+```
+    failures = testlist | failing?
+    if failures:
+        print()
+        warning $ "warning, failing tests"
+```
+
+Why this is a false positive: final-report formatting output of the test framework in `Tests/Testing.py`; covered by the rule's test exemption, missed only by the case-sensitive `tests/` path check.
+
+Checklist evidence: the print is part of `final_report` in the repo's test framework; the rule condition excludes tests.
+
+### [ ] Finding `96` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/96.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:36:9`
+- Checklist pattern: print in the test harness (re-appearing audited FP 100)
+
+Source excerpt:
+
+```
+        warning $ f"failed {len(failures)}/{len(testlist)} tests"
+        print()
+```
+
+Why this is a false positive: final-report formatting output of the test framework in `Tests/Testing.py`; covered by the rule's test exemption, missed only by the case-sensitive `tests/` path check.
+
+Checklist evidence: the print is part of `final_report` in the repo's test framework; the rule condition excludes tests.
+
+### [ ] Finding `97` — `BP-PY-46`
+
+- Function context: `scripts/enso/findings/functions/97.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/enso/Tests/Testing.py:38:13`
+- Checklist pattern: print in the test harness (re-appearing audited FP 101)
+
+Source excerpt:
+
+```
+        for failure in failures:
+            print(failure)
+        exit(1)
+```
+
+Why this is a false positive: failure-listing output of the test framework in `Tests/Testing.py`; covered by the rule's test exemption, missed only by the case-sensitive `tests/` path check.
+
+Checklist evidence: the print is part of `final_report` in the repo's test framework; the rule condition excludes tests.
+
+### Uncertain findings
+
+None.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/enso/chunks`
+- Function evidence: `scripts/enso/findings/functions`
+- Validation: `git diff --check` — pass

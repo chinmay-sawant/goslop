@@ -1973,3 +1973,301 @@ None.
 - Chunk evidence: `scripts/httptap/chunks`
 - Function evidence: `scripts/httptap/findings/functions`
 - Validation: `git diff --check` — `pass`
+
+## Post-fix remaining-FP audit (2026-08-02)
+
+### Run metadata
+
+```yaml
+timestamp: 2026-08-02T11:10:00Z
+repository: httptap
+repository_path: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap
+branch: main
+scan_target: /home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap
+chunk_path: scripts/httptap/chunks
+function_context_path: scripts/httptap/findings/functions
+binary: ./bin/goslop (post-fix rebuild 2026-08-02 16:29)
+```
+
+### Scan evidence (fresh run)
+
+- Build command: `go build -o bin/goslop ./cmd/goslop` (binary rebuilt 2026-08-02 16:29)
+- Scan command: `./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml --export-context --export-chunks --no-cache -chunks-dir scripts/httptap/chunks -context-dir scripts/httptap/findings/functions real-repos/httptap` (fresh run 2026-08-02 16:38)
+- Findings: `45`
+- Chunks reviewed: `scripts/httptap/chunks/Chunk_1_25.txt`, `scripts/httptap/chunks/Chunk_26_45.txt`
+- Function contexts reviewed: `scripts/httptap/findings/functions/1.txt` .. `scripts/httptap/findings/functions/45.txt` (all 45)
+
+### Audit checklist
+
+- [x] Read every assigned chunk under `scripts/httptap/chunks`.
+- [x] Read `scripts/httptap/findings/functions/<finding-id>.txt` for every proposed false positive.
+- [x] Followed the `Source:` path and read the enclosing source function or block when the exported context was insufficient.
+- [x] Classified every reviewed finding as `False positive`, `True positive`, or `Uncertain`.
+- [x] Based the decision on the rule condition and the shown source, not on application-specific knowledge.
+- [ ] Reconciled delegated reviews and documented disagreements as `Uncertain` where evidence is insufficient.
+- [x] Ran `git diff --check` after updating this report.
+
+### Classification summary (fresh run)
+
+Matching method: the old audit (above) contains **0 audited true positives**, so no fresh finding can match an audited TP. 44 fresh findings match audited-FP sources exactly (file:line); 1 fresh finding (7) is new but fails its rule condition on the shown source.
+
+| Classification | Count | Finding IDs |
+| --- | ---: | --- |
+| False positive | 45 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45 |
+| True positive | 0 | — |
+| Uncertain | 0 | — |
+
+Remaining false positives after fix: `45` (the fix removed 58 of the 103 old findings; every fresh finding is still a false positive).
+
+### False positives
+
+#### [ ] Finding `1` — `BP-PY-46` (re-appearing audited FP, old `17`)
+
+- Function context: `scripts/httptap/findings/functions/1.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/exporter.py:171:22`
+- Checklist pattern: Rich `Console.print` user-facing success message of the CLI output layer
+
+```
+        self.console.print(f"\n[green]✓ Exported analysis to {output_path}[/green]")
+```
+
+Why this is a false positive: `_print_success` (exporter.py:171) is the CLI's confirmation message rendered via the injected Rich `Console` — product output, not operational logging.
+
+Checklist evidence: BP-PY-46's condition is "`print` is used for operational logging in non-script modules"; the shown call is user-facing output of the CLI export layer.
+
+#### [ ] Finding `2` — `CWE-93` (re-appearing audited FP, old `23`)
+
+- Function context: `scripts/httptap/findings/functions/2.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:576:19`
+- Checklist pattern: assignment to an outgoing client request header with a constant value
+
+```
+            client.headers["User-Agent"] = USER_AGENT
+```
+
+Why this is a false positive: `client` is an `httpx.Client` and the line sets an *outgoing request* header to the module constant `USER_AGENT` — no response header, no externally influenced value, so no CRLF injection surface.
+
+Checklist evidence: CWE-93's condition is writing an externally influenced value into an HTTP *response* header; the shown source sets a request header from a constant.
+
+#### [ ] Findings `3`, `4`, `5` — `BP-PY-2`, `CWE-390`, `CWE-1071` (re-appearing audited FPs, old `24`, `25`, `26`)
+
+- Function contexts: `scripts/httptap/findings/functions/3.txt`, `4.txt`, `5.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:616:1` (`:13` for `5`)
+- Checklist pattern: documented non-fatal best-effort TLS enrichment handler
+
+```
+            except TLSInspectionError:
+                # TLS inspection is non-fatal, continue without it
+                pass
+```
+
+Why this is a false positive: the `pass` is the explicitly documented design for optional TLS metadata enrichment (http_client.py:604-618); the request result stays complete when the probe fails, so no failure is discarded.
+
+Checklist evidence: the handlers are identical source constructs flagged by three rules — the "silently discarded failure" (BP-PY-2/CWE-390) and "empty block" (CWE-1071) conditions are not met because the discard is intentional and documented in the source.
+
+#### [ ] Findings `6`, `7` — `BP-PY-1`, `CWE-396` (`6` re-appearing audited FP, old `28`; `7` is a NEW finding)
+
+- Function contexts: `scripts/httptap/findings/functions/6.txt`, `7.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:655:1`
+- Checklist pattern: documented defensive fallback for optional certificate metadata
+
+```
+        try:
+            cert_info = extract_certificate_info(ssl_object)
+        except Exception:  # pragma: no cover - defensive  # noqa: BLE001
+            cert_info = None
+```
+
+Why this is a false positive: the handler is a deliberate defensive fallback — when certificate extraction fails, optional metadata is set to `None` and the request result remains valid; the source marks it `defensive`/`# noqa: BLE001` (http_client.py:653-656). Finding 7 is new in this run (the old CWE-396 at this file was at line 628) but fails the same condition: no distinct failure handling is required for optional metadata, and the failure is handled by a defined fallback state rather than hidden.
+
+Checklist evidence: BP-PY-1's condition ("swallows failures and hides bugs") and CWE-396's condition ("can hide failures that require distinct handling") are unmet — the exception is expected on non-certificate sockets and is converted to a defined `None` fallback.
+
+#### [ ] Finding `8` — `BP-PY-1` (re-appearing audited FP, old `29`)
+
+- Function context: `scripts/httptap/findings/functions/8.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/http_client.py:697:1`
+- Checklist pattern: documented defensive fallback returning `None`
+
+```
+    try:
+        ssl_candidate = getter("ssl_object")
+    except Exception:  # pragma: no cover - defensive  # noqa: BLE001
+        return None
+```
+
+Why this is a false positive: `_extract_ssl_object` is a best-effort helper (http_client.py:690-699); a missing probe attribute yields `None` and the caller continues — failure handled by documented fallback.
+
+Checklist evidence: BP-PY-1's condition is unmet: the failure is handled by a defined fallback return, not silently swallowed.
+
+#### [ ] Findings `9`, `10` — `BP-PY-1`, `CWE-396` (re-appearing audited FPs, old `30`, `31`)
+
+- Function contexts: `scripts/httptap/findings/functions/9.txt`, `10.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/dns.py:83:1`
+- Checklist pattern: worker-thread handler that collects the exception and re-raises it after `join`
+
+```
+            except Exception as exc:  # pragma: no cover - handled below  # noqa: BLE001
+                worker_error = exc
+```
+
+Why this is a false positive: the exception is stored in `worker_error` and re-raised to the caller as `DNSResolutionError` after `thread.join(timeout)` (dns.py:94-99); the failure is propagated, not swallowed.
+
+Checklist evidence: BP-PY-1/CWE-396 conditions require hidden failures; the shown handler exists only to transport the exception out of the worker thread and the caller re-raises it.
+
+#### [ ] Findings `11`, `12`, `13` — `BP-PY-2`, `CWE-390`, `CWE-1071` (re-appearing audited FPs, old `33`, `34`, `35`)
+
+- Function contexts: `scripts/httptap/findings/functions/11.txt`, `12.txt`, `13.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/implementations/tls.py:79:1` (`:9` for `13`)
+- Checklist pattern: documented best-effort socket-info probe
+
+```
+        except OSError:  # pragma: no cover - best effort
+            pass
+```
+
+Why this is a false positive: `_populate_network_info` (tls.py:72-80) treats `getpeername()` failure as expected, marked `# pragma: no cover - best effort`; IP/family fields simply stay unset and inspection continues.
+
+Checklist evidence: identical construct flagged by three rules — BP-PY-2/CWE-390 ("failure discarded silently") and CWE-1071 ("empty block") conditions are unmet because the pass is the documented response to an expected optional-probe failure.
+
+#### [ ] Findings `14`..`30` — `BP-PY-46` (re-appearing audited FPs, old `39`..`55`)
+
+- Function contexts: `scripts/httptap/findings/functions/14.txt` .. `30.txt`
+- Sources: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/render.py:123:30, 124:30, 135:22, 136:22, 150:30, 152:30, 195:22, 196:22, 197:22, 212:22, 217:26, 223:26, 228:26, 254:30, 258:26, 268:22, 269:22`
+- Checklist pattern: Rich `Console.print` report output of the CLI rendering layer
+
+```
+        for index, step in enumerate(steps):
+            self._render_step(step)
+            if index < len(steps) - 1:
+                self.console.print(Rule(style="dim"))
+                self.console.print()
+```
+
+Why this is a false positive: all 17 calls sit in `render.py`, the CLI's output layer — `self.console` is an injected Rich `Console` and every call emits the user-facing analysis report (separators, panels, step/metric lines); the module is imported and used exclusively by the CLI entry point, so these are product output, not operational logging.
+
+Checklist evidence: BP-PY-46's condition ("print used for operational logging in non-script modules") is unmet — every flagged line renders CLI report output via the Rich `Console`.
+
+#### [ ] Findings `31`, `32`, `33` — `BP-PY-49`, `CWE-295`, `CWE-523` (re-appearing audited FPs, old `60`, `61`, `62`)
+
+- Function contexts: `scripts/httptap/findings/functions/31.txt`, `32.txt`, `33.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/utils.py:185:23` (`:27` for `32`, `33`)
+- Checklist pattern: TLS verification disabled only in the explicit, operator-chosen legacy mode
+
+```
+    # For legacy mode create a mutable context allowing older protocols.
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+```
+
+Why this is a false positive: `create_ssl_context` (utils.py:157-190) disables verification only in the `verify_ssl=False` branch, reached solely via the CLI's opt-in `--ignore-ssl` flag; the default path returns `ssl.create_default_context()` with full verification, and the tool relays the operator's own requests rather than performing credential exchanges.
+
+Checklist evidence: BP-PY-49/CWE-295 fire on the raw `CERT_NONE` marker; the shown source gates the disablement behind an explicit parameter whose default path keeps verification. CWE-523 additionally requires a credential-bearing transport, which the tool itself never establishes.
+
+#### [ ] Findings `34`, `35`, `36` — `BP-PY-46` (re-appearing audited FPs, old `63`, `64`, `65`)
+
+- Function contexts: `scripts/httptap/findings/functions/34.txt`, `35.txt`, `36.txt`
+- Sources: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/httptap/visualizer.py:39:22, 88:22, 152:22`
+- Checklist pattern: Rich `Console.print` timeline output of the CLI visualizer
+
+```
+        scale = step.timing.total_ms / used_width
+
+        self.console.print("\n  [bold]Request Timeline:[/bold]")
+```
+
+Why this is a false positive: `visualizer.py` renders the waterfall timeline for the CLI user via an injected Rich `Console` (visualizer.py:23-25); the calls are user-facing report output, not debug logging.
+
+Checklist evidence: same as findings 14-30 — BP-PY-46's operational-logging condition is unmet.
+
+#### [ ] Finding `37` — `CWE-617` (re-appearing audited FP, old `93`)
+
+- Function context: `scripts/httptap/findings/functions/37.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:93:1`
+- Checklist pattern: assertion inside a test mock handler that verifies the test's own expectation
+
+```
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.headers["Authorization"] == token
+```
+
+Why this is a false positive: the `assert` is the test's verification mechanism inside a mock transport handler; request values are controlled by the test itself (test_http_client.py:83-100), so this is test code, not a reachable production assertion.
+
+Checklist evidence: CWE-617's condition is a reachable assertion on request-controlled state in production; the shown source is a test where the assert is the intended check.
+
+#### [ ] Findings `38`, `39` — `CWE-295`, `CWE-523` (re-appearing audited FPs, old `95`, `96`)
+
+- Function contexts: `scripts/httptap/findings/functions/38.txt`, `39.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_http_client.py:1073:42`
+- Checklist pattern: test assertion verifying the documented `verify_ssl=False` behavior
+
+```
+        assert verify_arg.verify_mode == ssl.CERT_NONE
+        assert verify_arg.check_hostname is False
+```
+
+Why this is a false positive: the lines assert the opt-in legacy context's mode (test_http_client.py:1056-1075); they verify documented behavior and transmit no credentials over an unverified transport.
+
+Checklist evidence: CWE-295 requires an explicit production bypass, CWE-523 a credential-bearing transport — the shown source is a behavior assertion in a test.
+
+#### [ ] Finding `40` — `CWE-208` (re-appearing audited FP, old `97`)
+
+- Function context: `scripts/httptap/findings/functions/40.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_pkgmeta.py:60:12`
+- Checklist pattern: equality comparison of package metadata (author string), not a secret
+
+```
+    assert info.author == primary_author
+```
+
+Why this is a false positive: the compared values are package metadata strings supplied by the test itself (test_pkgmeta.py:57-62); they are not secrets or authentication values, so timing side-channels are irrelevant.
+
+Checklist evidence: CWE-208's condition is comparing security-sensitive values with `==`; the shown source compares package metadata in a test assertion.
+
+#### [ ] Findings `41`, `42`, `43` — `BP-PY-41` (re-appearing audited FPs, old `98`, `99`, `100`)
+
+- Function contexts: `scripts/httptap/findings/functions/41.txt`, `42.txt`, `43.txt`
+- Sources: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_property_based.py:117:1, 126:1, 142:1`
+- Checklist pattern: tests that raise `AssertionError` explicitly on failure
+
+```
+    def test_non_positive_values_rejected(self, value: float) -> None:
+        try:
+            parse_slo_spec(f"total={value}")
+        except SLOSpecError:
+            return
+        msg = f"expected SLOSpecError for non-positive value {value!r}"
+        raise AssertionError(msg)
+```
+
+Why this is a false positive: each test verifies rejection by raising `AssertionError` when `SLOSpecError` is not raised; BP-PY-41's assertion detector does not recognize `raise AssertionError`, so it misclassifies verifying tests as assertion-less.
+
+Checklist evidence: BP-PY-41's condition is "tests call production code without assertions"; the shown sources contain explicit `raise AssertionError(msg)` on the failure path, so outcomes are verified.
+
+#### [ ] Findings `44`, `45` — `CWE-295`, `CWE-523` (re-appearing audited FPs, old `102`, `103`)
+
+- Function contexts: `scripts/httptap/findings/functions/44.txt`, `45.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/httptap/tests/test_utils.py:341:35`
+- Checklist pattern: test assertion verifying the documented `verify_ssl=False` behavior
+
+```
+        ctx = create_ssl_context(verify_ssl=False)
+
+        assert ctx.verify_mode == ssl.CERT_NONE
+```
+
+Why this is a false positive: the lines assert the deliberate opt-in legacy mode of `create_ssl_context`; the test verifies documented behavior and makes no production request or credential transport.
+
+Checklist evidence: same as findings 38-39 — test assertions, not production bypasses.
+
+### Uncertain findings
+
+None. All 45 fresh findings were classified as false positives with rule conditions verified against the shown source; the one new finding (7) fails the same documented-fallback condition as the adjacent audited constructs.
+
+### Final evidence
+
+- Delegated reviewers: none
+- Chunk evidence: `scripts/httptap/chunks`
+- Function evidence: `scripts/httptap/findings/functions`
+- Validation: `git diff --check` — `pass`
