@@ -1,0 +1,14 @@
+# goslop text fixture — deep nesting in scripts/release offline tooling
+# (Project_Parva scripts/release claim walker path skip)
+lang: python
+file: scripts/release/check_public_claims.py
+---
+def check(docs):
+    for path in docs:
+        for route, methods in path.items():
+            for method, operation in methods.items():
+                for label, pattern in CLAIMS.items():
+                    for match in pattern.finditer(text):
+                        if _is_negated(text, match.start()):
+                            continue
+                        issues.append(f"{label}")

@@ -119,6 +119,12 @@ func detectCWE552(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE617(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	// Test modules deliberately assert on request-shaped fixtures (httptap
+	// tests/test_http_client.py assert request.headers[...]); not deployed
+	// reachable assertions on live request state.
+	if isPythonTestModule(unit) {
+		return
+	}
 	if start := firstCodeMatchStart(facts, unit.Source, pyTierBAssertRE); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE617, start, "reachable assertion depends on request-controlled state", confidence80, out)
 	}

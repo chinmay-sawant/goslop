@@ -1,0 +1,14 @@
+# goslop text fixture — PERF-PY-23 seed_plans migration loop (not hot path)
+lang: python
+file: app/billing/storage.py
+---
+import json
+
+PLAN_DEFINITIONS = []
+
+
+class Storage:
+    def seed_plans(self) -> None:
+        for plan in PLAN_DEFINITIONS:
+            features_json = json.dumps(list(plan.features), separators=(",", ":"))
+            self.execute(features_json)

@@ -1,0 +1,15 @@
+# goslop text fixture — CWE-88 offline backend/tools OCR pipeline (not app sink)
+lang: python
+file: backend/tools/ingest_moha_pdfs.py
+---
+import subprocess
+from pathlib import Path
+
+
+def ocr_pdf_to_text(pdf_path: Path, tmp_dir: Path) -> str:
+    prefix = tmp_dir / "page"
+    subprocess.run(
+        ["pdftoppm", "-r", "300", "-png", str(pdf_path), str(prefix)],
+        check=True,
+    )
+    return ""

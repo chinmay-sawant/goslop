@@ -1,0 +1,18 @@
+# goslop text fixture — isinstance type-filter re-raise/map (niquests wasi
+# stream closed FP shape)
+lang: python
+file: wasi_adapter.py
+---
+def read_body(stream):
+    chunks = []
+    try:
+        chunk = stream.read(1024)
+        chunks.append(chunk)
+    except BaseException as exc:
+        if not isinstance(exc, _Err):
+            raise
+        if isinstance(exc.value, _StreamErrorClosed):
+            return chunks, True
+        with wasi_exception_mapping(url, reading=True):
+            raise
+    return chunks, False

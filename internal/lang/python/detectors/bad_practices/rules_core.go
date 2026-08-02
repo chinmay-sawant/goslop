@@ -308,6 +308,27 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 		return true
 	}
 
+	// logging.Handler error contract: sole suite call to handleError /
+	// _handle_error (logxide handlers.py / compat_handlers / sentry
+	// integration audited FPs). Does not match log-and-return TPs.
+	if suiteIsLoggingErrorContract(body) {
+		return true
+	}
+
+	// Framework HTTP error response after logging models the failure
+	// (logxide django/flask JsonResponse/jsonify audited FPs). Bare
+	// return {"error": str(e)} stays reportable (WeThePeople connectors).
+	if hasLog && suiteReturnsHTTPErrorResponse(joinedRaw) {
+		return true
+	}
+
+	// Health-check catch-all that records unhealthy/degraded status after
+	// logging (logxide examples/* health endpoints). Generic fallback
+	// assigns after log stay reportable (WeThePeople rate-limit defaults).
+	if hasLog && suiteModelsUnhealthyStatus(joinedRaw) {
+		return true
+	}
+
 	// Print of the exception. Only stderr reporting followed by an exit
 	// flow, a lone print inside an except ladder, or logger.exception +
 	// user-facing print + exit (httptap cli.py:589) is safe; every other
@@ -469,7 +490,106 @@ func suiteSurfacesFailure(lines, rawLines []codeLine, exceptIdx int, caughtVar s
 			}
 		}
 	}
+
+	// Stream/websocket disconnect: single break/continue after a lone await of
+	// receive/recv/read (niquests test_asgi ws-echo). Exception:break after
+	// await client.get/post stays reportable.
+	if stmtCount == 1 && (body[0] == "break" || body[0] == "continue") &&
+		tryIdx >= 0 && tryBlockIsStreamReceiveAwait(lines, tryIdx) {
+		return true
+	}
 	return false
+}
+
+// tryBlockIsStreamReceiveAwait reports a try body that is exactly one await of
+// a stream/websocket receive-style call (not generic client.get).
+func tryBlockIsStreamReceiveAwait(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	stmts := 0
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			break
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		stmts++
+		if stmts > 1 {
+			return false
+		}
+		// data = await websocket.receive() or bare await ws.recv()
+		rhs := stmt
+		if _, r, ok := splitAssignmentEq(stmt); ok {
+			rhs = strings.TrimSpace(r)
+		}
+		if !strings.HasPrefix(rhs, "await ") {
+			return false
+		}
+		rest := strings.TrimSpace(rhs[len("await "):])
+		// Reject network client verbs.
+		if strings.Contains(rest, ".get(") || strings.Contains(rest, ".post(") ||
+			strings.Contains(rest, ".request(") || strings.Contains(rest, ".send(") {
+			return false
+		}
+		matched := false
+		for _, m := range []string{".receive(", ".recv(", ".read(", ".readline(", ".__anext__("} {
+			if strings.Contains(rest, m) {
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			return false
+		}
+	}
+	return stmts == 1
+}
+
+// suiteIsLoggingErrorContract reports a sole suite statement that delegates
+// to the stdlib logging.Handler error path (handleError) or a private
+// _handle_error helper used for the same contract.
+func suiteIsLoggingErrorContract(body []string) bool {
+	if len(body) != 1 {
+		return false
+	}
+	t := strings.TrimSpace(body[0])
+	// Require a call form; avoid matching comments or names alone.
+	return strings.Contains(t, "handleError(") || strings.Contains(t, "_handle_error(")
+}
+
+// suiteReturnsHTTPErrorResponse reports a suite that returns a framework
+// HTTP error constructor (Django JsonResponse, Flask jsonify, Starlette/
+// FastAPI JSONResponse/HTTPException). Plain dict returns stay reportable.
+func suiteReturnsHTTPErrorResponse(joinedRaw string) bool {
+	if !strings.Contains(joinedRaw, "return ") {
+		return false
+	}
+	for _, ctor := range []string{"JsonResponse(", "jsonify(", "JSONResponse(", "HTTPException("} {
+		if strings.Contains(joinedRaw, ctor) {
+			return true
+		}
+	}
+	return false
+}
+
+// suiteModelsUnhealthyStatus reports a suite that assigns the conventional
+// health-check failure token "unhealthy" (raw text — Mask blanks string
+// literals). "degraded" alone is intentionally omitted: WeThePeople
+// routers/common.py health endpoint assigns status = "degraded" and is an
+// audited BP-PY-1 TP. Generic status/default assigns stay reportable.
+func suiteModelsUnhealthyStatus(joinedRaw string) bool {
+	return strings.Contains(joinedRaw, `= "unhealthy"`) ||
+		strings.Contains(joinedRaw, `= 'unhealthy'`)
 }
 
 // softBestEffortLogContinue reports logger.warning-only handlers (not info/
@@ -938,7 +1058,9 @@ func tryBlockDeliberatelyRaises(lines []codeLine, exceptIdx int) bool {
 //     default, raises, or continues with a fallback — while wse's pass probes
 //     that terminate their method (connection.py:459) stay reportable;
 //   - pure conversion guards (int/float/bool) whose invalid input is non-fatal
-//     and the enclosing flow continues (parva-mcp content-length parse);
+//     and the enclosing flow continues (parva-mcp content-length parse),
+//     including pure follow-on uses of the converted value (Project_Parva
+//     backtest hour counter; timegraph fact-id enrichment appends);
 //   - sole ValueError after a pure .index()/.find() lookup probe (kiss_headers
 //     header_strip); fromisoformat/ipaddress ValueError:pass stays reportable
 //     (WeThePeople TPs);
@@ -953,10 +1075,15 @@ func tryBlockDeliberatelyRaises(lines []codeLine, exceptIdx int) bool {
 //   - expected-exception tests whose try block deliberately raises;
 //   - expected-exception async tests whose try is a single await call with a
 //     specific (non-broad) catch (niquests wasi_guest edge_cases); bare /
-//     Exception:pass in tests stay reportable (httpmorph test_proxy).
+//     Exception:pass in tests stay reportable (httpmorph test_proxy);
+//   - expected-exception sync tests under tests/ with a single bare call and
+//     a specific catch (niquests wasi_guest unwrap Err);
+//   - dual-path tests with a specific catch and an "expected"/"may raise"
+//     marker (Project_Parva test_calculator year-outside-range).
 //
 // Generic ValueError:pass after fromisoformat/strptime stays reportable
-// (WeThePeople TPs).
+// (WeThePeople TPs). Offline tooling paths are skipped entirely in
+// detectBPPY2 (Project_Parva backend/tools/load_test).
 func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest, isTestDir bool) bool {
 	exceptLine := strings.TrimSpace(lines[exceptIdx].text)
 	if isTest && tryBlockDeliberatelyRaises(lines, exceptIdx) {
@@ -1010,6 +1137,20 @@ func exceptPassIsSafeBP(lines, rawLines []codeLine, exceptIdx int, isTest, isTes
 	// tests (httpmorph test_proxy) stay reportable; sync chaos swallows stay.
 	if isTestDir && tryIdx >= 0 && tryBlockIsSingleAwaitCall(lines, tryIdx) &&
 		!broadExceptionCatch(catchTypes) && !isBareExceptClause(exceptLine) {
+		return true
+	}
+	// Expected-exception sync test: single bare call + specific catch under
+	// tests/ (niquests wasi_guest edge_cases unwrap Err). Exception:pass and
+	// bare except stay reportable; dual-path assert/except uses markers below.
+	if isTestDir && tryIdx >= 0 && tryBlockIsSingleBareCall(lines, tryIdx) &&
+		!broadExceptionCatch(catchTypes) && !isBareExceptClause(exceptLine) {
+		return true
+	}
+	// Dual-path / documented expected-exception tests (Project_Parva
+	// test_calculator year-outside-range): specific catch + "expected" marker.
+	// Exception:pass stays reportable even with a comment (httpmorph TPs).
+	if isTest && !broadExceptionCatch(catchTypes) && !isBareExceptClause(exceptLine) &&
+		exceptLineHasExpectedExceptionMarker(rawLines, exceptIdx, exceptIndent) {
 		return true
 	}
 	if probeCatch(catchTypes) {
@@ -1230,8 +1371,11 @@ func exceptFollowedByElse(lines []codeLine, after, exceptIndent int) bool {
 // tryBlockIsConversionGuard reports a try body that only guards pure numeric/
 // boolean conversions via assignment (x = int(...)), not return. Assignment
 // leaves the prior/unset state on failure (niquests content_length / SSE
-// retry). `return int(value); except: pass` with no fallback stays reportable
-// (parsing-fallback-vulnerable fixture). fromisoformat/strptime stay out.
+// retry). After a conversion, pure follow-on uses of the converted value are
+// still non-fatal (Project_Parva backtest hour bucket counter; timegraph
+// fact-id enrichment appends). `return int(value); except: pass` with no
+// fallback stays reportable (parsing-fallback-vulnerable fixture).
+// fromisoformat/strptime stay out.
 func tryBlockIsConversionGuard(lines []codeLine, tryIdx int) bool {
 	if tryIdx < 0 || tryIdx >= len(lines) {
 		return false
@@ -1256,13 +1400,8 @@ func tryBlockIsConversionGuard(lines []codeLine, tryIdx int) bool {
 			return false
 		}
 		// Non-pure parsers must stay reportable (WeThePeople fromisoformat TPs).
-		for _, bad := range []string{
-			"fromisoformat(", "strptime(", "json.loads(", "yaml.load(",
-			"yaml.safe_load(", "parse_", "loads(", "decode(",
-		} {
-			if strings.Contains(stmt, bad) {
-				return false
-			}
+		if conversionHasBadParser(stmt) {
+			return false
 		}
 		// return int(...) is not a non-fatal guard by itself — needs the
 		// return/raise-after-pass path instead of this guard.
@@ -1281,16 +1420,120 @@ func tryBlockIsConversionGuard(lines []codeLine, tryIdx int) bool {
 				sawConversion = true
 				continue
 			}
+			// Pure follow-on after conversion: counter updates via += / rebinding
+			// of derived values (backtest mismatch_by_ingress_hour[hour] += 1).
+			// splitAssignmentEq treats `+=` as assignment with a non-conversion RHS.
+			if sawConversion {
+				continue
+			}
 			return false
 		}
-		// Bare conversion expression is not typical; reject other bare calls.
+		// Bare conversion expression is not typical.
 		if conversionCallIn(stmt) {
 			sawConversion = true
+			continue
+		}
+		// Pure enrichment after conversion: list/set append of derived values
+		// (timegraph fact_ids.append(bs_ad_fact_id(...))).
+		if sawConversion && conversionFollowOnStmt(stmt) {
 			continue
 		}
 		return false
 	}
 	return sawConversion
+}
+
+// conversionHasBadParser reports non-pure parsers that must stay reportable
+// under conversion-guard (WeThePeople fromisoformat / json.loads TPs).
+func conversionHasBadParser(stmt string) bool {
+	for _, bad := range []string{
+		"fromisoformat(", "strptime(", "json.loads(", "yaml.load(",
+		"yaml.safe_load(", "parse_", "loads(", "decode(",
+	} {
+		if strings.Contains(stmt, bad) {
+			return true
+		}
+	}
+	return false
+}
+
+// conversionFollowOnStmt reports pure enrichment statements allowed after a
+// conversion assignment (append/extend/add of derived values).
+func conversionFollowOnStmt(stmt string) bool {
+	for _, m := range []string{".append(", ".extend(", ".add("} {
+		if strings.Contains(stmt, m) {
+			return true
+		}
+	}
+	return false
+}
+
+// tryBlockIsSingleBareCall reports a try body that is exactly one bare call
+// expression (no assignment, no assert, no raise) — expected-exception sync
+// test shape (niquests wasi_guest edge_cases unwrap Err).
+func tryBlockIsSingleBareCall(lines []codeLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := indentWidth(lines[tryIdx].raw)
+	stmts := 0
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind <= tryIndent {
+			break
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		stmts++
+		if stmts > 1 {
+			return false
+		}
+		if strings.HasPrefix(stmt, "assert ") || strings.Contains(stmt, ".assert") {
+			return false
+		}
+		if strings.HasPrefix(stmt, "raise ") || stmt == "raise" {
+			return false
+		}
+		if strings.HasPrefix(stmt, "await ") {
+			return false // covered by tryBlockIsSingleAwaitCall
+		}
+		if _, _, ok := splitAssignmentEq(stmt); ok {
+			return false
+		}
+		if !strings.Contains(stmt, "(") {
+			return false
+		}
+	}
+	return stmts == 1
+}
+
+// exceptLineHasExpectedExceptionMarker reports a comment documenting that the
+// pass handler is an expected-exception arm (Project_Parva test_calculator).
+// Distinct from generic fallback markers so production KeyError:pass TPs stay.
+func exceptLineHasExpectedExceptionMarker(rawLines []codeLine, exceptIdx, exceptIndent int) bool {
+	markers := []string{"expected", "may raise", "intentionally"}
+	if lineHasFallbackMarkerText(rawLines[exceptIdx].raw, markers) {
+		return true
+	}
+	for j := exceptIdx + 1; j < len(rawLines); j++ {
+		if strings.TrimSpace(rawLines[j].raw) == "" {
+			continue
+		}
+		if indentWidth(rawLines[j].raw) <= exceptIndent {
+			break
+		}
+		if lineHasFallbackMarkerText(rawLines[j].raw, markers) {
+			return true
+		}
+	}
+	return false
 }
 
 func conversionCallIn(stmt string) bool {
@@ -2240,6 +2483,11 @@ func probeCatch(types []string) bool {
 // BP-PY-2: except suite is solely pass (optional comment already stripped).
 func detectBPPY2(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-2")
+	// Offline tooling / release scripts: pass-only warmup and batch-job
+	// handlers (Project_Parva backend/tools/load_test) are audited residual FP.
+	if isPythonOfflineScriptPath(unit) {
+		return
+	}
 	if !facts.has("except") || !facts.has("pass") {
 		return
 	}

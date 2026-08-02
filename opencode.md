@@ -103,24 +103,137 @@ Fix waves:
 
 Every guardrail change followed `review-and-reduce/SKILLS.md`: safe + vulnerable text fixture pairs under `tests/fixtures/python/{bp,cwe,perf}/`, wired into `audit_variants_test.go` / rule test matrices (fixtures only, never inline snippets), focused tests green (`go test ./...` — 446 tests, 0 failures).
 
-## Phase 5 — Current state (2026-08-02 ~20:30)
+## Phase 5 — Historical checkpoint (Round 5, ~20:30)
 
-Latest rescan (Round 5) vs audited TP:
+Earlier rescan (Round 5) vs audited TP:
 
 - **Total: 4,575 findings** (from 6,964 original — 34% reduction with 100% TP preservation rate 4,125/4,125 minus 36)
 - **Excess: 486** across 24 repos — top: niquests +138, Project_Parva +118, pdf_oxide +61, WeThePeople +42, logxide +40, httptap +14
 - **Under: 36** across 11 repos (mostly −1/−2; worst voicetag −7, caniscrape −12)
-- Exact-delta-0 repos: pictex, numeth, PyDepends, Ai-copypaste-insult, polygon-screenshot-tool, among-llms, WHEN-Language, and ~17 more within ±2
 
-### Why it cannot fully converge yet (open blockers)
+Later intermediate markers (same day, continued waves on `fix/python-fp-reduction`):
 
-1. **Audit conflicts** — identical constructs classified oppositely by the audits, so no single guardrail satisfies both directions:
-   - `raise X from e` handlers: voicetag ×7 = TP vs html2pic ×4 = FP (voicetag currently −7)
-   - Guarded `sys.path` bootstrap: Project_Parva ×133 = FP vs WeThePeople ×2 = TP (byte-identical)
-   - examples/ prints: movielite ×87 = FP vs FuncToWeb ×15 = TP
-   - niquests pyodide parse probes = FP vs wse identical probes = TP
-2. **Concurrent editor** — another session was actively modifying the same detector files during the fix waves (agents reported their changes reverted multiple times mid-session; baselines shifted between rounds). A stable tree is required to converge.
-3. Suggested default resolution for conflicts: **TP-safe** (keep firing when ambiguous) — avoids suppressing valid findings.
+| Marker | NOW | Excess | Under | Net (NOW−TP) | Notes |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Round 5 | 4,575 | 486 | 36 | +450 | early post-wave |
+| goal15 | ~4,235 | ~132 | ~22 | ~+110 | pre last parallel wave |
+| goal16 | 4,196 | 97 | 26 | +71 | before wave below |
+| **goal17 (latest)** | **4,110** | **36** | **51** | **−15** | after 4 parallel agents |
+
+Pushed commits on branch (prior waves): `5a1bb3b`, `6fe9aae`, `93370ca`. **goal17 detector edits are uncommitted** on the working tree.
+
+## Phase 6 — Latest state (goal17, 2026-08-02 late)
+
+**Goal:** findings == audited TP **4,125** (per-repo preferred).
+
+**Latest full corpus rescan:** `/tmp/opencode/goal17/*.json`  
+**TP table:** `/tmp/opencode/compare.txt` (col2 = audited TP)  
+**Baseline before this wave:** `/tmp/opencode/goal16/` (NOW 4,196 / excess 97 / under 26)
+
+| Metric | Value |
+| --- | ---: |
+| NOW | **4,110** |
+| TP | **4,125** |
+| Excess (found > TP) | **36** |
+| Under (found < TP) | **51** |
+| Net | **−15** (slightly under total) |
+
+### Exact repos (delta 0)
+
+Ai-copypaste-insult, FlashySurf, PyDepends, among-llms, caniscrape, httptap, numeth-Numerical-Methods-Library, pingram, polygon-screenshot-tool, requestSpeedTest, voicetag, whatsapp-wrapped.
+
+### Remaining excess (+36)
+
+| Repo | now | tp | excess |
+| --- | ---: | ---: | ---: |
+| CourtScrapper | 336 | 328 | **+8** |
+| WHEN-Language | 51 | 46 | **+5** |
+| FuncToWeb | 43 | 38 | **+5** |
+| pycaps | 31 | 28 | **+3** |
+| Project_Parva | 13 | 11 | **+2** |
+| Cronboard | 67 | 65 | **+2** |
+| tenso | 73 | 71 | **+2** |
+| sync-with-uv | 7 | 5 | **+2** |
+| safer | 9 | 7 | **+2** |
+| pictex / onlymaps / movielite / enso / cylinder | — | — | **+1 each** |
+
+### Remaining under (−51) — **priority**
+
+This wave cut excess hard but overshot several TPs. Restore before more FP kills.
+
+| Repo | now | tp | under | Wave lost shapes (goal16→goal17) |
+| --- | ---: | ---: | ---: | --- |
+| **httpmorph** | 424 | 436 | **−12** | CWE-390/1071 tests+examples; CWE-396 examples; CWE-215 example |
+| **pdf_oxide** | 180 | 188 | **−8** | CWE-396 examples; CWE-390/1071 test; PERF-PY-27 scripts/regtest |
+| **violit** | 211 | 219 | **−8** | CWE-396 examples + data_widgets (was −6; −2 more this wave) |
+| **wse** | 153 | 157 | **−4** | CWE-215 benchmarks/examples overshot (was +8 excess) |
+| **logxide** | 314 | 317 | **−3** | BP-PY-1 handleError/HTTP/health (−15) + CWE-396 examples (−7) overshot |
+| WeThePeople | 1420 | 1422 | **−2** | CWE-396 `jobs/send_alerts.py:351`; CWE-93 middleware |
+| astroz | 13 | 15 | **−2** | examples/cesium_fast CWE-396/390/1071 |
+| niquests / pytogether / rendercv | — | — | **−2 each** | rendercv: PERF-PY-27 skill script; niquests pre-existing |
+| calgebra / graphzero / html2pic / pyauto-desktop / pyhash-complete / python-injection | — | — | **−1 each** | html2pic soft-warn CWE-396 may be audited FP; check before restore |
+
+### What this wave already shipped (uncommitted)
+
+Four parallel agents (non-overlapping file ownership):
+
+1. **CWE** (`rules_platform` / resource / tier_b + cwe fixtures) — Parva −25 CWE; soft-warn; under-restore run_story_gates + caniscrape wrap-after-unlink; many CWE-396 guards
+2. **BP-PY-1/2** (`rules_core`) — logxide −15 BP-PY-1 (`handleError`, framework HTTP return, `"unhealthy"`)
+3. **BP-41/45/46** (`rules_testing` / prod / observability) — Parva BP-PY-41×3 + BP-PY-45×1; light BP-46
+4. **Path/misc** (path_fs / injection / info_exposure / perf hotpath) — Parva CWE-22/73/88/93/215 + PERF-23/27
+
+Agent reports: `/tmp/opencode/agent_{cwe,bp12,bp414647,path_misc}_report.md`  
+Residual brief: `/tmp/opencode/residual_goal16_brief.md`
+
+Detector packages currently **green** (`go test ./internal/lang/python/detectors/...`).
+
+---
+
+## Pending (do next)
+
+### P0 — Under-restore (must fix first; net is −15)
+
+Policy remains **TP-safe**: prefer re-firing lost audited TPs over chasing the last FPs.
+
+1. **httpmorph −12** — reverse over-broad CWE-390/1071/396 guards that hit `tests/` + `examples/` (proxy/async/advanced). Prefer path-narrow or shape-narrow restores that still keep Project_Parva load_test/timegraph FPs dead.
+2. **pdf_oxide −8** — restore CWE-396 example sites, test_api_coverage silence, PERF-PY-27 `scripts/regtest_branch_vs_main.py` without reopening Parva PERF FPs.
+3. **violit −8** — restore CWE-396 on demo_app_* and `data_widgets.py` if audited TPs; do not re-inflate soft-warn-only html2pic FPs unless required.
+4. **wse −4** — CWE-215 benchmark/example prints over-suppressed by offline/release-style guards; narrow so wse TPs fire while Parva `generate_partner_api_key` FP stays suppressed.
+5. **logxide −3** — decide which of the 15 BP-PY-1 / 7 CWE-396 kills were audited TPs vs FPs; restore only TPs (handleError contract is likely correct FP kill — check report).
+6. **WeThePeople −2** — restore `jobs/send_alerts.py:351` CWE-396 and `middleware/security.py:121` CWE-93 if still audited TPs (attr-cache / header guards too broad).
+7. **Small under (−1/−2)** — niquests, pytogether, rendercv, astroz, calgebra, graphzero, pyauto-desktop, pyhash-complete, python-injection; html2pic −1 only if wrap/soft-warn was TP.
+
+### P1 — Remaining excess (+36) after under is healthy
+
+1. **CourtScrapper +8** — residual not BP-PY-47 bulk (mostly TPs); likely BP-PY-1/46/CWE mix — need site-level FP list.
+2. **WHEN-Language +5 / FuncToWeb +5** — BP-PY-46 examples/prints; audit conflict with FuncToWeb examples as TP — careful.
+3. **pycaps +3** — residual CWE-396 wrap-raise / other (left wrap-raise on purpose for voicetag).
+4. **Project_Parva +2** — down from +27; finish last two (likely CWE-186×2 or CWE-290 / CWE-93 residual / rulelang CWE-396 f-string wrap).
+5. **Cronboard +2, tenso +2, safer +2, sync-with-uv +2** and five **+1** repos — low priority once under ≈ 0.
+
+### P2 — Hygiene
+
+1. **Commit + push** uncommitted wave once under-restore lands and scorecard improves (detailed message, same style as `93370ca`).
+2. Full rescan → `/tmp/opencode/goal18/` + update this section.
+3. Stop when **NOW ≈ 4,125** with excess and under both near 0 (accept audit-conflict residuals under TP-safe policy).
+
+### Still open blockers (unchanged)
+
+1. **Audit conflicts** — same shape, opposite labels:
+   - `raise X from e`: voicetag TP vs html2pic FP
+   - examples/ prints: movielite FP vs FuncToWeb TP
+   - niquests pyodide probes vs wse probes
+2. Suggested default: **TP-safe** (keep firing when ambiguous).
+3. Do **not** wholesale-suppress BP-PY-47 on logxide/CourtScrapper (bulk audited TPs).
+
+### Suggested next agent partition (under-restore)
+
+| Agent | Owns | Focus |
+| --- | --- | --- |
+| A CWE platform | `cwe/rules_platform.go` + 390/1071/396 fixtures | httpmorph, pdf_oxide, violit, logxide CWE, WeThePeople send_alerts |
+| B CWE info/path | `cwe/rules_info_exposure.go`, `rules_injection.go` | wse CWE-215, WeThePeople CWE-93 |
+| C BP-1 | `bad_practices/rules_core.go` | logxide BP-PY-1 TP restore only if needed |
+| D PERF | `perf/rules_hotpath.go` | pdf_oxide / rendercv PERF-PY-27 restore |
 
 ## Where everything lives
 

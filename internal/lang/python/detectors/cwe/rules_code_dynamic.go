@@ -650,8 +650,15 @@ func detectCWE214(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 // CWE-215 reports debug sinks only when their arguments include a sensitive
 // identifier. Generic debug logs and intentionally redacted literals are safe.
 // The English word "password" inside a message string is not a sensitive value.
+//
+// Offline release/CLI tooling (scripts/release key generators, tools/) that
+// deliberately print a freshly minted secret to stdout for the operator is
+// not deployment debug code.
 func detectCWE215(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if isPythonOfflineScriptPathCWE(unit) || isPythonBenchmarkFile(unit) {
 		return
 	}
 	for _, name := range []string{"print", "logging.debug", ".debug"} {

@@ -1,0 +1,13 @@
+# goslop text fixture — wrap-raise without a JS-bridge try body stays
+# reportable (voicetag / among-llms audited TPs)
+lang: python
+file: diarizer.py
+---
+class DiarizationError(Exception):
+    pass
+
+def load_pipeline(name):
+    try:
+        return build(name)
+    except Exception as exc:
+        raise DiarizationError(f"Failed to load pipeline: {exc}") from exc

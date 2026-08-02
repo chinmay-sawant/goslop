@@ -1,0 +1,14 @@
+# goslop text fixture — wrap-raise after non-conversion work stays reportable
+# (voicetag utils shape)
+lang: python
+file: utils.py
+---
+class AudioLoadError(Exception):
+    pass
+
+def load_audio(path):
+    try:
+        data, sr = sf.read(str(path), dtype="float32")
+    except Exception as exc:
+        raise AudioLoadError(f"Cannot read audio: {exc}") from exc
+    return data, sr

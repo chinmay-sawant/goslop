@@ -32,4 +32,6 @@ func TestBPPY45SysPathMutation(t *testing.T) {
 	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-guarded-bootstrap")
 	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-bootstrap-script")
 	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-library-module")
+	// Path(__file__) subpath via intermediate name (Project_Parva MCP script)
+	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-path-join-subpath")
 }

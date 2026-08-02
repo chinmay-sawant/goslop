@@ -1,0 +1,16 @@
+# goslop text fixture — task.cancel cleanup then bare re-raise (niquests sgi
+# ASGI cancel-then-propagate FP shape)
+lang: python
+file: sgi_adapter.py
+---
+import asyncio
+import contextlib
+
+async def send(task):
+    try:
+        return await task
+    except Exception:
+        task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+        raise

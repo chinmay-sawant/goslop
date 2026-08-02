@@ -1,0 +1,13 @@
+# goslop text fixture — CWE-22 benchmark harness report path under fixed dir
+lang: python
+file: benchmark/harness.py
+---
+import json
+from pathlib import Path
+
+
+def write_report(pack, args):
+    out_path = Path(args.out) if args.out else Path("benchmark/results") / f"{pack['pack_id']}_report.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps({"ok": True}, indent=2), encoding="utf-8")
+    return out_path

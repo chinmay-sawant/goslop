@@ -1,0 +1,12 @@
+# Fixture for BP-PY-41 (safe) — FastAPI route named test_* is product code
+lang: python
+file: app/api/rules_routes.py
+---
+from fastapi import APIRouter, Request
+
+router = APIRouter()
+
+
+@router.post("/{rule_id}/test")
+async def test_rule(rule_id: str, request: Request) -> dict:
+    return await run_cpu_bound(test_rule_payload, rule_id)

@@ -1,0 +1,9 @@
+# goslop text fixture — Exception:pass after bare call in tests stays reportable
+lang: python
+file: tests/wasi_guest/async/edge_cases.py
+---
+async def low_level_cases():
+    try:
+        wasi._unwrap_result(Err(Failed()))
+    except Exception:
+        pass

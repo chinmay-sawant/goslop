@@ -1,0 +1,14 @@
+# Fixture for BP-PY-41 (safe) — subprocess.run(check=True) is the assertion
+lang: python
+file: tests/artifacts/test_final_artifacts_exist.py
+---
+import subprocess
+
+import pytest
+
+pytestmark = pytest.mark.research_artifact
+
+
+def test_verify_final_artifacts_script_passes():
+    subprocess.run(["python", "scripts/generate_all_final_artifacts.py"], check=True)
+    subprocess.run(["python", "scripts/verify_final_artifacts.py"], check=True)

@@ -1,0 +1,16 @@
+# goslop text fixture — same warmup pass swallow outside offline tools path
+# stays reportable (operational service code)
+lang: python
+file: app/services/warmup.py
+---
+async def main():
+    print("Warming up API...")
+    async with aiohttp.ClientSession() as session:
+        for ep in ENDPOINTS:
+            try:
+                await make_request(session, f"{API_BASE}{ep}")
+            except (OSError, RuntimeError, TimeoutError, ValueError):
+                pass
+    stats = await run_load_test(requests_per_second=50, duration_seconds=10)
+    print_results(stats)
+    return stats

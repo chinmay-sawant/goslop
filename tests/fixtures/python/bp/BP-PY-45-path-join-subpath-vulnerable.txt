@@ -1,0 +1,11 @@
+# Fixture for BP-PY-45 (vulnerable) — bare ROOT insert stays reportable
+lang: python
+file: jobs/backfill_claims_from_actions.py
+---
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from models.database import SessionLocal

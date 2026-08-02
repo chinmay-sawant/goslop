@@ -1,0 +1,10 @@
+# goslop text fixture — dual-path test without expected marker stays reportable
+lang: python
+file: tests/unit/calendar/test_calculator.py
+---
+def test_year_outside_range():
+    try:
+        result = calculate_festival_date("dashain", 2010)
+        assert result is None or hasattr(result, "start")
+    except (KeyError, RuntimeError, ValueError):
+        pass

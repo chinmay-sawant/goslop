@@ -62,6 +62,11 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				continue
 			}
 		}
+		// FastAPI/Flask/Starlette route handlers named test_* are product code
+		// (Project_Parva rules_routes.test_rule), not pytest placeholders.
+		if hasWebRouteDecorator(lines, i) {
+			continue
+		}
 		// Only analyze test_* in test files, or any test_* anywhere (placeholder risk).
 		defIndent := indentWidth(line.raw)
 		hasAssert := false
@@ -107,6 +112,12 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			// HTTP client response inspection is the assertion (niquests
 			// test_decompress_gzip / unicode_get smoke FPs).
 			if isHTTPResponseAssertion(st) {
+				hasAssert = true
+				break
+			}
+			// subprocess.run(..., check=True) / check_call raise on failure —
+			// the call is the assertion (Project_Parva test_final_artifacts_exist).
+			if isSubprocessCheckAssertion(st) {
 				hasAssert = true
 				break
 			}
@@ -241,6 +252,11 @@ func isTestAssertion(st string, helpers map[string]struct{}, nestedSuite bool) b
 		if isAssertHelperName(name) {
 			return true
 		}
+		// validate_*/verify_* helpers raise on failure — the call is the
+		// assertion (Project_Parva test_trust_schemas_parse_and_validate_examples).
+		if isValidationAssertionHelper(name) {
+			return true
+		}
 		// pytest-regressions fixture helper and pytest-benchmark fixture.
 		if name == "check_func" || name == "benchmark" {
 			return true
@@ -249,6 +265,69 @@ func isTestAssertion(st string, helpers map[string]struct{}, nestedSuite bool) b
 			return true
 		}
 	}
+	return false
+}
+
+// isValidationAssertionHelper reports validate_*/verify_* callees that raise on
+// invalid input — calling them is the test's verification step.
+func isValidationAssertionHelper(name string) bool {
+	n := strings.ToLower(name)
+	return strings.HasPrefix(n, "validate_") || strings.HasPrefix(n, "verify_")
+}
+
+// isSubprocessCheckAssertion reports subprocess helpers that raise CalledProcessError
+// on non-zero exit — the call is the assertion (no separate assert needed).
+func isSubprocessCheckAssertion(st string) bool {
+	if strings.Contains(st, "subprocess.check_call(") ||
+		strings.Contains(st, "subprocess.check_output(") {
+		return true
+	}
+	if strings.Contains(st, "subprocess.run(") && strings.Contains(st, "check=True") {
+		return true
+	}
+	// from subprocess import check_call / check_output / run
+	if strings.HasPrefix(st, "check_call(") || strings.HasPrefix(st, "check_output(") {
+		return true
+	}
+	if strings.HasPrefix(st, "run(") && strings.Contains(st, "check=True") {
+		return true
+	}
+	return false
+}
+
+// hasWebRouteDecorator reports FastAPI/Flask/Starlette/Django-style route
+// decorators immediately above a def — product handlers named test_*, not tests.
+func hasWebRouteDecorator(lines []codeLine, defIdx int) bool {
+	for j := defIdx - 1; j >= 0; j-- {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" || strings.HasPrefix(t, "#") {
+			continue
+		}
+		if !strings.HasPrefix(t, "@") {
+			return false
+		}
+		if isWebRouteDecoratorLine(t) {
+			return true
+		}
+		// Other decorators (e.g. @staticmethod) — keep scanning upward.
+	}
+	return false
+}
+
+func isWebRouteDecoratorLine(t string) bool {
+	// @router.post(...), @app.get(...), @api_view(["POST"]), @action(...), etc.
+	needles := []string{
+		".get(", ".post(", ".put(", ".patch(", ".delete(",
+		".head(", ".options(", ".api_route(", ".route(",
+		".websocket(", ".api_view(", ".action(",
+		"api_view(", "action(",
+	}
+	for _, n := range needles {
+		if strings.Contains(t, n) {
+			return true
+		}
+	}
+	// Bare framework aliases: @get("/x"), less common.
 	return false
 }
 

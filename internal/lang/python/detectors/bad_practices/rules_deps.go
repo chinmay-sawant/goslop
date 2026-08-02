@@ -308,6 +308,12 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 	var stack []scope
 	prev := ""
+	// Module-level Path(__file__) roots vs path-join subpaths (ROOT / "pkg").
+	// Inserting a subpath of a file-derived root is in-tree package bootstrap
+	// (Project_Parva scripts/release/check_mcp_registry_metadata). Inserting the
+	// bare root (WeThePeople jobs ROOT / scripts abspath) stays reportable.
+	fileRoots := map[string]struct{}{}
+	fileSubpaths := map[string]struct{}{}
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if t == "" {
@@ -324,10 +330,15 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				break
 			}
 		}
+		// Track module-level Path(__file__) roots and path-join subpaths first.
+		if !inFunc {
+			trackFilePathNames(t, fileRoots, fileSubpaths)
+		}
 		isPathMut := strings.Contains(t, "sys.path.insert(") || strings.Contains(t, "sys.path.append(") ||
 			strings.Contains(t, "sys.path.extend(") ||
 			strings.Contains(t, "sys.path.insert (") || strings.Contains(t, "sys.path.append (")
-		if isPathMut && !isSysPathBootstrap(t, inFunc, prev) {
+		if isPathMut && !isSysPathBootstrap(t, inFunc, prev) &&
+			!isFileSubpathBootstrap(t, inFunc, fileSubpaths) {
 			off := line.byte
 			for _, n := range []string{"sys.path.insert", "sys.path.append", "sys.path.extend"} {
 				if i := strings.Index(line.text, n); i >= 0 {
@@ -368,6 +379,135 @@ func isSysPathBootstrap(t string, inFunc bool, prev string) bool {
 	}
 	p := strings.TrimSpace(prev)
 	return strings.HasPrefix(p, "if ") && strings.Contains(p, "not in sys.path")
+}
+
+// trackFilePathNames records module-level names bound to Path(__file__) roots or
+// path-join subpaths (ROOT / "packages" / ...).
+func trackFilePathNames(t string, roots, subpaths map[string]struct{}) {
+	// NAME = ...
+	eq := strings.IndexByte(t, '=')
+	if eq <= 0 {
+		return
+	}
+	left := strings.TrimSpace(t[:eq])
+	right := strings.TrimSpace(t[eq+1:])
+	if left == "" || right == "" || strings.HasPrefix(right, "=") {
+		return
+	}
+	// Skip annotated assigns with complex left sides; only simple idents.
+	if !isSimpleIdent(left) {
+		// NAME: type = ...
+		if colon := strings.IndexByte(left, ':'); colon > 0 {
+			left = strings.TrimSpace(left[:colon])
+		}
+		if !isSimpleIdent(left) {
+			return
+		}
+	}
+	// Path(__file__) root (no further package join required).
+	if strings.Contains(right, "Path(__file__") || strings.Contains(right, "__file__") {
+		// Subpath on the same assignment: Path(__file__).parent / "src"
+		if pathJoinInExpr(right) {
+			subpaths[left] = struct{}{}
+		} else {
+			roots[left] = struct{}{}
+		}
+		return
+	}
+	// NAME = ROOT / "pkg" / ... where ROOT is a known file root or subpath.
+	if pathJoinInExpr(right) {
+		for name := range roots {
+			if exprUsesIdent(right, name) {
+				subpaths[left] = struct{}{}
+				return
+			}
+		}
+		for name := range subpaths {
+			if exprUsesIdent(right, name) {
+				subpaths[left] = struct{}{}
+				return
+			}
+		}
+	}
+}
+
+// pathJoinInExpr reports a pathlib-style `/` join outside of string literals.
+func pathJoinInExpr(expr string) bool {
+	inStr := byte(0)
+	escape := false
+	for i := 0; i < len(expr); i++ {
+		c := expr[i]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if c == '\\' {
+				escape = true
+				continue
+			}
+			if c == inStr {
+				inStr = 0
+			}
+			continue
+		}
+		if c == '"' || c == '\'' {
+			inStr = c
+			continue
+		}
+		if c == '/' {
+			// pathlib join is spaced: ` / ` or `/ "` / ` /'`.
+			// Avoid matching URLs inside identifiers (none at top level).
+			leftOK := i > 0 && (expr[i-1] == ' ' || isIdentByte(expr[i-1]) || expr[i-1] == ')')
+			rightOK := i+1 < len(expr) && (expr[i+1] == ' ' || expr[i+1] == '"' || expr[i+1] == '\'' || isIdentByte(expr[i+1]))
+			if leftOK && rightOK {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// exprUsesIdent reports that expr references name as a whole identifier.
+func exprUsesIdent(expr, name string) bool {
+	if name == "" {
+		return false
+	}
+	start := 0
+	for {
+		idx := strings.Index(expr[start:], name)
+		if idx < 0 {
+			return false
+		}
+		abs := start + idx
+		leftOK := abs == 0 || !isIdentByte(expr[abs-1])
+		right := abs + len(name)
+		rightOK := right >= len(expr) || !isIdentByte(expr[right])
+		if leftOK && rightOK {
+			return true
+		}
+		start = abs + len(name)
+	}
+}
+
+// isFileSubpathBootstrap reports module-level inserts of a Path(__file__)-derived
+// *subpath* (ROOT / "packages" / "x"), not the bare project root. WeThePeople
+// jobs that insert str(ROOT) stay reportable.
+func isFileSubpathBootstrap(t string, inFunc bool, subpaths map[string]struct{}) bool {
+	if inFunc || len(subpaths) == 0 {
+		return false
+	}
+	// Same-line path join of a file root: str(ROOT / "backend")
+	if pathJoinInExpr(t) {
+		return true
+	}
+	// str(NAME) or bare NAME where NAME is a recorded subpath.
+	for name := range subpaths {
+		if exprUsesIdent(t, name) {
+			return true
+		}
+	}
+	return false
 }
 
 // isSphinxDocsConfPath reports docs/**/conf.py (Sphinx build configuration).

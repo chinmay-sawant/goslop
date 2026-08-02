@@ -1,0 +1,12 @@
+# goslop text fixture — sole ValueError after pure index probe (kiss_headers)
+lang: python
+file: utils.py
+---
+def header_strip(content: str, elem: str) -> str:
+    next_semi_colon_index = None
+    elem_end_index = content.index(elem) + len(elem)
+    try:
+        next_semi_colon_index = elem_end_index + content[elem_end_index:].index(";")
+    except ValueError:
+        pass
+    return content

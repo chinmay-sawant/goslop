@@ -52,6 +52,27 @@ func isPythonOfflineToolsPath(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// isPythonOfflineResearchScript reports offline research/optimization scripts
+// (scripts/future_bs/, scripts/release/) — not operational jobs/ or services.
+// Used by PERF-PY-23 to skip one-shot batch encode loops without suppressing
+// WeThePeople jobs/* hot-path serialize findings.
+func isPythonOfflineResearchScript(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{unit.Path, unit.DisplayPath} {
+		if path == "" {
+			continue
+		}
+		norm := filepath.ToSlash(path)
+		if strings.Contains(norm, "/scripts/future_bs/") || strings.HasPrefix(norm, "scripts/future_bs/") ||
+			strings.Contains(norm, "/scripts/release/") || strings.HasPrefix(norm, "scripts/release/") {
+			return true
+		}
+	}
+	return false
+}
+
 func pushAt(unit *core.ParsedUnit, ruleID string, offset int, message string, out *[]rules.Finding) {
 	meta := MetadataForID(ruleID)
 	if unit == nil || meta == nil || out == nil {

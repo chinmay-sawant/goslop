@@ -1,0 +1,10 @@
+# goslop text fixture — CWE-215 offline scripts/release key generator prints secret
+lang: python
+file: scripts/release/generate_partner_api_key.py
+---
+def main(record):
+    print("Generated partner API key")
+    print(f"Key ID: {record.key_id}")
+    print(f"Secret: {record.secret}")
+    print(f"X-API-Key: {record.secret}")
+    return 0

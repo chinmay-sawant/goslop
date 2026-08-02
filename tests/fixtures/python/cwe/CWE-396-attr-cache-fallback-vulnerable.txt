@@ -1,0 +1,9 @@
+# goslop text fixture — Exception:pass after real work stays reportable
+lang: python
+file: worker.py
+---
+def process(item):
+    try:
+        handle(item)
+    except Exception:
+        pass

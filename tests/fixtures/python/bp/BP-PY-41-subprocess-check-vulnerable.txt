@@ -1,0 +1,10 @@
+# Fixture for BP-PY-41 (vulnerable) — subprocess without check=True is side-effect only
+lang: python
+file: tests/artifacts/test_final_artifacts_exist.py
+---
+import subprocess
+
+
+def test_verify_final_artifacts_script_passes():
+    subprocess.run(["python", "scripts/generate_all_final_artifacts.py"])
+    subprocess.run(["python", "scripts/verify_final_artifacts.py"])

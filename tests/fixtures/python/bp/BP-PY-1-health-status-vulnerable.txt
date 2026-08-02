@@ -1,0 +1,16 @@
+# goslop text fixture — log + numeric default fallback stays reportable
+# (WeThePeople rate_limit_store / auth rate-limit TP shape)
+lang: python
+file: rate_limit.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def get_rate_limit_status(ip, endpoint, max_requests, window_seconds):
+    try:
+        return store.get(ip, endpoint)
+    except Exception:
+        logger.exception("get_rate_limit_status error for ip=%s endpoint=%s", ip, endpoint)
+        return 0, max_requests, window_seconds

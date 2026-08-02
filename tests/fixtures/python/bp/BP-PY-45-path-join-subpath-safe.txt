@@ -1,0 +1,18 @@
+# Fixture for BP-PY-45 (safe) — module-level Path(__file__) subpath bootstrap
+lang: python
+file: scripts/release/check_mcp_registry_metadata.py
+---
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+MCP_SRC = ROOT / "packages" / "parva-mcp-server" / "src"
+sys.path.insert(0, str(MCP_SRC))
+
+from parva_mcp_server.validate_registry_metadata import main  # noqa: E402
+
+if __name__ == "__main__":
+    raise SystemExit(main())

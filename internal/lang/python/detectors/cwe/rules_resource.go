@@ -30,6 +30,11 @@ func init() {
 var (
 	pyResourceAssignmentRE = regexp.MustCompile(`(?m)^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:open|socket\.socket|urllib\.request\.urlopen)\s*\(`)
 	pyUploadAssignmentRE   = regexp.MustCompile(`(?m)^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*request\.files(?:\s*\[[^\n]+\]|\s*\.get\s*\()`)
+	// self.sock = sock / cls.server_sock = sock after socket/open assignment.
+	pyResourceAttrAssignRE = regexp.MustCompile(`\b(?:self|cls)\.[A-Za-z_][A-Za-z0-9_]*\s*=\s*([A-Za-z_][A-Za-z0-9_]*)\b`)
+	// return sock — bare name only (not return sock.recv() / return settings.read()).
+	// Caller owns the resource after the function returns.
+	pyResourceReturnRE = regexp.MustCompile(`(?m)^\s*return\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:#.*)?$`)
 )
 
 // CWE-434 requires a Flask-shaped request.files assignment followed by saving
@@ -177,9 +182,12 @@ func hasTemporaryCleanup(code string) bool {
 
 // CWE-772 reports an assigned file, socket, or urlopen response only when the
 // variable is not closed in the same function. Context-manager forms do not
-// match the assignment shape.
+// match the assignment shape. Ownership transfers (self.sock = sock, return sock)
+// and test-module harness sockets are not leaks — the owner closes them.
+// Chained consumption (urlopen(url).read() / open(path).read()) never binds a
+// handle, so it is not a leak (Project_Parva ingest_pradhanlaw FP).
 func detectCWE772(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if unit == nil || out == nil {
+	if unit == nil || out == nil || isPythonTestModule(unit) {
 		return
 	}
 	for _, fn := range facts.Functions() {
@@ -196,7 +204,19 @@ func detectCWE772(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 			abs0 := search + match[0]
 			abs1 := search + match[1]
 			name := code[search+match[2] : search+match[3]]
-			if !strings.Contains(code[abs1:], name+".close(") {
+			// Match ends at the opening '(' of open/urlopen/socket; if the call
+			// is immediately chained (.read/.decode), the name binds the
+			// consumed payload, not the resource handle.
+			if resourceCallIsChainedConsume(code, abs1-1) {
+				if abs1 <= search {
+					search++
+				} else {
+					search = abs1
+				}
+				continue
+			}
+			rest := code[abs1:]
+			if !strings.Contains(rest, name+".close(") && !resourceOwnershipTransferred(rest, name) {
 				emitResourceFinding(unit, &MetaCWE772, fn.bodyStart+abs0, "resource is assigned without a same-function close or context-manager release", confidence76, out)
 				return
 			}
@@ -207,6 +227,40 @@ func detectCWE772(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 			}
 		}
 	}
+}
+
+// resourceCallIsChainedConsume reports open(...).read / urlopen(...).read style
+// chains where the assignment target is the payload, not a held resource.
+// openIdx points at the '(' of the open/urlopen/socket call.
+func resourceCallIsChainedConsume(code string, openIdx int) bool {
+	if openIdx < 0 || openIdx >= len(code) || code[openIdx] != '(' {
+		return false
+	}
+	closeAt, _ := scanCallArgs(code, openIdx)
+	if closeAt < 0 || closeAt+1 >= len(code) {
+		return false
+	}
+	rest := strings.TrimLeft(code[closeAt+1:], " \t")
+	return strings.HasPrefix(rest, ".")
+}
+
+// resourceOwnershipTransferred reports that name is stored on self/cls or
+// returned, so a peer lifecycle (connection object, caller) owns release.
+func resourceOwnershipTransferred(rest, name string) bool {
+	if name == "" {
+		return false
+	}
+	for _, m := range pyResourceAttrAssignRE.FindAllStringSubmatch(rest, -1) {
+		if len(m) >= 2 && m[1] == name {
+			return true
+		}
+	}
+	for _, m := range pyResourceReturnRE.FindAllStringSubmatch(rest, -1) {
+		if len(m) >= 2 && m[1] == name {
+			return true
+		}
+	}
+	return false
 }
 
 // CWE-770 identifies Flask's direct unbounded request-body reader only when

@@ -39,8 +39,8 @@ var (
 // isPythonOfflineScriptPathCWE mirrors bad_practices offline tooling skip
 // (tools/, scripts/release/, public-benchmark/) for CWE-396 batch-job noise.
 // Also covers Project_Parva offline verify runners under scripts/
-// (parva_*_verify.py, run_*smoke*.py) without matching WeThePeople
-// scripts/seed_*.py or jobs/*.py operational TPs.
+// (parva_*_verify.py, run_*smoke*/journey/frontend/golden) without matching
+// WeThePeople scripts/seed_*.py, scripts/run_story_gates_audit.py, or jobs/*.py.
 func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 	if unit == nil {
 		return false
@@ -54,6 +54,11 @@ func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 		if strings.IndexByte(norm, '\\') >= 0 {
 			norm = strings.ReplaceAll(norm, "\\", "/")
 		}
+		// Demo/example handlers (logxide examples/*) are soft best-effort logging
+		// demos, not production catch policies.
+		if strings.Contains(norm, "/examples/") || strings.HasPrefix(norm, "examples/") {
+			return true
+		}
 		if strings.Contains(norm, "/backend/tools/") ||
 			strings.Contains(norm, "/scripts/release/") ||
 			strings.Contains(norm, "/public-benchmark/") ||
@@ -66,7 +71,8 @@ func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 			strings.HasPrefix(norm, "tools/release/") {
 			return true
 		}
-		// Offline verify / smoke runners under scripts/ only (not jobs/).
+		// Offline verify / smoke / journey / frontend runners under scripts/
+		// only (not jobs/). Must NOT match WeThePeople run_story_gates_audit.py.
 		if strings.Contains(norm, "/scripts/") || strings.HasPrefix(norm, "scripts/") {
 			base := norm
 			if i := strings.LastIndex(norm, "/"); i >= 0 {
@@ -75,8 +81,14 @@ func isPythonOfflineScriptPathCWE(unit *core.ParsedUnit) bool {
 			if strings.HasPrefix(base, "parva_") && strings.HasSuffix(base, "_verify.py") {
 				return true
 			}
-			if strings.HasPrefix(base, "run_") && strings.Contains(base, "smoke") && strings.HasSuffix(base, ".py") {
-				return true
+			if strings.HasPrefix(base, "run_") && strings.HasSuffix(base, ".py") {
+				// Narrow markers only — blanket run_*.py killed WTP story-gate TPs.
+				if strings.Contains(base, "smoke") ||
+					strings.Contains(base, "journey") ||
+					strings.Contains(base, "frontend") ||
+					strings.Contains(base, "golden") {
+					return true
+				}
 			}
 		}
 	}
@@ -103,9 +115,10 @@ func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 		return
 	}
 	// Dual-mode SSL helpers (verify_ssl switch → default context vs CERT_NONE)
-	// are intentional TLS-diagnostic APIs; generic catch inside them is
-	// compatibility plumbing, not hidden application failure (httptap utils).
-	if dualModeTLSHelper(unit.Source) {
+	// and TLS-diagnostic clients that thread verify_ssl into create_ssl_context
+	// (httptap implementations/tls.py, http_client) — generic catch inside is
+	// compatibility plumbing, not hidden application failure.
+	if dualModeTLSHelper(unit.Source) || tlsDiagnosticVerifySSLClient(unit.Source) {
 		return
 	}
 	if !containsAnyNeedle(unit.Source, "except Exception", "except BaseException") {
@@ -199,14 +212,32 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 		last := i
 		if pyBracketsUnbalanced(mt) {
 			for j := i + 1; j < len(lines); j++ {
+				// Masked string-only continuation lines are blank — skip them
+				// but keep merging using raw text so multi-line raise Type(
+				//     "const",
+				// ) from exc still forms one statement (rate_limit FP).
 				txt := strings.TrimSpace(lines[j].text)
-				if txt == "" || lines[j].indent <= exceptIndent {
+				rawTxt := strings.TrimSpace(rawLines[j].text)
+				if lines[j].indent <= exceptIndent && rawTxt != "" && txt != "" {
 					break
 				}
-				mt += " " + txt
-				rt += " " + strings.TrimSpace(rawLines[j].text)
+				if rawTxt == "" && txt == "" {
+					continue
+				}
+				if lines[j].indent <= exceptIndent && txt == "" && rawTxt != "" {
+					// deeper or same-level blanked string: still part of call
+					// only while brackets remain unbalanced.
+				} else if lines[j].indent <= exceptIndent {
+					break
+				}
+				if txt != "" {
+					mt += " " + txt
+				}
+				if rawTxt != "" {
+					rt += " " + rawTxt
+				}
 				last = j
-				if !pyBracketsUnbalanced(mt) {
+				if !pyBracketsUnbalanced(mt) && !pyBracketsUnbalanced(rt) {
 					break
 				}
 			}
@@ -240,33 +271,101 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 			break
 		}
 	}
+	// logger() / log() factory forms (pycaps logger().error) lack a trailing
+	// dot after the name; also accept .error/.warning call shapes.
 	hasLog := strings.Contains(allText, "exc_info") || strings.Contains(allText, ".exception(") ||
 		strings.Contains(allText, "log.") || strings.Contains(allText, "logger.") ||
-		strings.Contains(allText, "logging.") || strings.Contains(allText, "traceback.print_exc")
+		strings.Contains(allText, "logging.") || strings.Contains(allText, "traceback.print_exc") ||
+		strings.Contains(allText, "logger(") || strings.Contains(allText, "log(") ||
+		strings.Contains(allText, ".error(") || strings.Contains(allText, ".warning(")
 	hasPrint := strings.Contains(allText, "print(")
 	caughtVar := exceptClauseCaughtVar(strings.TrimSpace(lines[exceptIdx].text))
 
 	// Suite-level raise:
 	//  - multi-statement resource-cleanup-then-raise (os.remove/unlink/close
-	//    then raise) is an audited FP (safer __init__.py:312, niquests utils);
+	//    then raise) is an audited FP (safer __init__.py:312, niquests utils,
+	//    sgi task.cancel + re-raise);
 	//  - multi-statement non-cleanup (telemetry.track then raise) stays
 	//    REPORTABLE — caniscrape cli.py:326 audited TP;
 	//  - a SINGLE wrapped raise (`raise TypedError(...) from exc`) stays
-	//    REPORTABLE — voicetag / among-llms audited TPs;
-	//  - bare re-raise stays reportable (WeThePeople tracing.py:76).
+	//    REPORTABLE — voicetag / among-llms audited TPs — except when the try
+	//    body is a JS/pyodide bridge call or pure SSL attribute probe
+	//    (niquests pyodide ConnectionError mapping; httptap getpeercert);
+	//  - logger.exception + bare re-raise without DB rollback surfaces the
+	//    failure (Project_Parva middleware). logger.error + raise and
+	//    exception+rollback stay reportable (WeThePeople finnhub / sync_fara);
+	//  - bare re-raise without log stays reportable (WeThePeople tracing.py:76);
+	//  - pure conversion/parse try + wrap-raise is API-boundary translation
+	//    (Project_Parva engine_routes date parse → HTTPException).
 	if hasRaise {
 		if stmtCount >= 2 && !hasLog && !hasPrint && suiteOnlyResourceCleanupBeforeRaise(body) {
 			return true
 		}
+		// Type-discriminating re-raise/map (niquests wasi stream closed):
+		// if not isinstance(exc, Expected): raise / map expected / raise.
+		// telemetry.track + raise stays reportable (caniscrape cli TP).
+		if stmtCount >= 2 && !hasLog && !hasPrint && suiteIsTypeFilterReraise(body, caughtVar) {
+			return true
+		}
+		// Documented defensive multi-statement cleanup that re-raises after a
+		// notify callback (niquests wasi upload: Defensive marker + raise).
+		if stmtCount >= 2 && !hasLog && !hasPrint &&
+			exceptLineHasDefensiveMarkerPy(rawLines, exceptIdx, exceptIndent) {
+			return true
+		}
+		if !hasPrint && suiteLogsExceptionThenBareReraise(body) && !suiteHasDBRollback(body) {
+			return true
+		}
+		if !hasLog && !hasPrint && suiteOnlyWrappedRaises(body) {
+			if tryIdx := enclosingTryIdx(lines, exceptIdx); tryIdx >= 0 {
+				if tryBlockHasJSBridgeSignal(lines, tryIdx) {
+					return true
+				}
+				if tryBlockIsSSLAttrProbe(lines, tryIdx) {
+					return true
+				}
+				if tryBlockIsConversionGuard(lines, tryIdx) {
+					return true
+				}
+			}
+			// Fail-closed domain wrap with constant message only (no f-string /
+			// str(exc) embedding) — Project_Parva rate_limit.py. voicetag wrap
+			// raises embed {exc} and stay reportable.
+			if suiteIsConstantMessageDomainWrap(bodyRaw, caughtVar) {
+				return true
+			}
+			// Typed domain re-wrap after a sibling `except DomainError: raise`
+			// (Project_Parva rulelang_service). Lone wrap-raise without the
+			// typed pass-through stays reportable (voicetag / caniscrape).
+			if suiteIsTypedDomainRewrap(lines, exceptIdx, bodyRaw, caughtVar) {
+				return true
+			}
+		}
 		return false
 	}
 
+	// Nested type-filter re-raise: direct body is only if/with branches; raise
+	// lives under isinstance arms (niquests wasi:_adapter.py:107). Ordinary
+	// multi-stmt swallows without raise stay reportable.
+	if !hasLog && !hasPrint && caughtVar != "" &&
+		suiteDirectBodyIsOnlyBranches(body) &&
+		strings.Contains(allText, "isinstance(") &&
+		strings.Contains(allText, "raise") {
+		return true
+	}
+
 	// JS/pyodide bridge best-effort: pass-only or constant-assign/return after
-	// a try body that touches the bridge API. Ordinary Exception:pass and
-	// wrap-raise stay reportable (hasRaise already returned above).
-	// Use bodyRaw so string-literal constants survive pythonCodeMask.
+	// a try body that touches the bridge API. Ordinary Exception:pass stays
+	// reportable. Use bodyRaw so string-literal constants survive pythonCodeMask.
 	if tryIdx := enclosingTryIdx(lines, exceptIdx); tryIdx >= 0 &&
 		tryBlockHasJSBridgeSignal(lines, tryIdx) &&
+		suiteIsPassOrConstantFallback(bodyRaw) {
+		return true
+	}
+	// Pure SSL attribute probe with pass/constant fallback (httptap cert
+	// extract). Ordinary Exception:pass stays reportable.
+	if tryIdx := enclosingTryIdx(lines, exceptIdx); tryIdx >= 0 &&
+		tryBlockIsSSLAttrProbe(lines, tryIdx) &&
 		suiteIsPassOrConstantFallback(bodyRaw) {
 		return true
 	}
@@ -335,11 +434,78 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 			return true
 		}
 	}
+	// Soft recording into a warnings list is the Project_Parva rulelang
+	// evidence-packet fallback (warnings.append(...exc...)) — failure is
+	// retained on the result, not swallowed. Use raw text: Mask blanks strings.
+	if strings.Contains(allRaw, "warnings.append(") || strings.Contains(allRaw, ".warnings.append(") {
+		return true
+	}
+	// Soft validation outcome: multi-assign builds value/error/warnings from
+	// the exception without re-raising (rulelang validate_date). Lone
+	// .error= assignment and wrap-raise stay reportable.
+	if !hasRaise && !hasPrint && caughtVar != "" && stmtCount >= 2 &&
+		suiteIsSoftValidationOutcome(bodyRaw, allRaw, caughtVar) {
+		return true
+	}
+	// Structured result recording "error": str(exc) via named append payloads
+	// (rulelang run_rule_tests: results.append({name, passed, error})).
+	// Health-check appends without name= stay reportable (WeThePeople).
+	if caughtVar != "" &&
+		(strings.Contains(allRaw, `"error":`) || strings.Contains(allRaw, `'error':`)) &&
+		lineReferencesVarPy(allRaw, caughtVar) {
+		namedAppend := strings.Contains(allRaw, ".append(") &&
+			(strings.Contains(allRaw, `"name":`) || strings.Contains(allRaw, `'name':`) ||
+				strings.Contains(allRaw, `"name" :`) || strings.Contains(allRaw, `'name' :`))
+		if namedAppend {
+			return true
+		}
+	}
+	// Soft best-effort logger.warning-only after optional-import enrichment
+	// under an if-path (Project_Parva middleware ephemeris). Unconditional
+	// warning after non-import work stays reportable (WeThePeople).
+	if softBestEffortWarningOnlyCWE(allText) {
+		tryIdxSoft := enclosingTryIdx(lines, exceptIdx)
+		if tryIdxSoft >= 0 && tryNestedUnderIfPy(lines, tryIdxSoft) &&
+			tryBlockHasImportStmtPy(lines, tryIdxSoft) {
+			return true
+		}
+	}
+	// Soft warning collector: warn_unexpected_error / warn_* only (html2pic
+	// cascade/applicators). Pure wrap-raise stays reportable (voicetag TP).
+	if !hasRaise && suiteIsSoftWarningCollector(body, allRaw) {
+		return true
+	}
+	// Soft feature-degrade: log then assign empty/None/[]/{} or return prior
+	// value without re-raising (pycaps emoji/tagger API ignore-feature FPs).
+	// Log-only without fallback assign (WeThePeople connectors) stays reportable.
+	if hasLog && !hasPrint && suiteIsSoftLogThenDegrade(body, bodyRaw, caughtVar) {
+		return true
+	}
+	// Multi-statement defensive cleanup that never logs/prints/re-raises and
+	// does not bind the exception (niquests wasi upload: failed = True; notify).
+	// Requires an explicit defensive/no-cover marker so ordinary multi-stmt
+	// swallows stay reportable.
+	if !hasLog && !hasPrint &&
+		exceptLineHasDefensiveMarkerPy(rawLines, exceptIdx, exceptIndent) {
+		if caughtVar == "" || !lineReferencesVarPy(allRaw, caughtVar) {
+			return true
+		}
+	}
 	// Single-statement pass-through return of a non-exception value
 	// (onlymaps _types.py:189 — parse fallback returns the input).
 	if stmtCount == 1 && strings.HasPrefix(body[0], "return ") {
 		rest := strings.TrimSpace(body[0][len("return "):])
 		if bareIdentRE.MatchString(rest) && rest != caughtVar && rest != "None" && rest != "True" && rest != "False" {
+			return true
+		}
+	}
+	// Soft constant-assign fallback after a pure attr/cache probe try body
+	// (logxide fast_logger_wrapper / interceptor getMessage) or optional
+	// import (send_alerts RESEND_API_URL default). Ordinary Exception:pass
+	// and log-only handlers stay reportable (WeThePeople).
+	if !hasLog && !hasPrint && suiteIsPassOrConstantFallback(bodyRaw) {
+		if tryIdx := enclosingTryIdx(lines, exceptIdx); tryIdx >= 0 &&
+			(tryBlockIsSoftAttrCacheProbe(lines, tryIdx) || tryBlockIsImportOnly(lines, tryIdx)) {
 			return true
 		}
 	}
@@ -354,8 +520,495 @@ func cwe396SuiteIsSafe(lines, rawLines []pyMaskedLine, exceptIdx int) bool {
 	return false
 }
 
+// softBestEffortWarningOnlyCWE reports logger.warning-only handlers (not
+// .exception/.error/.info).
+func softBestEffortWarningOnlyCWE(allText string) bool {
+	if !strings.Contains(allText, ".warning(") {
+		return false
+	}
+	for _, hard := range []string{".exception(", ".error(", ".critical(", "exc_info", "traceback.print_exc",
+		".info(", ".debug("} {
+		if strings.Contains(allText, hard) {
+			return false
+		}
+	}
+	return strings.Contains(allText, "logger.") ||
+		strings.Contains(allText, "log.") ||
+		strings.Contains(allText, "logging.")
+}
+
+// suiteIsConstantMessageDomainWrap reports wrap-raises whose constructor args
+// are only string/numeric literals (no caught-var interpolation). Fail-closed
+// domain policy (Project_Parva rate_limit). f-string / str(exc) embeds stay
+// reportable (voicetag).
+func suiteIsConstantMessageDomainWrap(bodyRaw []string, caughtVar string) bool {
+	saw := false
+	for _, s := range bodyRaw {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" {
+			continue
+		}
+		if !pySuiteLineRaiseRE.MatchString(t) {
+			return false
+		}
+		if !wrappedRaiseStatement(t) {
+			return false
+		}
+		if !raiseArgsAreConstantLiterals(t, caughtVar) {
+			return false
+		}
+		saw = true
+	}
+	return saw
+}
+
+// raiseArgsAreConstantLiterals reports raise Type(const...) [from var] where
+// no non-literal expression appears in the constructor args. `from caughtVar`
+// is allowed (chain only).
+func raiseArgsAreConstantLiterals(raiseStmt, caughtVar string) bool {
+	t := strings.TrimSpace(raiseStmt)
+	if !strings.HasPrefix(t, "raise") {
+		return false
+	}
+	rest := strings.TrimSpace(strings.TrimPrefix(t, "raise"))
+	// Strip trailing " from <var>".
+	if i := strings.LastIndex(rest, " from "); i >= 0 {
+		fromPart := strings.TrimSpace(rest[i+len(" from "):])
+		if caughtVar != "" && fromPart != caughtVar && fromPart != "e" && fromPart != "exc" && fromPart != "err" {
+			// still ok — chain target need not match
+		}
+		rest = strings.TrimSpace(rest[:i])
+	}
+	// Must construct: Name(...)
+	open := strings.Index(rest, "(")
+	if open < 0 || !strings.HasSuffix(rest, ")") {
+		return false
+	}
+	args := strings.TrimSpace(rest[open+1 : len(rest)-1])
+	if args == "" {
+		return true
+	}
+	// f-strings / format embeds always count as non-constant for this guard.
+	if strings.Contains(args, "f\"") || strings.Contains(args, "f'") ||
+		strings.Contains(args, "F\"") || strings.Contains(args, "F'") ||
+		strings.Contains(args, ".format(") || strings.Contains(args, "%") {
+		return false
+	}
+	if caughtVar != "" && lineReferencesVarPy(args, caughtVar) {
+		return false
+	}
+	// Reject str(e)/repr(e) and bare exception identifiers.
+	for _, bad := range []string{"str(", "repr(", "exc", " err", "(e)", " e,", " e)", "e,", "e)"} {
+		if strings.Contains(args, bad) {
+			// refine bare e/exc only via word-ish check below
+		}
+	}
+	for _, arg := range splitTopLevelArgs(args) {
+		a := strings.TrimSpace(arg)
+		if a == "" {
+			continue
+		}
+		// name=literal kwargs (detail="...", code="X", status_code=400)
+		if eq := strings.Index(a, "="); eq > 0 && !strings.ContainsAny(a[:eq], "\"'") {
+			a = strings.TrimSpace(a[eq+1:])
+		}
+		if isPureStringLiteral(a) || isNumericLiteral(a) {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+// suiteIsTypedDomainRewrap reports a generic catch that only wraps into a
+// domain error after a sibling `except DomainError: raise` pass-through
+// (Project_Parva rulelang_service). Standalone wrap-raise stays reportable.
+func suiteIsTypedDomainRewrap(lines []pyMaskedLine, exceptIdx int, bodyRaw []string, caughtVar string) bool {
+	if exceptIdx <= 0 || len(bodyRaw) == 0 {
+		return false
+	}
+	// Collect wrap-raise type names from this suite.
+	wrapTypes := raiseConstructedTypeNames(bodyRaw)
+	if len(wrapTypes) == 0 {
+		return false
+	}
+	exceptIndent := lines[exceptIdx].indent
+	// Walk prior sibling except clauses at the same indent.
+	for j := exceptIdx - 1; j >= 0; j-- {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		ind := lines[j].indent
+		if ind > exceptIndent {
+			continue
+		}
+		if ind < exceptIndent {
+			return false
+		}
+		if strings.HasPrefix(t, "try:") {
+			return false
+		}
+		if !strings.HasPrefix(t, "except") {
+			// finally/else at same indent ends the try group
+			if strings.HasPrefix(t, "finally:") || strings.HasPrefix(t, "else:") {
+				return false
+			}
+			continue
+		}
+		types := exceptCatchTypes(t)
+		if len(types) != 1 {
+			continue
+		}
+		dom := types[0]
+		if dom == "Exception" || dom == "BaseException" {
+			continue
+		}
+		// Domain type must match a wrap-raise target.
+		match := false
+		for _, wt := range wrapTypes {
+			if wt == dom {
+				match = true
+				break
+			}
+		}
+		if !match {
+			continue
+		}
+		// Sibling suite must be bare re-raise only.
+		suite, _, _ := pyExceptSuiteLineIdx(lines, j)
+		if len(suite) == 0 {
+			continue
+		}
+		bareOnly := true
+		for _, si := range suite {
+			st := strings.TrimSpace(lines[si].text)
+			if st == "" || st == "pass" {
+				continue
+			}
+			if st != "raise" {
+				bareOnly = false
+				break
+			}
+		}
+		if bareOnly {
+			return true
+		}
+	}
+	return false
+}
+
+// raiseConstructedTypeNames extracts Type from `raise Type(...)` statements.
+func raiseConstructedTypeNames(body []string) []string {
+	var out []string
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if !strings.HasPrefix(t, "raise") {
+			continue
+		}
+		rest := strings.TrimSpace(strings.TrimPrefix(t, "raise"))
+		if i := strings.LastIndex(rest, " from "); i >= 0 {
+			rest = strings.TrimSpace(rest[:i])
+		}
+		open := strings.Index(rest, "(")
+		if open <= 0 {
+			continue
+		}
+		name := strings.TrimSpace(rest[:open])
+		if i := strings.LastIndex(name, "."); i >= 0 {
+			name = name[i+1:]
+		}
+		if name != "" {
+			out = append(out, name)
+		}
+	}
+	return out
+}
+
+// suiteIsSoftValidationOutcome reports multi-statement suites that only
+// assign a structured validation failure (valid=False, error=str(exc),
+// warnings=[exc], reason_codes) without re-raising.
+func suiteIsSoftValidationOutcome(bodyRaw []string, allRaw, caughtVar string) bool {
+	if caughtVar == "" || !lineReferencesVarPy(allRaw, caughtVar) {
+		return false
+	}
+	hasErrorField := strings.Contains(allRaw, `"error"`) || strings.Contains(allRaw, `'error'`) ||
+		strings.Contains(allRaw, `"error":`) || strings.Contains(allRaw, `'error':`)
+	hasValidField := strings.Contains(allRaw, `"valid"`) || strings.Contains(allRaw, `'valid'`) ||
+		strings.Contains(allRaw, "valid =") || strings.Contains(allRaw, "valid=")
+	hasWarnings := strings.Contains(allRaw, "warnings") || strings.Contains(allRaw, "INVALID")
+	if !hasErrorField || (!hasValidField && !hasWarnings) {
+		return false
+	}
+	for _, s := range bodyRaw {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" {
+			continue
+		}
+		if pySuiteLineRaiseRE.MatchString(t) {
+			return false
+		}
+		// Only assignments and simple literals/containers.
+		if strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || t == "else:" ||
+			strings.HasPrefix(t, "for ") || strings.HasPrefix(t, "while ") ||
+			strings.HasPrefix(t, "return ") || t == "return" {
+			return false
+		}
+		if _, _, ok := splitAssignmentEq(t); ok {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+// suiteIsSoftWarningCollector reports warn_unexpected_error / .warn_ style
+// soft collectors without raise (html2pic styling FPs).
+func suiteIsSoftWarningCollector(body []string, allRaw string) bool {
+	if len(body) == 0 {
+		return false
+	}
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" || t == "continue" || t == "break" {
+			continue
+		}
+		if pySuiteLineRaiseRE.MatchString(t) {
+			return false
+		}
+	}
+	// Structural soft-warning API (html2pic WarningCollector).
+	if strings.Contains(allRaw, "warn_unexpected_error(") ||
+		strings.Contains(allRaw, ".warn_unexpected_error(") {
+		return true
+	}
+	// warnings.warn with unexpected-error style (not logger).
+	if strings.Contains(allRaw, "warnings.warn(") &&
+		!strings.Contains(allRaw, "logger.") &&
+		!strings.Contains(allRaw, "log.") {
+		return true
+	}
+	return false
+}
+
+// suiteIsSoftLogThenDegrade reports log + feature-cache clear or return of a
+// prior named value (pycaps emoji/tagger ignore-feature FPs). Log+return None
+// and log+break (WeThePeople connectors) stay reportable.
+func suiteIsSoftLogThenDegrade(body, bodyRaw []string, caughtVar string) bool {
+	hasLogStmt := false
+	hasDegrade := false
+	for i, s := range body {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" {
+			continue
+		}
+		if pySuiteLineRaiseRE.MatchString(t) {
+			return false
+		}
+		// break/continue after log is production loop control (WeThePeople TPs).
+		if t == "break" || strings.HasPrefix(t, "break ") ||
+			t == "continue" || strings.HasPrefix(t, "continue ") {
+			return false
+		}
+		if strings.Contains(t, ".exception(") || strings.Contains(t, ".error(") ||
+			strings.Contains(t, ".warning(") || strings.Contains(t, "exc_info") ||
+			strings.Contains(t, "logger.") || strings.Contains(t, "log.") ||
+			strings.Contains(t, "logging.") || strings.Contains(t, "traceback.print_exc") ||
+			strings.Contains(t, "logger(") || strings.Contains(t, "log(") {
+			hasLogStmt = true
+			continue
+		}
+		if strings.HasPrefix(t, "return ") {
+			rest := strings.TrimSpace(t[len("return "):])
+			// return <prior-name> pass-through only — not None/[]/constants
+			// (those are production failure returns / WeThePeople TPs).
+			if rest != caughtVar && bareIdentRE.MatchString(rest) &&
+				rest != "None" && rest != "True" && rest != "False" {
+				hasDegrade = true
+				continue
+			}
+			return false
+		}
+		if t == "return" {
+			return false
+		}
+		// Assign empty/None/[] to a self/instance cache field only.
+		raw := t
+		if i < len(bodyRaw) {
+			raw = strings.TrimSpace(bodyRaw[i])
+		}
+		if lhs, rhs, ok := splitAssignmentEq(raw); ok {
+			lhs = strings.TrimSpace(lhs)
+			rhs = strings.TrimSpace(rhs)
+			if !strings.HasPrefix(lhs, "self.") {
+				return false
+			}
+			if isDefinedConstantExprCWE(rhs) || rhs == "[]" || rhs == "{}" || rhs == "()" {
+				hasDegrade = true
+				continue
+			}
+			return false
+		}
+		return false
+	}
+	return hasLogStmt && hasDegrade
+}
+
+// tryBlockIsSoftAttrCacheProbe reports try bodies that only read attributes /
+// cache fields (getEffectiveLevel, getMessage, getattr) without I/O sinks.
+func tryBlockIsSoftAttrCacheProbe(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	saw := false
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		if lines[j].indent <= tryIndent {
+			return saw
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		if stmtHasSideEffectSink(stmt) {
+			return false
+		}
+		// Reject network/parse heavy names even inside assignments.
+		for _, bad := range []string{
+			"requests.", "httpx.", "urlopen(", "subprocess.", "json.loads(",
+			"yaml.load(", "fromisoformat(", "strptime(", "connect(", "execute(",
+		} {
+			if strings.Contains(stmt, bad) {
+				return false
+			}
+		}
+		if isProbeBranchHeader(stmt) || stmt == "pass" {
+			continue
+		}
+		if _, rhs, ok := splitAssignmentEq(stmt); ok {
+			rhs = strings.TrimSpace(rhs)
+			// Attr/method reads and ternary hasattr fallbacks only.
+			if softAttrReadExpr(rhs) {
+				saw = true
+				continue
+			}
+			return false
+		}
+		if softAttrReadExpr(stmt) {
+			saw = true
+			continue
+		}
+		return false
+	}
+	return saw
+}
+
+// softAttrReadExpr reports getattr/hasattr ternaries and narrow attr/cache
+// reads (logxide getEffectiveLevel/getMessage). Ordinary response.json() /
+// db.query() calls stay outside so WeThePeople TPs keep firing.
+func softAttrReadExpr(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if stmtHasSideEffectSink(t) {
+		return false
+	}
+	// Ternary: x if hasattr(...) else y
+	if strings.Contains(t, " if ") && strings.Contains(t, " else ") {
+		return strings.Contains(t, "hasattr(") || strings.Contains(t, "getattr(")
+	}
+	if strings.HasPrefix(t, "getattr(") || strings.HasPrefix(t, "hasattr(") {
+		return true
+	}
+	// Pure attribute chain without calls: self._rust_logger.name / handler._inner.level
+	if strings.Contains(t, ".") && !strings.Contains(t, "(") {
+		return bareAttrChain(t)
+	}
+	// Zero-arg cache/message getters only.
+	if strings.HasSuffix(t, "()") {
+		base := strings.TrimSpace(t[:len(t)-2])
+		dot := strings.LastIndex(base, ".")
+		if dot < 0 {
+			return false
+		}
+		method := base[dot+1:]
+		switch method {
+		case "getEffectiveLevel", "getMessage", "getName", "getLevelName",
+			"level", "name": // defensive; name usually attr not call
+			return bareAttrChain(base[:dot]) || bareAttrChain(base)
+		}
+	}
+	return false
+}
+
+// bareAttrChain reports a.b.c identifiers separated by dots (no calls/ops).
+func bareAttrChain(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	for _, part := range strings.Split(t, ".") {
+		part = strings.TrimSpace(part)
+		if part == "" || !bareIdentRE.MatchString(part) {
+			return false
+		}
+	}
+	return strings.Contains(t, ".") || bareIdentRE.MatchString(t)
+}
+
+// tryNestedUnderIfPy reports that the try header sits under an if/elif suite.
+func tryNestedUnderIfPy(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx <= 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	for j := tryIdx - 1; j >= 0; j-- {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		ind := lines[j].indent
+		if ind >= tryIndent {
+			continue
+		}
+		if ind < tryIndent {
+			return strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ")
+		}
+	}
+	return false
+}
+
+// tryBlockHasImportStmtPy reports a try body with at least one import.
+func tryBlockHasImportStmtPy(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	for j := tryIdx + 1; j < len(lines); j++ {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		if lines[j].indent <= tryIndent {
+			return false
+		}
+		if strings.HasPrefix(t, "import ") || strings.HasPrefix(t, "from ") {
+			return true
+		}
+	}
+	return false
+}
+
 // suiteIsPassOrConstantFallback reports pass-only or constant-assign/return
 // suites used as defined JS-bridge fallbacks (None/""/b""/False/0).
+// Also accepts pure string literals and UPPER_SNAKE module constants
+// (WARNING/INFO) used as level fallbacks (logxide fast_logger_wrapper).
 func suiteIsPassOrConstantFallback(body []string) bool {
 	if len(body) == 0 {
 		return false
@@ -369,14 +1022,14 @@ func suiteIsPassOrConstantFallback(body []string) bool {
 		}
 		if strings.HasPrefix(t, "return ") {
 			rest := strings.TrimSpace(t[len("return "):])
-			if isDefinedConstantExprCWE(rest) {
+			if constantFallbackExprCWE(rest) {
 				saw = true
 				continue
 			}
 			return false
 		}
 		if _, rhs, ok := splitAssignmentEq(t); ok {
-			if isDefinedConstantExprCWE(strings.TrimSpace(rhs)) {
+			if constantFallbackExprCWE(strings.TrimSpace(rhs)) {
 				saw = true
 				continue
 			}
@@ -385,6 +1038,16 @@ func suiteIsPassOrConstantFallback(body []string) bool {
 		return false
 	}
 	return saw
+}
+
+// constantFallbackExprCWE reports None/bools/numerics/string literals and
+// UPPER_SNAKE module constants used as defined soft fallbacks.
+func constantFallbackExprCWE(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if isDefinedConstantExprCWE(t) || isPureStringLiteral(t) || isNumericLiteral(t) {
+		return true
+	}
+	return upperSnakeRE.MatchString(t)
 }
 
 // suiteLogsThenReturnsExitCode reports a suite that logs the failure and
@@ -410,6 +1073,265 @@ func suiteLogsThenReturnsExitCode(body []string) bool {
 		}
 	}
 	return hasLog && hasExitReturn
+}
+
+// suiteLogsExceptionThenBareReraise reports logger.exception / traceback
+// print_exc followed by bare re-raise only (no wrap-raise). Surfaces the
+// failure fully (Project_Parva middleware). logger.error + raise stays
+// reportable (WeThePeople finnhub TPs).
+func suiteLogsExceptionThenBareReraise(body []string) bool {
+	hasExceptionLog := false
+	sawBareRaise := false
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if strings.Contains(t, ".exception(") || strings.Contains(t, "traceback.print_exc") {
+			hasExceptionLog = true
+		}
+		if strings.HasPrefix(t, "raise") {
+			rest := strings.TrimSpace(strings.TrimPrefix(t, "raise"))
+			if rest != "" {
+				// wrap-raise / raise e stay reportable
+				return false
+			}
+			sawBareRaise = true
+		}
+	}
+	return hasExceptionLog && sawBareRaise
+}
+
+// suiteHasDBRollback reports session/db rollback in the suite (WeThePeople
+// jobs that log+raise after rolling back stay reportable).
+func suiteHasDBRollback(body []string) bool {
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if strings.Contains(t, ".rollback(") {
+			return true
+		}
+	}
+	return false
+}
+
+// suiteOnlyWrappedRaises reports that every non-trivial suite statement is a
+// wrapped raise (raise Type(...)/raise X from e), optionally after building
+// a message or branching on the exception string (niquests pyodide timeout
+// mapping). Bare re-raise alone stays outside this helper.
+func suiteOnlyWrappedRaises(body []string) bool {
+	sawWrap := false
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" || t == "continue" || t == "break" {
+			continue
+		}
+		if pySuiteLineRaiseRE.MatchString(t) {
+			if !wrappedRaiseStatement(t) {
+				return false
+			}
+			sawWrap = true
+			continue
+		}
+		// Allow message/err_str construction and isinstance/branch headers.
+		if strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || t == "else:" {
+			continue
+		}
+		if _, _, ok := splitAssignmentEq(t); ok {
+			continue
+		}
+		return false
+	}
+	return sawWrap
+}
+
+// suiteIsTypeFilterReraise reports multi-statement suites that only branch on
+// the caught exception type (isinstance) and re-raise or return a mapped
+// result (niquests wasi stream closed). Telemetry/print side effects stay out.
+func suiteIsTypeFilterReraise(body []string, caughtVar string) bool {
+	sawRaise := false
+	sawTypeCheck := false
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" {
+			continue
+		}
+		if pySuiteLineRaiseRE.MatchString(t) {
+			sawRaise = true
+			continue
+		}
+		if strings.HasPrefix(t, "return ") || t == "return" {
+			continue
+		}
+		if strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || t == "else:" {
+			// Require isinstance(...) or a real identifier reference to the
+			// caught var — naive substring match on "e"/"err" over-matched
+			// temp_file.exists() and suppressed caniscrape cleanup wrap-raise.
+			if strings.Contains(t, "isinstance(") || lineReferencesVarPy(t, caughtVar) {
+				sawTypeCheck = true
+			}
+			continue
+		}
+		if strings.HasPrefix(t, "with ") {
+			// with wasi_exception_mapping(...): raise — mapping context
+			continue
+		}
+		return false
+	}
+	return sawRaise && sawTypeCheck
+}
+
+// suiteDirectBodyIsOnlyBranches reports that every direct suite statement is
+// an if/elif/else/with header (nested raise/return live under those arms).
+func suiteDirectBodyIsOnlyBranches(body []string) bool {
+	if len(body) == 0 {
+		return false
+	}
+	for _, s := range body {
+		t := strings.TrimSpace(s)
+		if t == "" || t == "pass" {
+			continue
+		}
+		if strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || t == "else:" ||
+			strings.HasPrefix(t, "with ") || strings.HasPrefix(t, "async with ") {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+// onlyValueErrorCatch reports a sole ValueError catch (kiss_headers index).
+func onlyValueErrorCatch(types []string) bool {
+	return len(types) == 1 && types[0] == "ValueError"
+}
+
+// asyncCancelCatchOnly reports CancelledError and/or GeneratorExit only —
+// expected async cancel swallow (niquests sgi lifespan). TimeoutError alone
+// and mixed RuntimeError paths stay outside this helper.
+func asyncCancelCatchOnly(types []string) bool {
+	if len(types) == 0 {
+		return false
+	}
+	for _, ty := range types {
+		if ty != "CancelledError" && ty != "GeneratorExit" {
+			return false
+		}
+	}
+	return true
+}
+
+// tryBlockIsSSLAttrProbe reports a try body that only probes SSL/TLS socket
+// attributes (getpeercert/version/cipher/wrap_socket) without network request
+// APIs (httptap tls_inspector certificate extract FPs). Allows returning a
+// constructed CertificateInfo after a successful probe.
+func tryBlockIsSSLAttrProbe(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	sawSSL := false
+	sawBody := false
+	sslSignals := []string{
+		"getpeercert(", ".cipher(", ".version(", "wrap_socket(",
+		"SSLSocket", "SSLObject", "ssl_socket", "ssl_object",
+		"extract_tls_info(", "extract_certificate_info(",
+	}
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		if lines[j].indent <= tryIndent {
+			break
+		}
+		sawBody = true
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		if stmtHasSideEffectSink(stmt) {
+			return false
+		}
+		for _, s := range sslSignals {
+			if strings.Contains(stmt, s) {
+				sawSSL = true
+			}
+		}
+		// Allow assignments, branches, constant/constructor returns.
+		if isProbeBranchHeader(stmt) || stmt == "pass" || stmt == "continue" || stmt == "break" {
+			continue
+		}
+		if stmt == "return" || strings.HasPrefix(stmt, "return ") {
+			continue
+		}
+		if _, _, ok := splitAssignmentEq(stmt); ok {
+			continue
+		}
+		// Bare SSL-related calls only.
+		if isJSBridgeExpr(stmt) {
+			continue
+		}
+		return false
+	}
+	return sawBody && sawSSL
+}
+
+// tryBlockHasHeavyParse reports datetime/json/yaml parse APIs that are not
+// simple index/conversion probes (keeps conversion-guard vulnerable fixtures).
+func tryBlockHasHeavyParse(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	heavies := []string{
+		"fromisoformat(", "strptime(", "json.loads(", "yaml.load(",
+		"yaml.safe_load(", "parse_", "loads(", "decode(",
+	}
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		if lines[j].indent <= tryIndent {
+			break
+		}
+		for _, h := range heavies {
+			if strings.Contains(mt, h) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// tlsDiagnosticVerifySSLClient reports modules that thread a verify_ssl switch
+// into create_ssl_context for TLS diagnostics (httptap http_client / tls.py)
+// without necessarily defining CERT_NONE in the same file.
+func tlsDiagnosticVerifySSLClient(src string) bool {
+	if !strings.Contains(src, "create_ssl_context") {
+		return false
+	}
+	return strings.Contains(src, "verify_ssl=") || strings.Contains(src, "verify_ssl:") ||
+		strings.Contains(src, "verify_ssl ") || strings.Contains(src, "verify_ssl,")
+}
+
+// exceptLineHasDefensiveMarkerPy is a narrow marker set for multi-statement
+// cleanup exemptions (niquests wasi upload). Omits generic "fallback" prose.
+func exceptLineHasDefensiveMarkerPy(rawLines []pyMaskedLine, exceptIdx, exceptIndent int) bool {
+	markers := []string{"no cover", "defensive"}
+	if lineHasFallbackMarkerTextPy(rawLines[exceptIdx].text, markers) {
+		return true
+	}
+	for j := exceptIdx + 1; j < len(rawLines); j++ {
+		if strings.TrimSpace(rawLines[j].text) == "" {
+			continue
+		}
+		if rawLines[j].indent <= exceptIndent {
+			break
+		}
+		if lineHasFallbackMarkerTextPy(rawLines[j].text, markers) {
+			return true
+		}
+	}
+	return false
 }
 
 // selfCallDelegation reports a single-statement suite that delegates to a
@@ -453,9 +1375,11 @@ func wrappedRaiseStatement(t string) bool {
 }
 
 // suiteOnlyResourceCleanupBeforeRaise reports multi-statement suites where
-// every non-raise statement is resource cleanup (os.remove/unlink/close/rmtree).
+// every non-raise statement is resource cleanup (os.remove/unlink/close/rmtree)
+// and the raise is a bare re-raise only. Wrap-raise after unlink stays
+// reportable (caniscrape config.py:38 audited TP).
 func suiteOnlyResourceCleanupBeforeRaise(body []string) bool {
-	sawRaise := false
+	sawBareRaise := false
 	sawCleanup := false
 	for _, s := range body {
 		t := strings.TrimSpace(s)
@@ -463,7 +1387,16 @@ func suiteOnlyResourceCleanupBeforeRaise(body []string) bool {
 			continue
 		}
 		if strings.HasPrefix(t, "raise") {
-			sawRaise = true
+			rest := strings.TrimSpace(strings.TrimPrefix(t, "raise"))
+			if rest != "" {
+				// wrap-raise / raise e after cleanup stays reportable
+				return false
+			}
+			sawBareRaise = true
+			continue
+		}
+		// Allow branch wrappers around cleanup (if path.exists(): unlink).
+		if strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || t == "else:" {
 			continue
 		}
 		if isResourceCleanupStmt(t) {
@@ -472,21 +1405,36 @@ func suiteOnlyResourceCleanupBeforeRaise(body []string) bool {
 		}
 		return false
 	}
-	return sawRaise && sawCleanup
+	return sawBareRaise && sawCleanup
 }
 
-// isResourceCleanupStmt reports os.remove/unlink/close/rmtree style cleanup.
+// isResourceCleanupStmt reports os.remove/unlink/close/rmtree/task-cancel
+// style cleanup (niquests sgi ASGI cancel-then-reraise FPs).
 func isResourceCleanupStmt(t string) bool {
 	needles := []string{
 		"os.remove(", "os.unlink(", "os.rmdir(", "os.removedirs(",
 		".unlink(", ".remove(", ".close(", ".aclose(",
 		"shutil.rmtree(", "pathlib.Path(",
+		"task.cancel(", ".cancel(", "close_resource(",
+		"contextlib.suppress(",
 	}
 	// pathlib Path(...).unlink() already covered by .unlink(
 	for _, n := range needles {
 		if strings.Contains(t, n) {
 			return true
 		}
+	}
+	// await task / await handle after cancel is part of the cleanup sequence.
+	if strings.HasPrefix(strings.TrimSpace(t), "await ") {
+		rest := strings.TrimSpace(t[len("await "):])
+		if rest == "task" || strings.HasPrefix(rest, "task.") ||
+			strings.Contains(rest, ".close(") || strings.Contains(rest, ".aclose(") {
+			return true
+		}
+	}
+	// with contextlib.suppress(...): await task
+	if strings.HasPrefix(strings.TrimSpace(t), "with ") && strings.Contains(t, "suppress") {
+		return true
 	}
 	return false
 }
@@ -667,6 +1615,14 @@ func exceptPassIsSafe(unit *core.ParsedUnit, lines, rawLines []pyMaskedLine, exc
 	if isPythonTestModule(unit) && tryBlockDeliberatelyRaises(lines, exceptIdx) {
 		return true
 	}
+	// Test modules: try body that asserts an optional outcome then pass on
+	// expected range errors (Project_Parva test_calculator). Chaos tests with
+	// bare call+pass and no assert stay reportable (WeThePeople).
+	if isPythonTestModule(unit) {
+		if tryIdx := enclosingTryIdx(lines, exceptIdx); tryIdx >= 0 && tryBlockHasAssert(lines, tryIdx) {
+			return true
+		}
+	}
 	suite, after, _ := pyExceptSuiteLineIdx(lines, exceptIdx)
 	if len(suite) != 1 || strings.TrimSpace(lines[suite[0]].text) != "pass" {
 		return false
@@ -694,6 +1650,11 @@ func exceptPassIsSafe(unit *core.ParsedUnit, lines, rawLines []pyMaskedLine, exc
 	if asyncShutdownCatch(catchTypes) {
 		return true
 	}
+	// Expected async cancel/generator-exit swallow (niquests sgi lifespan
+	// wait-forever until canceled). Ordinary Exception:pass stays reportable.
+	if asyncCancelCatchOnly(catchTypes) {
+		return true
+	}
 	if attributeErrorCatch(catchTypes) && tryIdx >= 0 && tryBlockIsAttrProbe(lines, tryIdx) {
 		return true
 	}
@@ -717,9 +1678,22 @@ func exceptPassIsSafe(unit *core.ParsedUnit, lines, rawLines []pyMaskedLine, exc
 		if tryIdx >= 0 && tryBlockIsConversionGuard(lines, tryIdx) {
 			return true
 		}
+		// Dict field extract + int conversion then list append (Project_Parva
+		// timegraph_fact_links). Catch is KeyError/TypeError/ValueError only.
+		if tryIdx >= 0 && fieldExtractConversionCatch(catchTypes) &&
+			tryBlockIsFieldExtractConversion(lines, tryIdx) {
+			return true
+		}
 		// Sole TypeError or sole OSError after pure probe (not mixed ValueError).
 		if tryIdx >= 0 && tryBlockIsProbe(lines, tryIdx) &&
 			(onlyTypeErrorCatch(catchTypes) || onlyOSErrorCatch(catchTypes)) {
+			return true
+		}
+		// Sole ValueError after a pure index/attr assignment probe without a
+		// return/raise in the try (kiss_headers content.index). Return-int
+		// dangling pass and fromisoformat/json parse probes stay reportable.
+		if tryIdx >= 0 && tryBlockIsProbe(lines, tryIdx) && onlyValueErrorCatch(catchTypes) &&
+			!tryBlockHasReturnOrRaise(lines, tryIdx) && !tryBlockHasHeavyParse(lines, tryIdx) {
 			return true
 		}
 		if bestEffortNetworkCatch(catchTypes) && tryIdx >= 0 &&
@@ -771,11 +1745,34 @@ func enclosingTryIdx(lines []pyMaskedLine, exceptIdx int) int {
 	return -1
 }
 
+// tryBlockHasAssert reports that the try body contains an assert statement
+// (optional-outcome tests that also allow pass on expected failures).
+func tryBlockHasAssert(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		if lines[j].indent <= tryIndent {
+			return false
+		}
+		if strings.HasPrefix(mt, "assert ") || mt == "assert" || strings.HasPrefix(mt, "self.assert") {
+			return true
+		}
+	}
+	return false
+}
+
 // tryBlockDeliberatelyRaises reports whether the try block preceding a
 // pass-only except contains an explicit raise or pytest.fail — the
 // expected-exception test idiom (onlymaps tests/test_database.py:339,516;
-// niquests test_requests.py ReadTimeout). Assertions alone are not enough:
-// httpmorph's assert-in-try handlers are audited true positives.
+// niquests test_requests.py ReadTimeout). Assertions alone are not enough
+// for non-test production modules: httpmorph's assert-in-try handlers are
+// audited true positives.
 func tryBlockDeliberatelyRaises(lines []pyMaskedLine, exceptIdx int) bool {
 	exceptIndent := lines[exceptIdx].indent
 	for j := exceptIdx - 1; j >= 0; j-- {
@@ -1205,7 +2202,7 @@ func tryBlockIsConversionGuard(lines []pyMaskedLine, tryIdx int) bool {
 }
 
 func conversionCallIn(stmt string) bool {
-	for _, fn := range []string{"int(", "float(", "bool(", "complex(", "ord("} {
+	for _, fn := range []string{"int(", "float(", "bool(", "complex(", "ord(", "date("} {
 		if strings.Contains(stmt, fn) {
 			return true
 		}
@@ -1487,6 +2484,7 @@ var jsBridgeSignals = []string{
 	"getReader(",
 	"to_py(",
 	"run_sync(",
+	"pyfetch(",
 	"js_response",
 	"js_headers",
 	"js_body",
@@ -1496,12 +2494,18 @@ var jsBridgeSignals = []string{
 	"pyodide",
 	"_js_",
 	"_ws.",
+	"_ws.close",
 	"_proxies",
 	"ReadableStream",
 	"JsProxy",
 	"JsException",
 	".cancel(",
 	".destroy(",
+	"AbortSignal",
+	"WebSocket",
+	"SSEExtension",
+	"PyodideWebSocket",
+	"PyodideSSE",
 }
 
 // isJSBridgeExpr reports a statement that touches the JS/pyodide bridge API.
@@ -1760,6 +2764,78 @@ func probeCatch(types []string) bool {
 	return false
 }
 
+// fieldExtractConversionCatch reports KeyError/TypeError/ValueError only —
+// dict field extract + int/float conversion (Project_Parva timegraph). Solo
+// KeyError stays outside (sync-with-uv TPs).
+func fieldExtractConversionCatch(types []string) bool {
+	if len(types) == 0 {
+		return false
+	}
+	hasKey, hasConv := false, false
+	for _, ty := range types {
+		switch ty {
+		case "KeyError":
+			hasKey = true
+		case "TypeError", "ValueError":
+			hasConv = true
+		default:
+			return false
+		}
+	}
+	// Require at least one conversion type; KeyError alone is not enough.
+	return hasConv && (hasKey || len(types) >= 1)
+}
+
+// tryBlockIsFieldExtractConversion reports try bodies that only convert dict
+// fields (int/float/str on subscript/attr) and append the results to a list —
+// optional fact-id enrichment (timegraph_fact_links).
+func tryBlockIsFieldExtractConversion(lines []pyMaskedLine, tryIdx int) bool {
+	if tryIdx < 0 || tryIdx >= len(lines) {
+		return false
+	}
+	tryIndent := lines[tryIdx].indent
+	sawConversion := false
+	for j := tryIdx + 1; j < len(lines); j++ {
+		mt := strings.TrimSpace(lines[j].text)
+		if mt == "" {
+			continue
+		}
+		if lines[j].indent <= tryIndent {
+			return sawConversion
+		}
+		stmt := mt
+		for pyBracketsUnbalanced(stmt) && j+1 < len(lines) {
+			j++
+			stmt += " " + strings.TrimSpace(lines[j].text)
+		}
+		if stmtHasSideEffectSink(stmt) {
+			return false
+		}
+		if isProbeBranchHeader(stmt) || stmt == "pass" {
+			continue
+		}
+		// year = int(bs["year"]) / day = int(part)
+		if _, rhs, ok := splitAssignmentEq(stmt); ok {
+			if conversionCallIn(rhs) {
+				sawConversion = true
+				continue
+			}
+			// year, month, day = (int(p) for p in ...)
+			if strings.Contains(rhs, "int(") || strings.Contains(rhs, "float(") {
+				sawConversion = true
+				continue
+			}
+			return false
+		}
+		// fact_ids.append(...) of converted values — enrichment only.
+		if strings.Contains(stmt, ".append(") && !strings.Contains(stmt, "open(") {
+			continue
+		}
+		return false
+	}
+	return sawConversion
+}
+
 // CWE-397 recognizes direct construction or re-raising of Python's generic
 // root exception classes. Raising an application-specific exception is safe.
 func detectCWE397(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
@@ -1805,6 +2881,12 @@ func detectCWE252(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 // sufficient error handling.
 func detectCWE390(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	// Offline tooling only — do NOT skip test modules wholesale (WeThePeople
+	// chaos tests are audited TPs). Test expected-exception FPs use
+	// exceptPassIsSafe / tryBlockDeliberatelyRaises.
+	if isPythonOfflineScriptPathCWE(unit) {
 		return
 	}
 	lines := facts.MaskedLines()

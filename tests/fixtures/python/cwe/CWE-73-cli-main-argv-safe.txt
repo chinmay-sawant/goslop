@@ -1,0 +1,21 @@
+# goslop text fixture — CWE-73 CLI main() with Path(sys.argv[1]) under __main__
+lang: python
+file: scripts/parva_offline_verify.py
+---
+import sys
+from pathlib import Path
+
+
+def main() -> int:
+    if len(sys.argv) != 2:
+        print("usage: verify <bundle>")
+        return 2
+    root = Path(sys.argv[1])
+    manifest_path = root / "bundle-manifest.json"
+    if not manifest_path.exists():
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

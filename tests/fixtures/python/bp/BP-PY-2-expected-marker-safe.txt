@@ -1,0 +1,12 @@
+# goslop text fixture — dual-path test: assert on success, pass on expected
+# raise with documenting comment (Project_Parva test_calculator FP)
+lang: python
+file: tests/unit/calendar/test_calculator.py
+---
+def test_year_outside_range():
+    """Year outside supported range may raise exception."""
+    try:
+        result = calculate_festival_date("dashain", 2010)
+        assert result is None or hasattr(result, "start")
+    except (KeyError, RuntimeError, ValueError):
+        pass  # Expected - unsupported historical range can reject the request

@@ -39,8 +39,9 @@ var (
 )
 
 // PERF-PY-23: polymorphic encode/serialize per loop item.
+// Seed/migrate helpers and offline research scripts are not hot request paths.
 func detectPYPERF23(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
-	if facts == nil || isPythonTestFile(unit) {
+	if facts == nil || isPythonTestFile(unit) || isPythonOfflineToolsPath(unit) || isPythonOfflineResearchScript(unit) {
 		return
 	}
 	for i, line := range facts.lines {
@@ -54,8 +55,27 @@ func detectPYPERF23(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 			strings.Contains(line.text, "encode_leaf") {
 			continue
 		}
+		// One-shot schema seed / migration loops (billing seed_plans).
+		if start, _ := functionWindow(facts.lines, i); start >= 0 && start < len(facts.lines) {
+			header := facts.lines[start].trim
+			if perfFunctionIsSeedOrMigrate(header) {
+				continue
+			}
+		}
 		pushLine(unit, "PERF-PY-23", line, "encode", "polymorphic encode/serialize runs inside a hot loop; specialize fixed-schema leaves or encode outside the loop", out)
 	}
+}
+
+func perfFunctionIsSeedOrMigrate(header string) bool {
+	h := strings.ToLower(header)
+	// def seed_plans( / def migrate( / async def seed_...
+	if strings.Contains(h, "def seed_") || strings.Contains(h, "def seed(") {
+		return true
+	}
+	if strings.Contains(h, "def migrate") || strings.Contains(h, "def _seed") {
+		return true
+	}
+	return false
 }
 
 // PERF-PY-24: same pure measure helper used twice in one function.
@@ -221,12 +241,17 @@ func perfAllocContext(text string) bool {
 // PERF-PY-26: expensive decode on render/job path without cache.
 // parse_* recursive-descent / CLI helpers only fire on explicit handle_job /
 // handle_request windows; decode_/Image.open/zlib still fire in loops.
+// Lightweight wire-field codecs (decode_field_value, header latin-1) are not
+// expensive blob decodes — niquests WASI adapter trailer/header loops.
 func detectPYPERF26(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	if facts == nil || isPythonTestFile(unit) {
 		return
 	}
 	for i, line := range facts.lines {
 		if !decodeHotRE.MatchString(line.text) {
+			continue
+		}
+		if perfLineIsLightweightDecode(line.text) {
 			continue
 		}
 		if strings.Contains(facts.Source, "_BLOB_CACHE") || strings.Contains(facts.Source, "_DECODE_CACHE") ||
@@ -254,6 +279,10 @@ func detectPYPERF26(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 var (
 	decodeHotParseRE = regexp.MustCompile(`\bparse_[A-Za-z0-9_]+\s*\(`)
 	decodeHotBlobRE  = regexp.MustCompile(`\b(decode_[A-Za-z0-9_]+|Image\.open|zlib\.decompress)\s*\(`)
+	// HTTP header/trailer field codecs — O(header size) latin-1, not blob/image work.
+	lightweightDecodeRE = regexp.MustCompile(
+		`\bdecode_(?:field(?:_value)?|header(?:_value)?|trailer(?:_value)?|name|token)\s*\(`,
+	)
 )
 
 func perfLineIsParseCall(text string) bool {
@@ -264,13 +293,26 @@ func perfLineIsDecodeOrImage(text string) bool {
 	return decodeHotBlobRE.MatchString(text)
 }
 
+// perfLineIsLightweightDecode reports header/field wire codecs that match
+// decode_* by name but are not expensive binary expansion.
+func perfLineIsLightweightDecode(text string) bool {
+	return lightweightDecodeRE.MatchString(text)
+}
+
 // PERF-PY-27: from_file / read_bytes of the same invariant path inside a batch loop.
 // Requires the load site to be in-loop or in a function directly called from a loop,
 // and that the path expression is not the loop variable or a callee parameter
 // (once-per-distinct-path loads are not "repeated same path").
-// Offline tools/ scripts intentionally read each input once per batch run.
+//
+// Note: backend/tools/ is NOT path-skipped — Project_Parva week3_ground_truth_pipeline
+// reloads an invariant festival_rules_v3.json via a helper called from a loop (audited TP).
+// Unique-path / loop-derived receivers still suppress once-per-input tool ETL shapes.
+//
+// Intermediate path bindings derived from the loop variable
+// (validation_path = triad_paths(rule.festival_id)["validation"]; path.read_text())
+// are once-per-distinct-path, not repeated loads of one invariant file.
 func detectPYPERF27(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
-	if facts == nil || isPythonTestFile(unit) || isPythonOfflineToolsPath(unit) {
+	if facts == nil || isPythonTestFile(unit) {
 		return
 	}
 	for i, line := range facts.lines {
@@ -295,17 +337,222 @@ func detectPYPERF27(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 			continue
 		}
 		if inLoop {
-			if loopVar, ok := enclosingForLoopVar(facts.lines, i); ok &&
-				perfLoadLineUsesName(line.text, loopVar) {
-				continue
+			if loopVar, ok := enclosingForLoopVar(facts.lines, i); ok {
+				if perfLoadLineUsesName(line.text, loopVar) {
+					continue
+				}
+				// Receiver assigned from an expression involving the loop var
+				// (transitively) earlier in the same loop body.
+				if perfLoadReceiverDerivedFromLoopVar(facts.lines, i, loopVar) {
+					continue
+				}
 			}
 		} else if fromLoop {
-			if perfLoadLineUsesAnyName(line.text, pythonDefParamNames(facts.lines[start].trim)) {
+			params := pythonDefParamNamesMulti(facts.lines, start)
+			if perfLoadLineUsesAnyName(line.text, params) {
 				continue
 			}
 		}
 		pushLine(unit, "PERF-PY-27", line, "load", "same path is loaded/parsed without a visible cache; reuse immutable parse results", out)
 	}
+}
+
+// perfLoadReceiverDerivedFromLoopVar is true when the load receiver (or a
+// subscript base) was assigned above in the same loop body from an expression
+// that mentions the loop variable — e.g. paths = triad_paths(rule.id).
+// Transitive: txt_path = out_base.with_suffix(".txt") where out_base = tmp / img.stem.
+func perfLoadReceiverDerivedFromLoopVar(lines []codeLine, idx int, loopVar string) bool {
+	if loopVar == "" || idx <= 0 || idx >= len(lines) {
+		return false
+	}
+	recv := perfLoadReceiverName(lines[idx].text)
+	if recv == "" {
+		return false
+	}
+	// Collect names derived from loopVar within the enclosing loop body.
+	derived := map[string]bool{loopVar: true}
+	// Walk forward from the loop header to idx so derivation order is correct.
+	loopStart := -1
+	indent := indentWidth(lines[idx].raw)
+	for j := idx - 1; j >= 0; j-- {
+		t := lines[j].trim
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind < indent && isLoopTrim(t) {
+			loopStart = j
+			break
+		}
+		if ind < indent && isLoopTrim(t) {
+			break
+		}
+	}
+	if loopStart < 0 {
+		// Fallback: single-pass reverse one-level check.
+		return perfAssignMentionsAny(lines, idx, recv, derived)
+	}
+	for j := loopStart + 1; j < idx; j++ {
+		lhs, rhs, ok := splitSimpleAssign(lines[j].text)
+		if !ok {
+			continue
+		}
+		if perfLoadLineUsesAnyName(rhs, mapKeys(derived)) {
+			derived[lhs] = true
+		}
+	}
+	return derived[recv]
+}
+
+func mapKeys(m map[string]bool) []string {
+	out := make([]string, 0, len(m))
+	for k := range m {
+		out = append(out, k)
+	}
+	return out
+}
+
+func perfAssignMentionsAny(lines []codeLine, idx int, recv string, seeds map[string]bool) bool {
+	indent := indentWidth(lines[idx].raw)
+	for j := idx - 1; j >= 0; j-- {
+		t := lines[j].trim
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind < indent && isLoopTrim(t) {
+			break
+		}
+		lhs, rhs, ok := splitSimpleAssign(lines[j].text)
+		if !ok || lhs != recv {
+			continue
+		}
+		return perfLoadLineUsesAnyName(rhs, mapKeys(seeds))
+	}
+	return false
+}
+
+// pythonDefParamNamesMulti joins a multi-line def header so typed params on
+// following lines (overrides_path: Path,) are visible to from-loop suppressions.
+func pythonDefParamNamesMulti(lines []codeLine, start int) []string {
+	if start < 0 || start >= len(lines) {
+		return nil
+	}
+	header := lines[start].text
+	// Accumulate until balanced parens / def line ends with ):
+	depth := 0
+	sawOpen := false
+	for j := start; j < len(lines) && j <= start+12; j++ {
+		if j > start {
+			header += " " + lines[j].text
+		}
+		for _, r := range lines[j].text {
+			switch r {
+			case '(':
+				depth++
+				sawOpen = true
+			case ')':
+				if depth > 0 {
+					depth--
+				}
+			}
+		}
+		if sawOpen && depth == 0 {
+			break
+		}
+	}
+	return pythonDefParamNames(header)
+}
+
+// perfLoadReceiverName extracts the identifier receiving .read_text/.read_bytes
+// (handles name.read_text, name["k"].read_text, name['k'].read_text).
+func perfLoadReceiverName(line string) string {
+	for _, meth := range []string{".read_text", ".read_bytes", ".from_file"} {
+		at := strings.Index(line, meth)
+		if at <= 0 {
+			continue
+		}
+		left := strings.TrimSpace(line[:at])
+		// Strip trailing subscript: name["validation"] or name['validation']
+		for {
+			if i := strings.LastIndex(left, "["); i >= 0 && strings.HasSuffix(left, "]") {
+				left = strings.TrimSpace(left[:i])
+				continue
+			}
+			break
+		}
+		// Trailing attribute chain: take rightmost bare ident.
+		if dot := strings.LastIndex(left, "."); dot >= 0 {
+			left = strings.TrimSpace(left[dot+1:])
+		}
+		left = strings.TrimSpace(left)
+		if re := regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`); re.MatchString(left) {
+			return left
+		}
+	}
+	// json.loads(path.read_text(...)) — still match path via nested call.
+	if at := strings.Index(line, ".read_text"); at > 0 {
+		// find identifier immediately left of .read_text skipping ]
+		i := at - 1
+		for i >= 0 && (line[i] == ']' || line[i] == '"' || line[i] == '\'' || line[i] == ' ') {
+			// walk back through ["validation"]
+			if line[i] == ']' {
+				// find matching [
+				depth := 1
+				i--
+				for i >= 0 && depth > 0 {
+					if line[i] == ']' {
+						depth++
+					} else if line[i] == '[' {
+						depth--
+					}
+					i--
+				}
+				continue
+			}
+			i--
+		}
+		end := i + 1
+		for i >= 0 {
+			c := line[i]
+			if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+				i--
+				continue
+			}
+			break
+		}
+		name := strings.TrimSpace(line[i+1 : end])
+		if name != "" {
+			return name
+		}
+	}
+	return ""
+}
+
+func splitSimpleAssign(line string) (lhs, rhs string, ok bool) {
+	// Prefer '=' not '==', '!=', '<=', '>='.
+	for i := 0; i < len(line); i++ {
+		if line[i] != '=' {
+			continue
+		}
+		if i > 0 {
+			prev := line[i-1]
+			if prev == '=' || prev == '!' || prev == '<' || prev == '>' {
+				continue
+			}
+		}
+		if i+1 < len(line) && line[i+1] == '=' {
+			continue
+		}
+		lhs = strings.TrimSpace(line[:i])
+		rhs = strings.TrimSpace(line[i+1:])
+		// Only bare identifier LHS (not attributes).
+		if regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`).MatchString(lhs) {
+			return lhs, rhs, true
+		}
+		return "", "", false
+	}
+	return "", "", false
 }
 
 func functionCalledFromLoop(facts *pyPerfFacts, defLineIdx int) bool {

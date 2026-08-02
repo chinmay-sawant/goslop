@@ -1,0 +1,11 @@
+# goslop text fixture — offline journey runner under scripts/run_*.py
+# (Project_Parva scripts/run_golden_journeys.py path FP shape)
+lang: python
+file: scripts/run_golden_journeys.py
+---
+def main():
+    try:
+        return run_journeys()
+    except Exception as exc:
+        _write_report(status="failed", error=str(exc))
+        raise

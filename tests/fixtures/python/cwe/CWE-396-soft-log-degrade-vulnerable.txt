@@ -1,0 +1,10 @@
+# goslop text fixture — log then re-raise stays reportable (pycaps pipeline TP)
+lang: python
+file: caps_pipeline.py
+---
+def render(self):
+    try:
+        self._video_generator.generate(document)
+    except Exception as e:
+        logger().error(f"An error occurred during rendering: {e}")
+        raise e

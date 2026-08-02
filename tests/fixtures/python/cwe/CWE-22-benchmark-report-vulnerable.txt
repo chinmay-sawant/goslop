@@ -1,0 +1,11 @@
+# goslop text fixture — CWE-22 request path join without confinement
+lang: python
+file: app/files.py
+---
+from pathlib import Path
+from flask import request
+
+
+def read_user_file():
+    path = Path("/var/data") / request.args["name"]
+    return path.read_text(encoding="utf-8")

@@ -1,0 +1,17 @@
+# goslop text fixture — typed pass-through then generic wrap into same domain
+# error (Project_Parva rulelang_service.py FP shape)
+lang: python
+file: rulelang_service.py
+---
+class RuleLangError(Exception):
+    def __init__(self, msg, code=None):
+        self.code = code
+
+def call_function(function, context, args):
+    try:
+        outcome = function(context, args)
+    except RuleLangError:
+        raise
+    except Exception as exc:
+        raise RuleLangError(str(exc), code="RULE_EXECUTION_FAILED") from exc
+    return outcome

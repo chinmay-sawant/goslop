@@ -1,0 +1,9 @@
+# goslop text fixture — CWE-73 request-controlled path (still reportable)
+lang: python
+file: app/views.py
+---
+from flask import request
+
+
+def download():
+    open(request.args.get("file"))

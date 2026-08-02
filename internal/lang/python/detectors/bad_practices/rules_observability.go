@@ -479,6 +479,30 @@ func pythonCLIPrintSkipFunc(
 			}
 		}
 	}
+	// Script-entry presentation helpers when this module's own __main__ invokes
+	// main(): print_*summary/report and display_* are console UX for the CLI
+	// script (CourtScrapper utils.display_config when main is local). Without
+	// mainInvoked, leave library printers alone so Court bulk TPs and caniscrape
+	// stay reportable.
+	if mainInvoked && isPresentationPrintFuncName(name) {
+		return true
+	}
+	return false
+}
+
+// isPresentationPrintFuncName reports dedicated console presentation helpers.
+func isPresentationPrintFuncName(name string) bool {
+	n := strings.ToLower(name)
+	if strings.HasPrefix(n, "display_") {
+		return true
+	}
+	if strings.HasPrefix(n, "print_") {
+		for _, s := range []string{"summary", "report", "config", "help", "banner", "usage", "version"} {
+			if strings.Contains(n, s) {
+				return true
+			}
+		}
+	}
 	return false
 }
 

@@ -1,0 +1,6 @@
+# goslop text fixture — CWE-93 request value written into response header
+lang: python
+file: app/bootstrap/middleware.py
+---
+def set_trace(response, request) -> None:
+    response.headers["X-Trace-ID"] = request.headers.get("X-Request-Id", "")

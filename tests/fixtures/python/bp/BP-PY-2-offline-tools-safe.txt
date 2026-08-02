@@ -1,0 +1,16 @@
+# goslop text fixture — pass-only warmup under backend/tools is offline noise
+# (Project_Parva backend/tools/load_test FP)
+lang: python
+file: backend/tools/load_test.py
+---
+async def main():
+    print("Warming up API...")
+    async with aiohttp.ClientSession() as session:
+        for ep in ENDPOINTS:
+            try:
+                await make_request(session, f"{API_BASE}{ep}")
+            except (OSError, RuntimeError, TimeoutError, ValueError):
+                pass
+    stats = await run_load_test(requests_per_second=50, duration_seconds=10)
+    print_results(stats)
+    return stats

@@ -1,0 +1,16 @@
+# goslop text fixture — log-only emit failure stays reportable
+# (WeThePeople / CourtScrapper log-and-continue TPs)
+lang: python
+file: bad_handler.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class SwallowHandler:
+    def emit(self, record):
+        try:
+            self._inner.emit(record)
+        except Exception:
+            logger.error("emit failed")

@@ -1,10 +1,12 @@
-# goslop text fixture — wrap-raise after a JS-bridge try body stays reportable
-# (must not silence voicetag-style translation of the failure)
+# goslop text fixture — constant fallback without a JS-bridge try body stays
+# reportable (ordinary Exception: x = None is not a defined bridge probe)
 lang: python
-file: pyodide_bridge_wrap_raise.py
+file: service_fallback.py
 ---
-def send(js_response, url):
+def load_remote():
+    data = None
     try:
-        return run_sync(js_response.bytes())
-    except Exception as e:
-        raise ConnectionError(f"Failed to fetch {url}: {e}") from e
+        data = fetch_remote()
+    except Exception:
+        data = None
+    return data

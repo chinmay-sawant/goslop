@@ -97,6 +97,12 @@ func detectCWE1124(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 	if unit == nil || out == nil {
 		return
 	}
+	// Offline release tooling (Project_Parva scripts/release nested claim /
+	// import walks) — same path skip BP-PY-1 already applies. Keeps product
+	// calendar nesting (bikram_sambat) reportable.
+	if isPythonOfflineScriptPathCWE(unit) {
+		return
+	}
 	type controlFrame struct{ indent int }
 	var frames []controlFrame
 	offset := 0
@@ -115,18 +121,14 @@ func detectCWE1124(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 			// counting them as an additional nesting level overstates ordinary
 			// recovery and retry paths.
 			// else/elif are mutually exclusive arms of an already-counted if/try
-			// frame (niquests OCSP optional import else:).
-			// with/async with open a resource scope, not algorithmic nesting
-			// (niquests wasi adapter / OCSP Session() paths).
-			header := trimmed
-			if strings.HasPrefix(header, "async ") {
-				header = strings.TrimSpace(header[len("async "):])
-			}
+			// frame (niquests OCSP optional import else:) — do not stack them.
+			// with/async with still nest: pure if-chains inside a with body
+			// (caniscrape captcha_detector / fingerprint_analyzer) are real
+			// deep nesting and must stay reportable at six levels.
 			skipFrame := strings.HasPrefix(trimmed, "except") ||
 				strings.HasPrefix(trimmed, "finally") ||
 				trimmed == "else:" || strings.HasPrefix(trimmed, "else:") ||
-				strings.HasPrefix(trimmed, "elif ") ||
-				strings.HasPrefix(header, "with ")
+				strings.HasPrefix(trimmed, "elif ")
 			if !skipFrame {
 				frames = append(frames, controlFrame{indent: indent})
 			}
@@ -145,7 +147,11 @@ func isExecutableNestedStatement(line string) bool {
 	if line == "" || strings.HasPrefix(line, "@") || strings.HasPrefix(line, "def ") || strings.HasPrefix(line, "class ") {
 		return false
 	}
-	if strings.HasPrefix(line, "return ") || strings.HasPrefix(line, "raise ") || strings.HasPrefix(line, "break") || strings.HasPrefix(line, "continue") {
+	// Bare `return` / `raise` (no operand) are still executable suite statements
+	// (httpmorph proxy retry success path: nested `return` at depth ≥ 6).
+	if line == "return" || strings.HasPrefix(line, "return ") ||
+		line == "raise" || strings.HasPrefix(line, "raise ") ||
+		strings.HasPrefix(line, "break") || strings.HasPrefix(line, "continue") {
 		return true
 	}
 	return strings.Contains(line, "=") || strings.Contains(line, "(")

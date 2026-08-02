@@ -1,0 +1,11 @@
+# goslop text fixture — Exception:break after await client.get stays reportable
+lang: python
+file: tests/test_proxy.py
+---
+async def test_proxy_loop():
+    while True:
+        try:
+            data = await client.get("https://example.com")
+        except Exception:
+            break
+        process(data)

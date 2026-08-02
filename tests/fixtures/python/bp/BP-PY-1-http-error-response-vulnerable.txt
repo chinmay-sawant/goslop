@@ -1,0 +1,10 @@
+# goslop text fixture — bare dict error return stays reportable
+# (WeThePeople connector / epa_envirofacts TP shape)
+lang: python
+file: connector.py
+---
+def write_event(payload):
+    try:
+        return do_write(payload)
+    except Exception as e:
+        return {"success": False, "error": str(e)}

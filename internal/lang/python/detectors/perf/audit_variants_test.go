@@ -20,8 +20,11 @@ func TestPERFFalsePositiveAuditFixtureVariants(t *testing.T) {
 	}{
 		{rule: "PERF-PY-27", caseName: "PERF-PY-27-unique-path"},
 		{rule: "PERF-PY-27", caseName: "PERF-PY-27-analyze-once"},
+		{rule: "PERF-PY-27", caseName: "PERF-PY-27-derived-path"},
+		{rule: "PERF-PY-23", caseName: "PERF-PY-23-seed"},
 		{rule: "PERF-PY-26", caseName: "PERF-PY-26-cli-parse"},
 		{rule: "PERF-PY-26", caseName: "PERF-PY-26-parser-descent"},
+		{rule: "PERF-PY-26", caseName: "PERF-PY-26-field-decode"},
 		{rule: "PERF-PY-25", caseName: "PERF-PY-25-key-lambda"},
 		{rule: "PERF-PY-25", caseName: "PERF-PY-25-early-return"},
 		{rule: "PERF-PY-25", caseName: "PERF-PY-25-tools-path"},

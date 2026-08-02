@@ -1,0 +1,14 @@
+# goslop text fixture — expected-exception sync test: single bare call +
+# specific catch under tests/ (niquests wasi_guest edge_cases unwrap Err FP)
+lang: python
+file: tests/wasi_guest/async/edge_cases.py
+---
+async def low_level_cases():
+    original = (wasi._Ok, wasi._Err)
+    wasi._Ok = Ok
+    wasi._Err = Err
+    assert wasi._unwrap_result(Ok("ok")) == "ok"
+    try:
+        wasi._unwrap_result(Err(Failed()))
+    except Err:
+        pass

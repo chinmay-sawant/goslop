@@ -1,0 +1,13 @@
+# goslop text fixture — wrap-raise after non-SSL work stays reportable
+lang: python
+file: loader.py
+---
+class LoadError(Exception):
+    pass
+
+def load_file(path):
+    try:
+        data = open(path).read()
+        return parse(data)
+    except Exception as e:
+        raise LoadError(f"load failed: {e}") from e

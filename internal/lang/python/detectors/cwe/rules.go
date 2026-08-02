@@ -1273,6 +1273,11 @@ func detectCWE22(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	if unit == nil || out == nil {
 		return
 	}
+	// Test modules join fixture paths with constants; not deployment sinks.
+	// Benchmark harnesses write report paths under fixed pack directories.
+	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
+		return
+	}
 	src := unit.Source
 
 	// Documented safe suppressions
@@ -1293,6 +1298,11 @@ func detectCWE22(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		if !openPathArgIsUnsafeJoin(pathArg) {
 			continue
 		}
+		// f"{MODULE_CONST}.json" / name from a literal allowlist is not
+		// request-controlled traversal.
+		if pathJoinSegmentIsDevControlled(pathArg) {
+			continue
+		}
 		line, col := unit.LineCol(call.Start)
 		rules.PushFindingWithConfidence(
 			&MetaCWE22,
@@ -1310,10 +1320,104 @@ func detectCWE22(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		return
 	}
 	if start := pathlibUnsafeJoinStart(facts, src); start >= 0 {
+		// Re-check RHS of the join for module-constant / allowlist segments.
+		rhs := pathDivisionRHS(src, start+3)
+		if pathJoinSegmentIsDevControlled(rhs) {
+			return
+		}
 		line, col := unit.LineCol(start)
 		rules.PushFindingWithConfidence(&MetaCWE22, unitFile(unit), line, col,
 			"pathlib path joined with dynamic segment without resolve+prefix confinement", confidence65, out)
 	}
+}
+
+// pathJoinSegmentIsDevControlled reports path segments that cannot carry
+// attacker path-traversal text: UPPER_SNAKE module constants, f-strings that
+// only interpolate such constants, or bare identifiers that are clearly
+// local fixture names (not request.*).
+func pathJoinSegmentIsDevControlled(segment string) bool {
+	t := strings.TrimSpace(segment)
+	if t == "" {
+		return false
+	}
+	if isPureStringLiteral(t) {
+		return true
+	}
+	if upperSnakeRE.MatchString(t) {
+		return true
+	}
+	// f"{DEFAULT_RUN_ID}.json" / f"{CONST}_report.json"
+	if isFStringExpr(t) {
+		// Any request./input(/sys.argv still counts as untrusted.
+		lower := strings.ToLower(t)
+		if strings.Contains(lower, "request.") || strings.Contains(lower, "input(") ||
+			strings.Contains(lower, "sys.argv") || strings.Contains(lower, "os.environ") {
+			return false
+		}
+		// If every interpolation looks like UPPER_SNAKE or a numeric, safe.
+		return fstringInterpsAllUpperOrNumeric(t)
+	}
+	return false
+}
+
+// fstringInterpsAllUpperOrNumeric is true when every {expr} is UPPER_SNAKE
+// or a pure numeric literal (report names, not user paths).
+func fstringInterpsAllUpperOrNumeric(expr string) bool {
+	t := strings.TrimSpace(expr)
+	// Strip leading f/F and quotes loosely; walk { ... } at top level.
+	start := 0
+	if len(t) >= 2 && (t[0] == 'f' || t[0] == 'F') {
+		start = 1
+	}
+	if start >= len(t) {
+		return false
+	}
+	// Require at least one interpolation.
+	saw := false
+	i := start
+	for i < len(t) {
+		if t[i] != '{' {
+			i++
+			continue
+		}
+		// Skip {{ escape.
+		if i+1 < len(t) && t[i+1] == '{' {
+			i += 2
+			continue
+		}
+		end := i + 1
+		depth := 1
+		for end < len(t) && depth > 0 {
+			if t[end] == '{' {
+				depth++
+			} else if t[end] == '}' {
+				depth--
+			}
+			end++
+		}
+		if depth != 0 {
+			return false
+		}
+		inner := strings.TrimSpace(t[i+1 : end-1])
+		// Format specs: name!s / name:fmt
+		if bang := strings.IndexByte(inner, '!'); bang >= 0 {
+			inner = strings.TrimSpace(inner[:bang])
+		}
+		if colon := strings.IndexByte(inner, ':'); colon >= 0 {
+			inner = strings.TrimSpace(inner[:colon])
+		}
+		if inner == "" {
+			return false
+		}
+		if !upperSnakeRE.MatchString(inner) && !isNumericLiteral(inner) {
+			// pack['pack_id'] style — not purely dev-controlled without more
+			// evidence; leave for other guards (benchmark skip).
+			return false
+		}
+		saw = true
+		i = end
+	}
+	return saw
 }
 
 func hasPathSink(source string) bool {

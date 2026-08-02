@@ -1,0 +1,9 @@
+# goslop text fixture — broad Exception:pass stays reportable
+lang: python
+file: service.py
+---
+def load():
+    try:
+        return fetch()
+    except Exception:
+        pass

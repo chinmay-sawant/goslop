@@ -1,0 +1,12 @@
+# goslop text fixture — wrap-raise after input normalize stays reportable
+lang: python
+file: normalize.py
+---
+class DomainError(Exception):
+    pass
+
+def normalize(name, value):
+    try:
+        return int(value)
+    except Exception as exc:
+        raise DomainError(f"invalid input {name}: {exc}") from exc

@@ -1,0 +1,10 @@
+# goslop text fixture — telemetry then re-raise stays reportable (caniscrape)
+lang: python
+file: cli.py
+---
+def scan(url):
+    try:
+        return run_scan(url)
+    except Exception as e:
+        telemetry.track_usage_event("scan_error", metadata={"error": str(e)[:100]})
+        raise

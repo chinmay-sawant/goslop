@@ -76,6 +76,10 @@ func TestBPPY41TestWithoutAssert(t *testing.T) {
 		"BP-PY-41-stream-close",
 		"BP-PY-41-server-wait-smoke",
 		"BP-PY-41-never-crashes",
+		// Project_Parva residual FPs: route handlers, check=True, validate_*
+		"BP-PY-41-route-handler",
+		"BP-PY-41-subprocess-check",
+		"BP-PY-41-validate-helper",
 	} {
 		safeCase := loadBPFixture(t, caseName, false)
 		vulnCase := loadBPFixture(t, caseName, true)

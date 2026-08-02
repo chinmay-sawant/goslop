@@ -1,0 +1,19 @@
+# goslop text fixture — PERF-PY-23 polymorphic encode in hot export loop
+lang: python
+file: app/export.py
+---
+def encode_value(value):
+    if isinstance(value, dict):
+        parts = []
+        for key, item in value.items():
+            parts.append(str(key))
+            parts.append(encode_value(item))
+        return "{" + ",".join(parts) + "}"
+    return str(value)
+
+
+def export_records(records):
+    payloads = []
+    for record in records:
+        payloads.append(encode_value(record))
+    return payloads

@@ -151,6 +151,11 @@ func looksXMLConstructed(expr string) bool {
 // Header reads and == comparisons are not sinks (assignment '=' only), and
 // writes on outgoing client request objects (client.headers[...]) are not
 // response-header writes.
+//
+// Ternaries of pure string literals (Cache-Control immutable vs no-cache) and
+// append-to-existing-header helpers (Link: f"{existing}, {value}" if existing)
+// are not CRLF injection sinks — no untrusted text is introduced as a header
+// value beyond server-owned fragments.
 func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
@@ -160,7 +165,9 @@ func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	}
 	for _, call := range findCalls(facts, unit.Source, ".set_header", ".add_header", "HttpResponseRedirect") {
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) < 2 || !isDynamicExpr(args[len(args)-1]) || headerValueLooksSanitized(args[len(args)-1]) {
+		if len(args) < 2 || !isDynamicExpr(args[len(args)-1]) || headerValueLooksSanitized(args[len(args)-1]) ||
+			headerValueLooksConstant(args[len(args)-1], facts, unit.Source) ||
+			headerRHSLooksSafeLiteralChoice(args[len(args)-1]) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE93,
@@ -184,7 +191,15 @@ func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		}
 		lhs, _, ok := splitAssignmentEq(maskedLine)
 		_, rhs, rhsOK := splitAssignmentEq(line)
-		if !ok || !rhsOK || !strings.Contains(lhs, ".headers[") || !headerWriteReceiverLooksResponse(lhs) || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) || headerValueLooksConstant(rhs, facts, unit.Source) {
+		if !ok || !rhsOK || !strings.Contains(lhs, ".headers[") || !headerWriteReceiverLooksResponse(lhs) {
+			lineOffset += len(line) + 1
+			continue
+		}
+		// Multi-line assignment: response.headers[X] = (\n  "a" if c else "b"\n)
+		rhs = expandHeaderAssignmentRHS(originalLines, i, rhs)
+		if !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) ||
+			headerValueLooksConstant(rhs, facts, unit.Source) || headerRHSLooksSafeLiteralChoice(rhs) ||
+			headerRHSLooksExistingMerge(originalLines, i, rhs) {
 			lineOffset += len(line) + 1
 			continue
 		}
@@ -193,6 +208,96 @@ func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 			"dynamic value is written to an HTTP response header without CRLF neutralization", confidence72, out)
 		return
 	}
+}
+
+// expandHeaderAssignmentRHS joins parenthesized multi-line RHS after
+// response.headers[...] = ( ... ).
+func expandHeaderAssignmentRHS(lines []string, startIdx int, rhs string) string {
+	t := strings.TrimSpace(rhs)
+	if t == "" {
+		return rhs
+	}
+	// Incomplete open paren / bracket on this line — pull continuations.
+	if !pyBracketsUnbalanced(t) && !strings.HasSuffix(t, "(") && t != "(" {
+		return t
+	}
+	combined := t
+	for j := startIdx + 1; j < len(lines) && j <= startIdx+8; j++ {
+		combined += " " + strings.TrimSpace(lines[j])
+		if !pyBracketsUnbalanced(combined) {
+			break
+		}
+	}
+	combined = strings.TrimSpace(combined)
+	// Strip a single wrapping paren group.
+	if strings.HasPrefix(combined, "(") && strings.HasSuffix(combined, ")") {
+		inner := strings.TrimSpace(combined[1 : len(combined)-1])
+		if !pyBracketsUnbalanced(inner) {
+			return inner
+		}
+	}
+	return combined
+}
+
+// headerRHSLooksSafeLiteralChoice reports a ternary or paren-wrapped ternary
+// whose both branches are pure string literals (no attacker text).
+func headerRHSLooksSafeLiteralChoice(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if strings.HasPrefix(t, "(") && strings.HasSuffix(t, ")") {
+		inner := strings.TrimSpace(t[1 : len(t)-1])
+		if !pyBracketsUnbalanced(inner) {
+			t = inner
+		}
+	}
+	return ternaryOfLiterals(t)
+}
+
+// headerRHSLooksExistingMerge reports the common "append to existing response
+// header" helper shape:
+//
+//	existing = response.headers.get("Link")
+//	response.headers["Link"] = f"{existing}, {value}" if existing else value
+//
+// The merge reuses the current header plus a same-function parameter; it is
+// not a direct write of request text into a new header name.
+func headerRHSLooksExistingMerge(lines []string, assignIdx int, rhs string) bool {
+	t := strings.TrimSpace(rhs)
+	if t == "" {
+		return false
+	}
+	// Must mention an "existing"/"current"/"prev" style name and a value param.
+	hasExisting := strings.Contains(t, "existing") || strings.Contains(t, "current") ||
+		strings.Contains(t, "prev") || strings.Contains(t, "old")
+	if !hasExisting {
+		return false
+	}
+	// Scan upward a few lines for existing = *.headers.get(
+	for j := assignIdx - 1; j >= 0 && j >= assignIdx-6; j-- {
+		line := strings.TrimSpace(lines[j])
+		if line == "" {
+			continue
+		}
+		lhs, r, ok := splitAssignmentEq(line)
+		if !ok {
+			continue
+		}
+		name := strings.TrimSpace(lhs)
+		if name != "existing" && name != "current" && name != "prev" && name != "old" &&
+			name != "previous" {
+			continue
+		}
+		compact := compactWhitespace(r)
+		if strings.Contains(compact, ".headers.get(") || strings.Contains(compact, ".headers[") {
+			// RHS must reference that binder.
+			if strings.Contains(t, name) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func headerValueLooksSanitized(expr string) bool {
@@ -286,11 +391,15 @@ func cweReceiverIsBuiltins(source string, identAt int) bool {
 // (UPPER_SNAKE), sys.executable, internally generated values (tempfile/socket
 // paths, ports), literal+constant concatenations, and self re-exec argv
 // spreads are not treated as attacker-controlled option text.
+//
+// Offline ETL/release CLI tools (backend/tools/, scripts/release/) that invoke
+// fixed binaries on operator-supplied local paths are out of scope — keep the
+// free-operand-after-flag TP shape for application/library code (rendercv).
 func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
+	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) || isPythonOfflineScriptPathCWE(unit) {
 		return
 	}
 	ctx := buildPyFileCtx(facts, unit.Source)
@@ -329,6 +438,12 @@ func looksDynamicArgv(expr string, ctx *pyFileCtx) bool {
 			return false
 		}
 	}
+	// [*command, "-c", "literal script"] / [*cmd, "--flag"]: leading spread of
+	// a resolved argv prefix plus only literal tail segments cannot inject
+	// unintended options into a fixed tool (the spread IS the program vector).
+	if argvIsLeadingSpreadPlusLiterals(segments, ctx) {
+		return false
+	}
 	for i, seg := range segments {
 		if argvSegmentIsOptionValue(segments, i, ctx) {
 			continue
@@ -338,6 +453,45 @@ func looksDynamicArgv(expr string, ctx *pyFileCtx) bool {
 		}
 	}
 	return false
+}
+
+// argvIsLeadingSpreadPlusLiterals is true when the only non-literal segments
+// are leading *name spreads (and optionally trusted pieces), and every
+// remaining segment is a pure string/bytes literal.
+func argvIsLeadingSpreadPlusLiterals(segments []string, ctx *pyFileCtx) bool {
+	if len(segments) == 0 {
+		return false
+	}
+	sawSpread := false
+	for i, seg := range segments {
+		t := strings.TrimSpace(seg)
+		compact := compactWhitespace(t)
+		if strings.HasPrefix(compact, "*") {
+			ident := strings.TrimSpace(compact[1:])
+			if !bareIdentRE.MatchString(ident) {
+				return false
+			}
+			// Only allow spreads in a leading run (program prefix).
+			for k := 0; k < i; k++ {
+				prev := compactWhitespace(strings.TrimSpace(segments[k]))
+				if strings.HasPrefix(prev, "*") || isPureStringLiteral(strings.TrimSpace(segments[k])) ||
+					isPureBytesLiteral(strings.TrimSpace(segments[k])) {
+					continue
+				}
+				return false
+			}
+			sawSpread = true
+			continue
+		}
+		if isPureStringLiteral(t) || isPureBytesLiteral(t) {
+			continue
+		}
+		if argvSegmentLooksTrusted(t, ctx) {
+			continue
+		}
+		return false
+	}
+	return sawSpread
 }
 
 // argvSegmentIsOptionValue reports a segment bound as the value of the named

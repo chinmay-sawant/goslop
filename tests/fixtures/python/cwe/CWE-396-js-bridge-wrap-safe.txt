@@ -1,0 +1,18 @@
+# goslop text fixture — wrap-raise after a JS/pyodide bridge try body maps
+# bridge failures to library exceptions (niquests pyodide FP shape)
+lang: python
+file: pyodide_adapter.py
+---
+def send(request, timeout=None):
+    signal = None
+    if timeout is not None:
+        from js import AbortSignal
+        signal = AbortSignal.timeout(int(timeout * 1000))
+    try:
+        js_response = run_sync(pyfetch(request.url, signal=signal))
+    except Exception as e:
+        err_str = str(e).lower()
+        if "abort" in err_str or "timeout" in err_str:
+            raise ConnectTimeout(f"timed out: {request.url}")
+        raise ConnectionError(f"Failed to fetch {request.url}: {e}")
+    return js_response

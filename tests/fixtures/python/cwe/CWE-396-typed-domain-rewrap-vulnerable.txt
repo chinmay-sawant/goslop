@@ -1,0 +1,15 @@
+# goslop text fixture — lone wrap-raise without typed sibling stays reportable
+# (voicetag / caniscrape captcha solver TP shape)
+lang: python
+file: captcha_solvers.py
+---
+class CaptchaSolverError(Exception):
+    pass
+
+def init_client(api_key):
+    try:
+        import capsolver
+        capsolver.api_key = api_key
+        return capsolver
+    except Exception as e:
+        raise CaptchaSolverError(f"Failed to initialize CapSolver client: {e}")

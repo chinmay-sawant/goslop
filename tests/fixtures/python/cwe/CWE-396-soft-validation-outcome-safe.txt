@@ -1,0 +1,17 @@
+# goslop text fixture — soft validation outcome assigns error/valid/warnings
+# from the exception without re-raising (Project_Parva rulelang validate_date)
+lang: python
+file: rulelang_service.py
+---
+def validate_date(args):
+    try:
+        year, month, day = parse_bs(args["date"])
+        value = {"valid": True, "date": args["date"]}
+        warnings = []
+    except Exception as exc:
+        value = {"valid": False, "error": str(exc)}
+        warnings = [str(exc)]
+        reason_codes = ["INVALID_INPUT"]
+        confidence = "unsupported"
+        fact_ids = []
+    return value, warnings
