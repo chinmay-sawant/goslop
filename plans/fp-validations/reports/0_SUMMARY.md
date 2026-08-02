@@ -50,9 +50,11 @@ Pricing varies by provider/plan (API list price vs subscription); treat as an or
 
 | Classification | Count | Share |
 | --- | ---: | ---: |
-| False positive | 2,837 | 40.7% |
-| True positive | 4,115 | 59.1% |
-| Uncertain | 12 | 0.2% |
+| False positive | 2,839 | 40.8% |
+| True positive | 4,125 | 59.2% |
+| Uncertain | 0 | 0.0% |
+
+All 12 former uncertains reclassified (WeThePeople 8×CWE-1084 → TP; pycaps CWE-22 → TP; violit CWE-829 → TP; logxide CWE-1121 → FP; pdf_oxide CWE-88 → FP). See `MASTER.md` § Uncertain findings.
 
 ## Top detector weaknesses (fixable)
 

@@ -35,9 +35,9 @@ function_context_path: ./scripts/findings/functions
 
 | Classification | Count | Finding IDs |
 | --- | ---: | --- |
-| False positive | 185 | 2, 4, 5, 14, 16, 18, 19, 21, 22, 25, 26, 30, 31, 33, 52, 57, 60, 115, 124, 129, 146, 151, 154, 168, 169, 170, 171, 173, 174, 175, 177, 179, 180, 182, 183, 185, 186, 188, 189, 191, 192, 194, 196, 197, 199, 201, 203, 204, 215, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 234, 235, 236, 237, 238, 239, 242, 243, 244, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 260, 261, 263, 270, 279, 284, 285, 287, 288, 289, 290, 291, 292, 293, 294, 295, 297, 298, 303, 304, 307, 308, 309, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 341, 342, 343, 346, 348, 349, 351, 353, 354, 355, 357, 359, 361, 362, 364, 366, 368, 370, 372, 373, 375, 377, 382, 397, 405, 411, 412, 414, 416, 417, 418, 419, 420, 423, 426, 427, 431, 439, 441, 442, 446, 457, 460, 461, 467, 490, 491, 492, 498, 500, 501, 502, 503 |
+| False positive | 186 | 2, 4, 5, 14, 16, 18, 19, 21, 22, 25, 26, 30, 31, 33, 52, 57, 60, 115, 124, 129, 146, 151, 154, 168, 169, 170, 171, 173, 174, 175, 177, 179, 180, 182, 183, 185, 186, 188, 189, 191, 192, 194, 196, 197, 199, 201, 203, 204, 215, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 234, 235, 236, 237, 238, 239, 242, 243, 244, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 260, 261, 263, 270, 279, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 297, 298, 303, 304, 307, 308, 309, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 341, 342, 343, 346, 348, 349, 351, 353, 354, 355, 357, 359, 361, 362, 364, 366, 368, 370, 372, 373, 375, 377, 382, 397, 405, 411, 412, 414, 416, 417, 418, 419, 420, 423, 426, 427, 431, 439, 441, 442, 446, 457, 460, 461, 467, 490, 491, 492, 498, 500, 501, 502, 503 |
 | True positive | 317 | 1, 3, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 20, 23, 24, 27, 28, 29, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 53, 54, 55, 56, 58, 59, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 128, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 147, 148, 149, 150, 152, 153, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 172, 176, 178, 181, 184, 187, 190, 193, 195, 198, 200, 202, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 216, 217, 233, 240, 241, 245, 246, 257, 258, 259, 262, 264, 265, 266, 267, 268, 269, 271, 272, 273, 274, 275, 276, 277, 278, 280, 281, 282, 283, 296, 299, 300, 301, 302, 305, 306, 310, 311, 338, 339, 340, 344, 345, 347, 350, 352, 356, 358, 360, 363, 365, 367, 369, 371, 374, 376, 378, 379, 380, 381, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 398, 399, 400, 401, 402, 403, 404, 406, 407, 408, 409, 410, 413, 415, 421, 422, 424, 425, 428, 429, 430, 432, 433, 434, 435, 436, 437, 438, 440, 443, 444, 445, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 458, 459, 462, 463, 464, 465, 466, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 493, 494, 495, 496, 497, 499 |
-| Uncertain | 1 | 286 |
+| Uncertain | 0 | — |
 
 ## False positives
 
@@ -3558,6 +3558,41 @@ Why this is a false positive: the print is output of a throwaway scratch script 
 
 Checklist evidence: the file is a runnable script (the rule's own exception for CLI/demo scripts), not library code.
 
+### [ ] Finding 286 — CWE-1121
+
+- Function context: `./scripts/findings/functions/286.txt`
+- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/config.py:21:24`
+- Checklist pattern: branch count below threshold of 12
+
+Source excerpt:
+
+```
+def dictConfig(config):
+    cfg = copy.deepcopy(config)
+    if "handlers" in cfg and isinstance(cfg["handlers"], dict):
+        for _name, handler_config in cfg["handlers"].items():
+            if not isinstance(handler_config, dict):
+                continue
+            class_name = handler_config.get("class")
+            if class_name == "logxide.FileHandler":
+                ...
+            elif class_name == "logxide.StreamHandler":
+                ...
+            elif class_name == "logxide.RotatingFileHandler":
+                ...
+            elif class_name == "logxide.HTTPHandler":
+                ...
+            elif class_name == "logxide.OTLPHandler":
+                ...
+            elif class_name in HANDLER_MAP:
+                ...
+    logging.config.dictConfig(cfg)
+```
+
+Why this is a false positive: CWE-1121 requires `branches >= 12` (`minimumRouteBranches` in `internal/lang/python/detectors/cwe/common.go`). Independent count of `if `/`elif `/`for `/`while `/`except ` tokens in `dictConfig` is **9** (3 `if` + 5 `elif` + 1 `for`) after docstring masking — below the threshold. Reclassified from Uncertain.
+
+Checklist evidence: rule condition "at least twelve visible control-flow branches"; source has 9.
+
 ## True positives
 
 The following findings satisfy the rule condition as shown in the chunk context and are reported compactly per rule.
@@ -4006,21 +4041,8 @@ The following findings satisfy the rule condition as shown in the chunk context 
 
 ## Uncertain findings
 
-### [ ] Finding 286 — CWE-1121
+None. Finding 286 (CWE-1121 on `dictConfig`) reclassified as a false positive: measured branch count is 9 < threshold 12.
 
-- Function context: `./scripts/findings/functions/286.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/logxide/logxide/config.py:21:24`
-
-Source excerpt:
-
-```
-         19: 
-         20: 
-    >    21: def dictConfig(config):
-         22:     """
-```
-
-Why it is uncertain: `dictConfig`'s handler-promotion logic contains roughly 9–11 visible branch points (`if`/`elif`/`for` chain with compound conditions); the rule fires at “at least twelve visible control-flow branches” and the exact scanner count cannot be confirmed from the shown source, so the finding sits at the threshold.
 
 ## Final evidence
 
@@ -4028,4 +4050,3 @@ Why it is uncertain: `dictConfig`'s handler-promotion logic contains roughly 9�
 - Chunk evidence: `./scripts/chunks`
 - Function evidence: `./scripts/findings/functions`
 - Validation: `git diff --check` — pass (exit 0, no whitespace errors)
-

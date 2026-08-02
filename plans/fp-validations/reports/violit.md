@@ -36,8 +36,8 @@ function_context_path: ./scripts/findings/functions
 | Classification | Count | Finding IDs |
 | --- | ---: | --- |
 | False positive | 29 | 2, 5, 8, 12, 13, 14, 28, 29, 30, 67, 86, 90, 91, 111, 124, 147, 148, 157, 158, 159, 160, 161, 162, 163, 164, 179, 213, 226, 235 |
-| True positive | 218 | 1, 3, 4, 6, 7, 9, 10, 11, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 87, 88, 89, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 128, 129, 130, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 149, 150, 151, 152, 153, 154, 155, 156, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 227, 228, 229, 230, 231, 232, 233, 234, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248 |
-| Uncertain | 1 | 131 |
+| True positive | 219 | 1, 3, 4, 6, 7, 9, 10, 11, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 87, 88, 89, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 149, 150, 151, 152, 153, 154, 155, 156, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 227, 228, 229, 230, 231, 232, 233, 234, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248 |
+| Uncertain | 0 | — |
 
 ## False positives
 
@@ -696,26 +696,8 @@ Checklist evidence: AST count of real control-flow statements in `expander` (exc
 
 ## Uncertain findings
 
-### [ ] Finding `131` — `CWE-829`
+None. Finding 131 (CWE-829) reclassified as a true positive: `runpy.run_path(script_path)` with a dynamic path matches `detectCWE829` (`isDynamicExpr` on the first argument).
 
-- Function context: `./scripts/findings/functions/131.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/violit/src/violit/cli.py:34:9`
-
-Source excerpt:
-
-```
-    original_sys_path = list(sys.path)
-    if script_dir:
-        sys.path.insert(0, script_dir)
-
-    # Run the script as __main__
-    try:
-        runpy.run_path(script_path, run_name="__main__")
-    except KeyboardInterrupt:
-        pass
-```
-
-Why it is uncertain: `runpy.run_path(script_path)` executes a dynamically selected file path, which is exactly the flagged pattern. However, `script_path` originates from a command-line argument in the `violit run` CLI (the tool's core purpose is running a user-supplied script, analogous to `streamlit run`), not from a network request — the rule's fix targets “request-derived module names or paths”. Whether this is a vulnerability depends on the deployment/trust model: a local developer CLI trusts its operator; the same code exposed as a service would not.
 
 ## True positives
 
@@ -1034,6 +1016,13 @@ Why it is uncertain: `runpy.run_path(script_path)` executes a dynamically select
 | Finding | Source | Reason |
 | --- | --- | --- |
 | 221 | src/violit/widgets/form_widgets.py:543 | `os.path.exists(directory)` check before `os.makedirs` |
+
+
+### CWE-829 — Inclusion of Functionality from Untrusted Control Sphere (1)
+
+| Finding | Source | Reason |
+| --- | --- | --- |
+| 131 | `src/violit/cli.py:34` | `runpy.run_path(script_path, run_name="__main__")` loads a dynamically selected file path for execution — rule condition met (reclassified from Uncertain) |
 
 ## Final evidence
 

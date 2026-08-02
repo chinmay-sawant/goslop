@@ -38,8 +38,8 @@ Note: several rule IDs emitted by the scan (BP-PY-*, CWE-1084, CWE-1121, CWE-112
 | Classification | Count | Finding IDs |
 | --- | ---: | --- |
 | False positive | 70 | 2, 193, 197, 206, 216, 235, 237, 248, 252, 258, 259, 378, 386, 400, 436, 484, 485, 489, 490, 493, 495, 496, 511, 515, 563, 577, 599, 619, 638, 648, 670, 685, 762, 764, 790, 872, 873, 895, 896, 897, 899, 905, 906, 912, 924, 925, 969, 974, 1033, 1059, 1071, 1076, 1093, 1094, 1096, 1097, 1112, 1160, 1164, 1165, 1206, 1279, 1359, 1377, 1413, 1455, 1460, 1470, 1473, 1474 |
-| True positive | 1414 | every remaining finding (1–1492 minus the FP and Uncertain IDs above); enumerated per rule in the `## True positives` tables below |
-| Uncertain | 8 | 174, 285, 440, 451, 977, 1110, 1174, 1204 |
+| True positive | 1422 | every remaining finding (1–1492 minus the FP IDs above); enumerated per rule in the `## True positives` tables below (includes former uncertain CWE-1084 IDs 174, 285, 440, 451, 977, 1110, 1174, 1204) |
+| Uncertain | 0 | — |
 
 ## False positives
 
@@ -1211,113 +1211,9 @@ Checklist evidence: Static SQL literal reaching execute — verified against the
 
 ## Uncertain findings
 
-### [ ] Finding 174 — CWE-1084
+None. Former uncertain CWE-1084 findings (174, 285, 440, 451, 977, 1110, 1174, 1204) reclassified as true positives after confirming detector threshold `len(open/.execute) >= 3` in `detectCWE1084`.
 
-- Function context: `./scripts/findings/functions/174.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/audit_orphan_lobby_company_ids.py:48:12`
 
-Source excerpt:
-
-```
-def main():
-    db = SessionLocal()
-```
-
-Why it is uncertain: CWE-1084 'excessive file/data access operations' — main() performs ~4 data-access operations by direct count; the rule's threshold is undocumented in this build, so 'many' cannot be confirmed or refuted.
-
-### [ ] Finding 285 — CWE-1084
-
-- Function context: `./scripts/findings/functions/285.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/detect_stories.py:1336:51`
-
-Source excerpt:
-
-```
-def detect_contract_windfall(db, sector_idx=None):
-```
-
-Why it is uncertain: detect_contract_windfall shows ~3 direct data-access operations; loop-expanded accesses exist but the threshold is undocumented.
-
-### [ ] Finding 440 — CWE-1084
-
-- Function context: `./scripts/findings/functions/440.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/migrate_add_sanctions.py:41:15`
-
-Source excerpt:
-
-```
-def migrate():
-    if not is_sqlite():
-```
-
-Why it is uncertain: migrate() performs ~6 execute/commit operations; threshold for 'many' is undocumented.
-
-### [ ] Finding 451 — CWE-1084
-
-- Function context: `./scripts/findings/functions/451.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/jobs/migrate_add_specific_issues.py:14:12`
-
-Source excerpt:
-
-```
-def main():
-    if not is_sqlite():
-```
-
-Why it is uncertain: main() performs ~5 execute/print operations; threshold undocumented.
-
-### [ ] Finding 977 — CWE-1084
-
-- Function context: `./scripts/findings/functions/977.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/routers/ops.py:483:45`
-
-Source excerpt:
-
-```
-def db_stats(db: Session = Depends(get_db)):
-```
-
-Why it is uncertain: db_stats() performs ~3 direct execute calls plus per-table loop executions; whether that is 'excessive' depends on an undocumented threshold.
-
-### [ ] Finding 1110 — CWE-1084
-
-- Function context: `./scripts/findings/functions/1110.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/generate_lobbying_breakdown_stories.py:163:52`
-
-Source excerpt:
-
-```
-def generate_sector_breakdown(db, sector_key, cfg):
-```
-
-Why it is uncertain: generate_sector_breakdown has ~3 direct data-access calls in a long function; threshold undocumented.
-
-### [ ] Finding 1174 — CWE-1084
-
-- Function context: `./scripts/findings/functions/1174.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/migrate_twitter_models.py:38:15`
-
-Source excerpt:
-
-```
-def migrate():
-    inspector = inspect(engine)
-```
-
-Why it is uncertain: migrate() performs ~6 schema-access operations; threshold undocumented.
-
-### [ ] Finding 1204 — CWE-1084
-
-- Function context: `./scripts/findings/functions/1204.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/WeThePeople/scripts/remediate_published_stories.py:107:63`
-
-Source excerpt:
-
-```
-def _derive_range_from_family(db, family, sector, entity_ids):
-```
-
-Why it is uncertain: _derive_range_from_family performs ~4 data-access operations; threshold undocumented.
 ## True positives
 
 ### BP-PY-1 — Bare Except Clause (494)
@@ -2774,14 +2670,22 @@ Why it is uncertain: _derive_range_from_family performs ~4 data-access operation
 | 442 | `jobs/migrate_add_sanctions.py:58:23` | cursor.execute with f-string formatted SQL |
 | 446 | `jobs/migrate_add_sanctions.py:61:23` | cursor.execute with f-string formatted SQL |
 
-### CWE-1084 — Invokable Control Element with Excessive File or Data Access Operations (5)
+### CWE-1084 — Invokable Control Element with Excessive File or Data Access Operations (13)
 
 | Finding | Source | Reason |
 | --- | --- | --- |
+| 174 | `jobs/audit_orphan_lobby_company_ids.py:48:12` | `main()` has 3× `db.execute` (≥3 open/.execute threshold) — reclassified from Uncertain |
+| 285 | `jobs/detect_stories.py:1336:51` | `detect_contract_windfall` has 3× `db.execute` (≥3 threshold) — reclassified from Uncertain |
 | 418 | `jobs/migrate_add_ai_summaries.py:52:15` | function performs many data-access operations |
 | 435 | `jobs/migrate_add_indexes.py:116:12` | function performs many data-access operations |
+| 440 | `jobs/migrate_add_sanctions.py:41:15` | `migrate()` has 4× `.execute` (≥3 threshold) — reclassified from Uncertain |
+| 451 | `jobs/migrate_add_specific_issues.py:14:12` | `main()` has 3× `conn.execute` (≥3 threshold) — reclassified from Uncertain |
+| 977 | `routers/ops.py:483:45` | `db_stats` has 3× `db.execute` (≥3 threshold) — reclassified from Uncertain |
 | 1100 | `scripts/fix_finance_audit_20260417.py:147:42` | function performs many data-access operations |
+| 1110 | `scripts/generate_lobbying_breakdown_stories.py:163:52` | `generate_sector_breakdown` has 3× `db.execute` (≥3 threshold) — reclassified from Uncertain |
 | 1162 | `scripts/generate_tech_stories.py:68:26` | function performs many data-access operations |
+| 1174 | `scripts/migrate_twitter_models.py:38:15` | `migrate()` has 5× `conn.execute` (≥3 threshold) — reclassified from Uncertain |
+| 1204 | `scripts/remediate_published_stories.py:107:63` | `_derive_range_from_family` has 4× `db.execute` (≥3 threshold) — reclassified from Uncertain |
 | 1222 | `scripts/remediate_short_stories.py:228:12` | function performs many data-access operations |
 
 ### CWE-1046 — Creation of Immutable Text Using String Concatenation (5)

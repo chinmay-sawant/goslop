@@ -36,8 +36,8 @@ function_context_path: ./scripts/findings/functions
 | Classification | Count | Finding IDs |
 | --- | ---: | --- |
 | False positive | 23 | 1, 10, 13, 15, 16, 20, 23, 25, 28, 30, 31, 35, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 51 |
-| True positive | 27 | 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 17, 18, 19, 21, 24, 26, 27, 29, 32, 33, 34, 36, 37, 38, 49, 50 |
-| Uncertain | 1 | 22 |
+| True positive | 28 | 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 17, 18, 19, 21, 22, 24, 26, 27, 29, 32, 33, 34, 36, 37, 38, 49, 50 |
+| Uncertain | 0 | — |
 
 ## False positives
 
@@ -524,20 +524,8 @@ Checklist evidence: rule condition "path checked before later separate use" is m
 
 ## Uncertain findings
 
-### [ ] Finding 22 — CWE-22
+None. Finding 22 (CWE-22) reclassified as a true positive: `open(os.path.join(self._base_path, rule.filename), ...)` matches the rule condition (joined path segment reaches `open` without basename/resolve confinement).
 
-- Function context: `./scripts/findings/functions/22.txt`
-- Source: `/home/chinmay/ChinmayPersonalProjects/goslop/real-repos/pycaps/src/pycaps/pipeline/json_config_loader.py:227:28`
-
-Source excerpt:
-
-```
-            elif rule.type == "wordlist":
-                wordlist = open(os.path.join(self._base_path, rule.filename), "r", encoding="utf-8").read().split()
-                tagger.add_wordlist_rule(Tag(rule.tag), wordlist)
-```
-
-Why it is uncertain: `rule.filename` is a config-file segment joined onto `self._base_path` (the config's own directory) and passed to `open()` without basename/resolve confinement, which matches the rule condition; whether this is exploitable depends on the deployment trust boundary of the JSON config file — if the config is user-authored local input there is no privilege gain, but if configs can originate from untrusted sources (shared/downloaded templates), the traversal becomes real.
 
 ## True positives
 
@@ -597,6 +585,13 @@ Why it is uncertain: `rule.filename` is a config-file segment joined onto `self.
 | Finding | Source | Reason |
 | --- | --- | --- |
 | 29 | `src/pycaps/renderer/renderer_page.py:9` | `get_html` defaults `segment_tags=[], line_tags=[], words=[], word_tags=[], word_states=[]` are shared mutable lists |
+
+
+### CWE-22 — Path Traversal (1)
+
+| Finding | Source | Reason |
+| --- | --- | --- |
+| 22 | `src/pycaps/pipeline/json_config_loader.py:227` | `open(os.path.join(self._base_path, rule.filename), ...)` joins a config-controlled filename onto a base path without basename/resolve confinement — rule condition met (reclassified from Uncertain) |
 
 ## Final evidence
 

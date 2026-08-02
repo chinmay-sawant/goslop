@@ -31,23 +31,23 @@ reports: plans/skills/false-positive-audit/reports/<name>.md
 
 | Classification | Count | Repos (FP/TP/U) |
 | --- | ---: | --- |
-| False positive | **2,837 (40.7%)** | see table below |
-| True positive | **4,115 (59.1%)** | see table below |
-| Uncertain | **12 (0.2%)** | WeThePeople 8, pycaps 1, logxide 1, pdf_oxide 1, violit 1 |
+| False positive | **2,839 (40.8%)** | see table below |
+| True positive | **4,125 (59.2%)** | see table below |
+| Uncertain | **0 (0.0%)** | all 12 former uncertains reclassified (see note below) |
 
 ### Per-repo breakdown
 
 | Repo | Findings | FP | TP | U | Dominant FP pattern |
 | --- | ---: | ---: | ---: | ---: | --- |
-| WeThePeople | 1,492 | 70 | 1,414 | 8 | CWE-89 static/parameterized SQL; CWE-909 `db` param; BP-PY-36 closed session |
+| WeThePeople | 1,492 | 70 | 1,422 | 0 | CWE-89 static/parameterized SQL; CWE-909 `db` param; BP-PY-36 closed session |
 | httpmorph | 714 | 278 | 436 | 0 | BP-PY-46 print in script modules (272) |
-| pdf_oxide | 636 | 447 | 188 | 1 | BP-PY-46 print in scripts/examples (414) |
-| logxide | 503 | 185 | 317 | 1 | BP-PY-46 scripts/benchmarks (105); BP-PY-1 handled errors (23) |
+| pdf_oxide | 636 | 448 | 188 | 0 | BP-PY-46 print in scripts/examples (414) |
+| logxide | 503 | 186 | 317 | 0 | BP-PY-46 scripts/benchmarks (105); BP-PY-1 handled errors (23) |
 | Project_Parva | 412 | 401 | 11 | 0 | BP-PY-45 sys.path bootstrap (133); BP-PY-46 CLI prints (77) |
 | CourtScrapper | 340 | 12 | 328 | 0 | CWE-117 constant/numeric log interpolations |
 | niquests | 346 | 311 | 35 | 0 | except-pass family (132); BP-PY-41 test helpers (52) |
 | caniscrape | 338 | 259 | 79 | 0 | BP-PY-46 CLI command output (255) |
-| violit | 248 | 29 | 218 | 1 | CWE-1121 branch counting; BP-PY-12 `session.exec` (5) |
+| violit | 248 | 29 | 219 | 0 | CWE-1121 branch counting; BP-PY-12 `session.exec` (5) |
 | pictex | 208 | 166 | 42 | 0 | BP-PY-41 `check_func` golden-file assertions (160) |
 | wse | 206 | 49 | 157 | 0 | BP-PY-46 scripts+docstrings (28); BP-PY-13 test fixtures (9) |
 | movielite | 154 | 96 | 58 | 0 | BP-PY-46 examples/ scripts (87) |
@@ -56,7 +56,7 @@ reports: plans/skills/false-positive-audit/reports/<name>.md
 | httptap | 103 | 103 | 0 | 0 | BP-PY-46 docstring+CLI prints (30); BP-PY-41 benchmarks (28) |
 | onlymaps | 99 | 63 | 36 | 0 | BP-PY-12 `exec` name collision (25); BP-PY-7 custom `open` (15) |
 | pyauto-desktop | 92 | 4 | 88 | 0 | BP-PY-12 PyQt `.exec()`; PERF-PY-26 name substring |
-| pycaps | 51 | 23 | 27 | 1 | PERF-PY-25 lambda closure semantics (10); BP-PY-7 non-builtin open (5) |
+| pycaps | 51 | 23 | 28 | 0 | PERF-PY-25 lambda closure semantics (10); BP-PY-7 non-builtin open (5) |
 | rendercv | 73 | 46 | 27 | 0 | BP-PY-46 CLI (15); BP-PY-11/CWE-502 ruamel.yaml safe (10) |
 | among-llms | 72 | 0 | 72 | 0 | none (BP-PY-47 ×54 all true) |
 | pytogether | 71 | 1 | 70 | 0 | BP-PY-46 print inside string template |
@@ -143,7 +143,7 @@ Benign guards: test teardown `exists→remove` on own temp file, ValueError-only
 
 ### 10. CWE-88 — argument injection (~10 FP)
 
-argv segments interpolate only fixed constants/internal paths (`TLS_CERT_DIR`, mkdtemp paths, socket-assigned ports); untrusted values reach stdin not argv (wse 2, pdf_oxide 5, CourtScrapper 1, Cronboard 1, rendercv 2).
+argv segments interpolate only fixed constants/internal paths (`TLS_CERT_DIR`, mkdtemp paths, socket-assigned ports); untrusted values reach stdin not argv (wse 2, pdf_oxide 6, CourtScrapper 1, Cronboard 1, rendercv 2).
 
 ### 11. Misc singletons (~40 FP)
 
@@ -153,7 +153,7 @@ argv segments interpolate only fixed constants/internal paths (`TLS_CERT_DIR`, m
 - BP-PY-49 TLS markers where verification isn't disabled (niquests 11, httptap 7, wse).
 - BP-PY-36/BPPY-45/BPPY-37/BPPY-32/BPPY-14 etc. — see per-repo reports.
 
-## True positives (4,115)
+## True positives (4,125)
 
 Verified against rule conditions and source. Notable clusters:
 
@@ -161,18 +161,22 @@ Verified against rule conditions and source. Notable clusters:
 - BP-PY-47 eager f-string logging (among-llms 54, CourtScrapper 192, logxide 153) — eager evaluation before formatting.
 - BP-PY-46 prints in actual library modules (httpmorph 163, WeThePeople, logxide 1 real hit in interceptor.py).
 - Complexity/nesting heuristics CWE-1121/1124 (violit, niquests 10, pdf_oxide 16).
-- CWE-829/CWE-94 dynamic imports over non-literal args (voicetag 2, niquests 22 — some FP).
+- CWE-829/CWE-94 dynamic imports over non-literal args (voicetag 2, niquests 22 — some FP; violit 131 `runpy.run_path` reclassified TP).
+- CWE-1084 ≥3 `open`/`.execute` in one function (WeThePeople: 13 total after reclassifying 8 former uncertains).
+- CWE-22 path join without confinement (pycaps 22).
 - Missing timeouts on `session.get` (niquests 4, BP-PY-14), CWE-502 pickle of potentially untrusted data, CWE-295 CERT_NONE, CWE-489/756 in logxide tests.
 
-## Uncertain findings (12)
+## Uncertain findings (0)
 
-| Repo | Count | Reason |
-| --- | ---: | --- |
-| WeThePeople | 8 | CWE-1084 data-access op count (3–6) vs undocumented threshold |
-| pycaps | 1 | ambiguous close-pair context |
-| logxide | 1 | thread-lifetime evidence insufficient |
-| pdf_oxide | 1 | op-count threshold dependency |
-| violit | 1 | branch-count vs undocumented threshold |
+All 12 former uncertains reclassified after verifying detector thresholds / rule conditions in source:
+
+| Repo | ID(s) | Rule | New class | Rationale |
+| --- | --- | --- | --- | --- |
+| WeThePeople | 174, 285, 440, 451, 977, 1110, 1174, 1204 | CWE-1084 | **TP** | threshold is `>= 3` `open`/`.execute` calls (`detectCWE1084`); each function has 3–5 `.execute` |
+| pycaps | 22 | CWE-22 | **TP** | `open(os.path.join(base, rule.filename))` without basename/resolve confinement |
+| logxide | 286 | CWE-1121 | **FP** | threshold is 12 branches; `dictConfig` has 9 (`if`/`elif`/`for`) |
+| pdf_oxide | 632 | CWE-88 | **FP** | local olmOCR bench harness; argv is `sys.executable`-class + internal corpus paths (same pattern as sibling CWE-88 FPs) |
+| violit | 131 | CWE-829 | **TP** | `runpy.run_path(script_path)` with dynamic path matches `detectCWE829` |
 
 ## Final evidence
 
