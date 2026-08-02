@@ -1,0 +1,11 @@
+# goslop text fixture — interpolated f-string remains eager format TP.
+lang: python
+file: mypkg/eager_log.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def ready(name):
+    logger.info(f"service ready: {name}")

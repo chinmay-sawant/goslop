@@ -6,4 +6,4 @@ import subprocess
 
 
 def inspect_file(filename: str):
-    return subprocess.run(["tool", "--file", filename], shell=False)
+    return subprocess.run(["tool", f"--file={filename}"], shell=False)

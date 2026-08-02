@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-89-adjacent-literal-vulnerable.py
+---
+def has_row(conn, entity_type, entity_id):
+    conn.execute(
+        "SELECT 1 FROM stock_fundamentals "
+        f"WHERE entity_type = '{entity_type}' AND entity_id = '{entity_id}'"
+    )

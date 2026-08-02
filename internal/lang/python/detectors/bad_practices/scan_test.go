@@ -157,6 +157,7 @@ func TestBPPY6AssertValidation(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6")
 	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-invariant")
+	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-request-invariant")
 	assertBPFixtureCase(t, "BP-PY-6", "BP-PY-6-test-path")
 	// Extra test-path filename shapes reuse the vulnerable body.
 	vuln := loadBPFixture(t, "BP-PY-6", true)
@@ -167,6 +168,8 @@ func TestBPPY6AssertValidation(t *testing.T) {
 func TestBPPY7OpenWithoutWith(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7")
+	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7-attr-method-open")
+	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7-def-open")
 }
 
 func TestBPPY8SubprocessShell(t *testing.T) {
@@ -192,6 +195,7 @@ func TestBPPY10Pickle(t *testing.T) {
 	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10")
 	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-local-cache")
 	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-cache-blob")
+	assertBPFixtureCase(t, "BP-PY-10", "BP-PY-10-roundtrip")
 }
 
 func TestBPPY11YamlLoad(t *testing.T) {
@@ -204,12 +208,17 @@ func TestBPPY12EvalExec(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12")
 	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-exec")
+	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-attr-method-exec")
+	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-string-literal-exec")
 }
 
 func TestBPPY13HardcodedSecret(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13")
 	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-placeholder")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-env-key-name")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-concat-token")
+	assertBPFixtureCase(t, "BP-PY-13", "BP-PY-13-fstring-secret")
 }
 
 func TestBPPY16FlaskDebug(t *testing.T) {

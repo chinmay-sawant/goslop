@@ -1,0 +1,13 @@
+# goslop text fixture — two-field error record: the exception value is stored
+# into an error field plus a note on the result object (httptap analyzer.py:262
+# FP shape)
+lang: python
+file: record_error_step.py
+---
+def run_step(step):
+    try:
+        do_work(step)
+    except Exception as e:
+        step.error = str(e)
+        step.note = "Step failed"
+    return step

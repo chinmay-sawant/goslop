@@ -1,0 +1,9 @@
+# goslop text fixture — swallow without recording the exception stays reportable
+lang: python
+file: service.py
+---
+def evaluate(rule, context):
+    try:
+        return build_evidence_packet(rule, context)
+    except Exception:
+        return None

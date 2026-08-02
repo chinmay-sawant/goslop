@@ -1,0 +1,10 @@
+# goslop text fixture — ValueError:pass after non-probe work stays reportable
+lang: python
+file: service.py
+---
+def process(item):
+    try:
+        save_to_db(item)
+        notify(item)
+    except ValueError:
+        pass

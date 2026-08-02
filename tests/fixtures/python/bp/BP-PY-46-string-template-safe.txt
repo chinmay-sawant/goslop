@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: settings/base.py
+---
+NONE_TEMPLATE = """name = input("Whats your name? ")
+print(f"Hello from PyTogether, {name}!")"""

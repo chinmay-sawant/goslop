@@ -1,0 +1,18 @@
+# goslop text fixture — pass-only except without else recovery; continues into control flow
+lang: python
+file: scripts/download_jpl_kernel.py
+---
+def download(url, output, expected_sha256, expected_size):
+    if output.exists():
+        try:
+            validate_planetary_spk(
+                output,
+                expected_sha256=expected_sha256,
+                expected_size=expected_size,
+            )
+        except (OSError, SpkValidationError):
+            pass
+    if not quiet:
+        print("re-downloading")
+    fetch_and_write(url, output)
+    return output

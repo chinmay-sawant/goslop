@@ -1,0 +1,23 @@
+# Fixture for PERF-PY-26 (safe): recursive-descent parse_* in a token loop
+lang: python
+file: parser.py
+---
+class Parser:
+    def parse(self):
+        while not self.at_end():
+            if self.check("MAIN"):
+                main = self.parse_main_block()
+            elif self.check("DEF"):
+                self.parse_function()
+            else:
+                self.advance()
+        return main
+
+    def parse_main_block(self):
+        return ("main", self.parse_statements())
+
+    def parse_function(self):
+        return ("fn", self.parse_statements())
+
+    def parse_statements(self):
+        return []

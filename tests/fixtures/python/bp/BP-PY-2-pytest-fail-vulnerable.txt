@@ -1,0 +1,9 @@
+# goslop text fixture — pass-only except without deliberate fail/raise stays TP
+lang: python
+file: test_timeout_vuln.py
+---
+def test_read_timeout(httpbin, timeout):
+    try:
+        niquests.get(httpbin("delay/10"), timeout=timeout)
+    except ReadTimeout:
+        pass

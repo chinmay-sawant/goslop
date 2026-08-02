@@ -177,3 +177,25 @@ All 29 confirmed false positives are now suppressed; the remaining 20 findings s
 - `make lint-all` — fails on pre-existing branch issues outside this reduction.
 - Audit checklist `[ ]` boxes left unchanged (per skill).
 - Remaining uncertainty: none.
+
+## Follow-up reduction: showcase corpus 41-repo audit (2026-08-02)
+
+- Audit source: `plans/fp-validations/reports/` (+ `MASTER.md`)
+- Evidence: `scripts/<repo>/chunks` and `scripts/<repo>/findings/functions/<id>.txt` (per-report paths)
+- Parallel batches 1–5; integrated ledger: `plans/fp-review-reduce/python/batch-all-reduction-2026-08-02.md`
+
+### Guardrail families
+
+| Family | Rules | Batch ledger |
+| --- | --- | --- |
+| Script/CLI/docstring prints | BP-PY-46 | batch-1 |
+| Assertion idioms / sys.path bootstrap | BP-PY-41, BP-PY-45 | batch-2 |
+| Handled broad excepts | BP-PY-1, CWE-396, BP-PY-42 | batch-3 |
+| Identifier collisions | BP-PY-12, BP-PY-7, CWE-89, CWE-94 | batch-4 |
+| Misc MASTER #5–#11 | CWE-117/1341/367/88/93/215/502, PERF-PY-25/26, BP-PY-11/13/49 | batch-5 |
+
+### Validation
+
+- Focused: `go test ./internal/lang/python/detectors/{bad_practices,cwe,perf}/... ./tests/integration/python -count=1` — **pass**
+- gofmt on detector packages — clean; `make lint` still red on `real-repos/pdf_oxide` clones only
+- Audit checklist boxes unchanged

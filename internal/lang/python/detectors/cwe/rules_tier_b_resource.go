@@ -42,7 +42,6 @@ func init() {
 }
 
 var (
-	pyTierBTOCTOURE          = regexp.MustCompile(`(?is)os\.path\.(?:exists|lexists)\s*\(\s*\w+\s*\)[\s\S]{0,300}(?:open|os\.remove|os\.unlink)\s*\(`)
 	pyTierBSensitiveCache    = regexp.MustCompile(`(?is)cache\.set\s*\([^\n]*(?:password|secret|token|ssn|credit_card)`)
 	pyTierBWriteSecretRE     = regexp.MustCompile(`(?is)open\s*\(\s*["'](?:/tmp/|static/|media/)[^"']*(?:secret|token|password)[^"']*["']\s*,\s*["']w`)
 	pyTierBAssertRE          = regexp.MustCompile(`(?im)^\s*assert\s+request\.(?:user|args|headers|cookies)\b`)
@@ -52,7 +51,10 @@ var (
 )
 
 func detectCWE367(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBTOCTOURE); start >= 0 {
+	if isPythonTestModule(unit) {
+		return
+	}
+	if start := toctouSamePathStart(facts, unit.Source); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE367, start, "filesystem path is checked before a later separate use", confidence84, out)
 	}
 }
@@ -117,6 +119,12 @@ func detectCWE552(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 }
 
 func detectCWE617(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
+	// Test modules deliberately assert on request-shaped fixtures (httptap
+	// tests/test_http_client.py assert request.headers[...]); not deployed
+	// reachable assertions on live request state.
+	if isPythonTestModule(unit) {
+		return
+	}
 	if start := firstCodeMatchStart(facts, unit.Source, pyTierBAssertRE); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE617, start, "reachable assertion depends on request-controlled state", confidence80, out)
 	}

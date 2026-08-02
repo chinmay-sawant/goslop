@@ -1,0 +1,17 @@
+# goslop text fixture — try/except/else arms do not stack extra depth on top
+# of an already-counted try (niquests OCSP optional-import recovery shape).
+# with still counts as a nest frame; keep algorithmic depth under six.
+lang: python
+file: ocsp_optional.py
+---
+def verify(conn_info, proxies):
+    if conn_info.issuer_certificate_der is None:
+        with Session() as session:
+            try:
+                raw = session.get(hint_ca_issuers[0])
+            except RequestException:
+                pass
+            else:
+                if raw.status_code and 300 > raw.status_code >= 200:
+                    if raw.content is not None:
+                        issuer_certificate = Certificate(raw.content)

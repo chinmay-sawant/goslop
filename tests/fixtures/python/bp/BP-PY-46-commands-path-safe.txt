@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: package/commands/init.py
+---
+import click
+from rich import print
+
+
+def init_command():
+    print("Cloud setup")

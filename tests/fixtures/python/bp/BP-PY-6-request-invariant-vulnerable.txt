@@ -1,0 +1,9 @@
+# goslop text fixture
+# Vulnerable: assert used for real request-input / authz runtime validation.
+lang: python
+file: views.py
+---
+def check(request):
+    assert request.user.is_authenticated
+    assert request.GET["id"]
+    return True

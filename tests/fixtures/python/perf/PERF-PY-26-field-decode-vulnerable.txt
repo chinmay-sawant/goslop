@@ -1,0 +1,14 @@
+# Fixture for PERF-PY-26 (vulnerable): decode_blob still fires in a hot loop.
+lang: python
+file: app/assets.py
+---
+def decode_blob(data):
+    return memoryview(data).tobytes()
+
+
+def handle_job(job):
+    pages = []
+    for asset in job.assets:
+        payload = decode_blob(asset.data)
+        pages.append(render_asset(payload))
+    return pages

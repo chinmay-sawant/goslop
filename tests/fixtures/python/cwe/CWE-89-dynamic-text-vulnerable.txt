@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: CWE-89-dynamic-text-vulnerable.py
+---
+from sqlalchemy import text
+
+
+def dump_rows(db, table, columns, params):
+    sql = f"SELECT {columns} FROM {table} WHERE id = :id"
+    return db.execute(text(sql), params)

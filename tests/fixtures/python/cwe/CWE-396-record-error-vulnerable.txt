@@ -1,0 +1,12 @@
+# goslop text fixture — lone .error= assignment stays reportable: the generic
+# catch still merges distinct failure conditions (WeThePeople
+# tests/performance/query_analysis.py:294 TP shape)
+lang: python
+file: hidden_error.py
+---
+def run_step(step):
+    try:
+        do_work(step)
+    except Exception as e:
+        step.error = str(e)
+    return step

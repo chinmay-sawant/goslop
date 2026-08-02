@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: BP-PY-7-attr-method-open-vulnerable.py
+---
+def read(path):
+    f = open(path)
+    return f.read()

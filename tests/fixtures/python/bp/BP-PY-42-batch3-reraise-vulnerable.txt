@@ -1,0 +1,9 @@
+# goslop text fixture — try/except used instead of pytest.raises
+lang: python
+file: test_reraise_vuln.py
+---
+def test_send_request():
+    try:
+        send()
+    except Exception:
+        pass

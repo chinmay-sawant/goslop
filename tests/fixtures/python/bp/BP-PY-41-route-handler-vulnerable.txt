@@ -1,0 +1,7 @@
+# Fixture for BP-PY-41 (vulnerable) — plain test_* without route decorator still fires
+lang: python
+file: app/api/rules_routes.py
+---
+async def test_rule(rule_id: str) -> None:
+    await run_cpu_bound(test_rule_payload, rule_id)
+    store_result(rule_id)

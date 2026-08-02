@@ -1,0 +1,11 @@
+# goslop text fixture — pass-only generic catch without a JS-bridge try body
+# stays reportable (declaration of generic Exception)
+lang: python
+file: generic_pass.py
+---
+def load_optional(path):
+    try:
+        return open(path).read()
+    except Exception:
+        pass
+    return "defaults"

@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: CWE-89-non-sql-execute-safe.py
+---
+async def handle(request, options, web_function, data, form):
+    outcome = request.execute(options)
+    envelope, status = await execute(web_function, data, form=form)
+    return outcome, envelope, status

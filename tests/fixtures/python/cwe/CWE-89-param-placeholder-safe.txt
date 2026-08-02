@@ -1,0 +1,20 @@
+# goslop text fixture
+lang: python
+file: CWE-89-param-placeholder-safe.py
+---
+class Store:
+    def param(self) -> str:
+        return "?"
+
+    def execute(self, sql: str, params: tuple) -> None:
+        raise NotImplementedError
+
+
+def record_audit(store: Store, event_id: str, action: str, actor: str) -> None:
+    store.execute(
+        f"""
+        INSERT INTO billing_audit_events (id, action, actor_principal)
+        VALUES ({store.param()}, {store.param()}, {store.param()})
+        """,
+        (event_id, action, actor),
+    )

@@ -1,0 +1,13 @@
+# goslop text fixture — f-string logging inside tests is not a production
+# hot-path concern (logxide test_* FPs).
+lang: python
+file: tests/test_basic_logging.py
+---
+import logging
+
+logger = logging.getLogger("test")
+
+
+def test_info_messages():
+    for i in range(3):
+        logger.info(f"Message {i}")

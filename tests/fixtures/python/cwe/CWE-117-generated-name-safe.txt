@@ -1,0 +1,18 @@
+# goslop text fixture — CWE-117 internally generated names + numerics (safe)
+lang: python
+file: CWE-117-generated-name-safe.py
+---
+import logging
+import time
+
+logger = logging.getLogger("app")
+
+
+def start_worker(first_name: str, last_name: str) -> None:
+    start = time.time()
+    thread_name = f"Worker-{first_name}"
+    attempt = 0
+    attempt += 1
+    elapsed = time.time() - start
+    logger.info(f"{thread_name} starting for attorney: {first_name} {last_name}")
+    logger.info(f"ready after {elapsed:.2f}s ({attempt} attempts)")

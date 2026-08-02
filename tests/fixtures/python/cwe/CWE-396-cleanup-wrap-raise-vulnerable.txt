@@ -1,0 +1,13 @@
+# goslop text fixture — cleanup then wrap-raise stays reportable (caniscrape
+# config.py TP shape). Bare re-raise after cleanup is the safe sibling.
+lang: python
+file: config.py
+---
+def save(temp_file, path, data):
+    try:
+        write(temp_file, data)
+        os.replace(temp_file, path)
+    except Exception as e:
+        if temp_file.exists():
+            temp_file.unlink()
+        raise Exception(f"Failed to save config.")

@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: package/services/init.py
+---
+def init_service():
+    print("starting service")

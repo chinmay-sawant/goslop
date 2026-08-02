@@ -1,0 +1,18 @@
+# goslop text fixture
+lang: python
+file: CWE-89-adjacent-literal-safe.py
+---
+def has_row(conn, entity_type, entity_id, today):
+    row = conn.execute(
+        "SELECT 1 FROM stock_fundamentals "
+        "WHERE entity_type = ? AND entity_id = ? AND snapshot_date = ? LIMIT 1",
+        (entity_type, entity_id, today),
+    ).fetchone()
+    return row is not None
+
+
+def create_index(op):
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS ix_anomalies_dedupe "
+        "ON anomalies (entity_id, pattern_type)"
+    )

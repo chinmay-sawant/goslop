@@ -1,0 +1,6 @@
+# goslop text fixture — CWE-93 dynamic response-header write (vulnerable)
+lang: python
+file: CWE-93-response-header-vulnerable.py
+---
+def redirect(response, next_url: str) -> None:
+    response.headers["Location"] = f"/next?to={next_url}"

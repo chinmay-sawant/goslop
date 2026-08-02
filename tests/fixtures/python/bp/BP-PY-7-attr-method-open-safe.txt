@@ -1,0 +1,19 @@
+# goslop text fixture
+lang: python
+file: BP-PY-7-attr-method-open-safe.py
+---
+import fitz
+from PIL import Image
+
+
+def load_pdf(path):
+    doc = fitz.open(path)
+    return doc.page_count
+
+
+def load_image(path):
+    return Image.open(path)
+
+
+def reopen(conn):
+    conn.open()

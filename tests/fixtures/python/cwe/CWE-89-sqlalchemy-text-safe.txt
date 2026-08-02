@@ -1,0 +1,16 @@
+# goslop text fixture
+lang: python
+file: CWE-89-sqlalchemy-text-safe.py
+---
+from sqlalchemy import text
+
+
+def update_tier(db, tier, score, now, story_id):
+    db.execute(
+        text(
+            "UPDATE stories SET verification_tier = :tier, "
+            "verification_score = :score, updated_at = :now "
+            "WHERE id = :id"
+        ),
+        {"tier": tier, "score": score, "now": now, "id": story_id},
+    )

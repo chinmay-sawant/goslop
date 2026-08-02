@@ -1,0 +1,17 @@
+# Fixture for BP-PY-41 (vulnerable) — unrelated helper is not an assertion
+lang: python
+file: tests/unit/trust/test_temporal_trust_tools.py
+---
+from pathlib import Path
+
+from tools.validate_schemas import load_schema_file
+
+ROOT = Path(__file__).resolve().parents[3]
+
+
+def test_trust_schemas_parse_and_validate_examples():
+    for relative in [
+        "schemas/signature.schema.json",
+        "schemas/transparency-log-entry.schema.json",
+    ]:
+        load_schema_file(ROOT / relative)

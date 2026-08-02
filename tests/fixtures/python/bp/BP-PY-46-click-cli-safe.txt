@@ -1,0 +1,16 @@
+# goslop text fixture
+lang: python
+file: package/commands.py
+---
+import click
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command(name="scan")
+@click.option("--url", required=True)
+def scan_command(url):
+    print(f"Analyzing: {url}")

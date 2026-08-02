@@ -1,0 +1,9 @@
+# goslop text fixture — except Exception: pass after side-effectful network call
+lang: python
+file: swallow_request.py
+---
+def fetch(url):
+    try:
+        requests.get(url)
+    except Exception:
+        pass

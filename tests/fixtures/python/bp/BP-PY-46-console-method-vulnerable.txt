@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: httptap/render.py
+---
+from rich.console import Console
+
+console = Console()
+
+
+def render_report(steps):
+    for i, step in enumerate(steps, 1):
+        print(f"Step {i}: {step.response.status}")
+    return 0

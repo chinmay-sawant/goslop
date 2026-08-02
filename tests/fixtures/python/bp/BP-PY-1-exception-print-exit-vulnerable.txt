@@ -1,0 +1,16 @@
+# goslop text fixture — logger.exception + return None without print is a
+# swallowed network failure (WeThePeople rate_limit_store TP); must fire
+lang: python
+file: rate_limit_store.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def check_rate_limit(ip, endpoint):
+    try:
+        return store.increment(ip, endpoint)
+    except Exception:
+        logger.exception("Rate limit store error for ip=%s endpoint=%s", ip, endpoint)
+        return None

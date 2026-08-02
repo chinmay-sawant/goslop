@@ -1,0 +1,12 @@
+# goslop text fixture — ruamel YAML().load (safe)
+lang: python
+file: analyze.py
+---
+from ruamel.yaml import YAML
+from pathlib import Path
+
+
+def load_data(yaml_path: Path):
+    yaml = YAML()
+    with yaml_path.open(encoding="utf-8") as f:
+        return yaml.load(f)

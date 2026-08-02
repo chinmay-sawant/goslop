@@ -1,0 +1,15 @@
+# goslop text fixture — specific exception type (not Exception/BaseException)
+# so CWE-396 (declaration of generic catch) is silent. A single wrapped raise
+# of a more specific type is still a CWE-396 hit when the catch is Exception
+# (see CWE-396-batch3-reraise-from-vulnerable / voicetag TPs).
+lang: python
+file: CWE-396-batch3-reraise-from-safe.py
+---
+class DomainError(Exception):
+    pass
+
+def load_pipeline(name):
+    try:
+        return build(name)
+    except OSError as exc:
+        raise DomainError(f"Failed to load pipeline: {exc}") from exc

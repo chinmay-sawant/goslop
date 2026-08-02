@@ -1,0 +1,8 @@
+# goslop text fixture — optional-dependency ImportError fallback at module import scope (niquests FP)
+lang: python
+file: optional_import.py
+---
+try:
+    import oracledb
+except ImportError:
+    pass

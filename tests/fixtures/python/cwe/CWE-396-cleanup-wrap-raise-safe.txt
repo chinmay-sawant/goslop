@@ -1,0 +1,12 @@
+# goslop text fixture — cleanup then bare re-raise is safe (safer/niquests FP)
+lang: python
+file: cleanup_raise.py
+---
+def write_atomic(tmp_name, filename, payload):
+    try:
+        with open(tmp_name, "wb") as f:
+            f.write(payload)
+        os.replace(tmp_name, filename)
+    except BaseException:
+        os.remove(tmp_name)
+        raise

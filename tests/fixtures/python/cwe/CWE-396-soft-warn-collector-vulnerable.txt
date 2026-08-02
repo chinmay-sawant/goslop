@@ -1,0 +1,14 @@
+# goslop text fixture — pure wrap-raise stays reportable (html2pic parser /
+# voicetag conflict — TP-safe)
+lang: python
+file: html_parser.py
+---
+class ParseError(Exception):
+    pass
+
+def parse(html_content):
+    try:
+        soup = BeautifulSoup(html_content, "html.parser")
+        return create_root(soup)
+    except Exception as e:
+        raise ParseError(f"Failed to parse HTML: {e}") from e

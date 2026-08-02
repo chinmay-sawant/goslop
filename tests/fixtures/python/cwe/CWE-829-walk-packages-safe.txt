@@ -1,0 +1,15 @@
+# goslop text fixture
+lang: python
+file: CWE-829-walk-packages-safe.py
+---
+import importlib
+import pkgutil
+
+
+def import_all():
+    for package in (_pytest, packaging):
+        for module in pkgutil.walk_packages(package.__path__, f"{package.__name__}."):
+            try:
+                importlib.import_module(module.name)
+            except ImportError:
+                pass

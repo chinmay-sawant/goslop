@@ -1,0 +1,19 @@
+# goslop text fixture — exception-type extraction feeding a failure counter:
+# the handler accounts for the error and logs the first occurrence without
+# swallowing (requestSpeedTest rnet_test.py:37 FP shape)
+lang: python
+file: type_counter.py
+---
+def worker(wid):
+    local_errors = {}
+    local_fail = 0
+    try:
+        resp = fetch(wid)
+        local_ok += 1
+    except Exception as e:
+        name = type(e).__name__
+        local_errors[name] += 1
+        local_fail += 1
+        if local_errors[name] == 1:
+            log.error(f"Worker {wid} error: {e}")
+    return local_fail, local_errors

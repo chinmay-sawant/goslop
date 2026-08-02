@@ -1,0 +1,13 @@
+# goslop text fixture — expected-exception test with pytest.fail then pass
+# (niquests test_requests.py ReadTimeout FP)
+lang: python
+file: test_timeout.py
+---
+import pytest
+
+def test_read_timeout(httpbin, timeout):
+    try:
+        niquests.get(httpbin("delay/10"), timeout=timeout)
+        pytest.fail("The recv() request should time out.")
+    except ReadTimeout:
+        pass

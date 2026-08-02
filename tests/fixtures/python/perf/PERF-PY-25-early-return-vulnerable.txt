@@ -1,0 +1,15 @@
+# Fixture for PERF-PY-25 (vulnerable): heavy lambda scheduled per element
+lang: python
+file: app/batch.py
+---
+class WorkItem:
+    def __init__(self, kind, parent=None):
+        self.kind = kind
+        self.parent = parent
+
+
+def process_batch(rows, parent, schedule):
+    for row in rows:
+        for value in row:
+            item = WorkItem("cell", parent=parent)
+            schedule(lambda i=item: finalize(i))

@@ -1,0 +1,10 @@
+# goslop text fixture — bare KeyError:pass stays reportable (sync-with-uv TP)
+lang: python
+file: cli.py
+---
+def lookup(table, key):
+    try:
+        return table[key]
+    except KeyError:
+        pass
+    return None

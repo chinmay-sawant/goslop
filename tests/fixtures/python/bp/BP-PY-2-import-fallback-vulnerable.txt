@@ -1,0 +1,15 @@
+# goslop text fixture — ImportError pass whose try block executes a call after
+# the import; the fallback is not a pure optional-import guard (httpmorph
+# benchmarks/benchmark.py:56 TP shape)
+lang: python
+file: function_import_pass.py
+---
+def connect():
+    try:
+        from dotenv import load_dotenv
+
+        if Path(".env").exists():
+            load_dotenv(".env")
+    except ImportError:
+        pass
+    return None

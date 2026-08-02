@@ -1,0 +1,13 @@
+# goslop text fixture — best-effort stream probe with defined return-None fallback
+lang: python
+file: stream_read.py
+---
+def get_next_chunk(stream):
+    try:
+        reader = stream.getReader()
+        result = reader.read()
+        if result is None:
+            return None
+        return result
+    except Exception:
+        return None

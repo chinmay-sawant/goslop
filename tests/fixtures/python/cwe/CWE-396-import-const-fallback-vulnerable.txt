@@ -1,0 +1,11 @@
+# goslop text fixture — log then return False stays reportable
+lang: python
+file: send_alerts.py
+---
+def _send_email(to, subject, html):
+    try:
+        resp = requests.post(url, json=payload, timeout=12)
+        return True
+    except Exception as e:
+        log.error("resend exception for %s: %s", to, e)
+        return False

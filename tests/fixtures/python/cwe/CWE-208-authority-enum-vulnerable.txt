@@ -1,0 +1,6 @@
+# goslop text fixture — password/token equality is a timing-sensitive auth sink
+lang: python
+file: backend/app/auth.py
+---
+def authenticate(candidate_token, expected_token):
+    return candidate_token == expected_token

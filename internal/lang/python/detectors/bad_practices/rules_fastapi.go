@@ -337,6 +337,10 @@ func detectBPPY31(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 }
 
 // BP-PY-32: FileResponse with user-influenced path.
+// Requires a real user-path signal (route path param, f-string, request., join)
+// and no confinement in the enclosing function (basename-only / reject ".." /
+// resolve+prefix). Local variables named path built from trusted dirs are not
+// reported (public_artifacts_routes audited FPs).
 func detectBPPY32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-32")
 	if isPythonTestFile(unit) {
@@ -353,7 +357,7 @@ func detectBPPY32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	paramNames := collectRoutePathParams(src)
 
 	lines := codeLinesFacts(facts, src)
-	for _, line := range lines {
+	for i, line := range lines {
 		if !strings.Contains(line.text, "FileResponse") {
 			continue
 		}
@@ -403,21 +407,111 @@ func detectBPPY32(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				start = absInLine + len("FileResponse")
 				continue
 			}
-			// Dynamic?
-			if isDynamicPathArg(pathArg, paramNames) || (fastapiish && !isPlainStringLiteral(pathArg)) {
-				// Require some dynamism signal for non-fastapiish; for fastapiish any non-literal is enough.
-				if isDynamicPathArg(pathArg, paramNames) || isFStringArg(pathArg) ||
-					strings.Contains(pathArg, "request.") || strings.Contains(pathArg, "+") ||
-					strings.Contains(pathArg, ".format") {
-					pushAt(unit, meta, line.byte+absInLine, "FileResponse path comes from user input; confine with realpath+prefix checks", out)
-				} else if fastapiish && isSimpleIdent(strings.TrimSpace(pathArg)) {
-					// Bare param name: FileResponse(name)
+			// Enclosing function confinement silences trusted-prefix / basename policies.
+			if fileResponsePathConfined(lines, i) {
+				start = absInLine + len("FileResponse")
+				continue
+			}
+			// File-level resolve+prefix confinement (SPA static helpers).
+			if fileHasResolvePrefixConfinement(src) && !isDynamicPathArg(pathArg, paramNames) &&
+				!isFStringArg(pathArg) && !strings.Contains(pathArg, "request.") {
+				start = absInLine + len("FileResponse")
+				continue
+			}
+			// Dynamic user path: route param, f-string, request, or bare route param name.
+			if isDynamicPathArg(pathArg, paramNames) || isFStringArg(pathArg) ||
+				strings.Contains(pathArg, "request.") || strings.Contains(pathArg, "+") ||
+				strings.Contains(pathArg, ".format") {
+				pushAt(unit, meta, line.byte+absInLine, "FileResponse path comes from user input; confine with realpath+prefix checks", out)
+			} else if fastapiish && isSimpleIdent(strings.TrimSpace(pathArg)) {
+				// Bare simple name only if it is an actual route path param.
+				if _, ok := paramNames[strings.TrimSpace(pathArg)]; ok {
 					pushAt(unit, meta, line.byte+absInLine, "FileResponse path comes from user input; confine with realpath+prefix checks", out)
 				}
 			}
 			start = absInLine + len("FileResponse")
 		}
 	}
+}
+
+// fileResponsePathConfined reports basename-only / ".." rejection / trusted
+// join policies in the function that contains FileResponse.
+func fileResponsePathConfined(lines []codeLine, fileResponseIdx int) bool {
+	start, end := bpFunctionWindow(lines, fileResponseIdx)
+	if end <= start {
+		return false
+	}
+	window := ""
+	for j := start; j < end && j < len(lines); j++ {
+		window += lines[j].text + "\n"
+	}
+	// Basename-only / traversal rejection.
+	if strings.Contains(window, `".."`) || strings.Contains(window, `'..'`) {
+		if strings.Contains(window, "in ") || strings.Contains(window, "HTTPException") ||
+			strings.Contains(window, "raise ") {
+			return true
+		}
+	}
+	if strings.Contains(window, "os.path.basename(") || strings.Contains(window, ".name") &&
+		(strings.Contains(window, "endswith(") || strings.Contains(window, `"/"`) || strings.Contains(window, `'/'`)) {
+		return true
+	}
+	// resolve + parent/prefix check
+	if (strings.Contains(window, ".resolve(") || strings.Contains(window, "realpath(")) &&
+		(strings.Contains(window, ".parents") || strings.Contains(window, "startswith(") ||
+			strings.Contains(window, "is_relative_to(") || strings.Contains(window, "commonpath(")) {
+		return true
+	}
+	return false
+}
+
+func fileHasResolvePrefixConfinement(src string) bool {
+	hasResolve := strings.Contains(src, ".resolve(") || strings.Contains(src, "os.path.realpath(")
+	hasPrefix := strings.Contains(src, ".parents") || strings.Contains(src, "startswith(") ||
+		strings.Contains(src, "is_relative_to(") || strings.Contains(src, "commonpath(")
+	return hasResolve && hasPrefix
+}
+
+// bpFunctionWindow returns [start, end) line indices for the def containing idx.
+func bpFunctionWindow(lines []codeLine, idx int) (int, int) {
+	if idx < 0 || idx >= len(lines) {
+		return 0, 0
+	}
+	start := idx
+	for i := idx; i >= 0; i-- {
+		t := strings.TrimSpace(lines[i].text)
+		if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") {
+			start = i
+			break
+		}
+		if i == 0 {
+			return 0, 0
+		}
+	}
+	defIndent := indentWidth(lines[start].raw)
+	end := len(lines)
+	for j := start + 1; j < len(lines); j++ {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" {
+			continue
+		}
+		if indentWidth(lines[j].raw) <= defIndent &&
+			(strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") ||
+				strings.HasPrefix(t, "class ") || strings.HasPrefix(t, "@")) {
+			// Decorators for next def: walk back to true next top-level.
+			if strings.HasPrefix(t, "@") {
+				continue
+			}
+			end = j
+			break
+		}
+		if indentWidth(lines[j].raw) <= defIndent &&
+			(strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") || strings.HasPrefix(t, "class ")) {
+			end = j
+			break
+		}
+	}
+	return start, end
 }
 
 func collectRoutePathParams(src string) map[string]struct{} {
@@ -440,13 +534,10 @@ func isDynamicPathArg(arg string, params map[string]struct{}) bool {
 	if strings.Contains(arg, "request.") || strings.Contains(arg, ".format(") || strings.Contains(arg, " + ") {
 		return true
 	}
+	// Only route path params are user-controlled names. Local variables named
+	// path/filename (built under PRECOMPUTED_DIR / etc.) are not auto-dynamic.
 	if isSimpleIdent(arg) {
 		if _, ok := params[arg]; ok {
-			return true
-		}
-		// Common path param names
-		switch arg {
-		case "path", "filename", "name", "file", "filepath", "file_path", "file_name":
 			return true
 		}
 	}

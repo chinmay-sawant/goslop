@@ -1,0 +1,14 @@
+# goslop text fixture — pass without else; continues into control flow
+lang: python
+file: scripts/download_jpl_kernel.py
+---
+def download(url, output):
+    if output.exists():
+        try:
+            validate_planetary_spk(output)
+        except OSError:
+            pass
+    if not quiet:
+        print("re-downloading")
+    fetch_and_write(url, output)
+    return output

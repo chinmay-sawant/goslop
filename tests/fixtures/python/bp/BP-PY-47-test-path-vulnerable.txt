@@ -1,0 +1,11 @@
+# goslop text fixture — same f-string log in library code must still fire.
+lang: python
+file: mypkg/service.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def handle(user_id):
+    logger.info(f"User action - user_id: {user_id}")

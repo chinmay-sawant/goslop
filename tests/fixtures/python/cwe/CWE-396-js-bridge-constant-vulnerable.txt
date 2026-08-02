@@ -1,0 +1,12 @@
+# goslop text fixture — constant fallback without a JS-bridge try body stays
+# reportable (ordinary Exception: x = None is not a defined bridge probe)
+lang: python
+file: service_fallback.py
+---
+def load_remote():
+    data = None
+    try:
+        data = fetch_remote()
+    except Exception:
+        data = None
+    return data

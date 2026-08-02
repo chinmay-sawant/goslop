@@ -1,0 +1,14 @@
+# goslop text fixture — CWE-117 loop-counter log interpolations (safe)
+lang: python
+file: CWE-117-loop-counter-safe.py
+---
+import logging
+
+logger = logging.getLogger("app")
+
+
+def run(count: int) -> None:
+    for i in range(count):
+        logger.info(f"Performance test message {i + 1}")
+    for component in ["auth.service", "db.connection", "cache.redis"]:
+        logger.info(f"{component} initialized successfully")

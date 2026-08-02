@@ -1,0 +1,6 @@
+# goslop text fixture — PyYAML unsafe load (vulnerable)
+lang: python
+file: y.py
+---
+import yaml
+cfg = yaml.load(stream)

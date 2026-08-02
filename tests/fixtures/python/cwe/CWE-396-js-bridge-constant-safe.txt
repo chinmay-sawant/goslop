@@ -1,0 +1,19 @@
+# goslop text fixture — constant-assign / return fallback after a JS interop
+# stream probe try body (status_text / bytes() shapes)
+lang: python
+file: js_bridge_constant.py
+---
+def read_status(js_response):
+    try:
+        reason = js_response.status_text or ""
+        return reason
+    except Exception:
+        return ""
+
+
+def read_body(js_response):
+    try:
+        return js_response.bytes()
+    except Exception:
+        response_body = b""
+        return b""

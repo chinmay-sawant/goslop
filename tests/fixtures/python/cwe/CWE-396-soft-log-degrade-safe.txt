@@ -1,0 +1,12 @@
+# goslop text fixture — log then clear feature cache (pycaps emoji API FP)
+lang: python
+file: emoji_in_segments_api.py
+---
+class EmojiAPI:
+    def process(self):
+        try:
+            response = send(self._FEATURE_NAME, payload)
+            self._cached_response = response
+        except Exception as e:
+            logger().error(f"Unexpected error from API, ignoring feature. Error: {e}")
+            self._cached_response = []

@@ -1,0 +1,9 @@
+# goslop text fixture — untrusted argv segment (vulnerable)
+lang: python
+file: CWE-88-constant-argv-vulnerable.py
+---
+import subprocess
+
+
+def run_tool(user_flag: str, path: str) -> None:
+    subprocess.run(["tool", user_flag, path], check=False)

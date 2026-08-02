@@ -1,0 +1,9 @@
+# goslop text fixture — mixed ValueError with termination types stays reportable
+lang: python
+file: termination_vuln.py
+---
+async def shutdown(queue):
+    try:
+        await queue.put({"type": "shutdown"})
+    except (StopIteration, ValueError):
+        pass

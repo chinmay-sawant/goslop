@@ -1,0 +1,17 @@
+# goslop text fixture — PERF-PY-27 unique path via intermediate from loop var
+lang: python
+file: app/rules/triad_pipeline.py
+---
+import json
+from pathlib import Path
+
+
+def triad_paths(festival_id):
+    return {"validation": Path(f"/data/{festival_id}/validation.json")}
+
+
+def generate_rule_triads(rules):
+    for rule in rules:
+        validation_path = triad_paths(rule.festival_id)["validation"]
+        payload = json.loads(validation_path.read_text(encoding="utf-8"))
+        _use(payload)

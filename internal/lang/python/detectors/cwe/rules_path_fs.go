@@ -25,6 +25,9 @@ func init() {
 // this source-only rule, as are basename/secure_filename-safe expressions.
 // Intentional __main__ CLI destinations (Path(sys.argv[1]) fixture generators)
 // are suppressed; request-controlled sinks remain reportable.
+//
+// Intentional __main__ CLI destinations and benchmark harnesses use
+// Path(sys.argv[1]) as operator-controlled input, not web request input.
 func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
@@ -35,13 +38,68 @@ func detectCWE73(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 			if len(args) == 0 || !isDirectFilePathSource(args[0]) {
 				continue
 			}
-			if isArgvOnlyPathSource(args[0]) && underPythonMainGuard(unit.Source, call.Start) {
-				continue
+			if isArgvOnlyPathSource(args[0]) {
+				if underPythonMainGuard(unit.Source, call.Start) ||
+					isPythonBenchmarkFile(unit) ||
+					cliMainInvokedFromMainGuard(unit.Source) {
+					continue
+				}
 			}
 			emitPathFSFinding(unit, &MetaCWE73, call.Start, "directly request-controlled path reaches a filesystem API", confidence82, out)
 			return
 		}
 	}
+}
+
+// cliMainInvokedFromMainGuard reports a module with def main(...) and a
+// __main__ guard that invokes main() — argv-only Path(sys.argv[N]) inside
+// main() is then intentional CLI I/O, not a web-exposed filesystem sink.
+func cliMainInvokedFromMainGuard(src string) bool {
+	if src == "" || !strings.Contains(src, "__main__") {
+		return false
+	}
+	if !strings.Contains(src, "def main(") {
+		return false
+	}
+	lines := strings.Split(src, "\n")
+	for i, line := range lines {
+		if !isPythonMainGuardLine(strings.TrimSpace(line)) {
+			continue
+		}
+		guardIndent := indentWidthPath(line)
+		for j := i + 1; j < len(lines) && j <= i+8; j++ {
+			raw := lines[j]
+			t := strings.TrimSpace(raw)
+			if t == "" || strings.HasPrefix(t, "#") {
+				continue
+			}
+			ind := indentWidthPath(raw)
+			if ind <= guardIndent {
+				break
+			}
+			// raise SystemExit(main()) / sys.exit(main()) / main()
+			if strings.Contains(t, "main()") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func indentWidthPath(line string) int {
+	n := 0
+	for _, r := range line {
+		if r == ' ' {
+			n++
+			continue
+		}
+		if r == '\t' {
+			n += 4
+			continue
+		}
+		break
+	}
+	return n
 }
 
 // CWE-59 recognizes the explicit but race-prone islink/lexists check followed

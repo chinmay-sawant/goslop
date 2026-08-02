@@ -1,0 +1,12 @@
+# goslop text fixture — CWE-117 loop over external input (vulnerable)
+lang: python
+file: CWE-117-loop-counter-vulnerable.py
+---
+import logging
+
+logger = logging.getLogger("app")
+
+
+def run(names: list[str]) -> None:
+    for name in names:
+        logger.info(f"Processing user {name}")

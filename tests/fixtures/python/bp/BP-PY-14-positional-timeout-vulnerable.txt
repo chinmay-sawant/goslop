@@ -1,0 +1,6 @@
+# goslop text fixture — session.request without timeout stays reportable
+lang: python
+file: async_api_vuln.py
+---
+async def request(session, method, url):
+    return await session.request(method, url)

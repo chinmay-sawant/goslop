@@ -1,0 +1,12 @@
+# goslop text fixture — with + shallow if body stays under six levels
+lang: python
+file: CWE-1124-with-body-safe.py
+---
+def detect(url):
+    try:
+        with sync_playwright() as p:
+            if captcha_on_load:
+                if service_name:
+                    return solve(service_name)
+    except Exception:
+        return None

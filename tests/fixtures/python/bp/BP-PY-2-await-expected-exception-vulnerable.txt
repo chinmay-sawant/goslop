@@ -1,0 +1,10 @@
+# goslop text fixture — Exception:pass after await in tests stays reportable
+# (httpmorph test_proxy TP shape)
+lang: python
+file: tests/test_proxy.py
+---
+async def test_proxy_connect():
+    try:
+        await client.get("https://example.com", proxy="http://bad")
+    except Exception:
+        pass

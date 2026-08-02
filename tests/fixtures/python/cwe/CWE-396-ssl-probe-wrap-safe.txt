@@ -1,0 +1,19 @@
+# goslop text fixture — wrap-raise after pure SSL attribute probe (httptap
+# tls_inspector getpeercert FP shape)
+lang: python
+file: tls_inspector.py
+---
+import ssl
+
+class TLSInspectionError(Exception):
+    pass
+
+def probe_certificate_info(ssl_socket: ssl.SSLSocket):
+    try:
+        cert_dict = ssl_socket.getpeercert()
+        if not cert_dict:
+            return None
+        return CertificateInfo(cert_dict)
+    except Exception as e:
+        msg = f"Failed to extract certificate info: {e}"
+        raise TLSInspectionError(msg) from e

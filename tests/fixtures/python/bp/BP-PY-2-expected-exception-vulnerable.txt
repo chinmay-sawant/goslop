@@ -1,0 +1,9 @@
+# goslop text fixture — test swallows a failure without asserting the exception
+lang: python
+file: test_swallow.py
+---
+def test_parse():
+    try:
+        parse("not-an-int")
+    except ValueError:
+        pass

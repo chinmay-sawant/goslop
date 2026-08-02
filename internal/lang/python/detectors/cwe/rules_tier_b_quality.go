@@ -50,7 +50,6 @@ var (
 	pyTierBConsistencyRE = regexp.MustCompile(`(?is)expected_count\s*=\s*request\.get_json\s*\([^\n]*\)[\s\S]{0,260}items\s*=\s*request\.get_json\s*\(`)
 	pyTierBAsyncSleepRE  = regexp.MustCompile(`(?is)async\s+def\s+\w+\s*\([^)]*\)\s*:[\s\S]{0,260}time\.sleep\s*\(`)
 	pyTierBFloatMoneyRE  = regexp.MustCompile(`(?is)float\s*\(\s*request\.(?:args|form)\.get\s*\([^\n]*(?:price|amount|balance)`)
-	pyTierBDoubleCloseRE = regexp.MustCompile(`(?is)\w+\.close\s*\(\s*\)[\s\S]{0,180}\w+\.close\s*\(\s*\)`)
 	pyControlHeaderRE    = regexp.MustCompile(`^(?:async\s+)?(?:if|elif|else|for|while|try|except|finally|with|match|case)\b.*:\s*$`)
 	pyTierBImpImportRE   = regexp.MustCompile(`(?im)^\s*(?:import|from)\s+imp\b`)
 )
@@ -98,6 +97,9 @@ func detectCWE1124(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 	if unit == nil || out == nil {
 		return
 	}
+	// Offline release tooling (Project_Parva scripts/release nested claim /
+	// import walks) — same path skip BP-PY-1 already applies. Keeps product
+	// calendar nesting (bikram_sambat) reportable.
 	type controlFrame struct{ indent int }
 	var frames []controlFrame
 	offset := 0
@@ -115,7 +117,16 @@ func detectCWE1124(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 			// Exception-handler clauses belong to the preceding try control flow;
 			// counting them as an additional nesting level overstates ordinary
 			// recovery and retry paths.
-			if !strings.HasPrefix(trimmed, "except") && !strings.HasPrefix(trimmed, "finally") {
+			// else/elif are mutually exclusive arms of an already-counted if/try
+			// frame (niquests OCSP optional import else:) — do not stack them.
+			// with/async with still nest: pure if-chains inside a with body
+			// (caniscrape captcha_detector / fingerprint_analyzer) are real
+			// deep nesting and must stay reportable at six levels.
+			skipFrame := strings.HasPrefix(trimmed, "except") ||
+				strings.HasPrefix(trimmed, "finally") ||
+				trimmed == "else:" || strings.HasPrefix(trimmed, "else:") ||
+				strings.HasPrefix(trimmed, "elif ")
+			if !skipFrame {
 				frames = append(frames, controlFrame{indent: indent})
 			}
 			offset += len(line) + 1
@@ -133,7 +144,11 @@ func isExecutableNestedStatement(line string) bool {
 	if line == "" || strings.HasPrefix(line, "@") || strings.HasPrefix(line, "def ") || strings.HasPrefix(line, "class ") {
 		return false
 	}
-	if strings.HasPrefix(line, "return ") || strings.HasPrefix(line, "raise ") || strings.HasPrefix(line, "break") || strings.HasPrefix(line, "continue") {
+	// Bare `return` / `raise` (no operand) are still executable suite statements
+	// (httpmorph proxy retry success path: nested `return` at depth ≥ 6).
+	if line == "return" || strings.HasPrefix(line, "return ") ||
+		line == "raise" || strings.HasPrefix(line, "raise ") ||
+		strings.HasPrefix(line, "break") || strings.HasPrefix(line, "continue") {
 		return true
 	}
 	return strings.Contains(line, "=") || strings.Contains(line, "(")
@@ -189,7 +204,13 @@ func detectCWE1339(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 }
 
 func detectCWE1341(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBDoubleCloseRE); start >= 0 {
+	masked := ""
+	if facts != nil {
+		masked = facts.codeMask(unit.Source, fragStartHint(facts, unit.Source))
+	} else if unit != nil {
+		masked = pythonCodeMask(unit.Source)
+	}
+	if start := sameHandleDoubleCloseStart(masked); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE1341, start, "same resource handle is released twice", confidence82, out)
 	}
 }

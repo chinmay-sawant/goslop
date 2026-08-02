@@ -19,6 +19,25 @@ func fileDisplayPath(unit *core.ParsedUnit) string {
 	return unit.Path
 }
 
+// isPythonNoxOrToxFile reports nox/tox session orchestration modules. Their
+// test_* session functions run pytest (or other tools) and are not placeholder
+// unit tests (niquests noxfile.py BP-PY-41 FPs).
+func isPythonNoxOrToxFile(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, p := range []string{fileDisplayPath(unit), unit.Path} {
+		if p == "" {
+			continue
+		}
+		base := filepath.Base(p)
+		if base == "noxfile.py" || base == "tox.ini" || base == "tox.py" {
+			return true
+		}
+	}
+	return false
+}
+
 // isPythonTestFile reports test modules we should skip for validation-style rules.
 // Matches test_*.py, *_test.py, and paths under tests/ or test/.
 func isPythonTestFile(unit *core.ParsedUnit) bool {
@@ -37,6 +56,25 @@ func isPythonTestFile(unit *core.ParsedUnit) bool {
 			return true
 		}
 		// Normalize separators.
+		norm := filepath.ToSlash(p)
+		if strings.Contains(norm, "/tests/") || strings.Contains(norm, "/test/") ||
+			strings.HasPrefix(norm, "tests/") || strings.HasPrefix(norm, "test/") {
+			return true
+		}
+	}
+	return false
+}
+
+// isPythonTestDirPath reports modules under a tests/ or test/ directory tree.
+// Unlike isPythonTestFile, this does not match scripts merely named *_test.py.
+func isPythonTestDirPath(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, p := range []string{fileDisplayPath(unit), unit.Path} {
+		if p == "" {
+			continue
+		}
 		norm := filepath.ToSlash(p)
 		if strings.Contains(norm, "/tests/") || strings.Contains(norm, "/test/") ||
 			strings.HasPrefix(norm, "tests/") || strings.HasPrefix(norm, "test/") {
@@ -65,6 +103,130 @@ func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
 		}
 	}
 	return false
+}
+
+// demoScriptPathDirNames are path components marking runnable demo/example
+// trees (BP-PY-46 script exemption). Exemption is conditional on the module
+// being self-running (a top-level print, or a __main__ guard invoking a
+// module-defined function); library-style modules under these trees
+// (web-function collections imported by hosts, e.g. FuncToWeb examples/)
+// keep firing.
+var demoScriptPathDirNames = map[string]struct{}{
+	"examples": {}, "example": {},
+	"demos": {}, "demo": {},
+}
+
+// toolScriptPathDirNames are path components marking dev-tool script trees.
+// Exemption is narrow: only a single top-level completion print (dev-time
+// regeneration scripts, e.g. rendercv scripts/update_*.py). Operational
+// scripts that log via print (WeThePeople scripts/) keep firing.
+var toolScriptPathDirNames = map[string]struct{}{
+	"scripts": {}, "script": {},
+	"tools": {}, "tool": {},
+}
+
+// cliScriptPathDirNames are path components marking CLI subcommand packages
+// (Click/Typer) whose print calls are user-facing presentation.
+var cliScriptPathDirNames = map[string]struct{}{
+	"commands": {}, // Click/Typer CLI subcommand modules (e.g. package/commands/)
+	"cli":      {}, // CLI entry package (e.g. rendercv/cli/app.py)
+}
+
+// isPythonScriptModule reports packaging/CLI/demo/tool entry modules where
+// print is intentional user-facing output, not library debug logging.
+func isPythonScriptModule(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{fileDisplayPath(unit), unit.Path} {
+		if path == "" {
+			continue
+		}
+		base := filepath.Base(path)
+		if base == "setup.py" || base == "__main__.py" || base == "cli.py" ||
+			strings.HasPrefix(base, "tmp_") {
+			return true
+		}
+		for _, component := range strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/") {
+			if _, ok := cliScriptPathDirNames[component]; ok {
+				return true
+			}
+			if _, ok := demoScriptPathDirNames[component]; ok {
+				// Self-running demo script: prints are the script's own output
+				// (module top level, inside functions the __main__ guard
+				// invokes, or a demo file with no guard at all). Importable
+				// example modules with a guard keep firing.
+				if pythonHasTopLevelPrint(unit.Source) ||
+					pythonMainGuardCallsLocal(unit.Source) ||
+					!pythonHasMainGuard(unit.Source) {
+					return true
+				}
+			}
+			if _, ok := toolScriptPathDirNames[component]; ok {
+				// Dev-tool scripts:
+				//  - single top-level completion print, or
+				//  - shebang + no def/class (pure module-level CLI — pdf_oxide
+				//    scripts/* debug runners with multi-print progress), or
+				//  - shebang + every print is column-0 module-level, or
+				//  - tool-package subdirectory whose prints sit on the
+				//    __main__ call path.
+				// Operational scripts that print from inside functions
+				// (WeThePeople scripts/) keep firing.
+				if pythonSingleTopLevelCompletionPrint(unit.Source) ||
+					(isPythonShebangScript(unit.Source) && pythonIsPureModuleScript(unit.Source)) ||
+					(isPythonShebangScript(unit.Source) && pythonAllPrintsModuleLevel(unit.Source)) ||
+					(pythonToolSubdirPath(path) && pythonMainGuardCallsLocal(unit.Source)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// pythonToolSubdirPath reports a path where a scripts/tools component is
+// followed by a subdirectory (scripts/<subdir>/<file>.py) rather than the file
+// directly (scripts/<file>.py).
+func pythonToolSubdirPath(path string) bool {
+	parts := strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/")
+	for i, part := range parts {
+		if part == "scripts" || part == "tools" || part == "script" || part == "tool" {
+			if i+2 < len(parts) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// isPythonShebangScript reports files whose first non-space content is a shebang.
+// A shebang alone does not mean the file is a CLI entry script — see
+// pythonShebangIsEntryScript.
+func isPythonShebangScript(src string) bool {
+	s := strings.TrimLeft(src, " \t")
+	return strings.HasPrefix(s, "#!")
+}
+
+// pythonShebangIsEntryScript reports shebang files that also look like CLI entry
+// scripts (__main__ guard or argparse/click/typer/cyclopts). A bare shebang is
+// not enough: importable libraries often keep a vestigial #! line.
+// Does not treat rich.print as an entry-script signal.
+func pythonShebangIsEntryScript(src string) bool {
+	if !isPythonShebangScript(src) {
+		return false
+	}
+	if strings.Contains(src, "__name__") && strings.Contains(src, "__main__") {
+		return true
+	}
+	if pythonHasArgparseCLI(src) {
+		return true
+	}
+	return strings.Contains(src, "import click") ||
+		strings.Contains(src, "from click ") ||
+		strings.Contains(src, "import typer") ||
+		strings.Contains(src, "from typer ") ||
+		strings.Contains(src, "import cyclopts") ||
+		strings.Contains(src, "from cyclopts ")
 }
 
 func pushAt(unit *core.ParsedUnit, meta *rules.RuleMetadata, byteOffset int, message string, out *[]rules.Finding) {
@@ -429,7 +591,17 @@ func containsWithOpenCall(t string) bool {
 
 func looksLikePlaceholderSecret(val string) bool {
 	v := strings.ToLower(strings.TrimSpace(val))
-	// strip quotes
+	// strip bytes/raw/f prefixes then quotes
+	for {
+		if len(v) >= 2 {
+			c0 := v[0]
+			if c0 == 'b' || c0 == 'r' || c0 == 'u' || c0 == 'f' {
+				v = v[1:]
+				continue
+			}
+		}
+		break
+	}
 	if len(v) >= 2 {
 		if (v[0] == '"' && v[len(v)-1] == '"') || (v[0] == '\'' && v[len(v)-1] == '\'') {
 			v = v[1 : len(v)-1]
@@ -453,11 +625,16 @@ func looksLikePlaceholderSecret(val string) bool {
 		return true
 	}
 	// Prefix patterns for documented placeholders.
-	prefixes := []string{"changeme", "your_", "replace", "todo", "example_", "dummy_", "placeholder"}
+	prefixes := []string{"changeme", "your_", "replace", "todo", "example_", "dummy_", "placeholder",
+		"bench-", "bench_", "test-", "test_", "testing-", "for-testing", "fake-", "fake_"}
 	for _, p := range prefixes {
 		if strings.HasPrefix(v, p) {
 			return true
 		}
+	}
+	if strings.Contains(v, "testing-only") || strings.Contains(v, "for-testing-only") ||
+		strings.Contains(v, "not-for-production") {
+		return true
 	}
 	return false
 }

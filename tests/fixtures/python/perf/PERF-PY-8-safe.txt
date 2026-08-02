@@ -2,6 +2,6 @@ lang: python
 file: delivery.py
 ---
 def deliver(session):
-    items = session.query(DeliveryOutbox).options(joinedload(DeliveryOutbox.partner_endpoint)).all()
+    items = session.query(DeliveryOutbox).options(joinedload(DeliveryOutbox.author)).all()
     for item in items:
-        send(item.partner_endpoint.url)
+        send(item.author.url)

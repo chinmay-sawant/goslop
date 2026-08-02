@@ -1,0 +1,18 @@
+# Fixture for PERF-PY-26 (safe): lightweight HTTP field latin-1 codec in a
+# header/trailer loop is not an expensive blob decode (niquests WASI adapter).
+lang: python
+file: extensions/wasi/_utils.py
+---
+def decode_field_value(value: bytes | bytearray) -> str:
+    data = value if isinstance(value, bytes) else bytes(value)
+    try:
+        return data.decode("latin-1")
+    except UnicodeDecodeError:
+        return data.decode("utf-8")
+
+
+def response_headers(entries):
+    headers = {}
+    for name, value in entries:
+        headers[name] = decode_field_value(value)
+    return headers

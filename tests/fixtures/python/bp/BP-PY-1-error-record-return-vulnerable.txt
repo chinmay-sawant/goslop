@@ -1,0 +1,11 @@
+# goslop text fixture — the stringified exception value is embedded in the
+# returned error dict; the handler still merges distinct failure conditions
+# (WeThePeople epa_envirofacts.py:98 / usajobs.py:76 TP shape)
+lang: python
+file: swallowed_result.py
+---
+def write_event(payload):
+    try:
+        return do_write(payload)
+    except Exception as e:
+        return {"success": False, "error": str(e)}

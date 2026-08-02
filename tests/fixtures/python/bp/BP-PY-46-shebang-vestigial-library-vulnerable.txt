@@ -1,0 +1,14 @@
+# goslop text fixture
+lang: python
+file: hot_reload.py
+---
+#!/usr/bin/env python3
+"""Hot reload library module (vestigial shebang; imported, not an entry script)."""
+
+
+class HotReloader:
+    def start_watching(self, source_file: str) -> None:
+        print(f"[HOT RELOAD] Watching {source_file} for changes...")
+
+    def _watch_loop(self) -> None:
+        print("[HOT RELOAD] Detected changes")

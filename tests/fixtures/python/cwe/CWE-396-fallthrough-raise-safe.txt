@@ -1,0 +1,11 @@
+# goslop text fixture — handler builds a message, enclosing flow re-raises (calgebra gcal.py:221 FP)
+lang: python
+file: fallthrough_raise.py
+---
+def make_request():
+    try:
+        xhr = send()
+        return parse(xhr)
+    except Exception:
+        msg = "request failed"
+    raise RuntimeError(msg)

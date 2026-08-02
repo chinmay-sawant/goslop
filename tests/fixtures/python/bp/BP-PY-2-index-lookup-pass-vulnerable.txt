@@ -1,0 +1,16 @@
+# goslop text fixture — ValueError:pass after ipaddress parse stays reportable
+# (WeThePeople auth.py CIDR TP shape)
+lang: python
+file: auth.py
+---
+import ipaddress
+
+
+def parse_networks(chunks):
+    networks = []
+    for chunk in chunks:
+        try:
+            networks.append(ipaddress.ip_network(chunk, strict=False))
+        except ValueError:
+            pass
+    return networks

@@ -1,0 +1,8 @@
+# goslop text fixture — live requests.get without timeout stays reportable
+lang: python
+file: live_get.py
+---
+import requests
+
+def fetch(url):
+    return requests.get(url)

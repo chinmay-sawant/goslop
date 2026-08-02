@@ -31,6 +31,10 @@ func init() {
 // BP-PY-41: test function has side-effect calls but no assertions (info / style).
 func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-41")
+	// nox/tox session runners orchestrate pytest; they are not placeholder tests.
+	if isPythonNoxOrToxFile(unit) {
+		return
+	}
 	// Scope: test files or functions named test_*.
 	inTestFile := isPythonTestFile(unit)
 	if !inTestFile && !strings.Contains(unit.Source, "def test_") {
@@ -44,18 +48,39 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if !strings.HasPrefix(t, "def test_") && !strings.HasPrefix(t, "async def test_") {
 			continue
 		}
+		// FastAPI/Flask/Starlette route handlers named test_* are product code,
+		// not pytest placeholders (decorator-based, not name-gated).
+		if hasWebRouteDecorator(lines, i) {
+			continue
+		}
 		// Only analyze test_* in test files, or any test_* anywhere (placeholder risk).
 		defIndent := indentWidth(line.raw)
 		hasAssert := false
 		hasCall := false
+		bodyIndent := -1
+		hasPytestFail := false
+		hasSocketInfra := false
+		hasServerInfra := false
+		hasStreamOpen := false
+		hasCloseCall := false
+		var strCarry pyTripleQuoteCarry
 		for j := i + 1; j < len(lines); j++ {
-			st := strings.TrimSpace(lines[j].text)
-			if st == "" {
+			raw := lines[j].raw
+			if strCarry.open {
+				strCarry.feed(raw)
 				continue
 			}
-			ind := indentWidth(lines[j].raw)
+			st := strings.TrimSpace(lines[j].text)
+			if st == "" {
+				strCarry.feed(raw)
+				continue
+			}
+			ind := indentWidth(raw)
 			if ind <= defIndent {
 				break
+			}
+			if bodyIndent < 0 {
+				bodyIndent = ind
 			}
 			// Nested def/class ends our interest for simple bodies? Continue scanning body.
 			if strings.HasPrefix(st, "def ") || strings.HasPrefix(st, "async def ") || strings.HasPrefix(st, "class ") {
@@ -64,15 +89,59 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					break
 				}
 			}
-			if isTestAssertion(st, helpers) {
+			// pytest.fail is an assertion only when it guards a call inside a suite
+			// (except/if); a top-level trailing pytest.fail after a retry loop is a
+			// bare fallback, not a verification.
+			if isTestAssertion(st, helpers, ind > bodyIndent) {
 				hasAssert = true
 				break
+			}
+			// HTTP client response inspection is an assertion (body/text/json access).
+			if isHTTPResponseAssertion(st) {
+				hasAssert = true
+				break
+			}
+			// subprocess.run(..., check=True) / check_call raise on failure —
+			// the call is the assertion.
+			if isSubprocessCheckAssertion(st) {
+				hasAssert = true
+				break
+			}
+			// Explicit stream open + .close() is resource-lifecycle verification
+			// (not a bare side-effect print-only test).
+			if strings.Contains(st, "stream=True") || strings.Contains(st, "stream = True") {
+				hasStreamOpen = true
+			}
+			if strings.Contains(st, ".close(") {
+				hasCloseCall = true
+			}
+			if strings.Contains(st, "pytest.fail(") {
+				hasPytestFail = true
+			}
+			if strings.Contains(st, "socket.") || strings.Contains(st, "socket(") {
+				hasSocketInfra = true
+			}
+			if strings.Contains(st, "Server.") || strings.Contains(st, "threading.Event") ||
+				strings.Contains(st, "wait_to_close") {
+				hasServerInfra = true
 			}
 			if looksLikeSideEffectCall(st) {
 				hasCall = true
 			}
+			// Track triple-quoted strings that continue onto later lines so column-0
+			// string content (e.g. chat samples, embedded YAML) does not abort the scan.
+			strCarry.feed(raw)
 		}
+		// Attribute-only bodies (no call) are not side-effect-only tests.
 		if hasCall && !hasAssert {
+			// Server wait infrastructure: socket + Event/Server only.
+			if hasSocketInfra && hasServerInfra && !hasPytestFail {
+				continue
+			}
+			// Stream + close is resource-lifecycle verification.
+			if hasStreamOpen && hasCloseCall {
+				continue
+			}
 			pushAt(unit, meta, line.byte,
 				"test function appears to only perform side effects without assertions (heuristic/info); add assert or pytest.raises",
 				out)
@@ -80,11 +149,42 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
-func isTestAssertion(st string, helpers map[string]struct{}) bool {
+// isHTTPResponseAssertion reports a pure expression that inspects the response
+// body (niquests test_decompress_gzip: r.content.decode(...)). Assignments
+// like data = response.json() inside retry loops are not assertions
+// (httpmorph test_async_post_via_real_proxy TP).
+// Note: bare .close() is NOT an assertion alone; stream=True + close is
+// treated as resource-lifecycle verification in the BP-PY-41 body loop.
+func isHTTPResponseAssertion(st string) bool {
+	if strings.HasPrefix(st, "if ") || strings.HasPrefix(st, "elif ") ||
+		strings.HasPrefix(st, "while ") || strings.HasPrefix(st, "for ") {
+		return false
+	}
+	// Assignment of response data is control flow, not a bare assertion.
+	if strings.Contains(st, "=") && !strings.Contains(st, "==") && !strings.Contains(st, "!=") &&
+		!strings.Contains(st, ">=") && !strings.Contains(st, "<=") {
+		return false
+	}
+	needles := []string{".content", ".text", ".json("}
+	for _, n := range needles {
+		if strings.Contains(st, n) {
+			return true
+		}
+	}
+	return false
+}
+
+func isTestAssertion(st string, helpers map[string]struct{}, nestedSuite bool) bool {
 	if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") {
 		return true
 	}
 	if strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") {
+		return true
+	}
+	// pytest.fail only counts as an assertion when it guards a call inside a suite
+	// (except/if); a top-level trailing pytest.fail after a retry loop is a bare
+	// fallback, not a verification (httpmorph test_proxy audit TPs).
+	if strings.Contains(st, "pytest.fail(") && nestedSuite {
 		return true
 	}
 	if strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") {
@@ -93,8 +193,18 @@ func isTestAssertion(st string, helpers map[string]struct{}) bool {
 	if strings.Contains(st, "unittest.") && strings.Contains(st, "assert") {
 		return true
 	}
+	// Explicit failure raise in the test body verifies outcomes (httptap
+	// test_property_based raise-AssertionError rejection tests).
+	if strings.Contains(st, "raise "+assertionErrorType) {
+		return true
+	}
 	// nose/pytest helpers
 	if strings.HasPrefix(st, "raises(") || strings.Contains(st, " assert_") {
+		return true
+	}
+	// pytest-regressions / image regression baselines.
+	if strings.Contains(st, "regression.check(") || strings.Contains(st, "file_regression.check(") ||
+		strings.Contains(st, "image_regression.check(") || strings.Contains(st, "data_regression.check(") {
 		return true
 	}
 	// Calls to assert_* / _assert_* helpers (e.g. self._assert_verapdf(...)).
@@ -102,10 +212,82 @@ func isTestAssertion(st string, helpers map[string]struct{}) bool {
 		if isAssertHelperName(name) {
 			return true
 		}
+		// validate_*/verify_* helpers raise on failure — the call is the
+		// assertion (Project_Parva test_trust_schemas_parse_and_validate_examples).
+		if isValidationAssertionHelper(name) {
+			return true
+		}
+		// pytest-regressions fixture helper and pytest-benchmark fixture.
+		if name == "check_func" || name == "benchmark" {
+			return true
+		}
 		if _, ok := helpers[name]; ok {
 			return true
 		}
 	}
+	return false
+}
+
+// isValidationAssertionHelper reports validate_*/verify_* callees that raise on
+// invalid input — calling them is the test's verification step.
+func isValidationAssertionHelper(name string) bool {
+	n := strings.ToLower(name)
+	return strings.HasPrefix(n, "validate_") || strings.HasPrefix(n, "verify_")
+}
+
+// isSubprocessCheckAssertion reports subprocess helpers that raise CalledProcessError
+// on non-zero exit — the call is the assertion (no separate assert needed).
+func isSubprocessCheckAssertion(st string) bool {
+	if strings.Contains(st, "subprocess.check_call(") ||
+		strings.Contains(st, "subprocess.check_output(") {
+		return true
+	}
+	if strings.Contains(st, "subprocess.run(") && strings.Contains(st, "check=True") {
+		return true
+	}
+	// from subprocess import check_call / check_output / run
+	if strings.HasPrefix(st, "check_call(") || strings.HasPrefix(st, "check_output(") {
+		return true
+	}
+	if strings.HasPrefix(st, "run(") && strings.Contains(st, "check=True") {
+		return true
+	}
+	return false
+}
+
+// hasWebRouteDecorator reports FastAPI/Flask/Starlette/Django-style route
+// decorators immediately above a def — product handlers named test_*, not tests.
+func hasWebRouteDecorator(lines []codeLine, defIdx int) bool {
+	for j := defIdx - 1; j >= 0; j-- {
+		t := strings.TrimSpace(lines[j].text)
+		if t == "" || strings.HasPrefix(t, "#") {
+			continue
+		}
+		if !strings.HasPrefix(t, "@") {
+			return false
+		}
+		if isWebRouteDecoratorLine(t) {
+			return true
+		}
+		// Other decorators (e.g. @staticmethod) — keep scanning upward.
+	}
+	return false
+}
+
+func isWebRouteDecoratorLine(t string) bool {
+	// @router.post(...), @app.get(...), @api_view(["POST"]), @action(...), etc.
+	needles := []string{
+		".get(", ".post(", ".put(", ".patch(", ".delete(",
+		".head(", ".options(", ".api_route(", ".route(",
+		".websocket(", ".api_view(", ".action(",
+		"api_view(", "action(",
+	}
+	for _, n := range needles {
+		if strings.Contains(t, n) {
+			return true
+		}
+	}
+	// Bare framework aliases: @get("/x"), less common.
 	return false
 }
 
@@ -156,7 +338,7 @@ func assertionHelpersForUnit(unit *core.ParsedUnit, lines []codeLine) map[string
 }
 
 // sameFileAssertionHelpers returns names of non-test defs whose bodies perform
-// unittest assertions or raise AssertionError (presence-check helpers).
+// assertions (bare assert / unittest) or raise AssertionError.
 func sameFileAssertionHelpers(lines []codeLine) map[string]struct{} {
 	out := make(map[string]struct{})
 	for i, line := range lines {
@@ -166,23 +348,107 @@ func sameFileAssertionHelpers(lines []codeLine) map[string]struct{} {
 			continue
 		}
 		defIndent := indentWidth(line.raw)
+		var strCarry pyTripleQuoteCarry
 		for j := i + 1; j < len(lines); j++ {
-			st := strings.TrimSpace(lines[j].text)
-			if st == "" {
+			raw := lines[j].raw
+			if strCarry.open {
+				strCarry.feed(raw)
 				continue
 			}
-			ind := indentWidth(lines[j].raw)
+			st := strings.TrimSpace(lines[j].text)
+			if st == "" {
+				strCarry.feed(raw)
+				continue
+			}
+			ind := indentWidth(raw)
 			if ind <= defIndent {
 				break
 			}
-			if strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") ||
-				strings.Contains(st, "raise "+assertionErrorType) {
+			if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") ||
+				strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") ||
+				strings.Contains(st, "raise "+assertionErrorType) ||
+				strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") ||
+				strings.Contains(st, "pytest.fail(") {
 				out[name] = struct{}{}
 				break
 			}
+			strCarry.feed(raw)
 		}
 	}
 	return out
+}
+
+// pyTripleQuoteCarry tracks an open triple-quoted string across source lines.
+// Used so body scans do not treat string content as code (indent / statements).
+type pyTripleQuoteCarry struct {
+	open  bool
+	quote byte
+}
+
+func (s *pyTripleQuoteCarry) feed(line string) {
+	i := 0
+	for i < len(line) {
+		if s.open {
+			c := line[i]
+			if c == s.quote && i+2 < len(line) && line[i+1] == s.quote && line[i+2] == s.quote {
+				s.open = false
+				s.quote = 0
+				i += 3
+				continue
+			}
+			i++
+			continue
+		}
+		c := line[i]
+		// Skip prefixes (r/u/b/f and combinations) before a quote.
+		if isPyStringPrefixByte(c) {
+			j := i
+			for j < len(line) && isPyStringPrefixByte(line[j]) {
+				j++
+			}
+			if j < len(line) && (line[j] == '"' || line[j] == '\'') {
+				i = j
+				c = line[i]
+			}
+		}
+		if c == '"' || c == '\'' {
+			if i+2 < len(line) && line[i+1] == c && line[i+2] == c {
+				// Triple quote opens; may close later on this line.
+				s.open = true
+				s.quote = c
+				i += 3
+				continue
+			}
+			// Single-line string: consume until close or EOL.
+			q := c
+			i++
+			escape := false
+			for i < len(line) {
+				ch := line[i]
+				if escape {
+					escape = false
+					i++
+					continue
+				}
+				if ch == '\\' {
+					escape = true
+					i++
+					continue
+				}
+				if ch == q {
+					i++
+					break
+				}
+				i++
+			}
+			continue
+		}
+		i++
+	}
+}
+
+func isPyStringPrefixByte(c byte) bool {
+	return c == 'r' || c == 'R' || c == 'u' || c == 'U' || c == 'b' || c == 'B' || c == 'f' || c == 'F'
 }
 
 // mergeLocalHelpersPy credits AssertionError / self.assert* helpers defined in a
@@ -289,10 +555,8 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		tests = append(tests, region{start: i, end: end, indent: defIndent})
 	}
-	if len(tests) == 0 && isPythonTestFile(unit) {
-		// Whole file is test module — scan all.
-		tests = append(tests, region{start: 0, end: len(lines), indent: -1})
-	}
+	// Only scan def test_* bodies. Do not fall back to whole-file scanning for
+	// *_test.py helpers/benchmarks that merely carry a test-like basename.
 	for _, reg := range tests {
 		if testRegionCollectsThreadErrors(lines, reg.start, reg.end) {
 			continue
@@ -314,9 +578,9 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					break
 				}
 				if ind == tryIndent && (st == "except:" || strings.HasPrefix(st, "except ") || strings.HasPrefix(st, "except:")) {
-					if isExpectFailureExcept(st) {
-						// Miss if same region uses assertRaises/pytest.raises nearby (already preferred).
-						// Flag this try/except pattern.
+					if isExpectFailureExcept(st) && !suiteHandlesFailureForTesting(lines, j) {
+						// Miss handlers that re-raise / record / log the failure —
+						// those are not assertRaises substitutes.
 						pushAt(unit, meta, lines[i].byte,
 							"test uses try/except to expect failure; prefer with pytest.raises(...) or self.assertRaises(...)",
 							out)
@@ -362,13 +626,23 @@ func isExpectFailureExcept(st string) bool {
 	if i := strings.Index(rest, " as "); i >= 0 {
 		rest = strings.TrimSpace(rest[:i])
 	}
-	switch rest {
-	case "Exception", "BaseException", assertionErrorType, "Exception as e":
-		return true
+	return rest == assertionErrorType || rest == "Exception" || rest == "BaseException" ||
+		strings.HasPrefix(rest, assertionErrorType)
+}
+
+// suiteHandlesFailureForTesting reports an except suite that re-raises, logs,
+// or records the failure — such handlers are not assertRaises substitutes and
+// keep BP-PY-41 quiet (requestSpeedTest httpx_test.py re-raise shape).
+func suiteHandlesFailureForTesting(lines []codeLine, exceptIdx int) bool {
+	suiteIdx, _, _ := exceptSuiteLineIdx(lines, exceptIdx)
+	for _, i := range suiteIdx {
+		t := strings.TrimSpace(lines[i].text)
+		if strings.HasPrefix(t, "raise") || strings.Contains(t, "exc_info") ||
+			strings.Contains(t, ".exception(") || strings.Contains(t, "set_exception(") ||
+			strings.Contains(t, "_error_result(") || strings.Contains(t, ".error") ||
+			strings.Contains(t, "log.") || strings.Contains(t, "logger.") {
+			return true
+		}
 	}
-	// bare multi? keep conservative: only broad / AssertionError
-	if rest == assertionErrorType || rest == "Exception" || rest == "BaseException" {
-		return true
-	}
-	return rest == assertionErrorType || strings.HasPrefix(rest, assertionErrorType)
+	return false
 }

@@ -1,0 +1,9 @@
+# goslop text fixture — parsing probe pass with no defined fallback state
+lang: python
+file: dangling_pass.py
+---
+def parse_value(value):
+    try:
+        return int(value)
+    except ValueError:
+        pass

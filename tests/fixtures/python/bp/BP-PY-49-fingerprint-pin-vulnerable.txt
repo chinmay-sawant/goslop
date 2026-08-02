@@ -1,0 +1,6 @@
+# goslop text fixture — client disables TLS verify (vulnerable)
+lang: python
+file: client.py
+---
+import requests
+requests.get(url, verify=False)

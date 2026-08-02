@@ -1,0 +1,17 @@
+# goslop text fixture — CWE-93 numeric/constant-helper header values (safe)
+lang: python
+file: CWE-93-numeric-call-safe.py
+---
+import os
+
+
+def _cache_control_for_scope(scope) -> str:
+    raw_path = str(scope.get("path") or "")
+    if "/static/" in raw_path:
+        return "public, max-age=31536000, immutable"
+    return "public, max-age=0, must-revalidate"
+
+
+def serve(response, direct_path) -> None:
+    response.headers["Content-Length"] = os.path.getsize(direct_path)
+    response.headers["Cache-Control"] = _cache_control_for_scope({"path": "/x"})

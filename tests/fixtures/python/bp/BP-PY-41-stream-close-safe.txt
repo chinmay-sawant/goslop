@@ -1,0 +1,14 @@
+# goslop text fixture — niquests stream close smoke: await r.close() is the
+# resource-cleanup verification (test_explicit_close_in_streaming_response).
+lang: python
+file: tests/test_async.py
+---
+from niquests import AsyncSession
+
+
+async def test_explicit_close_in_streaming_response() -> None:
+    async with AsyncSession() as s:
+        try:
+            r = await s.get("https://httpbingo.org/html", stream=True)
+        finally:
+            await r.close()

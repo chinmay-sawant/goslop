@@ -1,0 +1,17 @@
+# goslop text fixture — Exception:break after await websocket.receive()
+# (niquests test_asgi ws-echo disconnect FP)
+lang: python
+file: tests/test_asgi.py
+---
+@app.websocket("/ws-echo")
+async def ws_echo(websocket):
+    await websocket.accept()
+    while True:
+        try:
+            data = await websocket.receive()
+        except Exception:
+            break
+        if data["type"] == "websocket.disconnect":
+            break
+        if "text" in data:
+            await websocket.send_text(f"echo: {data['text']}")

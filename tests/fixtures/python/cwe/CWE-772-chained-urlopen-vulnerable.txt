@@ -1,0 +1,10 @@
+# goslop text fixture — assigned urlopen handle without close stays reportable
+lang: python
+file: fetcher.py
+---
+import urllib.request
+
+def fetch(url):
+    resp = urllib.request.urlopen(url)
+    data = resp.read()
+    return data

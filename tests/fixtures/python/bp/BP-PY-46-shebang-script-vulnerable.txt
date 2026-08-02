@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: when_lib.py
+---
+#!/usr/bin/env python3
+"""Library with a vestigial shebang — not an entry script."""
+
+
+def interpret(source):
+    print("debug interpret")
+    return source

@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: CWE-829-own-tree-rglob-vulnerable.py
+---
+import importlib
+
+
+def load_command(command_name: str):
+    full_module = f"{__package__}.{command_name}"
+    return importlib.import_module(full_module)

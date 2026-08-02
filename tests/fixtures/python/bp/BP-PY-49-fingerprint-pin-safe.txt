@@ -1,0 +1,14 @@
+# goslop text fixture — fingerprint pin sets verify=False (safe)
+lang: python
+file: adapters.py
+---
+def configure(conn, verify):
+    assert_fingerprint = None
+    if isinstance(verify, str) and verify.startswith("sha256_"):
+        assert_fingerprint = verify.split("_", 1)[-1]
+        verify = False
+        cert_data = None
+    if conn.cert_reqs != "CERT_NONE":
+        need_reboot = True
+    if assert_fingerprint:
+        conn.assert_fingerprint = assert_fingerprint

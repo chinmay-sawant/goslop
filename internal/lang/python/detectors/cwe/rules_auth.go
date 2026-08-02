@@ -184,15 +184,6 @@ func detectCWE698(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 }
 
-func firstPythonFunctionAfter(funcs []pythonFunction, offset int) (pythonFunction, bool) {
-	for _, fn := range funcs {
-		if fn.start >= offset {
-			return fn, true
-		}
-	}
-	return pythonFunction{}, false
-}
-
 func containingPythonFunction(funcs []pythonFunction, offset int) (pythonFunction, bool) {
 	for _, fn := range funcs {
 		if offset >= fn.bodyStart && offset < fn.bodyStart+len(fn.body) {
@@ -200,28 +191,6 @@ func containingPythonFunction(funcs []pythonFunction, offset int) (pythonFunctio
 		}
 	}
 	return pythonFunction{}, false
-}
-
-func codeRangeHasContent(facts *PyCweFacts, source string, start, end int) bool {
-	if start < 0 || end > len(source) || start >= end {
-		return false
-	}
-	var masked string
-	if facts != nil && source == facts.Source {
-		masked = facts.Masked
-	} else if facts != nil {
-		masked = facts.codeMask(source, fragStartHint(facts, source))
-	} else {
-		masked = pythonCodeMask(source)
-	}
-	return codeRangeHasContentMasked(masked, start, end)
-}
-
-func codeRangeHasContentMasked(masked string, start, end int) bool {
-	if start < 0 || end > len(masked) || start >= end {
-		return false
-	}
-	return strings.TrimSpace(masked[start:end]) != ""
 }
 
 func protectedRouteDecorators(decorators string) bool {

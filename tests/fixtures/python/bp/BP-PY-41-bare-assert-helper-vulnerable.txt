@@ -1,0 +1,10 @@
+# Fixture for BP-PY-41 (vulnerable) — delegates to helper without assertions
+lang: python
+file: test/test_dump_vuln.py
+---
+def _inner_side_effect_only(data):
+    dump(data, "one")
+
+
+def test_dump():
+    _inner_side_effect_only({"a": 1})

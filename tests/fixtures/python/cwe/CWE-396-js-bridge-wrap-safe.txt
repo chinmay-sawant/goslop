@@ -1,0 +1,19 @@
+# goslop text fixture — wrap-raise after a JS interop / stream try body maps
+# bridge failures to library exceptions
+lang: python
+file: js_stream_adapter.py
+---
+def send(stream, timeout=None):
+    signal = None
+    if timeout is not None:
+        from js import AbortSignal
+        signal = AbortSignal.timeout(int(timeout * 1000))
+    try:
+        reader = stream.getReader()
+        result = reader.read()
+    except Exception as e:
+        err_str = str(e).lower()
+        if "abort" in err_str or "timeout" in err_str:
+            raise ConnectTimeout(f"timed out: {stream.url}")
+        raise ConnectionError(f"Failed to fetch {stream.url}: {e}")
+    return result

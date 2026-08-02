@@ -1,0 +1,10 @@
+# Fixture for BP-PY-45 (vulnerable) — unguarded module-top insert in an example script (must fire)
+lang: python
+file: examples/quick_start.py
+---
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+
+from html2pic import Html2Pic

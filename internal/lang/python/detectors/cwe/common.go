@@ -77,14 +77,15 @@ func isPythonTestModule(unit *core.ParsedUnit) bool {
 // isPythonBenchmarkFile identifies harness code whose literals and console
 // output are synthetic benchmark data rather than deployed application code.
 // Match path components only so a project name containing "bench" is not
-// enough to suppress a finding.
+// enough to suppress a finding. Includes singular "benchmark" (Project_Parva
+// benchmark/harness.py, validate_pack.py).
 func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
 	if unit == nil {
 		return false
 	}
 	for _, path := range []string{unit.DisplayPath, unit.Path} {
 		for _, component := range strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/") {
-			if component == "bench" || component == "benchmarks" {
+			if component == "bench" || component == "benchmark" || component == "benchmarks" {
 				return true
 			}
 		}
@@ -548,6 +549,10 @@ func looksStaticStringList(expr string) bool {
 		return false
 	}
 	for _, p := range parts {
+		// Python permits a trailing comma; the empty tail element is not a value.
+		if strings.TrimSpace(p) == "" {
+			continue
+		}
 		if !isPureStringLiteral(p) {
 			return false
 		}

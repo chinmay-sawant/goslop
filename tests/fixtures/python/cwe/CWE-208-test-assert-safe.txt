@@ -1,0 +1,8 @@
+# goslop text fixture — test module token/authority assert is not a deployed auth sink
+lang: python
+file: tests/unit/trust/test_field_provenance.py
+---
+def test_boundary_authority():
+    boundary = BoundaryVector.from_provenance(provenance)
+    assert boundary.authority == AuthorityTaint.STATIC_REFERENCE
+    assert boundary.token == expected_token

@@ -1,0 +1,17 @@
+# goslop text fixture — dict field extract + int conversion then append
+# (Project_Parva timegraph_fact_links empty-handler FP shape)
+lang: python
+file: timegraph_fact_links.py
+---
+def fact_ids_for_date(result):
+    fact_ids = []
+    bs = result.get("bikram_sambat")
+    if isinstance(bs, dict):
+        try:
+            year = int(bs["year"])
+            month = int(bs["month"])
+            day = int(bs["day"])
+            fact_ids.append(bs_ad_fact_id(year, month, day))
+        except (KeyError, TypeError, ValueError):
+            pass
+    return fact_ids

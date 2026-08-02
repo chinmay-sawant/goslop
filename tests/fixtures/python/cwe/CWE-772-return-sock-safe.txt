@@ -1,0 +1,13 @@
+# Fixture for CWE-772 (safe): socket returned to caller which owns lifecycle
+# (niquests tests/testserver/server.py _create_socket_and_bind pattern).
+lang: python
+file: net/server.py
+---
+import socket
+
+
+def _create_socket_and_bind(host, port):
+    sock = socket.socket()
+    sock.bind((host, port))
+    sock.listen()
+    return sock

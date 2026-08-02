@@ -9,7 +9,10 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "sqlalchemy"]
+    "applicable_to": [
+      "python",
+      "sqlalchemy"
+    ]
   },
   "PERF-PY-2": {
     "id": "PERF-PY-2",
@@ -21,7 +24,10 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "django"]
+    "applicable_to": [
+      "python",
+      "django"
+    ]
   },
   "PERF-PY-3": {
     "id": "PERF-PY-3",
@@ -33,7 +39,10 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "django"]
+    "applicable_to": [
+      "python",
+      "django"
+    ]
   },
   "PERF-PY-4": {
     "id": "PERF-PY-4",
@@ -45,7 +54,10 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "django"]
+    "applicable_to": [
+      "python",
+      "django"
+    ]
   },
   "PERF-PY-5": {
     "id": "PERF-PY-5",
@@ -57,7 +69,12 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "flask", "requests", "httpx"]
+    "applicable_to": [
+      "python",
+      "flask",
+      "requests",
+      "httpx"
+    ]
   },
   "PERF-PY-6": {
     "id": "PERF-PY-6",
@@ -69,7 +86,12 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "django", "sqlalchemy", "flask"]
+    "applicable_to": [
+      "python",
+      "django",
+      "sqlalchemy",
+      "flask"
+    ]
   },
   "PERF-PY-7": {
     "id": "PERF-PY-7",
@@ -81,19 +103,27 @@
     "status": "Seeded",
     "weakness_abstraction": "Variant",
     "python_relevance": "Medium",
-    "applicable_to": ["python", "fastapi", "starlette"]
+    "applicable_to": [
+      "python",
+      "fastapi",
+      "starlette"
+    ]
   },
   "PERF-PY-8": {
     "id": "PERF-PY-8",
     "name": "SQLAlchemy Lazy Relationship Access In Batch Loop",
     "original_description": "Detect ORM relationship access per row without eager-loading options.",
     "description": "A SQLAlchemy relationship is accessed for every row in a processing loop while the query has no eager-loading option. This creates an N+1 query pattern; load the required relationships with joinedload or selectinload before processing the batch.",
-    "detection_notes": "Match a loop over query results/items followed by attribute access with relationship-like names (partner_endpoint, inbound_event, user, owner, parent, children) or an attribute used as an ORM object. Suppress an enclosing query with joinedload, selectinload, contains_eager, or explicit prefetching.",
+    "detection_notes": "Match a loop over query results/items followed by attribute access with relationship-like names (author, customer, profile, relation, parent, owner, account, organization) or an attribute used as an ORM object. Suppress an enclosing query with joinedload, selectinload, contains_eager, or explicit prefetching.",
     "category": "Performance",
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "Medium",
-    "applicable_to": ["python", "sqlalchemy", "flask"]
+    "applicable_to": [
+      "python",
+      "sqlalchemy",
+      "flask"
+    ]
   },
   "PERF-PY-9": {
     "id": "PERF-PY-9",
@@ -105,7 +135,12 @@
     "status": "Seeded",
     "weakness_abstraction": "Variant",
     "python_relevance": "Medium",
-    "applicable_to": ["python", "flask", "fastapi", "django"]
+    "applicable_to": [
+      "python",
+      "flask",
+      "fastapi",
+      "django"
+    ]
   },
   "PERF-PY-10": {
     "id": "PERF-PY-10",
@@ -117,7 +152,9 @@
     "status": "Seeded",
     "weakness_abstraction": "Variant",
     "python_relevance": "Low",
-    "applicable_to": ["python"]
+    "applicable_to": [
+      "python"
+    ]
   },
   "PERF-PY-11": {
     "id": "PERF-PY-11",
@@ -129,7 +166,12 @@
     "status": "Seeded",
     "weakness_abstraction": "Variant",
     "python_relevance": "Low",
-    "applicable_to": ["python", "django", "sqlalchemy", "flask"]
+    "applicable_to": [
+      "python",
+      "django",
+      "sqlalchemy",
+      "flask"
+    ]
   },
   "PERF-PY-12": {
     "id": "PERF-PY-12",
@@ -141,7 +183,12 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "Medium",
-    "applicable_to": ["python", "django", "flask", "fastapi"]
+    "applicable_to": [
+      "python",
+      "django",
+      "flask",
+      "fastapi"
+    ]
   },
   "PERF-PY-13": {
     "id": "PERF-PY-13",
@@ -153,7 +200,11 @@
     "status": "Seeded",
     "weakness_abstraction": "Variant",
     "python_relevance": "Medium",
-    "applicable_to": ["python", "django", "sqlalchemy"]
+    "applicable_to": [
+      "python",
+      "django",
+      "sqlalchemy"
+    ]
   },
   "PERF-PY-14": {
     "id": "PERF-PY-14",
@@ -165,6 +216,12 @@
     "status": "Seeded",
     "weakness_abstraction": "Base",
     "python_relevance": "High",
-    "applicable_to": ["python", "django", "sqlalchemy", "fastapi", "flask"]
+    "applicable_to": [
+      "python",
+      "django",
+      "sqlalchemy",
+      "fastapi",
+      "flask"
+    ]
   }
 }

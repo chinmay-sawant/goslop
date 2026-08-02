@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/pytext"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
@@ -73,7 +74,8 @@ func detectBPPY9(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 // BP-PY-10: pickle.load / pickle.loads / _pickle / cloudpickle on non-constant /
 // untrusted-looking sources (request body, user path, generic payload names).
-// Trusted/local cache-style constant loads are missed.
+// Trusted/local cache-style constant loads and same-process pickle.dumps
+// round-trips (especially in tests) are missed.
 func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-10")
 	if !facts.hasAny("pickle.", "cloudpickle.", "_pickle.") {
@@ -102,12 +104,25 @@ func detectBPPY10(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				}
 				inner = src[abs:windowEnd]
 			}
+			// Same-process round-trip: pickle.loads(pickle.dumps(x)) is trusted
+			// (niquests pickleability tests).
+			if pickleArgIsRoundTrip(inner) {
+				start = abs + len(n)
+				continue
+			}
 			if pickleArgLooksUntrusted(inner) {
 				pushAt(unit, meta, abs, "pickle load can execute arbitrary code; avoid on untrusted data", out)
 			}
 			start = abs + len(n)
 		}
 	}
+}
+
+// pickleArgIsRoundTrip reports pickle.loads(pickle.dumps(...)) style args.
+func pickleArgIsRoundTrip(arg string) bool {
+	lower := strings.ToLower(arg)
+	return strings.Contains(lower, "pickle.dumps(") || strings.Contains(lower, "cloudpickle.dumps(") ||
+		strings.Contains(lower, "_pickle.dumps(")
 }
 
 func pickleArgLooksUntrusted(arg string) bool {
@@ -168,6 +183,11 @@ func detectBPPY11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				start = abs + len("yaml.load(")
 				continue
 			}
+			// ruamel.YAML().load is not PyYAML's unsafe yaml.load.
+			if bpYAMLLoadLooksLikeRuamel(src, inner) {
+				start = abs + len("yaml.load(")
+				continue
+			}
 			// Loader= present but not safe: still flag (FullLoader/UnsafeLoader).
 			// Bare yaml.load without Loader also flags.
 			pushAt(unit, meta, abs, "yaml.load without SafeLoader can execute code; use yaml.safe_load", out)
@@ -180,16 +200,30 @@ func detectBPPY11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 }
 
 // BP-PY-12: eval( / exec( / compile(..., 'exec')
+// Only the builtins are in scope. Attribute methods such as session.exec /
+// app.exec / db.exec are SQL/Qt/container APIs, not the exec builtin, unless
+// the receiver is the explicit builtins module. def/async def signatures that
+// merely declare a method named exec/eval are not call sites. Matches inside
+// comments and string literals are ignored via pytext.Mask.
 func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-12")
 	if !facts.hasAny("eval(", "exec(", "compile(") {
 		return
 	}
 	src := unit.Source
+	masked := pytext.Mask(src)
 	for _, name := range []string{"eval", "exec"} {
-		for _, off := range findAllIdent(src, name) {
+		for _, off := range findAllIdent(masked, name) {
+			if off > 0 && masked[off-1] == '.' {
+				if !bpReceiverIsBuiltins(masked, off) {
+					continue
+				}
+			}
 			end := off + len(name)
 			if end >= len(src) || src[end] != '(' {
+				continue
+			}
+			if bpIsDefHeaderIdent(src, off) {
 				continue
 			}
 			arg, ok := firstCallArg(src, end)
@@ -206,9 +240,15 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 	}
 	// compile(..., 'exec') / "exec"
-	for _, off := range findAllIdent(src, "compile") {
+	for _, off := range findAllIdent(masked, "compile") {
+		if off > 0 && masked[off-1] == '.' {
+			continue
+		}
 		end := off + len("compile")
 		if end >= len(src) || src[end] != '(' {
+			continue
+		}
+		if bpIsDefHeaderIdent(src, off) {
 			continue
 		}
 		inner, ok := callArgsRegion(src, end)
@@ -227,6 +267,42 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
+// bpIsDefHeaderIdent reports whether the identifier at off is the declared
+// name of a def/async def signature (e.g. `def exec(self, sql): ...`), not a
+// call site.
+func bpIsDefHeaderIdent(src string, off int) bool {
+	if off <= 0 || off > len(src) {
+		return false
+	}
+	lineStart := off
+	for lineStart > 0 && src[lineStart-1] != '\n' {
+		lineStart--
+	}
+	prefix := strings.TrimSpace(src[lineStart:off])
+	return prefix == "def" || prefix == "async def"
+}
+
+// bpReceiverIsBuiltins reports whether the attribute receiver immediately left
+// of the identifier at identAt is the explicit builtins module (builtins.exec
+// / builtins.eval are the builtin, unlike session.exec / app.exec).
+func bpReceiverIsBuiltins(masked string, identAt int) bool {
+	dot := identAt - 1
+	if dot <= 0 || masked[dot] != '.' {
+		return false
+	}
+	end := dot
+	start := end
+	for start > 0 {
+		c := masked[start-1]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+			start--
+			continue
+		}
+		break
+	}
+	return masked[start:end] == "builtins"
+}
+
 var secretNameRe = regexp.MustCompile(`(?i)\b([A-Za-z_][A-Za-z0-9_]*(?:password|passwd|secret|api_key|apikey|token|private_key|access_key)[A-Za-z0-9_]*)\s*=\s*`)
 
 // Also match SECRET_KEY, API_KEY, etc. as whole names (case-insensitive).
@@ -235,6 +311,9 @@ var secretExactAssignRe = regexp.MustCompile(`(?i)\b(password|passwd|secret|secr
 // BP-PY-13: hardcoded secret heuristic (conservative).
 func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-13")
+	if isPythonTestFile(unit) || isPythonBenchmarkFile(unit) {
+		return
+	}
 	if !facts.hasAny("password", "secret", "api_key", "token", "private_key", "SECRET_KEY") {
 		// Case-fold once for the gate-miss path (avoids up to 4× ToLower on full source).
 		lower := strings.ToLower(unit.Source)
@@ -268,6 +347,8 @@ func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if loc == nil {
 			continue
 		}
+		// LHS name (for *_NAME / env-key holders).
+		lhs := strings.TrimSpace(t[loc[0] : loc[0]+strings.Index(t[loc[0]:], "=")])
 		// RHS after =
 		eq := strings.Index(t[loc[0]:], "=")
 		if eq < 0 {
@@ -278,21 +359,132 @@ func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if rhs == "" {
 			continue
 		}
-		// Only string literals.
-		if !isStringLiteral(rhs) {
-			// RHS might be "foo" + something — still skip non-pure for conservative.
+		// Only pure string literals — reject concatenations like
+		// token = "{" + key + "}" (Project_Parva route binder) and f-strings
+		// that interpolate runtime values (secret = f"…{secrets.token_…}").
+		val, ok := pureHardcodedSecretLiteral(rhs)
+		if !ok {
 			continue
 		}
 		if looksLikePlaceholderSecret(rhs) {
 			continue
 		}
+		// Env-var *name* holders (OPENAI_API_KEY_NAME = "PYCAPS_OPENAI_API_KEY")
+		// are configuration keys, not committed credentials (pycaps).
+		if secretAssignLooksLikeEnvKeyName(lhs, val) {
+			continue
+		}
 		// Very short literals often placeholders.
-		val := unwrapStringLiteral(rhs)
 		if len(val) < 6 {
 			continue
 		}
 		pushAt(unit, meta, line.byte+loc[0], "hardcoded secret-like string in source; load from environment or a secret manager", out)
 	}
+}
+
+// pureHardcodedSecretLiteral accepts only a single static string literal RHS
+// (optional b/r/u/f prefixes). Concatenation, calls, and f-string
+// interpolations (`{…}`) are rejected — those are not hardcoded secrets.
+func pureHardcodedSecretLiteral(rhs string) (string, bool) {
+	s := strings.TrimSpace(rhs)
+	if s == "" {
+		return "", false
+	}
+	isF := false
+	for {
+		if len(s) < 2 {
+			return "", false
+		}
+		c0 := s[0]
+		if c0 == 'f' || c0 == 'F' {
+			isF = true
+			s = s[1:]
+			continue
+		}
+		if c0 == 'r' || c0 == 'R' || c0 == 'u' || c0 == 'U' || c0 == 'b' || c0 == 'B' {
+			s = s[1:]
+			continue
+		}
+		break
+	}
+	if len(s) < 2 {
+		return "", false
+	}
+	q := s[0]
+	if q != '"' && q != '\'' {
+		return "", false
+	}
+	// Triple-quoted: require exact triple open/close and nothing after.
+	if len(s) >= 6 && s[1] == q && s[2] == q {
+		close := string([]byte{q, q, q})
+		if !strings.HasSuffix(s, close) {
+			return "", false
+		}
+		inner := s[3 : len(s)-3]
+		if isF && strings.Contains(inner, "{") {
+			return "", false
+		}
+		return inner, true
+	}
+	// Single-quoted: find matching end quote with escapes; refuse trailing junk.
+	escaped := false
+	end := -1
+	for i := 1; i < len(s); i++ {
+		c := s[i]
+		if escaped {
+			escaped = false
+			continue
+		}
+		if c == '\\' {
+			escaped = true
+			continue
+		}
+		if c == q {
+			end = i
+			break
+		}
+	}
+	if end < 0 {
+		return "", false
+	}
+	if strings.TrimSpace(s[end+1:]) != "" {
+		// e.g. "{" + key + "}" — not a pure literal.
+		return "", false
+	}
+	inner := s[1:end]
+	if isF && strings.Contains(inner, "{") {
+		return "", false
+	}
+	return inner, true
+}
+
+// secretAssignLooksLikeEnvKeyName reports env-var name holders / ALL_CAPS key
+// strings (configuration indirection), not committed secret values.
+func secretAssignLooksLikeEnvKeyName(lhs, val string) bool {
+	l := strings.ToUpper(strings.TrimSpace(lhs))
+	if strings.HasSuffix(l, "_NAME") || strings.HasSuffix(l, "_ENV") ||
+		strings.HasSuffix(l, "_ENV_VAR") || strings.HasSuffix(l, "_VAR") ||
+		strings.Contains(l, "_KEY_NAME") || strings.Contains(l, "ENV_KEY") {
+		return true
+	}
+	// Value is an env-style name: ALL_CAPS / digits / underscores only, with _.
+	if val == "" {
+		return false
+	}
+	hasUnderscore := false
+	for i := 0; i < len(val); i++ {
+		c := val[i]
+		if c == '_' {
+			hasUnderscore = true
+			continue
+		}
+		if (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') {
+			continue
+		}
+		return false
+	}
+	// Require underscore + reasonable length so "SECRET" alone still flags.
+	return hasUnderscore && len(val) >= 8
 }
 
 func unwrapStringLiteral(s string) string {
@@ -319,4 +511,15 @@ func unwrapStringLiteral(s string) string {
 		return s[3 : len(s)-3]
 	}
 	return s[1 : len(s)-1]
+}
+
+func bpYAMLLoadLooksLikeRuamel(src, args string) bool {
+	compact := strings.ReplaceAll(strings.ReplaceAll(args, " ", ""), "\t", "")
+	if strings.Contains(compact, "Loader=") {
+		return false
+	}
+	return strings.Contains(src, "ruamel.yaml") ||
+		strings.Contains(src, "from ruamel") ||
+		strings.Contains(src, "import ruamel") ||
+		strings.Contains(src, "YAML()")
 }

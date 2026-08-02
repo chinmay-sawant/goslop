@@ -1,0 +1,8 @@
+# Fixture for BP-PY-45 (safe) — packaged import; no sys.path mutation
+lang: python
+file: integrations/mcp/server.py
+---
+from mcp_server.server import main
+
+if __name__ == "__main__":
+    main()

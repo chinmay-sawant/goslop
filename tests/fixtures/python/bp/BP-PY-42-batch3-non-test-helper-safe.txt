@@ -1,0 +1,11 @@
+# goslop text fixture — *_test.py helper without def test_* (requestSpeedTest FP)
+lang: python
+file: httpx_test.py
+---
+async def send_request(client, url):
+    try:
+        resp = await client.get(url)
+        return resp.status_code
+    except Exception as e:
+        log.exception(e)
+        raise e

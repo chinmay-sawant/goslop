@@ -1,0 +1,10 @@
+# goslop text fixture — exists then remove same path (vulnerable)
+lang: python
+file: CWE-367-different-path-vulnerable.py
+---
+import os
+
+
+def remove(path):
+    if os.path.exists(path):
+        os.remove(path)

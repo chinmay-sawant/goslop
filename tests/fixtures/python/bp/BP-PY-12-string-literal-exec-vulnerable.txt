@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: BP-PY-12-string-literal-exec-vulnerable.py
+---
+def run(payload):
+    exec(payload)

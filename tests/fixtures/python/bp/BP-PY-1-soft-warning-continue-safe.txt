@@ -1,0 +1,23 @@
+# goslop text fixture — logger.warning only, no raise, flow continues after
+# the handler (Project_Parva middleware optional header surface FP)
+lang: python
+file: middleware_headers.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+async def add_engine_headers(request, call_next):
+    response = await call_next(request)
+    ephemeris_value = "default"
+    if request.url.path.startswith("/v4/api/future-bs"):
+        try:
+            from app.research.solar_ingress_engine import active_ephemeris_label
+
+            if active_ephemeris_label() == "jpl_de440":
+                ephemeris_value = "jpl-de440-lahiri-sidereal"
+        except Exception as exc:
+            logger.warning("Unable to resolve active ephemeris label: %s", exc)
+    response.headers["X-Parva-Ephemeris"] = ephemeris_value
+    return response

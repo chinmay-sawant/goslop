@@ -1,0 +1,9 @@
+# goslop text fixture — StopAsyncIteration:pass designed termination
+lang: python
+file: CWE-390-termination-safe.py
+---
+async def store_next(gen, r):
+    try:
+        r._next = await gen.__anext__()
+    except StopAsyncIteration:
+        pass

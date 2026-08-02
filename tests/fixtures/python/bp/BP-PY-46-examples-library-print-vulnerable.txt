@@ -1,0 +1,14 @@
+# goslop text fixture
+lang: python
+file: examples/streaming/basic_prints.py
+---
+from func_to_web import Max, Min, run
+
+
+def announce(name: str = "world") -> str:
+    print(f"hello {name}")
+    return f"greeted {name}"
+
+
+if __name__ == "__main__":
+    run([announce], title="Hello")

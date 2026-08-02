@@ -1,0 +1,10 @@
+# goslop text fixture — AttributeError:pass after side-effect call stays reportable
+lang: python
+file: attr_probe_vuln.py
+---
+def load_config(path):
+    try:
+        data = open(path).read()
+        return data
+    except AttributeError:
+        pass

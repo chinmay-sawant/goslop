@@ -1,0 +1,17 @@
+# goslop text fixture — defensive marker + probe try + return None
+# (httptap http_client _extract_ssl_object FP)
+lang: python
+file: http_client.py
+---
+def _extract_ssl_object(response):
+    stream = response.extensions.get("network_stream")
+    if stream is None:
+        return None
+    getter = getattr(stream, "get_extra_info", None)
+    if not callable(getter):
+        return None
+    try:
+        ssl_candidate = getter("ssl_object")
+    except Exception:  # pragma: no cover - defensive
+        return None
+    return ssl_candidate

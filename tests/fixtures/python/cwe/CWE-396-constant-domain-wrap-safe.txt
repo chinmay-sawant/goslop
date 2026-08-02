@@ -1,0 +1,15 @@
+# goslop text fixture — fail-closed domain wrap with constant message only
+# (Project_Parva rate_limit.py FP shape). No str(exc) embedding.
+lang: python
+file: rate_limit.py
+---
+class RateLimiterUnavailable(Exception):
+    pass
+
+def check(limiter, key):
+    try:
+        return limiter.eval(key)
+    except Exception as exc:
+        raise RateLimiterUnavailable(
+            "Redis rate limiter is unavailable; request denied by fail-closed policy."
+        ) from exc

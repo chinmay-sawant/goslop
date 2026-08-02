@@ -1,6 +1,7 @@
 package cwe
 
 import (
+	"regexp"
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
@@ -147,13 +148,26 @@ func looksXMLConstructed(expr string) bool {
 
 // CWE-93: header sinks are limited to explicit header mutation APIs. Values
 // that visibly remove both CR and LF are not reported by this source heuristic.
+// Header reads and == comparisons are not sinks (assignment '=' only), and
+// writes on outgoing client request objects (client.headers[...]) are not
+// response-header writes.
+//
+// Ternaries of pure string literals (Cache-Control immutable vs no-cache) and
+// append-to-existing-header helpers (Link: f"{existing}, {value}" if existing)
+// are not CRLF injection sinks — no untrusted text is introduced as a header
+// value beyond server-owned fragments.
 func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
+	if isPythonTestModule(unit) {
+		return
+	}
 	for _, call := range findCalls(facts, unit.Source, ".set_header", ".add_header", "HttpResponseRedirect") {
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) < 2 || !isDynamicExpr(args[len(args)-1]) || headerValueLooksSanitized(args[len(args)-1]) {
+		if len(args) < 2 || !isDynamicExpr(args[len(args)-1]) || headerValueLooksSanitized(args[len(args)-1]) ||
+			headerValueLooksConstant(args[len(args)-1], facts, unit.Source) ||
+			headerRHSLooksSafeLiteralChoice(args[len(args)-1]) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE93,
@@ -175,9 +189,17 @@ func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		if i < len(maskedLines) {
 			maskedLine = maskedLines[i]
 		}
-		lhs, _, ok := strings.Cut(maskedLine, "=")
-		_, rhs, _ := strings.Cut(line, "=")
-		if !ok || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) {
+		lhs, _, ok := splitAssignmentEq(maskedLine)
+		_, rhs, rhsOK := splitAssignmentEq(line)
+		if !ok || !rhsOK || !strings.Contains(lhs, ".headers[") || !headerWriteReceiverLooksResponse(lhs) {
+			lineOffset += len(line) + 1
+			continue
+		}
+		// Multi-line assignment: response.headers[X] = (\n  "a" if c else "b"\n)
+		rhs = expandHeaderAssignmentRHS(originalLines, i, rhs)
+		if !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) ||
+			headerValueLooksConstant(rhs, facts, unit.Source) || headerRHSLooksSafeLiteralChoice(rhs) ||
+			headerRHSLooksExistingMerge(originalLines, i, rhs) {
 			lineOffset += len(line) + 1
 			continue
 		}
@@ -188,6 +210,96 @@ func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	}
 }
 
+// expandHeaderAssignmentRHS joins parenthesized multi-line RHS after
+// response.headers[...] = ( ... ).
+func expandHeaderAssignmentRHS(lines []string, startIdx int, rhs string) string {
+	t := strings.TrimSpace(rhs)
+	if t == "" {
+		return rhs
+	}
+	// Incomplete open paren / bracket on this line — pull continuations.
+	if !pyBracketsUnbalanced(t) && !strings.HasSuffix(t, "(") && t != "(" {
+		return t
+	}
+	combined := t
+	for j := startIdx + 1; j < len(lines) && j <= startIdx+8; j++ {
+		combined += " " + strings.TrimSpace(lines[j])
+		if !pyBracketsUnbalanced(combined) {
+			break
+		}
+	}
+	combined = strings.TrimSpace(combined)
+	// Strip a single wrapping paren group.
+	if strings.HasPrefix(combined, "(") && strings.HasSuffix(combined, ")") {
+		inner := strings.TrimSpace(combined[1 : len(combined)-1])
+		if !pyBracketsUnbalanced(inner) {
+			return inner
+		}
+	}
+	return combined
+}
+
+// headerRHSLooksSafeLiteralChoice reports a ternary or paren-wrapped ternary
+// whose both branches are pure string literals (no attacker text).
+func headerRHSLooksSafeLiteralChoice(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if strings.HasPrefix(t, "(") && strings.HasSuffix(t, ")") {
+		inner := strings.TrimSpace(t[1 : len(t)-1])
+		if !pyBracketsUnbalanced(inner) {
+			t = inner
+		}
+	}
+	return ternaryOfLiterals(t)
+}
+
+// headerRHSLooksExistingMerge reports the common "append to existing response
+// header" helper shape:
+//
+//	existing = response.headers.get("Link")
+//	response.headers["Link"] = f"{existing}, {value}" if existing else value
+//
+// The merge reuses the current header plus a same-function parameter; it is
+// not a direct write of request text into a new header name.
+func headerRHSLooksExistingMerge(lines []string, assignIdx int, rhs string) bool {
+	t := strings.TrimSpace(rhs)
+	if t == "" {
+		return false
+	}
+	// Must mention an "existing"/"current"/"prev" style name and a value param.
+	hasExisting := strings.Contains(t, "existing") || strings.Contains(t, "current") ||
+		strings.Contains(t, "prev") || strings.Contains(t, "old")
+	if !hasExisting {
+		return false
+	}
+	// Scan upward a few lines for existing = *.headers.get(
+	for j := assignIdx - 1; j >= 0 && j >= assignIdx-6; j-- {
+		line := strings.TrimSpace(lines[j])
+		if line == "" {
+			continue
+		}
+		lhs, r, ok := splitAssignmentEq(line)
+		if !ok {
+			continue
+		}
+		name := strings.TrimSpace(lhs)
+		if name != "existing" && name != "current" && name != "prev" && name != "old" &&
+			name != "previous" {
+			continue
+		}
+		compact := compactWhitespace(r)
+		if strings.Contains(compact, ".headers.get(") || strings.Contains(compact, ".headers[") {
+			// RHS must reference that binder.
+			if strings.Contains(t, name) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func headerValueLooksSanitized(expr string) bool {
 	compact := compactWhitespace(expr)
 	return (strings.Contains(compact, `replace("\r","")`) || strings.Contains(compact, `replace('\r','')`)) &&
@@ -196,17 +308,51 @@ func headerValueLooksSanitized(expr string) bool {
 
 func headerValueIsInternalNumeric(expr string) bool {
 	compact := compactWhitespace(expr)
-	return strings.Contains(compact, "str(int(") || strings.Contains(compact, "str(round(")
+	if strings.Contains(compact, "str(int(") || strings.Contains(compact, "str(round(") {
+		return true
+	}
+	if strings.Contains(compact, ".shape") {
+		return true
+	}
+	if strings.Contains(compact, "os.path.getsize(") || strings.Contains(compact, ".getsize(") {
+		return true
+	}
+	return false
 }
 
 // CWE-94: code-generation and dynamic-import APIs are only findings when the
 // code/module argument is non-literal. Literal developer-owned expressions are
-// out of scope for this same-file heuristic.
+// out of scope for this same-file heuristic. Attribute methods named exec/eval
+// (SQLModel session.exec, Qt app.exec) are rejected by findCalls' left-boundary
+// check on '.' unless the receiver is the explicit builtins module; def
+// signatures named exec/eval are declarations, not call sites; dynamic imports
+// over developer-controlled constants (own-package names, literal allowlists,
+// own-tree enumeration) are not untrusted control spheres; test harnesses
+// exercising repo-committed code are not deployment targets.
 func detectCWE94(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	for _, call := range findCalls(facts, unit.Source, "eval", "exec", "compile", "__import__", "importlib.import_module") {
+	if isPythonTestModule(unit) {
+		return
+	}
+	for _, call := range findCalls(facts, unit.Source, "eval", "exec", "compile", "builtins.exec", "builtins.eval", "__import__", "importlib.import_module") {
+		if call.Start > 0 && unit.Source[call.Start-1] == '.' {
+			if !cweReceiverIsBuiltins(unit.Source, call.Start) {
+				continue
+			}
+		}
+		switch call.Name {
+		case "eval", "exec", "compile":
+			if isDefHeaderCall(unit.Source, call.Start) {
+				continue
+			}
+		case "__import__", "importlib.import_module":
+			args := splitTopLevelArgs(call.ArgsText)
+			if len(args) > 0 && importTargetIsDevControlled(unit.Source, call.Start, args[0]) {
+				continue
+			}
+		}
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !isDynamicExpr(args[0]) {
 			continue
@@ -217,25 +363,53 @@ func detectCWE94(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	}
 }
 
+// cweReceiverIsBuiltins reports whether the attribute receiver immediately
+// left of the identifier at identAt is the explicit builtins module
+// (builtins.exec / builtins.eval are the builtin, unlike session.exec).
+func cweReceiverIsBuiltins(source string, identAt int) bool {
+	dot := identAt - 1
+	if dot <= 0 || source[dot] != '.' {
+		return false
+	}
+	end := dot
+	start := end
+	for start > 0 {
+		c := source[start-1]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+			start--
+			continue
+		}
+		break
+	}
+	return source[start:end] == "builtins"
+}
+
 // CWE-88: shell=False is not sufficient when an untrusted argument can become
 // a tool option. Detect only explicit argv literals with a dynamic segment; a
 // pre-built argv variable has insufficient same-file evidence to report.
-// Conventional Python test modules are skipped: fixed fixture paths and
-// hardcoded flavours are not attacker-controlled option sinks.
+// Conventional Python test/benchmark modules are skipped. Module constants
+// (UPPER_SNAKE), sys.executable, internally generated values (tempfile/socket
+// paths, ports), literal+constant concatenations, and self re-exec argv
+// spreads are not treated as attacker-controlled option text.
+//
+// Offline ETL/release CLI tools (backend/tools/, scripts/release/) that invoke
+// fixed binaries on operator-supplied local paths are out of scope — keep the
+// free-operand-after-flag TP shape for application/library code (rendercv).
 func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if isPythonTestModule(unit) {
+	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
 		return
 	}
+	ctx := buildPyFileCtx(facts, unit.Source)
 	for _, call := range findCalls(facts, unit.Source,
 		"subprocess.run", "subprocess.call", "subprocess.Popen", "subprocess.check_call", "subprocess.check_output") {
 		if hasKwargTrue(call.ArgsText, "shell") {
 			continue
 		}
 		args := splitTopLevelArgs(call.ArgsText)
-		if len(args) == 0 || !looksDynamicArgv(args[0]) {
+		if len(args) == 0 || !looksDynamicArgv(args[0], ctx) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE88,
@@ -244,7 +418,7 @@ func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	}
 }
 
-func looksDynamicArgv(expr string) bool {
+func looksDynamicArgv(expr string, ctx *pyFileCtx) bool {
 	t := strings.TrimSpace(expr)
 	if len(t) < 2 || (t[0] != '[' && t[0] != '(') {
 		return false
@@ -256,8 +430,93 @@ func looksDynamicArgv(expr string) bool {
 	if t[len(t)-1] != closeDelimiter {
 		return false
 	}
-	for _, arg := range splitTopLevelArgs(t[1 : len(t)-1]) {
-		if argvSegmentLooksDynamic(arg) {
+	segments := splitTopLevelArgs(t[1 : len(t)-1])
+	// Self re-exec of the operator's own argv under a guard is not injection.
+	for _, seg := range segments {
+		compact := compactWhitespace(seg)
+		if compact == "*sys.argv" || strings.HasPrefix(compact, "*sys.argv[") {
+			return false
+		}
+	}
+	// [*command, "-c", "literal script"] / [*cmd, "--flag"]: leading spread of
+	// a resolved argv prefix plus only literal tail segments cannot inject
+	// unintended options into a fixed tool (the spread IS the program vector).
+	if argvIsLeadingSpreadPlusLiterals(segments, ctx) {
+		return false
+	}
+	for i, seg := range segments {
+		if argvSegmentIsOptionValue(segments, i, ctx) {
+			continue
+		}
+		if argvSegmentLooksDynamic(seg, ctx) {
+			return true
+		}
+	}
+	return false
+}
+
+// argvIsLeadingSpreadPlusLiterals is true when the only non-literal segments
+// are leading *name spreads (and optionally trusted pieces), and every
+// remaining segment is a pure string/bytes literal.
+func argvIsLeadingSpreadPlusLiterals(segments []string, ctx *pyFileCtx) bool {
+	if len(segments) == 0 {
+		return false
+	}
+	sawSpread := false
+	for i, seg := range segments {
+		t := strings.TrimSpace(seg)
+		compact := compactWhitespace(t)
+		if strings.HasPrefix(compact, "*") {
+			ident := strings.TrimSpace(compact[1:])
+			if !bareIdentRE.MatchString(ident) {
+				return false
+			}
+			// Only allow spreads in a leading run (program prefix).
+			for k := 0; k < i; k++ {
+				prev := compactWhitespace(strings.TrimSpace(segments[k]))
+				if strings.HasPrefix(prev, "*") || isPureStringLiteral(strings.TrimSpace(segments[k])) ||
+					isPureBytesLiteral(strings.TrimSpace(segments[k])) {
+					continue
+				}
+				return false
+			}
+			sawSpread = true
+			continue
+		}
+		if isPureStringLiteral(t) || isPureBytesLiteral(t) {
+			continue
+		}
+		if argvSegmentLooksTrusted(t, ctx) {
+			continue
+		}
+		return false
+	}
+	return sawSpread
+}
+
+// argvSegmentIsOptionValue reports a segment bound as the value of the named
+// option that precedes it: a bare identifier or str() of a numeric-typed
+// parameter in that position is consumed by the tool as the option's value and
+// cannot be parsed as an unintended switch in a no-shell argv.
+func argvSegmentIsOptionValue(segments []string, i int, ctx *pyFileCtx) bool {
+	if i == 0 {
+		return false
+	}
+	prev := strings.TrimSpace(segments[i-1])
+	if len(prev) >= 2 && (prev[0] == '"' || prev[0] == '\'') && prev[len(prev)-1] == prev[0] {
+		prev = prev[1 : len(prev)-1]
+	}
+	prev = compactWhitespace(prev)
+	if len(prev) < 2 || prev[0] != '-' || prev == "--" {
+		return false
+	}
+	t := strings.TrimSpace(segments[i])
+	if bareIdentRE.MatchString(t) {
+		return true
+	}
+	if strings.HasPrefix(t, "str(") && strings.HasSuffix(t, ")") {
+		inner := strings.TrimSpace(t[4 : len(t)-1])
+		if bareIdentRE.MatchString(inner) && ctx != nil && ctx.numericAnnotated[inner] {
 			return true
 		}
 	}
@@ -265,9 +524,9 @@ func looksDynamicArgv(expr string) bool {
 }
 
 // argvSegmentLooksDynamic is true when a list/tuple argv element can carry
-// attacker-controlled option text. Pure string/bytes literals and static
-// concatenations of those literals are not dynamic.
-func argvSegmentLooksDynamic(expr string) bool {
+// attacker-controlled option text. Pure string/bytes literals, static
+// concatenations of those literals, and trusted module constants are not dynamic.
+func argvSegmentLooksDynamic(expr string, ctx *pyFileCtx) bool {
 	t := strings.TrimSpace(expr)
 	if t == "" {
 		return false
@@ -281,9 +540,145 @@ func argvSegmentLooksDynamic(expr string) bool {
 	if looksStaticLiteralConcat(t) {
 		return false
 	}
+	if argvSegmentLooksTrusted(t, ctx) {
+		return false
+	}
 	return true
 }
 
+// headerWriteReceiverLooksResponse restricts .headers[...] write sinks to
+// response objects (response/resp/res/self), excluding outgoing client or
+// request-object header mutation.
+func headerWriteReceiverLooksResponse(lhs string) bool {
+	idx := strings.Index(lhs, ".headers[")
+	if idx < 0 {
+		return false
+	}
+	recv := strings.TrimSpace(lhs[:idx])
+	if i := strings.LastIndex(recv, "."); i >= 0 {
+		recv = strings.TrimSpace(recv[i+1:])
+	}
+	lower := strings.ToLower(recv)
+	if lower == "self" || lower == "res" {
+		return true
+	}
+	return strings.Contains(lower, "response") || strings.HasPrefix(lower, "resp")
+}
+
+// headerValueLooksConstant resolves a header value that is a same-file call
+// whose callee returns only literals (constant helpers), or a bare module
+// constant assigned a literal.
+func headerValueLooksConstant(expr string, facts *PyCweFacts, source string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if upperSnakeRE.MatchString(t) && source != "" {
+		return moduleConstAssignedLiteral(t, source)
+	}
+	name := calleeNameOf(t)
+	if name == "" {
+		return false
+	}
+	return functionReturnsOnlyLiteralsForName(name, source)
+}
+
+// calleeNameOf returns the plain callee identifier of a call expression.
+func calleeNameOf(expr string) string {
+	t := strings.TrimSpace(expr)
+	open := strings.IndexByte(t, '(')
+	if open <= 0 || !strings.HasSuffix(t, ")") {
+		return ""
+	}
+	callee := strings.TrimSpace(t[:open])
+	if i := strings.LastIndex(callee, "."); i >= 0 {
+		callee = strings.TrimSpace(callee[i+1:])
+	}
+	if !bareIdentRE.MatchString(callee) {
+		return ""
+	}
+	return callee
+}
+
+// moduleConstAssignedLiteral reports UPPER_SNAKE = <literal> evidence.
+func moduleConstAssignedLiteral(name, source string) bool {
+	masked := pythonCodeMask(source)
+	for _, line := range strings.Split(masked, "\n") {
+		lhs, rhs, ok := splitAssignmentEq(line)
+		if !ok || strings.TrimSpace(lhs) != name {
+			continue
+		}
+		return isPureStringLiteral(rhs) || isNumericLiteral(rhs)
+	}
+	return false
+}
+
+// functionReturnsOnlyLiterals reports a def body whose every return statement
+// returns a literal (constant helper).
+func functionReturnsOnlyLiterals(body string) bool {
+	if body == "" {
+		return false
+	}
+	lines := buildMaskedPythonLines(pythonCodeMask(body))
+	seenReturn := false
+	for _, line := range lines {
+		masked := strings.TrimSpace(line.text)
+		if masked == "" {
+			continue
+		}
+		if masked != "return" && !strings.HasPrefix(masked, "return ") && !strings.HasPrefix(masked, "return(") {
+			continue
+		}
+		seenReturn = true
+		orig := body[line.start:]
+		if len(orig) > len(line.text) {
+			orig = orig[:len(line.text)]
+		}
+		expr := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(orig), "return"))
+		if strings.HasPrefix(expr, "(") && strings.HasSuffix(expr, ")") {
+			expr = strings.TrimSpace(expr[1 : len(expr)-1])
+		}
+		if expr == "" || isPureStringLiteral(expr) || isNumericLiteral(expr) {
+			continue
+		}
+		return false
+	}
+	return seenReturn
+}
+
+// functionReturnsOnlyLiteralsForName locates a same-file def (arrow-annotation
+// tolerant) and analyzes its body returns. Facts.Funcs cannot be reused here
+// because its def regex requires `):` and misses `-> str:` annotations.
+func functionReturnsOnlyLiteralsForName(name, source string) bool {
+	if name == "" || source == "" {
+		return false
+	}
+	re := regexp.MustCompile(`(?m)^[ \t]*def\s+` + regexp.QuoteMeta(name) + `\s*\([^\n]*\)\s*(->[^\n]*)?:`)
+	masked := pythonCodeMask(source)
+	loc := re.FindStringIndex(masked)
+	if loc == nil {
+		return false
+	}
+	colonAt := loc[1] - 1 // match ends at ':'
+	indent := 0
+	for loc[0]+indent < colonAt && (masked[loc[0]+indent] == ' ' || masked[loc[0]+indent] == '\t') {
+		indent++
+	}
+	bodyStart := colonAt + 1
+	if bodyStart < len(masked) && masked[bodyStart] == '\n' {
+		bodyStart++
+	}
+	if bodyStart > len(source) {
+		return false
+	}
+	bodyEnd := pythonFunctionBodyEnd(masked, bodyStart, indent)
+	if bodyStart > bodyEnd || bodyEnd > len(source) {
+		return false
+	}
+	return functionReturnsOnlyLiterals(source[bodyStart:bodyEnd])
+}
+
+// isPureBytesLiteral reports a b"..." / B'...' literal.
 func isPureBytesLiteral(expr string) bool {
 	t := strings.TrimSpace(expr)
 	if len(t) < 3 {
@@ -357,17 +752,22 @@ func splitTopLevelConcat(expr string) []string {
 
 // CWE-117: keep the signal to dynamically formatted messages passed to known
 // Python logging APIs. Structured literal messages with separate arguments are
-// intentionally excluded.
+// intentionally excluded. Constant / numeric-only interpolations, loop
+// counters, and internally generated names cannot carry CRLF.
 func detectCWE117(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
+	ctx := buildPyFileCtx(facts, unit.Source)
 	for _, call := range findCalls(facts, unit.Source,
 		"logging.debug", "logging.info", "logging.warning", "logging.error", "logging.critical",
 		"logger.debug", "logger.info", "logger.warning", "logger.error", "logger.critical",
 		"log.debug", "log.info", "log.warning", "log.error", "log.critical") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !looksLogFormatted(args[0]) || headerValueLooksSanitized(args[0]) {
+			continue
+		}
+		if !logMessageHasCRLFCapableValue(args[0], ctx) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE117,

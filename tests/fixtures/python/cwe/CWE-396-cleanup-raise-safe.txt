@@ -1,0 +1,14 @@
+# goslop text fixture — multi-statement cleanup-then-propagate handler:
+# the failure is re-raised after resource cleanup (niquests utils.py:256,
+# safer __init__.py:312 FP shape)
+lang: python
+file: cleanup_raise.py
+---
+def write_atomic(tmp_name, filename, payload):
+    try:
+        with open(tmp_name, "wb") as f:
+            f.write(payload)
+        os.replace(tmp_name, filename)
+    except BaseException:
+        os.remove(tmp_name)
+        raise

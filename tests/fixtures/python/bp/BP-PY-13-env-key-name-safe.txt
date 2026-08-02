@@ -1,0 +1,9 @@
+# goslop text fixture — env var *name* holder is not a hardcoded secret
+lang: python
+file: ai/gpt.py
+---
+class Gpt:
+    OPENAI_API_KEY_NAME = "PYCAPS_OPENAI_API_KEY"
+
+    def is_enabled(self) -> bool:
+        return os.getenv(self.OPENAI_API_KEY_NAME) is not None

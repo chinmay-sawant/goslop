@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: demo_features.py
+---
+#!/usr/bin/env python3
+
+
+def run_demo():
+    print("demo status")
+
+
+if __name__ == "__main__":
+    run_demo()

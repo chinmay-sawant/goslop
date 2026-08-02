@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: CWE-89-def-execute-safe.py
+---
+def execute(source_code, global_vars=None, local_vars=None):
+    """custom exec for running files; definition is not a SQL sink"""
+    raise NotImplementedError

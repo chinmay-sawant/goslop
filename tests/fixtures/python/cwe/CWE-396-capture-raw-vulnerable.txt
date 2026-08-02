@@ -1,0 +1,10 @@
+# goslop text fixture — str() extraction without surfacing (WeThePeople llm/client.py:130 TP shape)
+lang: python
+file: worker_str_capture.py
+---
+def run_worker():
+    try:
+        step()
+    except Exception as exc:
+        worker_error = str(exc)
+    return worker_error

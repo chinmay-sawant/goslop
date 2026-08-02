@@ -88,10 +88,21 @@ func authResponseDiscrepancy(source, masked string) (bool, bool, int) {
 // authentication-sensitive values. hmac.compare_digest and ordinary equality
 // comparisons without two such identifiers are not reported.
 //
+// Test modules are skipped: assert token/authority comparisons and fixture
+// constant checks are not deployed authentication sinks.
+// Offline release/tool scripts (scripts/release signature manifests) are also
+// skipped — those == checks validate build artifacts, not live auth.
+//
+// Bare "auth" substring matches that only fire on authority/author enums
+// (Project_Parva AuthorityTaint) are filtered: not credential material.
+//
 // Two-pass hot path: only lines containing "==" are checked with the timing
 // compare RE (avoids FindAllStringIndex over the whole file).
 func detectCWE208(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if isPythonTestModule(unit) {
 		return
 	}
 	src := unit.Source
@@ -108,6 +119,11 @@ func detectCWE208(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 			if loc := pyTimingCompareRE.FindStringIndex(line); loc != nil {
 				absStart := offset + loc[0]
 				absEnd := offset + loc[1]
+				match := line[loc[0]:loc[1]]
+				if !timingCompareIsCredentialMaterial(match) {
+					offset += len(line) + 1
+					continue
+				}
 				if absEnd <= len(masked) && strings.TrimSpace(masked[absStart:absEnd]) != "" {
 					emitInfoExposure(unit, &MetaCWE208, absStart,
 						"security-sensitive values are compared with == instead of a constant-time comparison", confidence82, out)
@@ -117,6 +133,108 @@ func detectCWE208(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 		}
 		offset += len(line) + 1
 	}
+}
+
+// timingCompareIsCredentialMaterial rejects RE hits driven only by
+// authority/author identifiers (AuthorityTaint enum ranking), which are not
+// secret values subject to timing attacks.
+func timingCompareIsCredentialMaterial(match string) bool {
+	parts := strings.SplitN(match, "==", 2)
+	if len(parts) != 2 {
+		return false
+	}
+	return timingOperandIsCredential(parts[0]) && timingOperandIsCredential(parts[1])
+}
+
+func timingOperandIsCredential(expr string) bool {
+	// Prefer the rightmost identifier of an attribute chain
+	// (resolution.authority → authority; candidate.password → password).
+	ident := timingOperandLeaf(expr)
+	if ident == "" {
+		return false
+	}
+	lower := strings.ToLower(ident)
+	// authority / author / authorize* are not secret material.
+	if lower == "authority" || lower == "author" ||
+		strings.HasPrefix(lower, "authorit") || strings.HasPrefix(lower, "authoriz") {
+		return false
+	}
+	for _, stem := range []string{
+		"password", "passwd", "token", "secret", "digest", "signature",
+		"api_key", "apikey", "credential",
+	} {
+		if strings.Contains(lower, stem) {
+			return true
+		}
+	}
+	// Whole-identifier "auth" / "auth_*" only (not authority — filtered above).
+	if lower == "auth" || strings.HasPrefix(lower, "auth_") {
+		return true
+	}
+	return false
+}
+
+func timingOperandLeaf(expr string) string {
+	s := strings.TrimSpace(expr)
+	if s == "" {
+		return ""
+	}
+	// Strip trailing non-ident noise.
+	end := len(s)
+	for end > 0 {
+		c := s[end-1]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+			break
+		}
+		end--
+	}
+	s = s[:end]
+	if i := strings.LastIndexByte(s, '.'); i >= 0 {
+		s = s[i+1:]
+	}
+	// Leading junk (operators) — take trailing identifier run.
+	start := 0
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' {
+			start = i
+			break
+		}
+	}
+	// Find end of identifier from start.
+	j := start
+	for j < len(s) {
+		c := s[j]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+			j++
+			continue
+		}
+		break
+	}
+	// Prefer last identifier segment if multiple words.
+	if j < len(s) {
+		// walk from right for last ident
+		for i := len(s) - 1; i >= 0; i-- {
+			c := s[i]
+			if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' {
+				end := i + 1
+				k := i
+				for k >= 0 {
+					c2 := s[k]
+					if (c2 >= 'a' && c2 <= 'z') || (c2 >= 'A' && c2 <= 'Z') || (c2 >= '0' && c2 <= '9') || c2 == '_' {
+						k--
+						continue
+					}
+					break
+				}
+				return s[k+1 : end]
+			}
+		}
+	}
+	if start < j {
+		return s[start:j]
+	}
+	return s
 }
 
 func detectCWE209(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {

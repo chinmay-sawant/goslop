@@ -1,0 +1,11 @@
+# goslop text fixture — sole suite call to logging.Handler.handleError
+# (logxide handlers.py audited FP shape)
+lang: python
+file: handlers.py
+---
+class StreamHandler:
+    def emit(self, record):
+        try:
+            self._inner.emit(record)
+        except Exception:
+            self.handleError(record)

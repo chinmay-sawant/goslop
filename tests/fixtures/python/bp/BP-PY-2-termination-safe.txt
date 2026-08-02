@@ -1,0 +1,16 @@
+# goslop text fixture — StopAsyncIteration/StopIteration:pass designed
+# termination (niquests async_session.py / sessions.py FP)
+lang: python
+file: termination.py
+---
+async def store_next(gen, r):
+    try:
+        r._next = await gen.__anext__()
+    except StopAsyncIteration:
+        pass
+
+def store_next_sync(it, r):
+    try:
+        r._next = next(it)
+    except StopIteration:
+        pass

@@ -1,0 +1,19 @@
+# goslop text fixture — ValueError:pass after .index() lookup with a default
+# None pre-init (niquests kiss_headers header_strip FP)
+lang: python
+file: utils.py
+---
+def header_strip(content, elem):
+    next_semi_colon_index = None
+    try:
+        elem_index = content.index(elem)
+    except ValueError:
+        return content
+    elem_end_index = elem_index + len(elem)
+    try:
+        next_semi_colon_index = elem_end_index + content[elem_end_index:].index(";")
+    except ValueError:
+        pass
+    if next_semi_colon_index is not None:
+        return content[:elem_index] + content[next_semi_colon_index + 1 :]
+    return content[:elem_index]

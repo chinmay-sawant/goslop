@@ -1,0 +1,6 @@
+# goslop text fixture — production token equality stays reportable
+lang: python
+file: app/auth.py
+---
+def authenticate(candidate_token, expected_token):
+    return candidate_token == expected_token

@@ -1,0 +1,16 @@
+# goslop text fixture — log-only broad except still swallows the failure
+# (no re-raise); must fire BP-PY-1
+lang: python
+file: middleware_swallow.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def handle_request(handler, request):
+    try:
+        return handler(request)
+    except Exception:
+        logger.exception("request failed")
+        pass

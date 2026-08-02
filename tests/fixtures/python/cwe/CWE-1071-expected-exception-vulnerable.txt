@@ -1,0 +1,10 @@
+# goslop text fixture — production-shaped swallow without action (not a test
+# module path — CWE-1071 skips tests/ offline tooling as expected-exception FPs)
+lang: python
+file: service_swallow.py
+---
+def parse_user_input(value):
+    try:
+        parse(value)
+    except ValueError:
+        pass

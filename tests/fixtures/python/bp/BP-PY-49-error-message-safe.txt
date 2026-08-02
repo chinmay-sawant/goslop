@@ -1,0 +1,14 @@
+# goslop text fixture — verify=False only appears inside an error message string
+lang: python
+file: extensions/wasi/_utils.py
+---
+class SSLError(Exception):
+    pass
+
+
+def prepare(verify):
+    if verify is not True:
+        raise SSLError(
+            "WASI HTTPS uses the host trust policy; verify=False and custom CA bundles are unavailable."
+        )
+    return True

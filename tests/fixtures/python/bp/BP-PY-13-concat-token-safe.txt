@@ -1,0 +1,7 @@
+# goslop text fixture — route template token concat is not a secret
+lang: python
+file: tools/langchain.py
+---
+def bind_route(route, key):
+    token = "{" + key + "}"
+    return route.replace(token, "x")

@@ -1,0 +1,8 @@
+# goslop text fixture
+lang: python
+file: cache_mod.py
+---
+class Cache:
+    def put(self, key, value):
+        print("put", key)
+        return value

@@ -1,0 +1,11 @@
+# goslop text fixture — CWE-117 DOM/page-derived interpolation (vulnerable)
+lang: python
+file: CWE-117-generated-name-vulnerable.py
+---
+import logging
+
+logger = logging.getLogger("app")
+
+
+def log_section(heading_text: str, exc: Exception) -> None:
+    logger.info(f"Unable to capture text for section '{heading_text}': {exc}")

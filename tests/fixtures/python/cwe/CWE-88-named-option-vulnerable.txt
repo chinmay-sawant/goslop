@@ -1,0 +1,18 @@
+# goslop text fixture — CWE-88 runtime path as free operand after a no-value
+# flag (vulnerable; mirrors the preserved rendercv TP shape)
+lang: python
+file: CWE-88-named-option-vulnerable.py
+---
+import subprocess
+from pathlib import Path
+
+
+def extract_pdftotext(pdf_path: Path) -> str:
+    result = subprocess.run(
+        ["pdftotext", "-layout", str(pdf_path), "-"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    return result.stdout

@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: generator_lib.py
+---
+def generate_report(path):
+    print("[*] Rendering HTML report...")
+    return path

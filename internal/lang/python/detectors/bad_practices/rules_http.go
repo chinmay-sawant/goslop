@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/pytext"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
@@ -33,7 +34,7 @@ var requestsCallRe = regexp.MustCompile(`\brequests\.(get|post|put|patch|delete|
 // via common names session / sess / req_session.
 var sessionHTTPCallRe = regexp.MustCompile(`\b(session|sess|req_session)\.(get|post|put|patch|delete|request|head|options)\s*\(`)
 
-// BP-PY-14: requests.get/post/... without timeout keyword.
+// BP-PY-14: requests.get/post/... without timeout keyword or positional timeout.
 func detectBPPY14(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-14")
 	if isPythonTestFile(unit) {
@@ -45,7 +46,9 @@ func detectBPPY14(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			return
 		}
 	}
-	src := unit.Source
+	// Mask docstrings/string literals so doctest `>>> requests.get(...)` examples
+	// (kiss_headers __init__.py) are not reported as live calls.
+	src := pytext.Mask(unit.Source)
 	scanHTTPCallsNoTimeout(unit, src, requestsCallRe, meta, out)
 	scanHTTPCallsNoTimeout(unit, src, sessionHTTPCallRe, meta, out)
 }
@@ -75,15 +78,20 @@ func scanHTTPCallsNoTimeout(unit *core.ParsedUnit, src string, re *regexp.Regexp
 
 const httpTimeoutFallbackBytes = 240
 
-// callArgsHasTimeout reports timeout= as a keyword (not a variable named timeout alone).
+// callArgsHasTimeout reports timeout= as a keyword, or a bare positional
+// `timeout` argument (niquests async_api.py session.request(..., timeout, ...)).
 func callArgsHasTimeout(args string) bool {
-	// Match timeout= outside strings roughly via substring; good enough for v0.
-	// Avoid matching timeout in URL query strings inside string literals when possible:
-	// look for timeout\s*=
-	return timeoutKwRe.MatchString(args)
+	if timeoutKwRe.MatchString(args) {
+		return true
+	}
+	// Positional identifier argument exactly named timeout (not timeout_ms etc.).
+	return timeoutPositionalRe.MatchString(args)
 }
 
-var timeoutKwRe = regexp.MustCompile(`\btimeout\s*=`)
+var (
+	timeoutKwRe         = regexp.MustCompile(`\btimeout\s*=`)
+	timeoutPositionalRe = regexp.MustCompile(`(?:^|,)\s*timeout\s*(?:,|$)`)
+)
 
 // AsyncClient construction
 var asyncClientCallRe = regexp.MustCompile(`(?:httpx\.)?AsyncClient\s*\(`)

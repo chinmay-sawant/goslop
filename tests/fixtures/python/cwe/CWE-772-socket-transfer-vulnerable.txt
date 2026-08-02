@@ -1,0 +1,11 @@
+# Fixture for CWE-772 (vulnerable): socket assigned with no close and no transfer.
+lang: python
+file: client.py
+---
+import socket
+
+
+def open_probe(path):
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.connect(path)
+    return sock.recv(64)

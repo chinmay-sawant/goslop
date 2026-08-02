@@ -1,0 +1,9 @@
+# goslop text fixture — CWE-93 dynamic ternary branch (still reportable)
+lang: python
+file: app/bootstrap/app_factory.py
+---
+def frontend_response(response, next_url: str, *, immutable: bool = False):
+    response.headers["Location"] = (
+        f"/next?to={next_url}" if immutable else next_url
+    )
+    return response

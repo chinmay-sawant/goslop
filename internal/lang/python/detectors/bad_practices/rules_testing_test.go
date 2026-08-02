@@ -27,6 +27,63 @@ func TestBPPY41TestWithoutAssert(t *testing.T) {
 	ae := loadBPFixture(t, "BP-PY-41-assertionerror-helper", false)
 	assertRule(t, "BP-PY-41", ae.path, ae.body, false)
 
+	// pytest-regressions check_func (pictex)
+	checkFunc := loadBPFixture(t, "BP-PY-41-check-func", false)
+	assertRule(t, "BP-PY-41", checkFunc.path, checkFunc.body, false)
+
+	// pytest-benchmark fixture (httptap)
+	bench := loadBPFixture(t, "BP-PY-41-benchmark", false)
+	assertRule(t, "BP-PY-41", bench.path, bench.body, false)
+
+	// bare-assert helper delegation (safer / niquests _inner_*)
+	bare := loadBPFixture(t, "BP-PY-41-bare-assert-helper", false)
+	assertRule(t, "BP-PY-41", bare.path, bare.body, false)
+
+	// triple-quoted sample string must not abort body scan (whatsapp-wrapped / rendercv)
+	strBody := loadBPFixture(t, "BP-PY-41-string-body-scan", false)
+	assertRule(t, "BP-PY-41", strBody.path, strBody.body, false)
+	strVuln := loadBPFixture(t, "BP-PY-41-string-body-scan", true)
+	assertRule(t, "BP-PY-41", strVuln.path, strVuln.body, true)
+
+	// explicit raise AssertionError verifies the rejection outcome (httptap)
+	raiseAssert := loadBPFixture(t, "BP-PY-41-raise-assertion", false)
+	assertRule(t, "BP-PY-41", raiseAssert.path, raiseAssert.body, false)
+	raiseAssertVuln := loadBPFixture(t, "BP-PY-41-raise-assertion", true)
+	assertRule(t, "BP-PY-41", raiseAssertVuln.path, raiseAssertVuln.body, true)
+
+	// top-level pytest.fail after a retry loop is a bare fallback, not an
+	// assertion (httpmorph test_proxy TPs must keep firing)
+	retryVuln := loadBPFixture(t, "BP-PY-41-retry-fallback", true)
+	assertRule(t, "BP-PY-41", retryVuln.path, retryVuln.body, true)
+	// pytest.fail inside an except suite verifies the guarded call (logxide)
+	retrySafe := loadBPFixture(t, "BP-PY-41-retry-fallback", false)
+	assertRule(t, "BP-PY-41", retrySafe.path, retrySafe.body, false)
+
+	// noxfile session runners and pytest.raises-bearing helpers are not placeholders
+	nox := loadBPFixture(t, "BP-PY-41-noxfile", false)
+	assertRule(t, "BP-PY-41", nox.path, nox.body, false)
+	noxVuln := loadBPFixture(t, "BP-PY-41-noxfile", true)
+	assertRule(t, "BP-PY-41", noxVuln.path, noxVuln.body, true)
+	raisesHelper := loadBPFixture(t, "BP-PY-41-pytest-raises-helper", false)
+	assertRule(t, "BP-PY-41", raisesHelper.path, raisesHelper.body, false)
+	raisesHelperVuln := loadBPFixture(t, "BP-PY-41-pytest-raises-helper", true)
+	assertRule(t, "BP-PY-41", raisesHelperVuln.path, raisesHelperVuln.body, true)
+
+	// Structural BP-PY-41 safe shapes (route handlers, check=True, validate_*,
+	// server wait infrastructure). Name-substring smoke gates removed.
+	for _, caseName := range []string{
+		"BP-PY-41-stream-close",
+		"BP-PY-41-server-wait-smoke",
+		"BP-PY-41-route-handler",
+		"BP-PY-41-subprocess-check",
+		"BP-PY-41-validate-helper",
+	} {
+		safeCase := loadBPFixture(t, caseName, false)
+		vulnCase := loadBPFixture(t, caseName, true)
+		assertRule(t, "BP-PY-41", safeCase.path, safeCase.body, false)
+		assertRule(t, "BP-PY-41", vulnCase.path, vulnCase.body, true)
+	}
+
 	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-41" && f.Severity != rules.SeverityInfo {

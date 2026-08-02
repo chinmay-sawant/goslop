@@ -1,0 +1,10 @@
+# goslop text fixture — raw exception object captured and re-raised later (niquests sgi/_async app_exception FP)
+lang: python
+file: raw_capture.py
+---
+def run_worker():
+    try:
+        step()
+    except Exception as exc:
+        worker_error = exc
+    raise worker_error

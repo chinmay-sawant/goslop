@@ -1,0 +1,12 @@
+# goslop text fixture — stderr report of the exception followed by continue;
+# the failure is surfaced to the user (calgebra ical.py:384 FP shape)
+lang: python
+file: printed_failure.py
+---
+def run(urls):
+    for url in urls:
+        try:
+            fetch(url)
+        except Exception as e:
+            print(f"Warning: failed to fetch: {e}", file=sys.stderr)
+            continue

@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-829-own-package-import-vulnerable.py
+---
+def load_plugin(module_name):
+    return importlib.import_module(module_name)

@@ -1,0 +1,20 @@
+# goslop text fixture — close then raise on MaxRetryError arm vs close then
+# continue on the retry arm: one release per path (niquests wasi adapter FP)
+lang: python
+file: wasi_retry.py
+---
+def send(request, retries):
+    while True:
+        response = _send_once(request)
+        if retries.is_retry(response.status_code):
+            try:
+                retries = retries.increment(response=response)
+            except MaxRetryError:
+                if retries.raise_on_status:
+                    response.close()
+                    raise
+                return response
+            response.close()
+            retries.sleep()
+            continue
+        return response

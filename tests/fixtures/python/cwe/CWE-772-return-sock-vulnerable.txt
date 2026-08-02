@@ -1,0 +1,13 @@
+# Fixture for CWE-772 (vulnerable): socket neither closed nor returned/stored.
+lang: python
+file: net/client.py
+---
+import socket
+
+
+def bind_ephemeral(host):
+    sock = socket.socket()
+    sock.bind((host, 0))
+    sock.listen()
+    port = sock.getsockname()[1]
+    return port

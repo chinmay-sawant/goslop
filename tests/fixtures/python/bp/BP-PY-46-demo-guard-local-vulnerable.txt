@@ -1,0 +1,20 @@
+# goslop text fixture
+lang: python
+file: jobs/monitor_pipeline.py
+---
+import argparse
+
+
+def health_check(as_json: bool = False) -> int:
+    print("  Pipeline Health Report")
+    return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="health monitor")
+    args = parser.parse_args()
+    return health_check(as_json=args.json)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

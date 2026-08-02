@@ -1,0 +1,13 @@
+# goslop text fixture — soft recording into warnings list retains the failure
+# on the result (Project_Parva rulelang evidence-packet FP shape)
+lang: python
+file: rulelang_service.py
+---
+def evaluate(rule, context):
+    evidence_packet_id = None
+    try:
+        packet = build_evidence_packet(rule, context)
+        evidence_packet_id = packet["packet_id"]
+    except Exception as exc:
+        context.warnings.append(f"rule_evidence_packet_unavailable: {exc}")
+    return {"evidence_packet_id": evidence_packet_id, "warnings": context.warnings}

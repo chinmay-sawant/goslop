@@ -1,0 +1,16 @@
+# goslop text fixture — middleware log-then-re-raise fully surfaces the
+# failure (Project_Parva middleware shape); must not fire BP-PY-1
+lang: python
+file: middleware.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def handle_request(handler, request):
+    try:
+        return handler(request)
+    except Exception as exc:
+        logger.exception("request failed: %s", exc)
+        raise

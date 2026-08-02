@@ -1,0 +1,9 @@
+# goslop text fixture
+lang: python
+file: CWE-89-sqlalchemy-text-vulnerable.py
+---
+from sqlalchemy import text
+
+
+def update_tier(db, tier, story_id):
+    db.execute(text(f"UPDATE stories SET verification_tier = '{tier}' WHERE id = {story_id}"))

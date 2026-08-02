@@ -1,0 +1,10 @@
+# goslop text fixture — CWE-93 helper returning a formatted value (vulnerable)
+lang: python
+file: CWE-93-numeric-call-vulnerable.py
+---
+def _trace_header(request_id: str, user_input: str) -> str:
+    return f"{request_id}:{user_input}"
+
+
+def trace(response, request_id: str, user_input: str) -> None:
+    response.headers["X-Trace"] = _trace_header(request_id, user_input)

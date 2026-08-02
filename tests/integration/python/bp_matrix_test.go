@@ -25,8 +25,8 @@ func TestPythonBPFixturesMatrix(t *testing.T) {
 	if len(cases) == 0 {
 		t.Fatal("expected at least one Python BP-PY fixture case under tests/fixtures/python/bp")
 	}
-	if len(cases) < 151 {
-		t.Fatalf("expected at least 151 BP-PY cases, got %d", len(cases))
+	if len(cases) < 178 {
+		t.Fatalf("expected at least 178 BP-PY cases, got %d", len(cases))
 	}
 	t.Logf("Python BP-PY fixture cases: %d (×2 files)", len(cases))
 
@@ -68,8 +68,8 @@ func TestPythonBPFixtureInventorySorted(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(cases) != 151 {
-		t.Fatalf("inventory size = %d, want 151", len(cases))
+	if len(cases) < 178 {
+		t.Fatalf("inventory size = %d, want at least 178", len(cases))
 	}
 	seen := map[string]struct{}{}
 	for _, c := range cases {

@@ -1,0 +1,17 @@
+# goslop text fixture — expected-exception async test: single await + specific
+# catch + pass (niquests wasi_guest edge_cases FP)
+lang: python
+file: tests/wasi_guest/async/edge_cases.py
+---
+async def low_level_cases():
+    failed = LowLevelResponse(Reader([Err(Failed())]))
+    try:
+        await failed.read(1)
+    except ReadTimeout:
+        pass
+
+    other = LowLevelResponse(Reader([ValueError("bad")]))
+    try:
+        await other.read(1)
+    except ValueError:
+        pass

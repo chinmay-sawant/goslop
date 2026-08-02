@@ -1,0 +1,17 @@
+# goslop text fixture — with resource scopes still nest; pure if-chains
+# inside a with body must fire at six levels (caniscrape captcha shape).
+lang: python
+file: CWE-1124-with-body-vulnerable.py
+---
+def detect(url):
+    try:
+        with sync_playwright() as p:
+            if captcha_on_load:
+                if service_name and api_key:
+                    try:
+                        if not sitekey:
+                            raise CaptchaSolverError("missing sitekey")
+                    except CaptchaSolverError:
+                        return None
+    except Exception:
+        return None

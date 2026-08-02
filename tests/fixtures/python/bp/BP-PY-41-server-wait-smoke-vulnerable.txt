@@ -1,0 +1,11 @@
+# goslop text fixture — product call with no assert (not socket/server infra).
+lang: python
+file: tests/test_product_wait.py
+---
+import time
+
+
+def test_product_wait_for_job():
+    job = start_job()
+    time.sleep(2.5)
+    job.poll()

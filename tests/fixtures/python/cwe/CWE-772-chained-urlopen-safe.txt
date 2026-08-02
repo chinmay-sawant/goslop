@@ -1,0 +1,10 @@
+# goslop text fixture — chained urlopen(...).read() never holds a resource
+# (Project_Parva ingest_pradhanlaw FP shape)
+lang: python
+file: ingest_pradhanlaw_2082.py
+---
+import urllib.request
+
+def ingest(url):
+    html = urllib.request.urlopen(url).read().decode("utf-8", errors="ignore")
+    return html

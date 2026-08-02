@@ -1,0 +1,24 @@
+# goslop text fixture — constant/module argv (safe)
+lang: python
+file: CWE-88-constant-argv-safe.py
+---
+import subprocess
+from pathlib import Path
+
+KEY_FILE = Path.home() / ".config/app/secret.key"
+
+
+def encrypt(token: str) -> str:
+    return subprocess.run(
+        [
+            "openssl",
+            "enc",
+            "-aes-256-cbc",
+            "-pass",
+            "file:" + str(KEY_FILE),
+            "-base64",
+        ],
+        input=token.encode(),
+        capture_output=True,
+        check=False,
+    ).stdout.decode()

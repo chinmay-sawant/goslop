@@ -1,0 +1,6 @@
+# goslop text fixture — placeholder test without asserts stays reportable
+lang: python
+file: test_placeholder.py
+---
+def test_login():
+    client.post("/login", json={"u": "a"})

@@ -1,0 +1,15 @@
+# goslop text fixture — attr/cache probe with constant fallback (logxide
+# fast_logger_wrapper FP shape)
+lang: python
+file: fast_logger_wrapper.py
+---
+WARNING = 30
+
+class FastLogger:
+    def _update_cache(self):
+        try:
+            self._effective_level = self._rust_logger.getEffectiveLevel()
+            self._name = self._rust_logger.name
+        except Exception:
+            self._effective_level = WARNING
+            self._name = "root"

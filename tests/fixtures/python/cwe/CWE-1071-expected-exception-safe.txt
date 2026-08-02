@@ -1,0 +1,12 @@
+# goslop text fixture — expected-exception test whose try block deliberately
+# raises; the pass handler asserts the raised outcome (onlymaps
+# tests/test_database.py:339 FP shape)
+lang: python
+file: test_expected_exception.py
+---
+def test_parse():
+    try:
+        parse("not-an-int")
+        raise AssertionError("parse should have raised")
+    except ValueError:
+        pass

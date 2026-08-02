@@ -1,0 +1,18 @@
+# goslop text fixture — pass-only except without fallback marker; flow continues into control flow
+lang: python
+file: calendar/calculator_v2.py
+---
+def calculate_festival_date(festival_id, year, use_overrides=True):
+    if use_overrides:
+        try:
+            from .overrides import get_festival_override
+
+            override_date = get_festival_override(festival_id, year)
+            if override_date:
+                return override_date
+        except (ImportError, OSError, TypeError, ValueError, KeyError):
+            pass
+    rules = get_festival_rules_v3()
+    if festival_id not in rules:
+        return None
+    return algorithmic(festival_id, year, rules)

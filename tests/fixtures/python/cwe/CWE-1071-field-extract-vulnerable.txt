@@ -1,0 +1,9 @@
+# goslop text fixture — Exception:pass empty handler stays reportable
+lang: python
+file: service.py
+---
+def process(item):
+    try:
+        handle(item)
+    except Exception:
+        pass

@@ -1,0 +1,16 @@
+# goslop text fixture
+lang: python
+file: CWE-94-own-package-import-vulnerable.py
+---
+_PROVIDERS = {
+    "openai": ("voicetag.providers.openai", "OpenAIProvider"),
+    "deepgram": ("voicetag.providers.deepgram", "DeepgramProvider"),
+}
+
+
+def transcribe(provider: str, audio_path: str):
+    if provider not in _PROVIDERS:
+        raise ValueError(f"Unknown provider {provider}")
+    module_path, class_name = _PROVIDERS[provider]
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)(audio_path)

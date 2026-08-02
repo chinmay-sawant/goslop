@@ -1,0 +1,10 @@
+# goslop text fixture — multi-stmt non-type-filter re-raise stays reportable
+lang: python
+file: worker.py
+---
+def work():
+    try:
+        return do_work()
+    except Exception as e:
+        metrics.incr("errors")
+        raise

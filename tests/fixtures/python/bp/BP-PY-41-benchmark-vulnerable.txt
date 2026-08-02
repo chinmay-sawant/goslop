@@ -1,0 +1,6 @@
+# Fixture for BP-PY-41 (vulnerable) — calls production code with no assertion/benchmark
+lang: python
+file: tests/test_benchmarks_vuln.py
+---
+def test_timing_calculate_derived(sample_timing):
+    sample_timing.calculate_derived()

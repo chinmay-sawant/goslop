@@ -1,0 +1,17 @@
+# goslop text fixture
+lang: python
+file: CWE-829-own-package-import-safe.py
+---
+_EXPORT_MODULES = {
+    "lint_manifest": "manifest",
+    "manifest_digest": "manifest",
+    "validate_public_origin": "client",
+}
+
+
+def __getattr__(name: str) -> Any:
+    module_name = _EXPORT_MODULES.get(name)
+    if module_name is None:
+        raise AttributeError(name)
+    module = __import__(f"{__name__}.{module_name}", fromlist=[name])
+    return getattr(module, name)

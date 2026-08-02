@@ -1,0 +1,19 @@
+# goslop text fixture
+# Safe: f-string SQL interpolates only store.param() bound-placeholder tokens;
+# real values travel in the second execute argument (Project_Parva shape).
+lang: python
+file: db.py
+---
+def apply_migration(store, migration):
+    store.execute(
+        f"INSERT INTO billing_schema_migrations (version, name) VALUES ({store.param()}, {store.param()})",
+        (migration.version, migration.name),
+    )
+
+
+def lookup(store, email):
+    ph = store.param()
+    store.execute(
+        f"SELECT * FROM customers WHERE email = {ph}",
+        (email,),
+    )

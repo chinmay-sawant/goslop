@@ -1,0 +1,11 @@
+# goslop text fixture — fromisoformat then counter update stays reportable
+# (WeThePeople-style non-pure parser TP)
+lang: python
+file: services/dates.py
+---
+def record_parsed(value, counts):
+    try:
+        date = datetime.fromisoformat(value)
+        counts[date.year] += 1
+    except ValueError:
+        pass

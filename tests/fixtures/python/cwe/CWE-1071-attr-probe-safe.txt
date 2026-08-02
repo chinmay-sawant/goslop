@@ -1,0 +1,10 @@
+# goslop text fixture — AttributeError pass-only after attr probe (empty block FP)
+lang: python
+file: CWE-1071-attr-probe-safe.py
+---
+class Response:
+    def _gather(self) -> None:
+        try:
+            super().__getattribute__("_promise")
+        except AttributeError:
+            pass

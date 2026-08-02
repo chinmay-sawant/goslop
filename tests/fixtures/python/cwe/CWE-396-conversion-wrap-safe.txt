@@ -1,0 +1,19 @@
+# goslop text fixture — conversion/parse try + HTTPException wrap-raise is
+# API-boundary translation (Project_Parva engine_routes FP shape)
+lang: python
+file: engine_routes.py
+---
+from datetime import date
+
+class HTTPException(Exception):
+    def __init__(self, status_code, detail):
+        self.status_code = status_code
+        self.detail = detail
+
+def convert(date_str: str):
+    try:
+        year, month, day = [int(v) for v in date_str.split("-")]
+        value = date(year, month, day)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Invalid date format") from exc
+    return value

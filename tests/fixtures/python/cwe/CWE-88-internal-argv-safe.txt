@@ -1,0 +1,26 @@
+# goslop text fixture — CWE-88 internally generated argv (safe)
+lang: python
+file: CWE-88-internal-argv-safe.py
+---
+import socket
+import subprocess
+import tempfile
+
+CHROME_PATH = "/usr/bin/chromium"
+
+
+def start_chrome() -> None:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(("", 0))
+    port = sock.getsockname()[1]
+    temp_dir = tempfile.mkdtemp(prefix="profile-")
+    chrome_path = CHROME_PATH
+    subprocess.Popen(
+        [
+            chrome_path,
+            f"--remote-debugging-port={port}",
+            f"--user-data-dir={temp_dir}",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )

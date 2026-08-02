@@ -1,0 +1,16 @@
+# goslop text fixture — CWE-93 outgoing client / numeric-only header writes (safe)
+lang: python
+file: CWE-93-response-header-safe.py
+---
+USER_AGENT = "httptap/1.0"
+
+
+def configure_client(client) -> None:
+    client.headers["User-Agent"] = USER_AGENT
+
+
+def set_shape_headers(tensor, response) -> None:
+    if hasattr(tensor, "shape"):
+        response.headers["X-Tenso-Shape"] = str(tensor.shape)
+    if hasattr(tensor, "dtype"):
+        response.headers["X-Tenso-Version"] = "4"

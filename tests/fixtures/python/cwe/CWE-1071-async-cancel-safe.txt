@@ -1,0 +1,11 @@
+# goslop text fixture — expected async cancel empty handler (niquests sgi)
+lang: python
+file: lifespan.py
+---
+import asyncio
+
+async def wait_shutdown():
+    try:
+        await asyncio.Future()
+    except (asyncio.CancelledError, GeneratorExit):
+        pass

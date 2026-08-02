@@ -39,6 +39,8 @@ func TestBPPY32FileResponseUserPath(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-32", "BP-PY-32")
 	assertBPFixtureCase(t, "BP-PY-32", "BP-PY-32-fstring")
+	assertBPFixtureCase(t, "BP-PY-32", "BP-PY-32-confined-basename")
+	assertBPFixtureCase(t, "BP-PY-32", "BP-PY-32-constant-dir")
 
 	vuln := loadBPFixture(t, "BP-PY-32", true)
 	findings := runBP(t, nil, vuln.body, vuln.path)

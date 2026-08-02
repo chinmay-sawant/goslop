@@ -143,6 +143,10 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	if unit == nil || out == nil {
 		return
 	}
+	// Dual-mode SSL helpers (httptap create_ssl_context(verify_ssl=...)).
+	if dualModeTLSHelper(unit.Source) {
+		return
+	}
 	for _, name := range []string{"requests.get", "requests.post", "requests.put", "requests.request"} {
 		for _, call := range findCalls(facts, unit.Source, name) {
 			if hasKwargFalse(call.ArgsText, "verify") {
@@ -154,6 +158,11 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	masked := facts.Masked
 	for _, marker := range []string{"ssl._create_unverified_context", "ssl.CERT_NONE"} {
 		if start := strings.Index(masked, marker); start >= 0 {
+			// assert ctx.verify_mode == ssl.CERT_NONE is test/state comparison,
+			// not an unprotected credential transport (httptap dual-mode tests).
+			if marker == "ssl.CERT_NONE" && tlsMarkerIsStateComparison(masked, start) {
+				continue
+			}
 			pushSecretFinding(unit, &MetaCWE523, start, "TLS certificate verification is explicitly disabled", confidence82, out)
 			return
 		}
@@ -163,15 +172,7 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 }
 
-// firstMatchStart finds the first code-oriented pattern hit on masked text.
-func firstMatchStart(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp) int {
-	if unit == nil || pattern == nil {
-		return -1
-	}
-	return firstCodeMatchStart(facts, unit.Source, pattern)
-}
-
-// firstMatchStartIfContains is firstMatchStart with a cheap Source Contains gate.
+// firstMatchStartIfContains finds the first masked pattern hit after a cheap Source Contains gate.
 func firstMatchStartIfContains(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp, needles ...string) int {
 	if unit == nil || pattern == nil {
 		return -1

@@ -1,0 +1,21 @@
+# goslop text fixture
+lang: python
+file: when_entry.py
+---
+#!/usr/bin/env python3
+"""CLI entry for WHEN."""
+
+import sys
+
+
+def show_help():
+    print(__doc__)
+
+
+def main():
+    show_help()
+    print("Built on Python", sys.version)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,11 @@
+# goslop text fixture — silent fallback assignment hides the failure (wse
+# bench_battle_server.py:283 TP shape)
+lang: python
+file: undoc_fallback.py
+---
+def inspect(ssl_object):
+    try:
+        cert_info = probe_certificate_info(ssl_object)
+    except Exception:
+        cert_info = None
+    return cert_info

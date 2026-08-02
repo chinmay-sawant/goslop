@@ -1,0 +1,12 @@
+# goslop text fixture — print-only handler at the top level of a function
+# stays reportable (pyauto-desktop window_control.py:61 TP shape)
+lang: python
+file: top_print.py
+---
+def move_window(win, x, y):
+    try:
+        win.moveTo(int(x), int(y))
+        return True
+    except Exception as e:
+        print(f"Failed to move window: {e}")
+    return False

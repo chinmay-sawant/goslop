@@ -1,0 +1,14 @@
+# goslop text fixture
+lang: python
+file: CWE-89-param-placeholder-vulnerable.py
+---
+class Store:
+    def execute(self, sql: str, params: tuple) -> None:
+        raise NotImplementedError
+
+
+def record_audit(store: Store, table: str, event_id: str) -> None:
+    store.execute(
+        f"INSERT INTO {table} (id) VALUES (?)",
+        (event_id,),
+    )

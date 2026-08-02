@@ -1,0 +1,22 @@
+# goslop text fixture — exception recorded as "error": str(exc) in a result
+# dict (Project_Parva rulelang_service run_rule_tests FP)
+lang: python
+file: rulelang_service.py
+---
+def run_rule_tests(rule, tests):
+    results = []
+    for test_case in tests:
+        name = str(test_case.get("name") or "unnamed")
+        try:
+            result = execute_rule(rule, test_case.get("input") or {})
+            results.append({"name": name, "passed": True, "result": result})
+        except Exception as exc:
+            results.append(
+                {
+                    "name": name,
+                    "passed": False,
+                    "assertions": [],
+                    "error": str(exc),
+                }
+            )
+    return results

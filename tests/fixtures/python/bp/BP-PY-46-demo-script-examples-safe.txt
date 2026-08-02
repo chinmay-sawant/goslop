@@ -1,0 +1,11 @@
+# goslop text fixture
+lang: python
+file: examples/client.py
+---
+import socket
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect(("localhost", 9999))
+
+print("Sending Tensor...")
+client.close()

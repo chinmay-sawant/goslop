@@ -278,7 +278,7 @@ func importedDeprecatedModule(t string) (string, bool) {
 	return "", false
 }
 
-// BP-PY-45: sys.path.insert/append/extend at runtime (skip test files).
+// BP-PY-45: sys.path.insert/append/extend at runtime (skip test files / Sphinx docs conf).
 func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-45")
 	if isRequirementsPath(unit) {
@@ -287,10 +287,14 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonTestFile(unit) {
 		return
 	}
-	// Skip known bootstrap basenames.
-	base := strings.ToLower(filepath.Base(fileDisplayPath(unit)))
+	display := fileDisplayPath(unit)
+	// Skip known bootstrap basenames and Sphinx docs/conf.py.
+	base := strings.ToLower(filepath.Base(display))
 	switch base {
 	case "sitecustomize.py", "usercustomize.py", "conftest.py":
+		return
+	}
+	if isSphinxDocsConfPath(display) || isSphinxDocsConfPath(unit.Path) {
 		return
 	}
 	if !facts.hasAny("sys.path", "sys.path.insert", "sys.path.append", "sys.path.extend") &&
@@ -298,14 +302,43 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	lines := codeLinesFacts(facts, unit.Source)
+	type scope struct {
+		indent int
+		kind   byte // 'd' def/class, 'i' if/for/while/with
+	}
+	var stack []scope
+	prev := ""
+	// Module-level Path(__file__) roots vs path-join subpaths (ROOT / "pkg").
+	// Inserting a subpath of a file-derived root is in-tree package bootstrap
+	// (Project_Parva scripts/release/check_mcp_registry_metadata). Inserting the
+	// bare root (WeThePeople jobs ROOT / scripts abspath) stays reportable.
+	fileRoots := map[string]struct{}{}
+	fileSubpaths := map[string]struct{}{}
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if t == "" {
 			continue
 		}
-		if strings.Contains(t, "sys.path.insert(") || strings.Contains(t, "sys.path.append(") ||
+		ind := indentWidth(line.raw)
+		for len(stack) > 0 && ind <= stack[len(stack)-1].indent {
+			stack = stack[:len(stack)-1]
+		}
+		inFunc := false
+		for _, s := range stack {
+			if s.kind == 'd' {
+				inFunc = true
+				break
+			}
+		}
+		// Track module-level Path(__file__) roots and path-join subpaths first.
+		if !inFunc {
+			trackFilePathNames(t, fileRoots, fileSubpaths)
+		}
+		isPathMut := strings.Contains(t, "sys.path.insert(") || strings.Contains(t, "sys.path.append(") ||
 			strings.Contains(t, "sys.path.extend(") ||
-			strings.Contains(t, "sys.path.insert (") || strings.Contains(t, "sys.path.append (") {
+			strings.Contains(t, "sys.path.insert (") || strings.Contains(t, "sys.path.append (")
+		if isPathMut && !isSysPathBootstrap(t, inFunc, prev) &&
+			!isFileSubpathBootstrap(t, inFunc, fileSubpaths) {
 			off := line.byte
 			for _, n := range []string{"sys.path.insert", "sys.path.append", "sys.path.extend"} {
 				if i := strings.Index(line.text, n); i >= 0 {
@@ -317,5 +350,175 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				"sys.path mutation at runtime; prefer packaging/editable installs over path hacks",
 				out)
 		}
+		// Track scopes after evaluating the line (headers open a new block).
+		if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") || strings.HasPrefix(t, "class ") {
+			stack = append(stack, scope{indent: ind, kind: 'd'})
+		} else if strings.HasSuffix(t, ":") &&
+			(strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || strings.HasPrefix(t, "else:") ||
+				strings.HasPrefix(t, "for ") || strings.HasPrefix(t, "while ") ||
+				strings.HasPrefix(t, "with ") || strings.HasPrefix(t, "async with ") ||
+				strings.HasPrefix(t, "try:") || strings.HasPrefix(t, "except") ||
+				strings.HasPrefix(t, "finally:") || strings.HasPrefix(t, "match ")) {
+			stack = append(stack, scope{indent: ind, kind: 'i'})
+		}
+		prev = t
 	}
+}
+
+// isSysPathBootstrap reports import-time in-tree bootstraps that are not runtime library mutations.
+// Exempts module-level (a) guarded bootstraps — `if <root> not in sys.path:` on the preceding
+// line — and (b) inserts whose argument is built from `Path(__file__)`: the standalone in-tree
+// script/tool pattern that imports the uninstalled package. In-function inserts (lazy bootstrap
+// inside library code) and unguarded hard-coded vendor inserts stay reportable.
+func isSysPathBootstrap(t string, inFunc bool, prev string) bool {
+	if inFunc {
+		return false
+	}
+	if strings.Contains(t, "Path(__file__") {
+		return true
+	}
+	p := strings.TrimSpace(prev)
+	return strings.HasPrefix(p, "if ") && strings.Contains(p, "not in sys.path")
+}
+
+// trackFilePathNames records module-level names bound to Path(__file__) roots or
+// path-join subpaths (ROOT / "packages" / ...).
+func trackFilePathNames(t string, roots, subpaths map[string]struct{}) {
+	// NAME = ...
+	eq := strings.IndexByte(t, '=')
+	if eq <= 0 {
+		return
+	}
+	left := strings.TrimSpace(t[:eq])
+	right := strings.TrimSpace(t[eq+1:])
+	if left == "" || right == "" || strings.HasPrefix(right, "=") {
+		return
+	}
+	// Skip annotated assigns with complex left sides; only simple idents.
+	if !isSimpleIdent(left) {
+		// NAME: type = ...
+		if colon := strings.IndexByte(left, ':'); colon > 0 {
+			left = strings.TrimSpace(left[:colon])
+		}
+		if !isSimpleIdent(left) {
+			return
+		}
+	}
+	// Path(__file__) root (no further package join required).
+	if strings.Contains(right, "Path(__file__") || strings.Contains(right, "__file__") {
+		// Subpath on the same assignment: Path(__file__).parent / "src"
+		if pathJoinInExpr(right) {
+			subpaths[left] = struct{}{}
+		} else {
+			roots[left] = struct{}{}
+		}
+		return
+	}
+	// NAME = ROOT / "pkg" / ... where ROOT is a known file root or subpath.
+	if pathJoinInExpr(right) {
+		for name := range roots {
+			if exprUsesIdent(right, name) {
+				subpaths[left] = struct{}{}
+				return
+			}
+		}
+		for name := range subpaths {
+			if exprUsesIdent(right, name) {
+				subpaths[left] = struct{}{}
+				return
+			}
+		}
+	}
+}
+
+// pathJoinInExpr reports a pathlib-style `/` join outside of string literals.
+func pathJoinInExpr(expr string) bool {
+	inStr := byte(0)
+	escape := false
+	for i := 0; i < len(expr); i++ {
+		c := expr[i]
+		if inStr != 0 {
+			if escape {
+				escape = false
+				continue
+			}
+			if c == '\\' {
+				escape = true
+				continue
+			}
+			if c == inStr {
+				inStr = 0
+			}
+			continue
+		}
+		if c == '"' || c == '\'' {
+			inStr = c
+			continue
+		}
+		if c == '/' {
+			// pathlib join is spaced: ` / ` or `/ "` / ` /'`.
+			// Avoid matching URLs inside identifiers (none at top level).
+			leftOK := i > 0 && (expr[i-1] == ' ' || isIdentByte(expr[i-1]) || expr[i-1] == ')')
+			rightOK := i+1 < len(expr) && (expr[i+1] == ' ' || expr[i+1] == '"' || expr[i+1] == '\'' || isIdentByte(expr[i+1]))
+			if leftOK && rightOK {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// exprUsesIdent reports that expr references name as a whole identifier.
+func exprUsesIdent(expr, name string) bool {
+	if name == "" {
+		return false
+	}
+	start := 0
+	for {
+		idx := strings.Index(expr[start:], name)
+		if idx < 0 {
+			return false
+		}
+		abs := start + idx
+		leftOK := abs == 0 || !isIdentByte(expr[abs-1])
+		right := abs + len(name)
+		rightOK := right >= len(expr) || !isIdentByte(expr[right])
+		if leftOK && rightOK {
+			return true
+		}
+		start = abs + len(name)
+	}
+}
+
+// isFileSubpathBootstrap reports module-level inserts of a Path(__file__)-derived
+// *subpath* (ROOT / "packages" / "x"), not the bare project root. WeThePeople
+// jobs that insert str(ROOT) stay reportable.
+func isFileSubpathBootstrap(t string, inFunc bool, subpaths map[string]struct{}) bool {
+	if inFunc || len(subpaths) == 0 {
+		return false
+	}
+	// Same-line path join of a file root: str(ROOT / "backend")
+	if pathJoinInExpr(t) {
+		return true
+	}
+	// str(NAME) or bare NAME where NAME is a recorded subpath.
+	for name := range subpaths {
+		if exprUsesIdent(t, name) {
+			return true
+		}
+	}
+	return false
+}
+
+// isSphinxDocsConfPath reports docs/**/conf.py (Sphinx build configuration).
+func isSphinxDocsConfPath(p string) bool {
+	if p == "" {
+		return false
+	}
+	norm := filepath.ToSlash(strings.ToLower(p))
+	base := filepath.Base(norm)
+	if base != "conf.py" {
+		return false
+	}
+	return strings.Contains(norm, "/docs/") || strings.HasPrefix(norm, "docs/")
 }

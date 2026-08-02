@@ -1,0 +1,27 @@
+# goslop text fixture — CWE-88 named-option value argv (safe)
+lang: python
+file: CWE-88-named-option-safe.py
+---
+import subprocess
+import sys
+
+THIS = __file__
+
+
+def run_benchmark(library: str, scenario: str, n: int, timeout: float) -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            THIS,
+            "--worker",
+            "--library",
+            library,
+            "--scenario",
+            scenario,
+            "-n",
+            str(n),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )

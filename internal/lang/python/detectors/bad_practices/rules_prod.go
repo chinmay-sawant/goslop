@@ -174,6 +174,13 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonTestFile(unit) {
 		return
 	}
+	// Dual-mode SSL context factories (verify_ssl switch + create_default_context
+	// vs CERT_NONE) are intentional (httptap utils) — audited FPs.
+	if strings.Contains(unit.Source, "create_default_context") &&
+		(strings.Contains(unit.Source, "verify_ssl") || strings.Contains(unit.Source, "legacy")) &&
+		(strings.Contains(unit.Source, "CERT_NONE") || strings.Contains(unit.Source, "check_hostname")) {
+		return
+	}
 	if !facts.hasAny("verify=False", "_create_unverified_context", "CERT_NONE", "assert_hostname") {
 		srcQuick := unit.Source
 		if !strings.Contains(srcQuick, "verify=False") &&
@@ -188,7 +195,8 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	src := unit.Source
 	msg := "TLS verification disabled; do not use verify=False or CERT_NONE in production"
 
-	// Line-oriented reporting for clear locations; also covers multi-kwarg calls on one line.
+	// Raw lines: Mask blanks string contents and would hide cert_reqs="CERT_NONE"
+	// (httpmorph urllib3_bench TPs). Prose is filtered with stripPythonStringLiterals.
 	lines := codeLinesFacts(facts, src)
 	seen := map[int]struct{}{}
 	report := func(byteOff int) {
@@ -202,44 +210,110 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
-		if t == "" {
+		if t == "" || strings.HasPrefix(t, "#") {
 			continue
 		}
-		if verifyFalseRe.MatchString(t) {
+		// Code-only view: string/prose mentions of verify=False drop out.
+		code := stripPythonStringLiterals(t)
+		if verifyFalseRe.MatchString(code) {
+			if tlsFingerprintPinNearby(lines, line) || tlsVerifyFalseIsLocalAssign(t) {
+				continue
+			}
 			if loc := verifyFalseRe.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
 			continue
 		}
-		if unverifiedContextRe.MatchString(t) {
+		if unverifiedContextRe.MatchString(code) {
 			if loc := unverifiedContextRe.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
 			continue
 		}
 		if certNoneRe.MatchString(t) {
+			// State comparisons (cert_reqs != "CERT_NONE") are not disables.
+			if strings.Contains(code, "!=") || strings.Contains(code, "==") {
+				continue
+			}
+			// Real disable: CERT_NONE as kwarg/assignment value (keep quotes).
+			if tlsFingerprintPinNearby(lines, line) {
+				continue
+			}
 			if loc := certNoneRe.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
 			continue
 		}
-		if assertHostnameFalse.MatchString(t) {
+		if assertHostnameFalse.MatchString(code) {
 			if loc := assertHostnameFalse.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
 		}
 	}
 
-	// Multi-line call: verify=False may sit alone on a continued line already covered above.
-	// Also catch source-wide when only multi-line patterns exist without line trim issues.
 	if len(seen) == 0 {
-		if loc := verifyFalseRe.FindStringIndex(src); loc != nil {
-			report(loc[0])
-		} else if loc := unverifiedContextRe.FindStringIndex(src); loc != nil {
-			report(loc[0])
-		} else if loc := certNoneRe.FindStringIndex(src); loc != nil {
+		reportTLSFallbackHit(src, report)
+	}
+}
+
+// stripPythonStringLiterals blanks quoted regions so prose like
+// raise SSLError("use verify=False") does not look like a kwarg.
+func stripPythonStringLiterals(s string) string {
+	b := []byte(s)
+	in := byte(0)
+	esc := false
+	for i := 0; i < len(b); i++ {
+		c := b[i]
+		if in != 0 {
+			if esc {
+				esc = false
+				b[i] = ' '
+				continue
+			}
+			if c == '\\' {
+				esc = true
+				b[i] = ' '
+				continue
+			}
+			if c == in {
+				in = 0
+			}
+			b[i] = ' '
+			continue
+		}
+		if c == '"' || c == '\'' {
+			in = c
+			b[i] = ' '
+		}
+	}
+	return string(b)
+}
+
+func reportTLSFallbackHit(src string, report func(int)) {
+	if loc := verifyFalseRe.FindStringIndex(src); loc != nil {
+		snippet := src[loc[0]:]
+		if end := strings.IndexByte(snippet, '\n'); end >= 0 {
+			snippet = snippet[:end]
+		}
+		if !tlsVerifyFalseIsLocalAssign(snippet) && !strings.Contains(src, "assert_fingerprint") {
 			report(loc[0])
 		}
+		return
+	}
+	if loc := unverifiedContextRe.FindStringIndex(src); loc != nil {
+		report(loc[0])
+		return
+	}
+	loc := certNoneRe.FindStringIndex(src)
+	if loc == nil {
+		return
+	}
+	line := src[loc[0]:]
+	if end := strings.IndexByte(line, '\n'); end >= 0 {
+		line = line[:end]
+	}
+	if !strings.Contains(line, "!=") && !strings.Contains(line, "==") {
+		report(loc[0])
 	}
 }
 
@@ -285,4 +359,56 @@ func detectBPPY50(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				"session/CSRF cookie Secure or HttpOnly set to False; enable in production", out)
 		}
 	}
+}
+
+func tlsVerifyFalseIsLocalAssign(t string) bool {
+	trimmed := strings.TrimSpace(t)
+	// Bare assignment "verify = False" (not a call kwarg like get(..., verify=False)).
+	if strings.Contains(trimmed, "(") {
+		return false
+	}
+	return regexp.MustCompile(`(?i)^verify\s*=\s*False\b`).MatchString(trimmed)
+}
+
+func tlsFingerprintPinNearby(lines []codeLine, line codeLine) bool {
+	const window = 12
+	idx := -1
+	for i, l := range lines {
+		if l.byte == line.byte {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		// Fall back to scanning all lines when byte identity differs.
+		for _, l := range lines {
+			if strings.Contains(l.text, "assert_fingerprint") {
+				// Still require proximity by line content match below.
+				break
+			}
+		}
+		for i, l := range lines {
+			if strings.TrimSpace(l.text) == strings.TrimSpace(line.text) {
+				idx = i
+				break
+			}
+		}
+	}
+	if idx < 0 {
+		return false
+	}
+	lo := idx - window
+	if lo < 0 {
+		lo = 0
+	}
+	hi := idx + window
+	if hi >= len(lines) {
+		hi = len(lines) - 1
+	}
+	for i := lo; i <= hi; i++ {
+		if strings.Contains(lines[i].text, "assert_fingerprint") {
+			return true
+		}
+	}
+	return false
 }

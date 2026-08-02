@@ -1,0 +1,15 @@
+# goslop text fixture — handler prose inside a module docstring (safer __init__.py FP)
+lang: python
+file: docstring_handler.py
+---
+"""
+Example:
+    try:
+        risky()
+    except Exception:
+        pass
+"""
+
+
+def f():
+    return 1

@@ -1,0 +1,11 @@
+# goslop text fixture — optional import with constant fallback (WeThePeople
+# send_alerts RESEND_API_URL shape is the first handler; real log+return stays)
+lang: python
+file: send_alerts.py
+---
+def _send_email(to, subject, html):
+    try:
+        from services.email import RESEND_API_URL
+    except Exception:
+        RESEND_API_URL = "https://api.resend.com/emails"
+    return RESEND_API_URL

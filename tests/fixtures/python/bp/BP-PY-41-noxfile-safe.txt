@@ -1,0 +1,13 @@
+# goslop text fixture — nox session delegates to tests_impl (niquests noxfile FP)
+lang: python
+file: noxfile.py
+---
+import nox
+
+def tests_impl(session, cohabitation=None):
+    session.run("pytest")
+
+@nox.session
+def test_cohabitation(session):
+    tests_impl(session, cohabitation=True)
+    tests_impl(session, cohabitation=None)

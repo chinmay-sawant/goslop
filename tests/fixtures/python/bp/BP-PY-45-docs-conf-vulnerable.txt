@@ -1,0 +1,7 @@
+# Fixture for BP-PY-45 (vulnerable) — library module mutates sys.path at import
+lang: python
+file: niquests/_compat.py
+---
+import sys
+
+sys.path.insert(0, "./vendor")

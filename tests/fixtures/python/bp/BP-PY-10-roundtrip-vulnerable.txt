@@ -1,0 +1,8 @@
+# goslop text fixture — pickle.loads of untrusted body stays reportable
+lang: python
+file: load_body.py
+---
+import pickle
+
+def handle(body):
+    return pickle.loads(body)

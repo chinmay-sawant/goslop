@@ -1,0 +1,23 @@
+# goslop text fixture — dual-mode SSL helper (verify_ssl switch → default
+# context vs CERT_NONE); generic catch inside is TLS-diagnostic plumbing
+# (httptap utils create_ssl_context FP shape)
+lang: python
+file: ssl_utils.py
+---
+import ssl
+
+
+def create_ssl_context(*, verify_ssl: bool) -> ssl.SSLContext:
+    if verify_ssl:
+        return ssl.create_default_context()
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    return context
+
+
+def probe_peer(sock):
+    try:
+        return sock.getpeercert()
+    except Exception:
+        return None

@@ -1,0 +1,16 @@
+# goslop text fixture — logger.exception without an exit return stays
+# reportable (failure is logged but execution continues with a default)
+lang: python
+file: service_handler.py
+---
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def handle(event):
+    try:
+        return process(event)
+    except Exception:
+        logger.exception("failed to process event")
+        return None

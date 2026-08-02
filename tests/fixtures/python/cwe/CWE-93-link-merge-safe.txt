@@ -1,0 +1,7 @@
+# goslop text fixture — CWE-93 append-to-existing Link header helper
+lang: python
+file: app/bootstrap/middleware.py
+---
+def append_link_header(response, value: str) -> None:
+    existing = response.headers.get("Link")
+    response.headers["Link"] = f"{existing}, {value}" if existing else value

@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: package/telemetry.py
+---
+def contribute_scan(url, silent=False):
+    if not silent:
+        print("Scan contributed to public database")
+    return True
+
+
+def try_upload_scan(url):
+    print("Results synced to project")
+    return True

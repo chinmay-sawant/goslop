@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: CWE-89-static-constant-safe.py
+---
+import sqlite3
+
+from constants import SQL
+
+
+def create_test_table(db: str):
+    with sqlite3.connect(database=db, isolation_level="DEFERRED") as conn:
+        conn.execute(SQL.CREATE_TEST_TABLE)
+        conn.commit()

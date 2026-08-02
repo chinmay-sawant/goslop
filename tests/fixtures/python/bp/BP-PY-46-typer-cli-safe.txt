@@ -1,0 +1,16 @@
+# goslop text fixture
+lang: python
+file: voicetag_app.py
+---
+import typer
+
+app = typer.Typer()
+
+
+@app.command()
+def enroll(name: str):
+    print(f"enrolled {name}")
+
+
+if __name__ == "__main__":
+    app()

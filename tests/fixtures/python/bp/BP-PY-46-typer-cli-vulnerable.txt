@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: voicetag_lib.py
+---
+def encode_profile(path):
+    print("encoding", path)
+    return path

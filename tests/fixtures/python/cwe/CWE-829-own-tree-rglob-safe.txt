@@ -1,0 +1,16 @@
+# goslop text fixture
+lang: python
+file: CWE-829-own-tree-rglob-safe.py
+---
+import importlib
+import pathlib
+
+
+def autoload_commands():
+    cli_folder_path = pathlib.Path(__file__).parent
+    for file in cli_folder_path.rglob("*_command.py"):
+        folder_name = file.parent.name
+        py_file_name = file.stem
+        full_module = f"{__package__}.{folder_name}.{py_file_name}"
+        module = importlib.import_module(full_module)
+    return module

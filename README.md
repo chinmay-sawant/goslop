@@ -146,6 +146,55 @@ Taint model and limits: [`documents/taint.md`](./documents/taint.md).
 
 ---
 
+## Python showcase-corpus validation (2026-08-03 snapshot)
+
+Precision check against **42 real-world Python repos** (r/Python top showcase projects, cloned under `real-repos/`, gitignored). Every finding was audited by hand (FP / TP) in the corpus validation campaign (`plans/fp-validations/reports/`); the scan below is the current working tree (`--profile all`, `templates/goslop-python.toml`, rebuilt binary, goal18 rescan).
+
+**Precision: 4,125 of 4,204 findings are audited true positives = 98.1%** (target: findings == audited TP 4,125).
+
+### Exact-match repos (findings == audited TP, 12 of 42)
+
+`Ai-copypaste-insult`, `FlashySurf`, `PyDepends`, `among-llms`, `caniscrape`, `httptap`, `numeth-Numerical-Methods-Library`, `pingram`, `polygon-screenshot-tool`, `requestSpeedTest`, `voicetag`, `whatsapp-wrapped`
+
+### Offender repos (findings ≠ audited TP, 30 of 42)
+
+| Repo | now | tp | Δ |
+|---|---|---|---|
+| Project_Parva | 56 | 11 | **+45** |
+| niquests | 45 | 35 | **+10** |
+| CourtScrapper | 336 | 328 | **+8** |
+| httpmorph | 430 | 436 | −6 |
+| violit | 213 | 219 | −6 |
+| pdf_oxide | 183 | 188 | −5 |
+| logxide | 322 | 317 | +5 |
+| FuncToWeb | 43 | 38 | +5 |
+| WHEN-Language | 51 | 46 | +5 |
+| html2pic | 36 | 32 | +4 |
+| tenso | 74 | 71 | +3 |
+| wse | 160 | 157 | +3 |
+| pycaps | 31 | 28 | +3 |
+| WeThePeople | 1420 | 1422 | −2 |
+| pytogether | 68 | 70 | −2 |
+| Cronboard | 67 | 65 | +2 |
+| rendercv | 29 | 27 | +2 |
+| safer | 9 | 7 | +2 |
+| sync-with-uv | 7 | 5 | +2 |
+| astroz | 16 | 15 | +1 |
+| cylinder | 7 | 6 | +1 |
+| enso | 128 | 127 | +1 |
+| movielite | 59 | 58 | +1 |
+| onlymaps | 37 | 36 | +1 |
+| pictex | 43 | 42 | +1 |
+| calgebra | 18 | 19 | −1 |
+| graphzero | 6 | 7 | −1 |
+| pyauto-desktop | 87 | 88 | −1 |
+| pyhash-complete | 9 | 10 | −1 |
+| python-injection | 1 | 2 | −1 |
+
+Full per-repo scan data: `/tmp/opencode/goal18/` (JSON), evidence under `scripts/<project>/`. Audit + fix history: [`opencode.md`](./opencode.md), [`plans/fp-validations/reports/`](./plans/fp-validations/reports/).
+
+---
+
 ## Profiles (packs)
 
 | Profile | Aliases | Focus | Default fail |

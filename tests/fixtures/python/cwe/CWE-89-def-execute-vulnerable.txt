@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-89-def-execute-vulnerable.py
+---
+def run(cur, name):
+    cur.execute("SELECT * FROM users WHERE name = '%s'" % name)
