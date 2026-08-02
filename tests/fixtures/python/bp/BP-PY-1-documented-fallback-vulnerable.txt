@@ -5,7 +5,7 @@ file: undoc_fallback.py
 ---
 def inspect(ssl_object):
     try:
-        cert_info = extract_certificate_info(ssl_object)
+        cert_info = probe_certificate_info(ssl_object)
     except Exception:
         cert_info = None
     return cert_info

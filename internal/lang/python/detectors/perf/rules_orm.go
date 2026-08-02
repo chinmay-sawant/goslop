@@ -170,7 +170,7 @@ func perfLoopBinding(line string) (string, string, bool) {
 }
 
 func perfRelationAccess(body, variable string) bool {
-	for _, name := range []string{"partner_endpoint", "inbound_event", "author", "customer", "profile", "relation", "parent", "owner", "account", "organization"} {
+	for _, name := range []string{"author", "customer", "profile", "relation", "parent", "owner", "account", "organization"} {
 		if strings.Contains(body, variable+"."+name+".") || strings.Contains(body, variable+"."+name+")") || strings.Contains(body, variable+"."+name+"]") {
 			return true
 		}

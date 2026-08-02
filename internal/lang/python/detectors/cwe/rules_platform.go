@@ -1150,8 +1150,8 @@ func asyncCancelCatchOnly(types []string) bool {
 
 // tryBlockIsSSLAttrProbe reports a try body that only probes SSL/TLS socket
 // attributes (getpeercert/version/cipher/wrap_socket) without network request
-// APIs (httptap tls_inspector certificate extract FPs). Allows returning a
-// constructed CertificateInfo after a successful probe.
+// APIs (certificate-extraction probes). Allows returning a constructed
+// CertificateInfo after a successful probe.
 func tryBlockIsSSLAttrProbe(lines []pyMaskedLine, tryIdx int) bool {
 	if tryIdx < 0 || tryIdx >= len(lines) {
 		return false
@@ -1162,7 +1162,6 @@ func tryBlockIsSSLAttrProbe(lines []pyMaskedLine, tryIdx int) bool {
 	sslSignals := []string{
 		"getpeercert(", ".cipher(", ".version(", "wrap_socket(",
 		"SSLSocket", "SSLObject", "ssl_socket", "ssl_object",
-		"extract_tls_info(", "extract_certificate_info(",
 	}
 	for j := tryIdx + 1; j < len(lines); j++ {
 		mt := strings.TrimSpace(lines[j].text)
@@ -2414,25 +2413,16 @@ func isProbeStmt(stmt string) bool {
 // (web-API and common interop names only — no product-specific identifiers).
 var jsBridgeSignals = []string{
 	"getReader(",
-	"pyfetch(",
-	"js_response",
-	"js_headers",
-	"js_body",
 	".entries(",
 	"status_text",
 	".bytes()",
-	"_js_",
 	"_ws.",
 	"_ws.close",
-	"_proxies",
 	"ReadableStream",
-	"JsProxy",
-	"JsException",
 	".cancel(",
 	".destroy(",
 	"AbortSignal",
 	"WebSocket",
-	"SSEExtension",
 }
 
 // isJSBridgeExpr reports a statement that touches a JS interop / stream API.

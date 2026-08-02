@@ -8,7 +8,7 @@ import ssl
 class TLSInspectionError(Exception):
     pass
 
-def extract_certificate_info(ssl_socket: ssl.SSLSocket):
+def probe_certificate_info(ssl_socket: ssl.SSLSocket):
     try:
         cert_dict = ssl_socket.getpeercert()
         if not cert_dict:

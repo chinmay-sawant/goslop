@@ -1854,23 +1854,16 @@ func isProbeStmt(stmt string) bool {
 // JavaScript interop / stream probe (stdlib- and web-API-shaped names only).
 var jsBridgeSignals = []string{
 	"getReader(",
-	"js_response",
-	"js_headers",
-	"js_body",
 	".entries(",
 	"status_text",
 	".bytes()",
-	"_js_",
 	"_ws.",
-	"_proxies",
 	"ReadableStream",
-	"JsProxy",
-	"JsException",
 	".cancel(",
 	".destroy(",
 }
 
-// isJSBridgeExpr reports a statement that touches the JS/pyodide bridge API.
+// isJSBridgeExpr reports a statement that touches a JS interop / stream API.
 func isJSBridgeExpr(t string) bool {
 	for _, s := range jsBridgeSignals {
 		if strings.Contains(t, s) {

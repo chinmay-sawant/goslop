@@ -6,6 +6,6 @@ file: documented_fallback.py
 ---
 def inspect(value):
     try:
-        return extract_certificate_info(value)
+        return probe_certificate_info(value)
     except Exception:
         return value
