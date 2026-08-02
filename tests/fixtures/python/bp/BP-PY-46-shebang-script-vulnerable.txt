@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: when_lib.py
+---
+def interpret(source):
+    print("debug interpret")
+    return source

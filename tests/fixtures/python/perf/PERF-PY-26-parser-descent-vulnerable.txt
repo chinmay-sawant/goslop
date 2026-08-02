@@ -1,0 +1,13 @@
+# Fixture for PERF-PY-26 (vulnerable): parse_* on handle_job hot path
+lang: python
+file: app/jobs.py
+---
+def parse_payload(raw: str):
+    return raw.encode("utf-8")
+
+
+def handle_job(job):
+    pages = []
+    for chunk in job.chunks:
+        pages.append(parse_payload(chunk))
+    return pages

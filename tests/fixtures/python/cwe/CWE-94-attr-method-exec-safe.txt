@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: CWE-94-attr-method-exec-safe.py
+---
+from sqlmodel import Session, select
+
+
+def load_all(session: Session, model):
+    return list(session.exec(select(model)).all())
+
+
+def run_app(app):
+    app.exec()

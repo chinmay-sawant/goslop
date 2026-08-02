@@ -27,4 +27,7 @@ func TestBPPY45SysPathMutation(t *testing.T) {
 	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-test-path")
 	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-test-file")
 	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-readonly")
+	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-docs-conf")
+	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-file-bootstrap")
+	assertBPFixtureCase(t, "BP-PY-45", "BP-PY-45-guarded-bootstrap")
 }

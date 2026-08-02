@@ -1,0 +1,7 @@
+# Fixture for BP-PY-45 (vulnerable) — hard-coded vendor path in library module
+lang: python
+file: app/plugins.py
+---
+import sys
+
+sys.path.insert(0, "./vendor")

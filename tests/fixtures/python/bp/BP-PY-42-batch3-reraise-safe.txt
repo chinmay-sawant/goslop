@@ -1,0 +1,10 @@
+# goslop text fixture — try/except in test re-raises (requestSpeedTest FP shape)
+lang: python
+file: test_reraise_safe.py
+---
+def test_send_request():
+    try:
+        send()
+    except Exception as e:
+        log.exception(e)
+        raise e

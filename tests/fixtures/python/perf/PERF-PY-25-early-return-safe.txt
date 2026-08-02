@@ -1,0 +1,10 @@
+# Fixture for PERF-PY-25 (safe): lambda then return — at most once per call
+lang: python
+file: app/interp.py
+---
+def linear_interpolation(points, x):
+    for i in range(len(points) - 1):
+        if points[i][0] <= x <= points[i + 1][0]:
+            f_interp = lambda xi: linear_interpolation(points, xi)
+            return {"value": x, "f": f_interp}
+    raise ValueError("out of range")

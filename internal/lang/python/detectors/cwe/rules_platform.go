@@ -26,25 +26,89 @@ func init() {
 }
 
 var (
-	pyGenericExceptRE = regexp.MustCompile(`(?m)^[\t ]*except\s+(?:Exception|BaseException)(?:\s+as\s+[A-Za-z_][A-Za-z0-9_]*)?\s*:`)
-	pyGenericRaiseRE  = regexp.MustCompile(`(?m)^[\t ]*raise\s+(?:Exception|BaseException)(?:\s*\(|\b)`)
-	pyMatchStartRE    = regexp.MustCompile(`^[\t ]*match\s+[^:\n]+:\s*$`)
-	pyCaseStartRE     = regexp.MustCompile(`^[\t ]*case\s+[^:\n]+:\s*$`)
-	pyDefaultCaseRE   = regexp.MustCompile(`^[\t ]*case\s+_\s*(?:if\s+[^:\n]+)?\s*:\s*$`)
-	pyExceptStartRE   = regexp.MustCompile(`^[\t ]*except(?:\s+[^:\n]+)?\s*:\s*$`)
-	pyFinallyStartRE  = regexp.MustCompile(`^[\t ]*finally\s*:\s*$`)
-	pyReturnLineRE    = regexp.MustCompile(`^[\t ]*return\b`)
+	pyGenericExceptLineRE = regexp.MustCompile(`^[\t ]*except\s+(?:Exception|BaseException)(?:\s+as\s+[A-Za-z_][A-Za-z0-9_]*)?\s*:`)
+	pyGenericRaiseRE      = regexp.MustCompile(`(?m)^[\t ]*raise\s+(?:Exception|BaseException)(?:\s*\(|\b)`)
+	pyMatchStartRE        = regexp.MustCompile(`^[\t ]*match\s+[^:\n]+:\s*$`)
+	pyCaseStartRE         = regexp.MustCompile(`^[\t ]*case\s+[^:\n]+:\s*$`)
+	pyDefaultCaseRE       = regexp.MustCompile(`^[\t ]*case\s+_\s*(?:if\s+[^:\n]+)?\s*:\s*$`)
+	pyExceptStartRE       = regexp.MustCompile(`^[\t ]*except(?:\s+[^:\n]+)?\s*:\s*$`)
+	pyFinallyStartRE      = regexp.MustCompile(`^[\t ]*finally\s*:\s*$`)
+	pyReturnLineRE        = regexp.MustCompile(`^[\t ]*return\b`)
 )
+
+// suiteSurfacesFailureMasked reports whether an except suite re-raises,
+// logs with traceback, forwards via set_exception, or records into an
+// error/result field — i.e. does not hide the failure.
+func suiteSurfacesFailureMasked(lines []pyMaskedLine, exceptIdx int) bool {
+	if exceptIdx < 0 || exceptIdx >= len(lines) {
+		return false
+	}
+	exceptIndent := lines[exceptIdx].indent
+	for _, body := range lines[exceptIdx+1:] {
+		trimmed := strings.TrimSpace(body.text)
+		if trimmed == "" {
+			continue
+		}
+		if body.indent <= exceptIndent {
+			break
+		}
+		if suiteLineSurfacesFailure(trimmed) {
+			return true
+		}
+	}
+	return false
+}
+
+func suiteLineSurfacesFailure(t string) bool {
+	if t == "raise" || strings.HasPrefix(t, "raise ") {
+		return true
+	}
+	if strings.Contains(t, "exc_info") {
+		return true
+	}
+	if strings.Contains(t, ".exception(") {
+		return true
+	}
+	if strings.Contains(t, "set_exception(") {
+		return true
+	}
+	if strings.Contains(t, "_error_result(") {
+		return true
+	}
+	if i := strings.Index(t, ".error"); i >= 0 {
+		rest := strings.TrimSpace(t[i+len(".error"):])
+		if strings.HasPrefix(rest, "=") {
+			return true
+		}
+	}
+	return false
+}
 
 // CWE-396 reports only the two Python root exception classes. Specific
 // exception handlers intentionally remain outside this narrow heuristic.
+// Handlers whose suite surfaces the failure (re-raise, exc_info /
+// logger.exception, set_exception, or error-field recording) are skipped —
+// they do not hide distinct failure conditions.
 func detectCWE396(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if isPythonTestModule(unit) {
 		return
 	}
-	if start := firstMatchStartIfContains(facts, unit, pyGenericExceptRE,
-		"except Exception", "except BaseException"); start >= 0 {
-		emitPlatformFinding(unit, &MetaCWE396, start, "generic Exception or BaseException handler can hide distinct failure conditions", confidence84, out)
+	if unit == nil || out == nil {
+		return
+	}
+	if !containsAnyNeedle(unit.Source, "except Exception", "except BaseException") {
+		return
+	}
+	lines := facts.MaskedLines()
+	for i, line := range lines {
+		if !pyGenericExceptLineRE.MatchString(line.text) {
+			continue
+		}
+		if suiteSurfacesFailureMasked(lines, i) {
+			continue
+		}
+		emitPlatformFinding(unit, &MetaCWE396, line.start, "generic Exception or BaseException handler can hide distinct failure conditions", confidence84, out)
+		return
 	}
 }
 
@@ -135,12 +199,6 @@ func buildMaskedPythonLines(masked string) []pyMaskedLine {
 		start = end + 1
 	}
 	return lines
-}
-
-// maskedPythonLines builds lines from source, remasking when facts are unavailable.
-// Prefer facts.MaskedLines() on the hot path.
-func maskedPythonLines(source string) []pyMaskedLine {
-	return buildMaskedPythonLines(pythonCodeMask(source))
 }
 
 func matchWithoutDefaultStart(lines []pyMaskedLine) int {

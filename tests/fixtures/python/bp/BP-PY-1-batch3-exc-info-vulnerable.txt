@@ -1,0 +1,11 @@
+# goslop text fixture — broad except swallows after a warn without traceback
+lang: python
+file: swallowed_warn.py
+---
+import logging
+
+def fetch_timezone(cal_id):
+    try:
+        return load_tz(cal_id)
+    except Exception:
+        logging.getLogger("app").warning("Failed to fetch timezone for %s", cal_id)

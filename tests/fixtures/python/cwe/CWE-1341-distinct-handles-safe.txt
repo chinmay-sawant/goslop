@@ -1,0 +1,8 @@
+# goslop text fixture — distinct handle closes (safe)
+lang: python
+file: CWE-1341-distinct-handles-safe.py
+---
+def teardown(page, context, browser):
+    page.close()
+    context.close()
+    browser.close()

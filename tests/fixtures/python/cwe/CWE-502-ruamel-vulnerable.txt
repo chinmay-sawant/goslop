@@ -1,0 +1,9 @@
+# goslop text fixture — PyYAML unsafe load (vulnerable)
+lang: python
+file: CWE-502-ruamel-vulnerable.py
+---
+import yaml
+
+
+def load_cfg(stream):
+    return yaml.load(stream)

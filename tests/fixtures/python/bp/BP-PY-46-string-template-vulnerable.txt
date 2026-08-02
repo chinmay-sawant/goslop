@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: settings/base.py
+---
+def boot():
+    print("starting mode")

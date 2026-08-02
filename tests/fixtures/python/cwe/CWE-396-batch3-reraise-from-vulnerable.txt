@@ -1,0 +1,10 @@
+# goslop text fixture — generic except swallows distinct failures
+lang: python
+file: CWE-396-batch3-reraise-from-vulnerable.py
+---
+def render(tree):
+    try:
+        return translate(tree)
+    except Exception as e:
+        warn(str(e))
+        return None

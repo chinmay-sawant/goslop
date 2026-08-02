@@ -3,6 +3,20 @@
 Source: full audit of goslop scan findings on 42 real-world Python repos (r/Python top showcase projects).
 Per-repo detail: see `reports/<name>.md`. Aggregated detail: see `reports/MASTER.md`.
 
+## Scan command
+
+Per-project output (`scripts/<project>/chunks`, `scripts/<project>/findings/functions`):
+
+```sh
+for d in real-repos/*/; do name="${d%/}"; p="${name##*/}"; \
+  ./bin/goslop --profile all --no-fail --no-terminal --config templates/goslop-python.toml \
+    --export-context --export-chunks --no-cache \
+    -chunks-dir "scripts/$p/chunks" \
+    -context-dir "scripts/$p/findings/functions" \
+    "$name" >/dev/null 2>&1; \
+done
+```
+
 ## Session token usage (estimate)
 
 Session window: 2026-08-02 ~11:00 IST → 14:04 IST (approx. 3h), incl. repo cloning (42 repos), 42 goslop scans, 41 parallel audit sub-agents, report writing, commit + PR #74.

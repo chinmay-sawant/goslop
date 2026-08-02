@@ -1,0 +1,8 @@
+# goslop text fixture — header read / == compare (safe)
+lang: python
+file: CWE-93-header-read-safe.py
+---
+def check_types(answers):
+    assert {answer.headers["content-type"] for answer in answers} == {
+        "application/json"
+    }

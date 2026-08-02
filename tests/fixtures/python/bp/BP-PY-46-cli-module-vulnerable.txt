@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: package/worker.py
+---
+def status():
+    print("queue depth")

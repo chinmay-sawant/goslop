@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: BP-PY-12-string-literal-exec-safe.py
+---
+def exec_func(code):
+    raise NotImplementedError("exec() is not supported for security reasons")

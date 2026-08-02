@@ -17,6 +17,26 @@ func TestBPPY46PrintInLibrary(t *testing.T) {
 	// Test file skip
 	testSkip := loadBPFixture(t, "BP-PY-46-test-path", false)
 	assertRule(t, "BP-PY-46", testSkip.path, testSkip.body, false)
+	// Script-path / CLI decorator / docstring masking variants
+	for _, caseName := range []string{
+		"BP-PY-46-script-path",
+		"BP-PY-46-click-cli",
+		"BP-PY-46-typer-cli",
+		"BP-PY-46-cyclopts-cli",
+		"BP-PY-46-docstring-print",
+		"BP-PY-46-main-epilog",
+		"BP-PY-46-shebang-script",
+		"BP-PY-46-setup-script",
+		"BP-PY-46-string-template",
+		"BP-PY-46-cli-module",
+		"BP-PY-46-commands-path",
+		"BP-PY-46-rich-print",
+	} {
+		vulnCase := loadBPFixture(t, caseName, true)
+		safeCase := loadBPFixture(t, caseName, false)
+		assertRule(t, "BP-PY-46", vulnCase.path, vulnCase.body, true)
+		assertRule(t, "BP-PY-46", safeCase.path, safeCase.body, false)
+	}
 	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-46" && f.Severity != rules.SeverityInfo {

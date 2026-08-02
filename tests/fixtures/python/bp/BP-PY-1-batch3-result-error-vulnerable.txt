@@ -1,0 +1,10 @@
+# goslop text fixture — broad except marks ok without recording the exception
+lang: python
+file: swallowed_result_ok.py
+---
+def run_scenario(result, fn):
+    try:
+        fn()
+        result.ok = True
+    except Exception:
+        result.ok = False

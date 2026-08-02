@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: pkg/client.py
+---
+def fetch(url):
+    print("fetching", url)
+    return url

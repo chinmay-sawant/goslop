@@ -1,0 +1,8 @@
+# Fixture for BP-PY-41 (safe) — pytest-regressions check_func (pictex audit FP)
+lang: python
+file: tests/test_aspect_ratio_safe.py
+---
+def test_aspect_ratio_16_9_with_width(file_regression, render_engine):
+    render_func, check_func = render_engine
+    image = render_func(Canvas(), Row())
+    check_func(file_regression, image)

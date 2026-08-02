@@ -1,0 +1,9 @@
+# goslop text fixture — broad except returns a bare default, hiding the failure
+lang: python
+file: swallowed_default.py
+---
+def write_event(payload):
+    try:
+        return do_write(payload)
+    except Exception:
+        return []

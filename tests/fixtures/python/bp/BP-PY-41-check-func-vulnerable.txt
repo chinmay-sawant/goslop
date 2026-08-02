@@ -1,0 +1,7 @@
+# Fixture for BP-PY-41 (vulnerable) — side effects only, no regression check
+lang: python
+file: tests/test_aspect_ratio_vuln.py
+---
+def test_aspect_ratio_16_9_with_width(render_engine):
+    render_func, _check_func = render_engine
+    render_func(Canvas(), Row())

@@ -1,0 +1,9 @@
+# goslop text fixture — generic except forwards via set_exception (niquests FP)
+lang: python
+file: CWE-396-batch3-set-exception-safe.py
+---
+def bridge(future, fn):
+    try:
+        future.set_result(fn())
+    except Exception as e:
+        future.set_exception(e)

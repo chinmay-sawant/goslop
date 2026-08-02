@@ -122,13 +122,14 @@ func detectCWE214(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 
 // CWE-215 reports debug sinks only when their arguments include a sensitive
 // identifier. Generic debug logs and intentionally redacted literals are safe.
+// The English word "password" inside a message string is not a sensitive value.
 func detectCWE215(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, name := range []string{"print", "logging.debug", ".debug"} {
 		for _, call := range findCalls(facts, unit.Source, name) {
-			if sensitiveValueRE.MatchString(call.ArgsText) && !isPureStringLiteral(call.ArgsText) {
+			if sensitiveIdentOutsideLiterals(call.ArgsText) && !isPureStringLiteral(call.ArgsText) {
 				emitCodeDynamic(unit, &MetaCWE215, call.Start,
 					"debug output includes a sensitive value; redact it before logging", confidence86, out)
 				return

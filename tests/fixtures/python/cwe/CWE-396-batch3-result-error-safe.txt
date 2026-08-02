@@ -1,0 +1,11 @@
+# goslop text fixture — records failure into result.error (logxide FP)
+lang: python
+file: CWE-396-batch3-result-error-safe.py
+---
+def run_scenario(result, fn):
+    try:
+        fn()
+        result.ok = True
+    except Exception as e:
+        result.ok = False
+        result.error = f"{type(e).__name__}: {e}"

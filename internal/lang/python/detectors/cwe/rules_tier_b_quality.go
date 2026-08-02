@@ -50,7 +50,6 @@ var (
 	pyTierBConsistencyRE = regexp.MustCompile(`(?is)expected_count\s*=\s*request\.get_json\s*\([^\n]*\)[\s\S]{0,260}items\s*=\s*request\.get_json\s*\(`)
 	pyTierBAsyncSleepRE  = regexp.MustCompile(`(?is)async\s+def\s+\w+\s*\([^)]*\)\s*:[\s\S]{0,260}time\.sleep\s*\(`)
 	pyTierBFloatMoneyRE  = regexp.MustCompile(`(?is)float\s*\(\s*request\.(?:args|form)\.get\s*\([^\n]*(?:price|amount|balance)`)
-	pyTierBDoubleCloseRE = regexp.MustCompile(`(?is)\w+\.close\s*\(\s*\)[\s\S]{0,180}\w+\.close\s*\(\s*\)`)
 	pyControlHeaderRE    = regexp.MustCompile(`^(?:async\s+)?(?:if|elif|else|for|while|try|except|finally|with|match|case)\b.*:\s*$`)
 	pyTierBImpImportRE   = regexp.MustCompile(`(?im)^\s*(?:import|from)\s+imp\b`)
 )
@@ -189,7 +188,13 @@ func detectCWE1339(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Findin
 }
 
 func detectCWE1341(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
-	if start := firstCodeMatchStart(facts, unit.Source, pyTierBDoubleCloseRE); start >= 0 {
+	masked := ""
+	if facts != nil {
+		masked = facts.codeMask(unit.Source, fragStartHint(facts, unit.Source))
+	} else if unit != nil {
+		masked = pythonCodeMask(unit.Source)
+	}
+	if start := sameHandleDoubleCloseStart(masked); start >= 0 {
 		emitTierBFinding(unit, &MetaCWE1341, start, "same resource handle is released twice", confidence82, out)
 	}
 }

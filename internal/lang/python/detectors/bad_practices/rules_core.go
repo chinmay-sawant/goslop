@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/pytext"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
@@ -50,8 +51,10 @@ func detectBPPY1(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			if isPythonTestFile(unit) && broadExceptCollectsTestEvidence(lines, i) {
 				continue
 			}
-			// Flag broad Exception/BaseException unless suite clearly re-raises.
-			if suiteReraises(lines, i) {
+			// Flag broad Exception/BaseException unless the suite surfaces the
+			// failure (re-raise, exc_info / logger.exception, set_exception,
+			// or records into an error/result field).
+			if suiteSurfacesFailure(lines, i) {
 				continue
 			}
 			pushAt(unit, meta, line.byte, "broad except Exception/BaseException hides failures; catch specific types or re-raise", out)
@@ -106,6 +109,16 @@ func isBroadExcept(t string) bool {
 }
 
 func suiteReraises(lines []codeLine, exceptIdx int) bool {
+	return suiteSurfacesFailure(lines, exceptIdx)
+}
+
+// suiteSurfacesFailure reports whether an except suite propagates or records
+// the failure instead of swallowing it. Bare/swallowing handlers (pass,
+// continue, warn-and-return-default) remain reportable.
+func suiteSurfacesFailure(lines []codeLine, exceptIdx int) bool {
+	if exceptIdx < 0 || exceptIdx >= len(lines) {
+		return false
+	}
 	exceptIndent := indentWidth(lines[exceptIdx].raw)
 	for j := exceptIdx + 1; j < len(lines); j++ {
 		raw := lines[j].raw
@@ -117,7 +130,33 @@ func suiteReraises(lines []codeLine, exceptIdx int) bool {
 		if ind <= exceptIndent {
 			break
 		}
-		if t == "raise" || strings.HasPrefix(t, "raise ") {
+		if suiteLineSurfacesFailure(t) {
+			return true
+		}
+	}
+	return false
+}
+
+func suiteLineSurfacesFailure(t string) bool {
+	if t == "raise" || strings.HasPrefix(t, "raise ") {
+		return true
+	}
+	if strings.Contains(t, "exc_info") {
+		return true
+	}
+	if strings.Contains(t, ".exception(") {
+		return true
+	}
+	if strings.Contains(t, "set_exception(") {
+		return true
+	}
+	if strings.Contains(t, "_error_result(") {
+		return true
+	}
+	// result.error = ... / health.error = ... — records failure into a field.
+	if i := strings.Index(t, ".error"); i >= 0 {
+		rest := strings.TrimSpace(t[i+len(".error"):])
+		if strings.HasPrefix(rest, "=") {
 			return true
 		}
 	}
@@ -305,13 +344,17 @@ func assertLooksLikeRuntimeValidation(line string) bool {
 	return false
 }
 
-// BP-PY-7: open( / .open( without with.
+// BP-PY-7: builtin open( without with.
+// Attribute methods (fitz.open, Image.open, self.open, Client.open, os.open)
+// and function definitions (def open) are out of scope. Docstring/comment
+// matches are blanked via pytext.Mask before the line scan.
 func detectBPPY7(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-7")
 	if !facts.has("open(") && !facts.has(".open(") {
 		return
 	}
-	lines := codeLinesFacts(facts, unit.Source)
+	masked := pytext.Mask(unit.Source)
+	lines := buildCodeLines(masked)
 	for _, line := range lines {
 		t := line.text
 		if !strings.Contains(t, "open(") {
@@ -320,61 +363,35 @@ func detectBPPY7(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		if lineContainsWithOpen(t) {
 			continue
 		}
-		// Skip imports / comments already stripped.
 		trimmed := strings.TrimSpace(t)
 		if strings.HasPrefix(trimmed, "from ") || strings.HasPrefix(trimmed, "import ") {
 			continue
 		}
-		// Find open( occurrences not as part of another ident (e.g. reopen is rare; open is builtin).
-		// Flag assignment or bare call: f = open(...), open(...).read()
-		// Skip if the open is only inside a string (comment-stripped already; strings still present).
-		if openCallOutsideString(t) {
-			// Locate byte offset of open(
-			off := line.byte + strings.Index(t, "open(")
-			// Prefer .open( or open(
-			if i := strings.Index(t, ".open("); i >= 0 {
-				off = line.byte + i
-			} else if i := indexOfIdent(t, "open"); i >= 0 {
-				off = line.byte + i
-			}
-			pushAt(unit, meta, off, "open without with risks resource leaks; use a context manager", out)
+		if strings.HasPrefix(trimmed, "def open(") || strings.HasPrefix(trimmed, "async def open(") {
+			continue
+		}
+		if i := indexOfBareOpenCall(t); i >= 0 {
+			pushAt(unit, meta, line.byte+i, "open without with risks resource leaks; use a context manager", out)
 		}
 	}
 }
 
-func openCallOutsideString(line string) bool {
-	inStr := byte(0)
-	escape := false
-	for i := 0; i < len(line); i++ {
-		c := line[i]
-		if inStr != 0 {
-			if escape {
-				escape = false
+// indexOfBareOpenCall finds builtin open( — not mid-ident and not attribute .open(.
+func indexOfBareOpenCall(line string) int {
+	start := 0
+	for {
+		i := strings.Index(line[start:], "open(")
+		if i < 0 {
+			return -1
+		}
+		abs := start + i
+		if abs > 0 {
+			prev := line[abs-1]
+			if prev == '.' || isIdentByte(prev) {
+				start = abs + 4
 				continue
 			}
-			if c == '\\' {
-				escape = true
-				continue
-			}
-			if c == inStr {
-				inStr = 0
-			}
-			continue
 		}
-		if c == '"' || c == '\'' {
-			inStr = c
-			continue
-		}
-		// match open(
-		if c == 'o' && i+5 <= len(line) && line[i:i+5] == "open(" {
-			if i == 0 || !isIdentByte(line[i-1]) {
-				return true
-			}
-		}
-		// .open(
-		if c == '.' && i+6 <= len(line) && line[i:i+6] == ".open(" {
-			return true
-		}
+		return abs
 	}
-	return false
 }

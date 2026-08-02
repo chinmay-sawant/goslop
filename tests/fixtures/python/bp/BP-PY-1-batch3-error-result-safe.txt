@@ -1,0 +1,12 @@
+# goslop text fixture — exception recorded into error result (calgebra/logxide FP)
+lang: python
+file: handled_error_result.py
+---
+def _error_result(exc):
+    return {"success": False, "error": exc}
+
+def write_event(payload):
+    try:
+        return do_write(payload)
+    except Exception as e:
+        return _error_result(e)

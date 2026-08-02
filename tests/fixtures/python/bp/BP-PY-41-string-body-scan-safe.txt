@@ -1,0 +1,12 @@
+# Fixture for BP-PY-41 (safe) — asserts after dedented triple-quoted sample (whatsapp/rendercv FP)
+lang: python
+file: tests/test_parser_safe.py
+---
+def test_media_placeholder_localization():
+    chat_spanish = """21-06-23, 11:00:23 - Leonardo: Video omitido
+21-06-23, 11:20:04 - Cristhian: sticker omitido
+21-06-23, 11:30:00 - Leonardo: imagen omitida"""
+
+    df = parse_chat(chat_spanish)
+    assert len(df) == 3
+    assert df["message_type"][0] == "video"

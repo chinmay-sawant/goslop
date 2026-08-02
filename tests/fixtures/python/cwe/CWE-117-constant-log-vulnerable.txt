@@ -1,0 +1,9 @@
+# goslop text fixture — CWE-117 user-controlled log interpolation (vulnerable)
+lang: python
+file: CWE-117-constant-log-vulnerable.py
+---
+import logging
+
+
+def audit(username: str):
+    logging.info(f"login succeeded for {username}")

@@ -206,6 +206,10 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		if verifyFalseRe.MatchString(t) {
+			// Fingerprint pinning assigns verify=False next to assert_fingerprint.
+			if tlsFingerprintPinNearby(lines, line) || tlsVerifyFalseIsLocalAssign(t) {
+				continue
+			}
 			if loc := verifyFalseRe.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
@@ -218,6 +222,13 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			continue
 		}
 		if certNoneRe.MatchString(t) {
+			// State comparisons (cert_reqs != "CERT_NONE") are not disables.
+			if strings.Contains(t, "!=") || strings.Contains(t, "==") {
+				continue
+			}
+			if tlsFingerprintPinNearby(lines, line) {
+				continue
+			}
 			if loc := certNoneRe.FindStringIndex(t); loc != nil {
 				report(line.byte + loc[0])
 			}
@@ -232,14 +243,37 @@ func detectBPPY49(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 
 	// Multi-line call: verify=False may sit alone on a continued line already covered above.
 	// Also catch source-wide when only multi-line patterns exist without line trim issues.
+	// Do not resurrect fingerprint-pinning or local verify=False assignments skipped above.
 	if len(seen) == 0 {
-		if loc := verifyFalseRe.FindStringIndex(src); loc != nil {
-			report(loc[0])
-		} else if loc := unverifiedContextRe.FindStringIndex(src); loc != nil {
-			report(loc[0])
-		} else if loc := certNoneRe.FindStringIndex(src); loc != nil {
+		reportTLSFallbackHit(src, report)
+	}
+}
+
+func reportTLSFallbackHit(src string, report func(int)) {
+	if loc := verifyFalseRe.FindStringIndex(src); loc != nil {
+		snippet := src[loc[0]:]
+		if end := strings.IndexByte(snippet, '\n'); end >= 0 {
+			snippet = snippet[:end]
+		}
+		if !tlsVerifyFalseIsLocalAssign(snippet) && !strings.Contains(src, "assert_fingerprint") {
 			report(loc[0])
 		}
+		return
+	}
+	if loc := unverifiedContextRe.FindStringIndex(src); loc != nil {
+		report(loc[0])
+		return
+	}
+	loc := certNoneRe.FindStringIndex(src)
+	if loc == nil {
+		return
+	}
+	line := src[loc[0]:]
+	if end := strings.IndexByte(line, '\n'); end >= 0 {
+		line = line[:end]
+	}
+	if !strings.Contains(line, "!=") && !strings.Contains(line, "==") {
+		report(loc[0])
 	}
 }
 
@@ -285,4 +319,56 @@ func detectBPPY50(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				"session/CSRF cookie Secure or HttpOnly set to False; enable in production", out)
 		}
 	}
+}
+
+func tlsVerifyFalseIsLocalAssign(t string) bool {
+	trimmed := strings.TrimSpace(t)
+	// Bare assignment "verify = False" (not a call kwarg like get(..., verify=False)).
+	if strings.Contains(trimmed, "(") {
+		return false
+	}
+	return regexp.MustCompile(`(?i)^verify\s*=\s*False\b`).MatchString(trimmed)
+}
+
+func tlsFingerprintPinNearby(lines []codeLine, line codeLine) bool {
+	const window = 12
+	idx := -1
+	for i, l := range lines {
+		if l.byte == line.byte {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		// Fall back to scanning all lines when byte identity differs.
+		for _, l := range lines {
+			if strings.Contains(l.text, "assert_fingerprint") {
+				// Still require proximity by line content match below.
+				break
+			}
+		}
+		for i, l := range lines {
+			if strings.TrimSpace(l.text) == strings.TrimSpace(line.text) {
+				idx = i
+				break
+			}
+		}
+	}
+	if idx < 0 {
+		return false
+	}
+	lo := idx - window
+	if lo < 0 {
+		lo = 0
+	}
+	hi := idx + window
+	if hi >= len(lines) {
+		hi = len(lines) - 1
+	}
+	for i := lo; i <= hi; i++ {
+		if strings.Contains(lines[i].text, "assert_fingerprint") {
+			return true
+		}
+	}
+	return false
 }

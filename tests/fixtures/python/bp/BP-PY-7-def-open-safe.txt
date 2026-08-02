@@ -1,0 +1,10 @@
+# goslop text fixture
+lang: python
+file: BP-PY-7-def-open-safe.py
+---
+"""Module docs mention open() as an API name only."""
+
+
+def open(name, mode="r"):
+    """Drop-in open() wrapper; definition is not a call."""
+    raise NotImplementedError

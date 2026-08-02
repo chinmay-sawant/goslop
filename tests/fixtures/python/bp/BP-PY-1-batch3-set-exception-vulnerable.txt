@@ -1,0 +1,9 @@
+# goslop text fixture — broad except swallows bridge failures
+lang: python
+file: swallowed_bridge.py
+---
+def bridge_call(future, fn):
+    try:
+        future.set_result(fn())
+    except Exception:
+        pass

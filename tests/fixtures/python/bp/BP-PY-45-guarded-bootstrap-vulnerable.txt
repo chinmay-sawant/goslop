@@ -1,0 +1,10 @@
+# Fixture for BP-PY-45 (vulnerable) — runtime path mutation inside a function
+lang: python
+file: app/plugin_loader.py
+---
+import sys
+
+
+def enable_plugin(plugin_dir):
+    if plugin_dir not in sys.path:
+        sys.path.insert(0, plugin_dir)

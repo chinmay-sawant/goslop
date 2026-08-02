@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: sync_lib.py
+---
+def resolve_config(path):
+    print("resolving", path)
+    return path

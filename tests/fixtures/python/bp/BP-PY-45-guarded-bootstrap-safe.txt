@@ -1,0 +1,12 @@
+# Fixture for BP-PY-45 (safe) — guarded module-top bootstrap (Project_Parva FP)
+lang: python
+file: integrations/mcp/server.py
+---
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from parva_mcp_server.server import main

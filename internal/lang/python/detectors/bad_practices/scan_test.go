@@ -167,6 +167,8 @@ func TestBPPY6AssertValidation(t *testing.T) {
 func TestBPPY7OpenWithoutWith(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7")
+	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7-attr-method-open")
+	assertBPFixtureCase(t, "BP-PY-7", "BP-PY-7-def-open")
 }
 
 func TestBPPY8SubprocessShell(t *testing.T) {
@@ -204,6 +206,8 @@ func TestBPPY12EvalExec(t *testing.T) {
 	t.Parallel()
 	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12")
 	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-exec")
+	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-attr-method-exec")
+	assertBPFixtureCase(t, "BP-PY-12", "BP-PY-12-string-literal-exec")
 }
 
 func TestBPPY13HardcodedSecret(t *testing.T) {

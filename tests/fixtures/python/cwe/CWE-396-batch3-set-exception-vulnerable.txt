@@ -1,0 +1,9 @@
+# goslop text fixture — generic except discards bridge failures
+lang: python
+file: CWE-396-batch3-set-exception-vulnerable.py
+---
+def bridge(future, fn):
+    try:
+        future.set_result(fn())
+    except Exception:
+        future.set_result(None)

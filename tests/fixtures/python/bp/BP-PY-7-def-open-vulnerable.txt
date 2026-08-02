@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: BP-PY-7-def-open-vulnerable.py
+---
+def read(path):
+    handle = open(path)
+    return handle.read()

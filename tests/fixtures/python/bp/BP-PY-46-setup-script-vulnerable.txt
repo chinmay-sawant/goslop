@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: package/build_helpers.py
+---
+def compile_extension(name):
+    print(f"Building with: {name}")
+    return name

@@ -67,6 +67,46 @@ func isPythonBenchmarkFile(unit *core.ParsedUnit) bool {
 	return false
 }
 
+// scriptPathDirNames are path components that mark demo/tooling scripts rather
+// than importable library modules (BP-PY-46 script exemption).
+var scriptPathDirNames = map[string]struct{}{
+	"examples": {}, "example": {},
+	"scripts": {}, "script": {},
+	"tools": {}, "tool": {},
+	"demos": {}, "demo": {},
+	"commands": {}, // Click/Typer CLI subcommand modules (e.g. package/commands/)
+}
+
+// isPythonScriptModule reports demo/tooling/packaging/CLI entry modules where
+// print is intentional user-facing output, not library debug logging.
+func isPythonScriptModule(unit *core.ParsedUnit) bool {
+	if unit == nil {
+		return false
+	}
+	for _, path := range []string{fileDisplayPath(unit), unit.Path} {
+		if path == "" {
+			continue
+		}
+		base := filepath.Base(path)
+		if base == "setup.py" || base == "__main__.py" || base == "cli.py" {
+			return true
+		}
+		for _, component := range strings.Split(strings.Trim(filepath.ToSlash(path), "/"), "/") {
+			if _, ok := scriptPathDirNames[component]; ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// isPythonShebangScript reports files that start with a shebang — almost always
+// runnable entry scripts rather than importable library modules.
+func isPythonShebangScript(src string) bool {
+	s := strings.TrimLeft(src, " \t")
+	return strings.HasPrefix(s, "#!")
+}
+
 func pushAt(unit *core.ParsedUnit, meta *rules.RuleMetadata, byteOffset int, message string, out *[]rules.Finding) {
 	if unit == nil || meta == nil || out == nil {
 		return
@@ -429,7 +469,17 @@ func containsWithOpenCall(t string) bool {
 
 func looksLikePlaceholderSecret(val string) bool {
 	v := strings.ToLower(strings.TrimSpace(val))
-	// strip quotes
+	// strip bytes/raw/f prefixes then quotes
+	for {
+		if len(v) >= 2 {
+			c0 := v[0]
+			if c0 == 'b' || c0 == 'r' || c0 == 'u' || c0 == 'f' {
+				v = v[1:]
+				continue
+			}
+		}
+		break
+	}
 	if len(v) >= 2 {
 		if (v[0] == '"' && v[len(v)-1] == '"') || (v[0] == '\'' && v[len(v)-1] == '\'') {
 			v = v[1 : len(v)-1]
@@ -453,11 +503,16 @@ func looksLikePlaceholderSecret(val string) bool {
 		return true
 	}
 	// Prefix patterns for documented placeholders.
-	prefixes := []string{"changeme", "your_", "replace", "todo", "example_", "dummy_", "placeholder"}
+	prefixes := []string{"changeme", "your_", "replace", "todo", "example_", "dummy_", "placeholder",
+		"bench-", "bench_", "test-", "test_", "testing-", "for-testing", "fake-", "fake_"}
 	for _, p := range prefixes {
 		if strings.HasPrefix(v, p) {
 			return true
 		}
+	}
+	if strings.Contains(v, "testing-only") || strings.Contains(v, "for-testing-only") ||
+		strings.Contains(v, "not-for-production") {
+		return true
 	}
 	return false
 }

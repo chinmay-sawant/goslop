@@ -1,0 +1,6 @@
+# goslop text fixture — header write sink (vulnerable)
+lang: python
+file: CWE-93-header-read-vulnerable.py
+---
+def set_type(response, value):
+    response.headers["content-type"] = value

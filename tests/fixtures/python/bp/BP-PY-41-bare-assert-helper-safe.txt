@@ -1,0 +1,14 @@
+# Fixture for BP-PY-41 (safe) — delegates to helper with bare assert (safer/niquests FP)
+lang: python
+file: test/test_dump_safe.py
+---
+def _inner_test_roundtrip(data):
+    dump(data, "one")
+    with open("one") as fp:
+        assert load(fp) == data
+
+
+def test_dump():
+    data = _inner_test_roundtrip({"a": 1})
+    if data:
+        save_coverage(data)

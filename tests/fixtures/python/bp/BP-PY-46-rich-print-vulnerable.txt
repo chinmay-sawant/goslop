@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: package/telemetry.py
+---
+def prompt_usage_telemetry():
+    print("debug help")
+    return True

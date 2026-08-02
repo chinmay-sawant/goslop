@@ -1,0 +1,10 @@
+# Fixture for BP-PY-41 (safe) — pytest-benchmark fixture (httptap audit FP)
+lang: python
+file: tests/test_benchmarks_safe.py
+---
+import pytest
+
+
+@pytest.mark.benchmark(group="models")
+def test_bench_timing_calculate_derived(benchmark, sample_timing):
+    benchmark(sample_timing.calculate_derived)

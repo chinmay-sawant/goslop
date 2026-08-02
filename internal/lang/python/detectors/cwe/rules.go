@@ -68,6 +68,10 @@ func detectCWE502(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 		if yamlLoadLooksSafe(call.ArgsText) {
 			continue
 		}
+		// ruamel.yaml YAML().load is a safe constructor — not PyYAML's unsafe load.
+		if yamlLoadLooksLikeRuamel(src, call.ArgsText) {
+			continue
+		}
 		line, col := unit.LineCol(call.Start)
 		rules.PushFindingWithConfidence(
 			&MetaCWE502,
@@ -171,6 +175,9 @@ func detectCWE89(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 	// Prefer method-style .execute( / .executemany( and bare execute(
 	// Scan for ".execute(" and "execute(" carefully.
 	for _, call := range findExecuteCalls(facts, src) {
+		if isDefHeaderCall(src, call.Start) {
+			continue
+		}
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 {
 			continue
@@ -182,20 +189,13 @@ func detectCWE89(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		if isBoundQueryBuilderExpression(facts, src, call.Start, sqlArg) {
 			continue
 		}
-		// Parameterized: first arg is pure string with placeholders AND second arg is present (bound params)
-		if len(args) >= 2 && isPureStringLiteral(sqlArg) && !looksSQLFormatted(sqlArg) {
-			// bound args tuple/list → safe
-			second := strings.TrimSpace(args[1])
-			if strings.HasPrefix(second, "(") || strings.HasPrefix(second, "[") || isIdentOnly(second) {
-				continue
-			}
+		// Static SQL (including adjacent literals and sqlalchemy.text("…")) is not injection.
+		if isStaticSQLArg(sqlArg) && !looksSQLFormatted(sqlArg) {
+			continue
 		}
-		// Dynamic SQL construction in first arg
-		if looksSQLFormatted(sqlArg) || (isDynamicExpr(sqlArg) && !isPureStringLiteral(sqlArg)) {
-			// Avoid flagging completely static pure string without format
-			if isPureStringLiteral(sqlArg) {
-				continue
-			}
+		// Dynamic SQL construction in first arg — require SQL evidence so HTTP /
+		// custom execute wrappers with non-SQL first args stay silent.
+		if looksSQLFormatted(sqlArg) || sqlArgLooksInjected(facts, src, call.Start, sqlArg) {
 			line, col := unit.LineCol(call.Start)
 			rules.PushFindingWithConfidence(
 				&MetaCWE89,
@@ -254,6 +254,208 @@ func isBoundQueryBuilderExpression(facts *PyCweFacts, source string, callStart i
 func isQueryBuilderConstructor(expression string) bool {
 	return strings.HasPrefix(expression, "select(") || strings.HasPrefix(expression, "delete(") ||
 		strings.HasPrefix(expression, "update(") || strings.HasPrefix(expression, "insert(")
+}
+
+// isDefHeaderCall is true when callStart names a def/async def parameter list
+// (e.g. `def execute(...):`), not an execute/executemany call site.
+func isDefHeaderCall(source string, callStart int) bool {
+	if callStart <= 0 || callStart > len(source) {
+		return false
+	}
+	lineStart := callStart
+	for lineStart > 0 && source[lineStart-1] != '\n' {
+		lineStart--
+	}
+	prefix := strings.TrimSpace(source[lineStart:callStart])
+	return prefix == "def" || prefix == "async def"
+}
+
+// isStaticSQLArg reports a non-interpolated SQL text expression: a string
+// literal, adjacent/implicitly concatenated string literals, or
+// sqlalchemy.text("literal") / text("literal").
+func isStaticSQLArg(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	if isPureStringLiteral(t) || isAdjacentStringLiterals(t) {
+		return true
+	}
+	return isStaticSQLAlchemyText(t)
+}
+
+// isAdjacentStringLiterals is true for Python's implicit string concatenation
+// such as "SELECT … " "WHERE …" (no f-strings / formats).
+func isAdjacentStringLiterals(expr string) bool {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return false
+	}
+	parts := 0
+	for t != "" {
+		rest, ok := consumeLeadingStringLiteral(t)
+		if !ok {
+			return false
+		}
+		parts++
+		t = strings.TrimSpace(rest)
+	}
+	return parts >= 2
+}
+
+// consumeLeadingStringLiteral strips one non-f string literal from the front of
+// expr and returns the remainder. f-strings are rejected (dynamic).
+func consumeLeadingStringLiteral(expr string) (string, bool) {
+	t := strings.TrimSpace(expr)
+	if t == "" {
+		return "", false
+	}
+	i := 0
+	for i < len(t) {
+		c := t[i]
+		if c == 'f' || c == 'F' {
+			return "", false
+		}
+		if c == 'b' || c == 'B' || c == 'r' || c == 'R' || c == 'u' || c == 'U' {
+			i++
+			continue
+		}
+		break
+	}
+	if i >= len(t) {
+		return "", false
+	}
+	quote := t[i]
+	if quote != '"' && quote != '\'' {
+		return "", false
+	}
+	if i+2 < len(t) && t[i+1] == quote && t[i+2] == quote {
+		end := strings.Index(t[i+3:], string([]byte{quote, quote, quote}))
+		if end < 0 {
+			return "", false
+		}
+		return t[i+3+end+3:], true
+	}
+	escape := false
+	for j := i + 1; j < len(t); j++ {
+		if escape {
+			escape = false
+			continue
+		}
+		if t[j] == '\\' {
+			escape = true
+			continue
+		}
+		if t[j] == quote {
+			return t[j+1:], true
+		}
+	}
+	return "", false
+}
+
+// isStaticSQLAlchemyText recognizes text("…") / sqlalchemy.text("…") whose
+// first argument is a static (possibly adjacent) string literal.
+func isStaticSQLAlchemyText(expr string) bool {
+	t := strings.TrimSpace(expr)
+	idx := strings.LastIndex(t, "text(")
+	if idx < 0 {
+		return false
+	}
+	if idx > 0 {
+		prev := t[idx-1]
+		if isIdentByteCWE(prev) {
+			return false
+		}
+	}
+	open := idx + len("text")
+	if open >= len(t) || t[open] != '(' {
+		return false
+	}
+	closeAt, argsText := scanCallArgs(t, open)
+	if closeAt < 0 || strings.TrimSpace(t[closeAt+1:]) != "" {
+		return false
+	}
+	args := splitTopLevelArgs(argsText)
+	if len(args) == 0 {
+		return false
+	}
+	inner := args[0]
+	return (isPureStringLiteral(inner) || isAdjacentStringLiterals(inner)) && !looksSQLFormatted(inner)
+}
+
+func isIdentByteCWE(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') || (b >= '0' && b <= '9') || b == '_'
+}
+
+// sqlArgLooksInjected requires dynamic SQL evidence: formatted SQL text, a
+// local assignment of dynamic SQL, or an expression that both looks dynamic
+// and carries SQL/string content. Bare idents like HTTP `options` or custom
+// `web_function` wrappers do not qualify.
+func sqlArgLooksInjected(facts *PyCweFacts, source string, callStart int, sqlArg string) bool {
+	t := strings.TrimSpace(sqlArg)
+	if t == "" || isStaticSQLArg(t) {
+		return false
+	}
+	if looksSQLFormatted(t) {
+		return true
+	}
+	if isIdentOnly(t) {
+		return localAssignLooksDynamicSQL(facts, source, callStart, t)
+	}
+	if !isDynamicExpr(t) {
+		return false
+	}
+	return containsSQLKeyword(t) || strings.Contains(t, "\"") || strings.Contains(t, "'")
+}
+
+func localAssignLooksDynamicSQL(_ *PyCweFacts, source string, callStart int, name string) bool {
+	if callStart < 0 || callStart > len(source) {
+		return false
+	}
+	// Use unmasked source so f-string / formatted SQL text remains visible.
+	lines := strings.Split(source[:callStart], "\n")
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := strings.TrimSpace(lines[i])
+		if line == "" {
+			continue
+		}
+		lhs, rhs, ok := strings.Cut(line, "=")
+		if !ok || strings.TrimSpace(lhs) != name {
+			continue
+		}
+		rhs = strings.TrimSpace(rhs)
+		if rhs == "(" {
+			for j := i + 1; j < len(lines); j++ {
+				continued := strings.TrimSpace(lines[j])
+				if continued == "" {
+					continue
+				}
+				rhs = continued
+				break
+			}
+		}
+		if isQueryBuilderConstructor(rhs) || (isStaticSQLArg(rhs) && !looksSQLFormatted(rhs)) {
+			return false
+		}
+		if looksSQLFormatted(rhs) {
+			return true
+		}
+		if isDynamicExpr(rhs) && (containsSQLKeyword(rhs) || strings.Contains(rhs, "\"") || strings.Contains(rhs, "'")) {
+			return true
+		}
+		return false
+	}
+	return false
+}
+
+func containsSQLKeyword(expr string) bool {
+	upper := strings.ToUpper(expr)
+	for _, kw := range []string{"SELECT", "INSERT", "UPDATE", "DELETE", "CREATE", "DROP", "ALTER", "WITH "} {
+		if strings.Contains(upper, kw) {
+			return true
+		}
+	}
+	return false
 }
 
 // isExecuteCallbackPassthrough recognizes the DB-API execute-wrapper shape

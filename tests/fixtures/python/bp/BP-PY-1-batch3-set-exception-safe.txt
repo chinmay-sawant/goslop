@@ -1,0 +1,9 @@
+# goslop text fixture — future.set_exception propagates (niquests FP)
+lang: python
+file: handled_set_exception.py
+---
+def bridge_call(future, fn):
+    try:
+        future.set_result(fn())
+    except Exception as e:
+        future.set_exception(e)

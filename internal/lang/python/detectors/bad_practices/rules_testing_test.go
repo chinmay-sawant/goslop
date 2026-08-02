@@ -27,6 +27,24 @@ func TestBPPY41TestWithoutAssert(t *testing.T) {
 	ae := loadBPFixture(t, "BP-PY-41-assertionerror-helper", false)
 	assertRule(t, "BP-PY-41", ae.path, ae.body, false)
 
+	// pytest-regressions check_func (pictex)
+	checkFunc := loadBPFixture(t, "BP-PY-41-check-func", false)
+	assertRule(t, "BP-PY-41", checkFunc.path, checkFunc.body, false)
+
+	// pytest-benchmark fixture (httptap)
+	bench := loadBPFixture(t, "BP-PY-41-benchmark", false)
+	assertRule(t, "BP-PY-41", bench.path, bench.body, false)
+
+	// bare-assert helper delegation (safer / niquests _inner_*)
+	bare := loadBPFixture(t, "BP-PY-41-bare-assert-helper", false)
+	assertRule(t, "BP-PY-41", bare.path, bare.body, false)
+
+	// triple-quoted sample string must not abort body scan (whatsapp-wrapped / rendercv)
+	strBody := loadBPFixture(t, "BP-PY-41-string-body-scan", false)
+	assertRule(t, "BP-PY-41", strBody.path, strBody.body, false)
+	strVuln := loadBPFixture(t, "BP-PY-41-string-body-scan", true)
+	assertRule(t, "BP-PY-41", strVuln.path, strVuln.body, true)
+
 	findings := runBP(t, nil, vuln.body, vuln.path)
 	for _, f := range findings {
 		if f.RuleID == "BP-PY-41" && f.Severity != rules.SeverityInfo {

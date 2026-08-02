@@ -1,0 +1,9 @@
+# goslop text fixture — real test function still uses try/except expect-failure
+lang: python
+file: test_helper_vuln.py
+---
+def test_expect_failure():
+    try:
+        boom()
+    except Exception:
+        pass

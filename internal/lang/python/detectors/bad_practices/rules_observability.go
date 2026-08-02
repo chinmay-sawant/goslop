@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/pytext"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
@@ -33,21 +34,45 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonBenchmarkFile(unit) {
 		return
 	}
+	if isPythonScriptModule(unit) {
+		return
+	}
 	if isRequirementsPath(unit) {
+		return
+	}
+	if isPythonShebangScript(unit.Source) {
+		return
+	}
+	// `from rich import print` rebinds the builtin for terminal UX — presentation,
+	// not library operational logging (caniscrape telemetry/upload/diff CLI output).
+	if pythonUsesRichPrint(unit.Source) {
 		return
 	}
 	if !facts.has("print(") && !strings.Contains(unit.Source, "print(") {
 		return
 	}
 	lines := codeLinesFacts(facts, unit.Source)
+	// Masked twin: blank string/comment interiors so docstring/epilog lines do
+	// not reset CLI indent and so print( tokens inside literals are ignored.
+	maskedLines := buildCodeLines(pytext.Mask(unit.Source))
 	mainInvoked := pythonMainGuardInvokesMain(lines)
 	hasArgparse := pythonHasArgparseCLI(unit.Source)
+	hasClickishCLI := pythonHasClickishCLI(unit.Source)
 	registeredCmds := pythonArgparseSetDefaultsFuncs(unit.Source)
 	// Track whether we are inside if __name__ == "__main__": block.
 	mainIndent := -1
 	cliDecorator := false
 	cliIndent := -1
-	for _, line := range lines {
+	for i, line := range lines {
+		maskedTrim := ""
+		if i < len(maskedLines) {
+			maskedTrim = strings.TrimSpace(maskedLines[i].text)
+		}
+		// Wholly blanked lines are string/comment interiors — skip without
+		// touching indent trackers (fixes argparse epilog "Examples:" resets).
+		if maskedTrim == "" {
+			continue
+		}
 		t := strings.TrimSpace(line.text)
 		if t == "" {
 			continue
@@ -67,7 +92,7 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			// Under main guard — skip print.
 			continue
 		}
-		if strings.HasPrefix(t, "@") && strings.Contains(t, ".cli.command(") {
+		if isPythonCLIDecorator(t) {
 			cliDecorator = true
 			continue
 		}
@@ -83,18 +108,17 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			cliDecorator = false
 		}
 		if name, ok := pythonDefFuncName(t); ok &&
-			pythonCLIPrintSkipFunc(name, mainInvoked, hasArgparse, registeredCmds) {
+			pythonCLIPrintSkipFunc(name, mainInvoked, hasArgparse, hasClickishCLI, registeredCmds) {
 			cliIndent = ind
 			continue
 		}
 		if cliIndent >= 0 && ind > cliIndent {
 			continue
 		}
-		// Flag print( calls that are not import-like.
-		if !strings.Contains(t, "print(") {
+		// Flag print( calls that survive masking (executable, not in a literal).
+		if !strings.Contains(maskedTrim, "print(") {
 			continue
 		}
-		// Skip comments already stripped; skip if print is only in a string (cheap check).
 		if printCallOutsideString(t) {
 			off := line.byte
 			if i := indexOfIdent(t, "print"); i >= 0 {
@@ -110,11 +134,51 @@ func detectBPPY46(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	}
 }
 
+// isPythonCLIDecorator reports Click/Typer/Cyclopts/Flask CLI command decorators
+// whose function bodies are user-facing presentation, not library logging.
+func isPythonCLIDecorator(t string) bool {
+	if !strings.HasPrefix(t, "@") {
+		return false
+	}
+	switch {
+	case strings.Contains(t, ".cli.command("),
+		strings.Contains(t, "click.command("),
+		strings.Contains(t, "click.group("),
+		strings.Contains(t, "cli.command("),
+		strings.Contains(t, "cli.group("),
+		strings.Contains(t, ".command("),
+		strings.Contains(t, ".default("),
+		strings.Contains(t, ".callback("):
+		return true
+	default:
+		return false
+	}
+}
+
 // pythonHasArgparseCLI reports modules that build an argparse CLI entrypoint.
 func pythonHasArgparseCLI(src string) bool {
 	return strings.Contains(src, "ArgumentParser") ||
 		strings.Contains(src, "argparse.") ||
 		strings.Contains(src, "import argparse")
+}
+
+// pythonHasClickishCLI reports Click/Typer/Cyclopts/Rich-CLI presentation modules.
+func pythonHasClickishCLI(src string) bool {
+	return strings.Contains(src, "import click") ||
+		strings.Contains(src, "from click ") ||
+		strings.Contains(src, "import typer") ||
+		strings.Contains(src, "from typer ") ||
+		strings.Contains(src, "import cyclopts") ||
+		strings.Contains(src, "from cyclopts ") ||
+		pythonUsesRichPrint(src) ||
+		strings.Contains(src, "from rich.console import")
+}
+
+// pythonUsesRichPrint reports modules that rebind builtin print to rich.print for UX.
+func pythonUsesRichPrint(src string) bool {
+	return strings.Contains(src, "from rich import print") ||
+		strings.Contains(src, "from rich import print,") ||
+		strings.Contains(src, "import rich.print")
 }
 
 // pythonMainGuardInvokesMain reports that if __name__ == "__main__" calls main(...).
@@ -205,11 +269,11 @@ func pythonLeadingIdent(s string) string {
 	return s[:end]
 }
 
-// pythonCLIPrintSkipFunc reports argparse/__main__ CLI presentation entrypoints
-// whose print calls are intentional user output, not library debug logging.
+// pythonCLIPrintSkipFunc reports argparse/__main__/Click CLI presentation
+// entrypoints whose print calls are intentional user output, not library debug logging.
 func pythonCLIPrintSkipFunc(
 	name string,
-	mainInvoked, hasArgparse bool,
+	mainInvoked, hasArgparse, hasClickishCLI bool,
 	registeredCmds map[string]struct{},
 ) bool {
 	if mainInvoked && name == "main" {
@@ -218,10 +282,20 @@ func pythonCLIPrintSkipFunc(
 	if _, ok := registeredCmds[name]; ok {
 		return true
 	}
-	if hasArgparse && mainInvoked {
-		if strings.HasPrefix(name, "print_") || strings.HasPrefix(name, "cmd_") {
+	if mainInvoked {
+		if strings.HasPrefix(name, "print_") || strings.HasPrefix(name, "cmd_") ||
+			strings.HasPrefix(name, "show_") {
 			return true
 		}
+	}
+	if hasArgparse && mainInvoked {
+		if strings.HasPrefix(name, "run_") {
+			return true
+		}
+	}
+	// Click-style helpers: init_command / push_command called from @cli.command wrappers.
+	if hasClickishCLI && strings.HasSuffix(name, "_command") {
+		return true
 	}
 	return false
 }

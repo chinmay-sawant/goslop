@@ -1,0 +1,7 @@
+# goslop text fixture — same handle closed twice (vulnerable)
+lang: python
+file: CWE-1341-distinct-handles-vulnerable.py
+---
+def teardown(connection):
+    connection.close()
+    connection.close()

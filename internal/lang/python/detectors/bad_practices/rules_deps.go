@@ -278,7 +278,7 @@ func importedDeprecatedModule(t string) (string, bool) {
 	return "", false
 }
 
-// BP-PY-45: sys.path.insert/append/extend at runtime (skip test files).
+// BP-PY-45: sys.path.insert/append/extend at runtime (skip test files / bootstrap).
 func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-45")
 	if isRequirementsPath(unit) {
@@ -287,10 +287,14 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	if isPythonTestFile(unit) {
 		return
 	}
-	// Skip known bootstrap basenames.
-	base := strings.ToLower(filepath.Base(fileDisplayPath(unit)))
+	display := fileDisplayPath(unit)
+	// Skip known bootstrap basenames and Sphinx docs/conf.py.
+	base := strings.ToLower(filepath.Base(display))
 	switch base {
 	case "sitecustomize.py", "usercustomize.py", "conftest.py":
+		return
+	}
+	if isSphinxDocsConfPath(display) || isSphinxDocsConfPath(unit.Path) {
 		return
 	}
 	if !facts.hasAny("sys.path", "sys.path.insert", "sys.path.append", "sys.path.extend") &&
@@ -298,14 +302,33 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		return
 	}
 	lines := codeLinesFacts(facts, unit.Source)
+	type scope struct {
+		indent int
+		kind   byte // 'd' def/class, 'i' if/for/while/with
+	}
+	var stack []scope
+	prevNonEmpty := ""
+	prevIndent := -1
 	for _, line := range lines {
 		t := strings.TrimSpace(line.text)
 		if t == "" {
 			continue
 		}
-		if strings.Contains(t, "sys.path.insert(") || strings.Contains(t, "sys.path.append(") ||
+		ind := indentWidth(line.raw)
+		for len(stack) > 0 && ind <= stack[len(stack)-1].indent {
+			stack = stack[:len(stack)-1]
+		}
+		inFunc := false
+		for _, s := range stack {
+			if s.kind == 'd' {
+				inFunc = true
+				break
+			}
+		}
+		isPathMut := strings.Contains(t, "sys.path.insert(") || strings.Contains(t, "sys.path.append(") ||
 			strings.Contains(t, "sys.path.extend(") ||
-			strings.Contains(t, "sys.path.insert (") || strings.Contains(t, "sys.path.append (") {
+			strings.Contains(t, "sys.path.insert (") || strings.Contains(t, "sys.path.append (")
+		if isPathMut && !isSysPathBootstrap(t, ind, inFunc, prevNonEmpty, prevIndent) {
 			off := line.byte
 			for _, n := range []string{"sys.path.insert", "sys.path.append", "sys.path.extend"} {
 				if i := strings.Index(line.text, n); i >= 0 {
@@ -317,5 +340,47 @@ func detectBPPY45(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				"sys.path mutation at runtime; prefer packaging/editable installs over path hacks",
 				out)
 		}
+		// Track scopes after evaluating the line (headers open a new block).
+		if strings.HasPrefix(t, "def ") || strings.HasPrefix(t, "async def ") || strings.HasPrefix(t, "class ") {
+			stack = append(stack, scope{indent: ind, kind: 'd'})
+		} else if strings.HasSuffix(t, ":") &&
+			(strings.HasPrefix(t, "if ") || strings.HasPrefix(t, "elif ") || strings.HasPrefix(t, "else:") ||
+				strings.HasPrefix(t, "for ") || strings.HasPrefix(t, "while ") ||
+				strings.HasPrefix(t, "with ") || strings.HasPrefix(t, "async with ") ||
+				strings.HasPrefix(t, "try:") || strings.HasPrefix(t, "except") ||
+				strings.HasPrefix(t, "finally:") || strings.HasPrefix(t, "match ")) {
+			stack = append(stack, scope{indent: ind, kind: 'i'})
+		}
+		prevNonEmpty = t
+		prevIndent = ind
 	}
+}
+
+// isSphinxDocsConfPath reports docs/**/conf.py (Sphinx build configuration).
+func isSphinxDocsConfPath(p string) bool {
+	if p == "" {
+		return false
+	}
+	norm := filepath.ToSlash(strings.ToLower(p))
+	base := filepath.Base(norm)
+	if base != "conf.py" {
+		return false
+	}
+	return strings.Contains(norm, "/docs/") || strings.HasPrefix(norm, "docs/")
+}
+
+// isSysPathBootstrap reports import-time path fixes that are not runtime library mutations.
+// Keeps in-function path inserts and module-level hard-coded vendor inserts reportable.
+func isSysPathBootstrap(t string, ind int, inFunc bool, prev string, prevIndent int) bool {
+	if strings.Contains(t, "__file__") {
+		return true
+	}
+	if inFunc {
+		return false
+	}
+	// Module-level: if <root> not in sys.path: sys.path.insert(...)
+	if prevIndent >= 0 && ind > prevIndent && strings.Contains(prev, "not in sys.path") {
+		return true
+	}
+	return false
 }

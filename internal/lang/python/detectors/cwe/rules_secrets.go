@@ -163,15 +163,7 @@ func detectCWE523(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 	}
 }
 
-// firstMatchStart finds the first code-oriented pattern hit on masked text.
-func firstMatchStart(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp) int {
-	if unit == nil || pattern == nil {
-		return -1
-	}
-	return firstCodeMatchStart(facts, unit.Source, pattern)
-}
-
-// firstMatchStartIfContains is firstMatchStart with a cheap Source Contains gate.
+// firstMatchStartIfContains finds the first masked pattern hit after a cheap Source Contains gate.
 func firstMatchStartIfContains(facts *PyCweFacts, unit *core.ParsedUnit, pattern *regexp.Regexp, needles ...string) int {
 	if unit == nil || pattern == nil {
 		return -1

@@ -1,0 +1,12 @@
+# goslop text fixture — generic except re-raises domain error (html2pic FP)
+lang: python
+file: CWE-396-batch3-reraise-from-safe.py
+---
+class RenderError(Exception):
+    pass
+
+def render(tree):
+    try:
+        return translate(tree)
+    except Exception as e:
+        raise RenderError(f"Failed to render: {e}") from e

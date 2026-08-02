@@ -147,8 +147,12 @@ func looksXMLConstructed(expr string) bool {
 
 // CWE-93: header sinks are limited to explicit header mutation APIs. Values
 // that visibly remove both CR and LF are not reported by this source heuristic.
+// Header reads and == comparisons are not sinks (assignment '=' only).
 func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
+		return
+	}
+	if isPythonTestModule(unit) {
 		return
 	}
 	for _, call := range findCalls(facts, unit.Source, ".set_header", ".add_header", "HttpResponseRedirect") {
@@ -175,9 +179,9 @@ func detectCWE93(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 		if i < len(maskedLines) {
 			maskedLine = maskedLines[i]
 		}
-		lhs, _, ok := strings.Cut(maskedLine, "=")
-		_, rhs, _ := strings.Cut(line, "=")
-		if !ok || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) {
+		lhs, _, ok := splitAssignmentEq(maskedLine)
+		_, rhs, rhsOK := splitAssignmentEq(line)
+		if !ok || !rhsOK || !strings.Contains(lhs, ".headers[") || !isDynamicExpr(rhs) || headerValueLooksSanitized(rhs) || headerValueIsInternalNumeric(rhs) {
 			lineOffset += len(line) + 1
 			continue
 		}
@@ -201,12 +205,17 @@ func headerValueIsInternalNumeric(expr string) bool {
 
 // CWE-94: code-generation and dynamic-import APIs are only findings when the
 // code/module argument is non-literal. Literal developer-owned expressions are
-// out of scope for this same-file heuristic.
+// out of scope for this same-file heuristic. Attribute methods named exec/eval
+// (SQLModel session.exec, Qt app.exec) are rejected by findCalls' left-boundary
+// check on '.'.
 func detectCWE94(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
 	for _, call := range findCalls(facts, unit.Source, "eval", "exec", "compile", "__import__", "importlib.import_module") {
+		if call.Start > 0 && unit.Source[call.Start-1] == '.' {
+			continue
+		}
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !isDynamicExpr(args[0]) {
 			continue
@@ -220,13 +229,14 @@ func detectCWE94(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding)
 // CWE-88: shell=False is not sufficient when an untrusted argument can become
 // a tool option. Detect only explicit argv literals with a dynamic segment; a
 // pre-built argv variable has insufficient same-file evidence to report.
-// Conventional Python test modules are skipped: fixed fixture paths and
-// hardcoded flavours are not attacker-controlled option sinks.
+// Conventional Python test/benchmark modules are skipped. Module constants
+// (UPPER_SNAKE), sys.executable, and literal+constant concatenations are not
+// treated as attacker-controlled option text.
 func detectCWE88(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
 	}
-	if isPythonTestModule(unit) {
+	if isPythonTestModule(unit) || isPythonBenchmarkFile(unit) {
 		return
 	}
 	for _, call := range findCalls(facts, unit.Source,
@@ -265,8 +275,8 @@ func looksDynamicArgv(expr string) bool {
 }
 
 // argvSegmentLooksDynamic is true when a list/tuple argv element can carry
-// attacker-controlled option text. Pure string/bytes literals and static
-// concatenations of those literals are not dynamic.
+// attacker-controlled option text. Pure string/bytes literals, static
+// concatenations of those literals, and trusted module constants are not dynamic.
 func argvSegmentLooksDynamic(expr string) bool {
 	t := strings.TrimSpace(expr)
 	if t == "" {
@@ -279,6 +289,9 @@ func argvSegmentLooksDynamic(expr string) bool {
 		return false
 	}
 	if looksStaticLiteralConcat(t) {
+		return false
+	}
+	if argvSegmentLooksTrusted(t) {
 		return false
 	}
 	return true
@@ -357,7 +370,7 @@ func splitTopLevelConcat(expr string) []string {
 
 // CWE-117: keep the signal to dynamically formatted messages passed to known
 // Python logging APIs. Structured literal messages with separate arguments are
-// intentionally excluded.
+// intentionally excluded. Constant / numeric-only interpolations cannot carry CRLF.
 func detectCWE117(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding) {
 	if unit == nil || out == nil {
 		return
@@ -368,6 +381,9 @@ func detectCWE117(unit *core.ParsedUnit, facts *PyCweFacts, out *[]rules.Finding
 		"log.debug", "log.info", "log.warning", "log.error", "log.critical") {
 		args := splitTopLevelArgs(call.ArgsText)
 		if len(args) == 0 || !looksLogFormatted(args[0]) || headerValueLooksSanitized(args[0]) {
+			continue
+		}
+		if !logMessageHasCRLFCapableValue(args[0]) {
 			continue
 		}
 		pushInjectionFinding(unit, call.Start, &MetaCWE117,

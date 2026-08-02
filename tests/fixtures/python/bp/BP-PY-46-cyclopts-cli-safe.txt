@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: sync_app.py
+---
+from cyclopts import App
+
+app = App(name="sync-with-uv")
+
+
+@app.default()
+def sync(config_path: str) -> int:
+    print("Error: bad config", file=__import__("sys").stderr)
+    return 1

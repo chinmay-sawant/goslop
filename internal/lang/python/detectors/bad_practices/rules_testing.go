@@ -48,12 +48,19 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		defIndent := indentWidth(line.raw)
 		hasAssert := false
 		hasCall := false
+		var strCarry pyTripleQuoteCarry
 		for j := i + 1; j < len(lines); j++ {
-			st := strings.TrimSpace(lines[j].text)
-			if st == "" {
+			raw := lines[j].raw
+			if strCarry.open {
+				strCarry.feed(raw)
 				continue
 			}
-			ind := indentWidth(lines[j].raw)
+			st := strings.TrimSpace(lines[j].text)
+			if st == "" {
+				strCarry.feed(raw)
+				continue
+			}
+			ind := indentWidth(raw)
 			if ind <= defIndent {
 				break
 			}
@@ -71,6 +78,9 @@ func detectBPPY41(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 			if looksLikeSideEffectCall(st) {
 				hasCall = true
 			}
+			// Track triple-quoted strings that continue onto later lines so column-0
+			// string content (e.g. chat samples, embedded YAML) does not abort the scan.
+			strCarry.feed(raw)
 		}
 		if hasCall && !hasAssert {
 			pushAt(unit, meta, line.byte,
@@ -84,7 +94,8 @@ func isTestAssertion(st string, helpers map[string]struct{}) bool {
 	if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") {
 		return true
 	}
-	if strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") {
+	if strings.Contains(st, "pytest.raises") || strings.Contains(st, "pytest.warns") ||
+		strings.Contains(st, "pytest.fail(") {
 		return true
 	}
 	if strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") {
@@ -97,9 +108,18 @@ func isTestAssertion(st string, helpers map[string]struct{}) bool {
 	if strings.HasPrefix(st, "raises(") || strings.Contains(st, " assert_") {
 		return true
 	}
+	// pytest-regressions / image regression baselines.
+	if strings.Contains(st, "regression.check(") || strings.Contains(st, "file_regression.check(") ||
+		strings.Contains(st, "image_regression.check(") || strings.Contains(st, "data_regression.check(") {
+		return true
+	}
 	// Calls to assert_* / _assert_* helpers (e.g. self._assert_verapdf(...)).
 	if name := callCalleeIdent(st); name != "" {
 		if isAssertHelperName(name) {
+			return true
+		}
+		// pytest-regressions fixture helper and pytest-benchmark fixture.
+		if name == "check_func" || name == "benchmark" {
 			return true
 		}
 		if _, ok := helpers[name]; ok {
@@ -156,7 +176,7 @@ func assertionHelpersForUnit(unit *core.ParsedUnit, lines []codeLine) map[string
 }
 
 // sameFileAssertionHelpers returns names of non-test defs whose bodies perform
-// unittest assertions or raise AssertionError (presence-check helpers).
+// assertions (bare assert / unittest) or raise AssertionError.
 func sameFileAssertionHelpers(lines []codeLine) map[string]struct{} {
 	out := make(map[string]struct{})
 	for i, line := range lines {
@@ -166,23 +186,105 @@ func sameFileAssertionHelpers(lines []codeLine) map[string]struct{} {
 			continue
 		}
 		defIndent := indentWidth(line.raw)
+		var strCarry pyTripleQuoteCarry
 		for j := i + 1; j < len(lines); j++ {
-			st := strings.TrimSpace(lines[j].text)
-			if st == "" {
+			raw := lines[j].raw
+			if strCarry.open {
+				strCarry.feed(raw)
 				continue
 			}
-			ind := indentWidth(lines[j].raw)
+			st := strings.TrimSpace(lines[j].text)
+			if st == "" {
+				strCarry.feed(raw)
+				continue
+			}
+			ind := indentWidth(raw)
 			if ind <= defIndent {
 				break
 			}
-			if strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") ||
+			if strings.HasPrefix(st, "assert ") || st == "assert" || strings.HasPrefix(st, "assert(") ||
+				strings.Contains(st, "self.assert") || strings.Contains(st, "self.fail(") ||
 				strings.Contains(st, "raise "+assertionErrorType) {
 				out[name] = struct{}{}
 				break
 			}
+			strCarry.feed(raw)
 		}
 	}
 	return out
+}
+
+// pyTripleQuoteCarry tracks an open triple-quoted string across source lines.
+// Used so body scans do not treat string content as code (indent / statements).
+type pyTripleQuoteCarry struct {
+	open  bool
+	quote byte
+}
+
+func (s *pyTripleQuoteCarry) feed(line string) {
+	i := 0
+	for i < len(line) {
+		if s.open {
+			c := line[i]
+			if c == s.quote && i+2 < len(line) && line[i+1] == s.quote && line[i+2] == s.quote {
+				s.open = false
+				s.quote = 0
+				i += 3
+				continue
+			}
+			i++
+			continue
+		}
+		c := line[i]
+		// Skip prefixes (r/u/b/f and combinations) before a quote.
+		if isPyStringPrefixByte(c) {
+			j := i
+			for j < len(line) && isPyStringPrefixByte(line[j]) {
+				j++
+			}
+			if j < len(line) && (line[j] == '"' || line[j] == '\'') {
+				i = j
+				c = line[i]
+			}
+		}
+		if c == '"' || c == '\'' {
+			if i+2 < len(line) && line[i+1] == c && line[i+2] == c {
+				// Triple quote opens; may close later on this line.
+				s.open = true
+				s.quote = c
+				i += 3
+				continue
+			}
+			// Single-line string: consume until close or EOL.
+			q := c
+			i++
+			escape := false
+			for i < len(line) {
+				ch := line[i]
+				if escape {
+					escape = false
+					i++
+					continue
+				}
+				if ch == '\\' {
+					escape = true
+					i++
+					continue
+				}
+				if ch == q {
+					i++
+					break
+				}
+				i++
+			}
+			continue
+		}
+		i++
+	}
+}
+
+func isPyStringPrefixByte(c byte) bool {
+	return c == 'r' || c == 'R' || c == 'u' || c == 'U' || c == 'b' || c == 'B' || c == 'f' || c == 'F'
 }
 
 // mergeLocalHelpersPy credits AssertionError / self.assert* helpers defined in a
@@ -289,10 +391,8 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 		tests = append(tests, region{start: i, end: end, indent: defIndent})
 	}
-	if len(tests) == 0 && isPythonTestFile(unit) {
-		// Whole file is test module — scan all.
-		tests = append(tests, region{start: 0, end: len(lines), indent: -1})
-	}
+	// Only scan def test_* bodies. Do not fall back to whole-file scanning for
+	// *_test.py helpers/benchmarks that merely carry a test-like basename.
 	for _, reg := range tests {
 		if testRegionCollectsThreadErrors(lines, reg.start, reg.end) {
 			continue
@@ -314,9 +414,9 @@ func detectBPPY42(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 					break
 				}
 				if ind == tryIndent && (st == "except:" || strings.HasPrefix(st, "except ") || strings.HasPrefix(st, "except:")) {
-					if isExpectFailureExcept(st) {
-						// Miss if same region uses assertRaises/pytest.raises nearby (already preferred).
-						// Flag this try/except pattern.
+					if isExpectFailureExcept(st) && !suiteSurfacesFailure(lines, j) {
+						// Miss handlers that re-raise / record / log the failure —
+						// those are not assertRaises substitutes.
 						pushAt(unit, meta, lines[i].byte,
 							"test uses try/except to expect failure; prefer with pytest.raises(...) or self.assertRaises(...)",
 							out)

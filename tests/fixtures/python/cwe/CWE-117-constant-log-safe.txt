@@ -1,0 +1,10 @@
+# goslop text fixture — CWE-117 constant/numeric interpolations (safe)
+lang: python
+file: CWE-117-constant-log-safe.py
+---
+import logging
+
+
+def banner(items):
+    logging.info(f"\n{'='*60}")
+    logging.info(f"items={len(items)} elapsed={float(0)}")

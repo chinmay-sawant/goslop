@@ -1,0 +1,15 @@
+# goslop text fixture
+lang: python
+file: cache_mod.py
+---
+class Cache:
+    """Cache helper.
+
+    Example::
+
+        print(cache.info("weights"))
+        print(cache.stats)
+    """
+
+    def info(self, key):
+        return key

@@ -103,6 +103,8 @@ var perfHeavyCtorRE = regexp.MustCompile(`\b([A-Z][A-Za-z0-9_]*)\s*\(`)
 
 // PERF-PY-25: constructor or lambda-per-item in loops.
 // Skips common exception/builtin constructors; requires lambda or alloc-like context.
+// Sort/min/max key= lambdas, light attribute lambdas, and construct-then-return
+// early-exit loop bodies are not per-element allocation smells.
 func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	if facts == nil || isPythonTestFile(unit) {
 		return
@@ -117,8 +119,9 @@ func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if ctor != "" && perfLightweightCtor(ctor) {
 			ctor = ""
 		}
+		heavyLambda := hasLambda && !perfLambdaIsSortKey(text) && perfLambdaLooksHeavy(text)
 		// Ctor/lambda needle before inLoop so non-matching lines skip membership.
-		if ctor == "" && !hasLambda {
+		if ctor == "" && !heavyLambda {
 			continue
 		}
 		if !facts.lineInLoop(i) {
@@ -127,12 +130,71 @@ func detectPYPERF25(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if strings.Contains(text, "encode_cell") || strings.Contains(text, "encode_record") {
 			continue
 		}
-		// Require alloc/schema context for bare constructors; lambdas remain high-signal.
-		if ctor != "" && !hasLambda && !perfAllocContext(text) {
+		// Require alloc/schema context for bare constructors; heavy lambdas remain signal.
+		if ctor != "" && !heavyLambda && !perfAllocContext(text) {
+			continue
+		}
+		if heavyLambda && ctor == "" && perfLambdaFollowedByReturn(facts.lines, i) {
 			continue
 		}
 		pushLine(unit, "PERF-PY-25", line, "alloc", "heavy object or lambda is constructed per homogeneous loop element; use a fixed-schema path", out)
 	}
+}
+
+func perfLambdaIsSortKey(text string) bool {
+	compact := strings.ReplaceAll(text, " ", "")
+	return strings.Contains(compact, "key=lambda") ||
+		strings.Contains(compact, "key=lambda:")
+}
+
+func perfLambdaLooksHeavy(text string) bool {
+	idx := strings.Index(text, "lambda")
+	if idx < 0 {
+		return false
+	}
+	rest := text[idx:]
+	colon := strings.IndexByte(rest, ':')
+	if colon < 0 {
+		return true
+	}
+	body := strings.TrimSpace(rest[colon+1:])
+	if body == "" {
+		return false
+	}
+	// Strip trailing call-arg punctuation from being inside sorted(...).
+	body = strings.TrimRight(body, ",)")
+	body = strings.TrimSpace(body)
+	// Attribute/name-only bodies are closures, not heavy allocs.
+	for _, r := range body {
+		if r == '(' || r == '[' || r == '{' {
+			return true
+		}
+	}
+	return false
+}
+
+func perfLambdaFollowedByReturn(lines []codeLine, idx int) bool {
+	if idx < 0 || idx >= len(lines) {
+		return false
+	}
+	indent := indentWidth(lines[idx].raw)
+	for j := idx + 1; j < len(lines) && j <= idx+4; j++ {
+		t := lines[j].trim
+		if t == "" {
+			continue
+		}
+		ind := indentWidth(lines[j].raw)
+		if ind < indent {
+			return false
+		}
+		if ind == indent && strings.HasPrefix(t, "return ") {
+			return true
+		}
+		if ind == indent {
+			return false
+		}
+	}
+	return false
 }
 
 func perfLightweightCtor(name string) bool {
@@ -156,6 +218,8 @@ func perfAllocContext(text string) bool {
 }
 
 // PERF-PY-26: expensive decode on render/job path without cache.
+// parse_* recursive-descent / CLI helpers only fire on explicit handle_job /
+// handle_request windows; decode_/Image.open/zlib still fire in loops.
 func detectPYPERF26(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Finding) {
 	if facts == nil || isPythonTestFile(unit) {
 		return
@@ -172,10 +236,31 @@ func detectPYPERF26(unit *core.ParsedUnit, facts *pyPerfFacts, out *[]rules.Find
 		if windowHas(facts.lines, start, end, "_CACHE", "lru_cache", "cache.get", "cached =") {
 			continue
 		}
-		if windowHas(facts.lines, start, end, "handle_job", "handle_request", "render", "build_", "process") || facts.lineInLoop(i) {
-			pushLine(unit, "PERF-PY-26", line, "decode", "expensive decode/parse runs on a hot path without a visible cache", out)
+		hotHandler := windowHas(facts.lines, start, end, "handle_job", "handle_request")
+		inLoop := facts.lineInLoop(i)
+		isParseOnly := perfLineIsParseCall(line.text) && !perfLineIsDecodeOrImage(line.text)
+		if isParseOnly {
+			if !hotHandler {
+				continue
+			}
+		} else if !hotHandler && !inLoop {
+			continue
 		}
+		pushLine(unit, "PERF-PY-26", line, "decode", "expensive decode/parse runs on a hot path without a visible cache", out)
 	}
+}
+
+var (
+	decodeHotParseRE = regexp.MustCompile(`\bparse_[A-Za-z0-9_]+\s*\(`)
+	decodeHotBlobRE  = regexp.MustCompile(`\b(decode_[A-Za-z0-9_]+|Image\.open|zlib\.decompress)\s*\(`)
+)
+
+func perfLineIsParseCall(text string) bool {
+	return decodeHotParseRE.MatchString(text)
+}
+
+func perfLineIsDecodeOrImage(text string) bool {
+	return decodeHotBlobRE.MatchString(text)
 }
 
 // PERF-PY-27: from_file / read_bytes of the same invariant path inside a batch loop.

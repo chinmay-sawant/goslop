@@ -1,0 +1,14 @@
+# goslop text fixture — generic except logs with exc_info (CourtScrapper FP)
+lang: python
+file: CWE-396-batch3-exc-info-safe.py
+---
+import logging
+
+logger = logging.getLogger("pool")
+
+def scrape_one(name):
+    try:
+        return do_scrape(name)
+    except Exception as e:
+        logger.error("%s error: %s", name, e, exc_info=True)
+        return (False, e)

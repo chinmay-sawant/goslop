@@ -1,0 +1,7 @@
+# goslop text fixture
+lang: python
+file: package/analyzer.py
+---
+def analyze(url):
+    print(f"debug analyze {url}")
+    return url

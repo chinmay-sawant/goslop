@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/chinmay-sawant/goslop/internal/core"
+	"github.com/chinmay-sawant/goslop/internal/lang/python/pytext"
 	"github.com/chinmay-sawant/goslop/internal/rules"
 )
 
@@ -168,6 +169,11 @@ func detectBPPY11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 				start = abs + len("yaml.load(")
 				continue
 			}
+			// ruamel.YAML().load is not PyYAML's unsafe yaml.load.
+			if bpYAMLLoadLooksLikeRuamel(src, inner) {
+				start = abs + len("yaml.load(")
+				continue
+			}
 			// Loader= present but not safe: still flag (FullLoader/UnsafeLoader).
 			// Bare yaml.load without Loader also flags.
 			pushAt(unit, meta, abs, "yaml.load without SafeLoader can execute code; use yaml.safe_load", out)
@@ -180,14 +186,21 @@ func detectBPPY11(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 }
 
 // BP-PY-12: eval( / exec( / compile(..., 'exec')
+// Only the builtins are in scope. Attribute methods such as session.exec /
+// app.exec / db.exec are SQL/Qt/container APIs, not the exec builtin. Matches
+// inside comments and string literals are ignored via pytext.Mask.
 func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-12")
 	if !facts.hasAny("eval(", "exec(", "compile(") {
 		return
 	}
 	src := unit.Source
+	masked := pytext.Mask(src)
 	for _, name := range []string{"eval", "exec"} {
-		for _, off := range findAllIdent(src, name) {
+		for _, off := range findAllIdent(masked, name) {
+			if off > 0 && masked[off-1] == '.' {
+				continue
+			}
 			end := off + len(name)
 			if end >= len(src) || src[end] != '(' {
 				continue
@@ -206,7 +219,10 @@ func detectBPPY12(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 		}
 	}
 	// compile(..., 'exec') / "exec"
-	for _, off := range findAllIdent(src, "compile") {
+	for _, off := range findAllIdent(masked, "compile") {
+		if off > 0 && masked[off-1] == '.' {
+			continue
+		}
 		end := off + len("compile")
 		if end >= len(src) || src[end] != '(' {
 			continue
@@ -235,6 +251,9 @@ var secretExactAssignRe = regexp.MustCompile(`(?i)\b(password|passwd|secret|secr
 // BP-PY-13: hardcoded secret heuristic (conservative).
 func detectBPPY13(unit *core.ParsedUnit, facts *bpFacts, out *[]rules.Finding) {
 	meta := MetadataForID("BP-PY-13")
+	if isPythonTestFile(unit) || isPythonBenchmarkFile(unit) {
+		return
+	}
 	if !facts.hasAny("password", "secret", "api_key", "token", "private_key", "SECRET_KEY") {
 		// Case-fold once for the gate-miss path (avoids up to 4× ToLower on full source).
 		lower := strings.ToLower(unit.Source)
@@ -319,4 +338,15 @@ func unwrapStringLiteral(s string) string {
 		return s[3 : len(s)-3]
 	}
 	return s[1 : len(s)-1]
+}
+
+func bpYAMLLoadLooksLikeRuamel(src, args string) bool {
+	compact := strings.ReplaceAll(strings.ReplaceAll(args, " ", ""), "\t", "")
+	if strings.Contains(compact, "Loader=") {
+		return false
+	}
+	return strings.Contains(src, "ruamel.yaml") ||
+		strings.Contains(src, "from ruamel") ||
+		strings.Contains(src, "import ruamel") ||
+		strings.Contains(src, "YAML()")
 }

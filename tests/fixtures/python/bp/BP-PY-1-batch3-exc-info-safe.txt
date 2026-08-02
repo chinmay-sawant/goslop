@@ -1,0 +1,15 @@
+# goslop text fixture — broad except logs with exc_info (calgebra/CourtScrapper FP)
+lang: python
+file: handled_exc_info.py
+---
+import logging
+
+def fetch_timezone(cal_id):
+    try:
+        return load_tz(cal_id)
+    except Exception:
+        logging.getLogger("app").warning(
+            "Failed to fetch timezone for %s",
+            cal_id,
+            exc_info=True,
+        )

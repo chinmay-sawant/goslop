@@ -1,0 +1,27 @@
+# goslop text fixture
+lang: python
+file: generator.py
+---
+import argparse
+import sys
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Generate report",
+        epilog="""
+Examples:
+  tool chat.zip
+  tool chat.txt --quiet
+        """,
+    )
+    parser.add_argument("chat_file")
+    args = parser.parse_args()
+    if not args.chat_file:
+        print(f"[!] Error: Chat file not found: {args.chat_file}")
+        sys.exit(1)
+    print("GENERATION COMPLETE")
+
+
+if __name__ == "__main__":
+    main()

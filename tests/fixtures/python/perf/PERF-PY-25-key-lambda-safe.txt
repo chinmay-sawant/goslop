@@ -1,0 +1,10 @@
+# Fixture for PERF-PY-25 (safe): sorted key=lambda is one callable, not per-item alloc
+lang: python
+file: app/names.py
+---
+from pathlib import Path
+
+
+def ordered_stems(paths):
+    for group in paths:
+        yield sorted(group, key=lambda p: p.stem)

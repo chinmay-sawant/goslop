@@ -1,0 +1,13 @@
+# goslop text fixture
+lang: python
+file: BP-PY-12-attr-method-exec-safe.py
+---
+from sqlmodel import Session, select
+
+
+def load_one(session: Session, model):
+    return session.exec(select(model)).first()
+
+
+def run_qt(app):
+    return app.exec()

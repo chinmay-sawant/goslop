@@ -1,0 +1,6 @@
+# goslop text fixture
+lang: python
+file: CWE-89-non-sql-execute-vulnerable.py
+---
+def find_user(cur, user_id):
+    cur.execute(f"SELECT * FROM users WHERE id = {user_id}")
